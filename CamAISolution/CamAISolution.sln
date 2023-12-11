@@ -3,9 +3,56 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.7.34024.191
 MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{2EA3418E-6A29-4DA0-A7D9-996F53DE8B0F}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Host.CamAI.API", "Host.CamAI.API\Host.CamAI.API.csproj", "{5312DBE5-5F94-4DBA-B3CC-A4C57E0AE658}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core.Domain", "Core.Domain\Core.Domain.csproj", "{ED048DD3-2718-415C-B72B-9C73E97C3668}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core.Application", "Core.Application\Core.Application.csproj", "{EE9089C9-0301-4370-8E87-2F8FC1FBF668}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Infrastructure.Repositories", "Infrastructure.Repositories\Infrastructure.Repositories.csproj", "{9CC96C1A-3B42-4F58-9DFF-2660B82739DF}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Infrastructure.Jwt", "Infrastructure.Jwt\Infrastructure.Jwt.csproj", "{07E5C834-34A7-4C24-9D7C-50F1672EDE59}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{3588AD59-4B4B-4EED-8AB3-66967752B1B2}"
+EndProject
 Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{5312DBE5-5F94-4DBA-B3CC-A4C57E0AE658}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5312DBE5-5F94-4DBA-B3CC-A4C57E0AE658}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5312DBE5-5F94-4DBA-B3CC-A4C57E0AE658}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5312DBE5-5F94-4DBA-B3CC-A4C57E0AE658}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ED048DD3-2718-415C-B72B-9C73E97C3668}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ED048DD3-2718-415C-B72B-9C73E97C3668}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ED048DD3-2718-415C-B72B-9C73E97C3668}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ED048DD3-2718-415C-B72B-9C73E97C3668}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EE9089C9-0301-4370-8E87-2F8FC1FBF668}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EE9089C9-0301-4370-8E87-2F8FC1FBF668}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EE9089C9-0301-4370-8E87-2F8FC1FBF668}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EE9089C9-0301-4370-8E87-2F8FC1FBF668}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9CC96C1A-3B42-4F58-9DFF-2660B82739DF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9CC96C1A-3B42-4F58-9DFF-2660B82739DF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9CC96C1A-3B42-4F58-9DFF-2660B82739DF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9CC96C1A-3B42-4F58-9DFF-2660B82739DF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{07E5C834-34A7-4C24-9D7C-50F1672EDE59}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{07E5C834-34A7-4C24-9D7C-50F1672EDE59}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{07E5C834-34A7-4C24-9D7C-50F1672EDE59}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{07E5C834-34A7-4C24-9D7C-50F1672EDE59}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{5312DBE5-5F94-4DBA-B3CC-A4C57E0AE658} = {2EA3418E-6A29-4DA0-A7D9-996F53DE8B0F}
+		{ED048DD3-2718-415C-B72B-9C73E97C3668} = {2EA3418E-6A29-4DA0-A7D9-996F53DE8B0F}
+		{EE9089C9-0301-4370-8E87-2F8FC1FBF668} = {2EA3418E-6A29-4DA0-A7D9-996F53DE8B0F}
+		{9CC96C1A-3B42-4F58-9DFF-2660B82739DF} = {2EA3418E-6A29-4DA0-A7D9-996F53DE8B0F}
+		{07E5C834-34A7-4C24-9D7C-50F1672EDE59} = {2EA3418E-6A29-4DA0-A7D9-996F53DE8B0F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {2B457EE3-B8DB-4C93-B833-87772D34BADD}
