@@ -13,10 +13,7 @@ public static class HostBuilderExtension
         builder
             .Host
             .UseSerilog(
-                (context, logConfig) =>
-                {
-                    logConfig.ReadFrom.Configuration(context.Configuration).Enrich.FromLogContext();
-                }
+                (context, logConfig) => logConfig.ReadFrom.Configuration(context.Configuration).Enrich.FromLogContext()
             );
         return builder;
     }
