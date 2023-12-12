@@ -1,0 +1,27 @@
+<Project>
+  <PropertyGroup>
+    <!-- Enable Central package version -->
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <!-- Not allow to override version in .csproj -->
+    <CentralPackageVersionOverrideEnabled>false</CentralPackageVersionOverrideEnabled>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- Swagger -->
+    <PackageVersion Include="Grace" Version="7.2.1" />
+    <PackageVersion Include="Grace.AspNetCore.Hosting" Version="7.1.0" />
+    <PackageVersion Include="Grace.DependencyInjection.Extensions" Version="7.1.0" />
+    <PackageVersion Include="Serilog" Version="3.1.1" />
+    <PackageVersion Include="Serilog.AspNetCore" Version="8.0.0" />
+    <PackageVersion Include="Serilog.Settings.Configuration" Version="8.0.0" />
+    <PackageVersion Include="Serilog.Sinks.Console" Version="5.0.1" />
+    <PackageVersion Include="Swashbuckle.AspNetCore" Version="6.5.0" />
+    <!-- Jwt -->
+    <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.0" />
+    <PackageVersion Include="Microsoft.IdentityModel.Tokens" Version="7.0.3" />
+    <!-- Dependency injection -->
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.0" />
+    <!-- MS SQL Server -->
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.0" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.0" />
+  </ItemGroup>
+</Project>

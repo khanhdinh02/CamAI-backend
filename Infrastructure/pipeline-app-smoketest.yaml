@@ -1,0 +1,36 @@
+trigger: none
+
+appendCommitMessageToRunName: false
+name: CamAI-backend-SmokeTest
+stages:
+  - stage: stage_run_test
+    displayName: Smoke test
+        
+    jobs:
+      - job: job_run_test
+        displayName: CamAI smoke test backend
+        pool:
+          vmImage: 'ubuntu-latest'
+        steps:
+          - task: UseDotNet@2
+            displayName: Use .NET 8 SDK
+            inputs:
+              version: '8.x'
+
+          - task: DotNetCoreCLI@2
+            displayName: Restore NuGet packages
+            inputs:
+              command: restore
+              projects: '**/*.sln'
+              verbosityRestore: Normal
+
+          - script: 'ls -R -v'
+            displayName: Validate workspace
+            workingDirectory: $(workingDirectory)
+
+          - task: DotNetCoreCLI@2
+            displayName: Build all
+            inputs:
+              projects: '**/*.sln'
+              command: build
+              configuration: $(buildConfiguration)
