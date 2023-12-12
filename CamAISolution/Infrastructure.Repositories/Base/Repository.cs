@@ -8,33 +8,28 @@ using Microsoft.EntityFrameworkCore;
 namespace Infrastructure.Repositories.Base;
 
 [Export(typeof(IRepository<>))]
-public class Repository<T> : IRepository<T>
+public class Repository<T>(DbContext context) : IRepository<T>
     where T : class
 {
-    protected readonly DbContext context;
-
-    public Repository(DbContext context)
-    {
-        this.context = context;
-    }
+    protected readonly DbContext Context = context;
 
     public virtual async Task<T> AddAsync(T entity)
     {
-        var result = await context.Set<T>().AddAsync(entity);
+        var result = await Context.Set<T>().AddAsync(entity);
         return result.Entity;
     }
 
     public virtual async Task<int> CountAsync(Expression<Func<T, bool>>? expression = null)
     {
-        return expression == null ? await context.Set<T>().CountAsync() : await context.Set<T>().CountAsync(expression);
+        return expression == null ? await Context.Set<T>().CountAsync() : await Context.Set<T>().CountAsync(expression);
     }
 
     public virtual T Delete(T entity)
     {
-        if (context.Entry(entity).State == EntityState.Detached)
+        if (Context.Entry(entity).State == EntityState.Detached)
         {
-            context.Attach(entity);
-            context.Entry(entity).State = EntityState.Deleted;
+            Context.Attach(entity);
+            Context.Entry(entity).State = EntityState.Deleted;
         }
         return entity;
     }
@@ -49,14 +44,13 @@ public class Repository<T> : IRepository<T>
         int pageSize = 5
     )
     {
-        IQueryable<T> query = context.Set<T>();
-        var paginationResult = new PaginationResult<T>();
-        paginationResult.TotalCount = await CountAsync(expression);
+        IQueryable<T> query = Context.Set<T>();
+        var paginationResult = new PaginationResult<T> { TotalCount = await CountAsync(expression) };
         if (expression != null)
             query = query.Where(expression);
         if (disableTracking)
             query = query.AsNoTracking();
-        if (includeProperties != null && includeProperties.Length > 0)
+        if (includeProperties is { Length: > 0 })
         {
             foreach (var includeItem in includeProperties)
                 query = query.Include(includeItem);
@@ -84,15 +78,15 @@ public class Repository<T> : IRepository<T>
 
     public virtual async Task<T> GetByIdAsync(object key)
     {
-        return await context.Set<T>().FindAsync(key) ?? throw new NotFoundException(typeof(T), key, GetType());
+        return await Context.Set<T>().FindAsync(key) ?? throw new NotFoundException(typeof(T), key, GetType());
     }
 
     public virtual T Update(T entity)
     {
-        if (context.Entry(entity).State == EntityState.Detached)
+        if (Context.Entry(entity).State == EntityState.Detached)
         {
-            context.Attach(entity);
-            context.Entry(entity).State = EntityState.Modified;
+            Context.Attach(entity);
+            Context.Entry(entity).State = EntityState.Modified;
         }
         return entity;
     }
