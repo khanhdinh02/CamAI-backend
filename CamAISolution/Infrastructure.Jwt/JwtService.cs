@@ -5,15 +5,8 @@ using System.Security.Claims;
 
 namespace Infrastructure.Jwt
 {
-    public class JwtService : IJwtService
+    public class JwtService(AppConfiguration configuration) : IJwtService
     {
-        private readonly AppConfiguration configuration;
-
-        public JwtService(AppConfiguration configuration)
-        {
-            this.configuration = configuration;
-        }
-
         public Task<string> GenerateToken(Account account)
         {
             throw new NotImplementedException();

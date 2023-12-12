@@ -3,16 +3,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Repositories
 {
-    public class UnitOfWork : IUnitOfWork
+    public class UnitOfWork(DbContext context) : IUnitOfWork
     {
         private bool disposed = false;
-        private readonly DbContext context;
-
-        public UnitOfWork(DbContext context)
-        {
-            this.context = context;
-        }
-        
         public Task BeginTransaction()
         {
             return context.Database.BeginTransactionAsync();

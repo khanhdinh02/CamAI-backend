@@ -3,19 +3,8 @@ using System.Net;
 
 namespace Host.CamAI.API.Middlewares
 {
-    public class GlobalExceptionHandler
+    public class GlobalExceptionHandler(RequestDelegate _next, ILogger<GlobalExceptionHandler> _logger, IHostEnvironment _env)
     {
-        private readonly RequestDelegate _next;
-        private readonly ILogger<GlobalExceptionHandler> _logger;
-        private readonly IHostEnvironment _env;
-
-        public GlobalExceptionHandler(RequestDelegate next, ILogger<GlobalExceptionHandler> logger, IHostEnvironment env)
-        {
-            _next = next;
-            _logger = logger;
-            _env = env;
-        }
-
         public async Task InvokeAsync(HttpContext context)
         {
             try
@@ -34,7 +23,7 @@ namespace Host.CamAI.API.Middlewares
             context.Response.ContentType = "application/json";
             var statusCode = HttpStatusCode.InternalServerError;
             var message = "Error occured";
-            if(ex is BaseException)
+            if (ex is BaseException)
             {
                 var baseEx = (BaseException)ex;
                 message = baseEx.ErrorMessage;
@@ -45,7 +34,7 @@ namespace Host.CamAI.API.Middlewares
             {
                 Message = message,
                 StatusCode = statusCode,
-                Detailed = _env.IsDevelopment() ? ex.Message : "" 
+                Detailed = _env.IsDevelopment() ? ex.Message : ""
             });
         }
     }
