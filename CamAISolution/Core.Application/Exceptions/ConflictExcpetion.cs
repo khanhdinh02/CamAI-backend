@@ -2,8 +2,7 @@
 
 namespace Core.Application.Exceptions
 {
-    public class ConflictExcpetion : BaseException
+    public class ConflictExcpetion(string errorMessage) : BaseException(errorMessage, System.Net.HttpStatusCode.Conflict)
     {
-        public ConflictExcpetion(string errorMessage) : base(errorMessage, System.Net.HttpStatusCode.Conflict) { }
     }
 }
