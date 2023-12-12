@@ -1,6 +1,7 @@
 using Core.Domain.Interfaces.Services;
+using Grace.DependencyInjection.Attributes;
 
 namespace Core.Application.Implements;
-public class AccountService : IAccountService
-{
-}
+
+[ExportByInterfaces]
+public class AccountService : IAccountService { }

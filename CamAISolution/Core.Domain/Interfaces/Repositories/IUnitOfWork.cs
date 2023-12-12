@@ -1,4 +1,5 @@
 ﻿namespace Core.Domain.Interfaces.Repositories;
+
 public interface IUnitOfWork : IDisposable, IAsyncDisposable
 {
     Task BeginTransaction();

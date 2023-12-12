@@ -7,16 +7,12 @@ using Microsoft.Extensions.DependencyInjection;
 
 public static class DependencyInjection
 {
-    public static IServiceCollection JwtDependencyInjection(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddJwtService(this IServiceCollection services, IConfiguration configuration)
     {
-        var jwtConfig = new JwtConfiguration
-        {
-            Audience = configuration["Jwt:Audience"] ?? throw new ArgumentNullException(nameof(configuration)),
-            Expired = int.Parse(configuration["Jwt:Expired"] ?? throw new ArgumentException("Not found expired")),
-            Issuer = configuration["Jwt:Issuer"] ?? throw new ArgumentException("Not found issuer"),
-            JwtSecret = configuration["Jwt:Secret"] ?? throw new ArgumentException("Not found Jwt secret")
-        };
-        services.AddScoped<IJwtService>(p => new JwtService(jwtConfig));
+        var jwtConfiguration = configuration.GetSection("Jwt").Get<JwtConfiguration>();
+        ArgumentNullException.ThrowIfNull(jwtConfiguration);
+
+        services.AddScoped<IJwtService>(_ => new JwtService(jwtConfiguration));
         return services;
     }
 }

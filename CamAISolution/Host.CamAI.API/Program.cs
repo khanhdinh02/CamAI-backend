@@ -3,15 +3,14 @@ using Host.CamAI.API.Middlewares;
 using Infrastructure.Jwt;
 using Infrastructure.Repositories;
 
-var builder = WebApplication.CreateBuilder(args);
+var builder = WebApplication.CreateBuilder(args).ConfigureGrace().ConfigureSerilog();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.RepositoryDependencyInjection(builder.Configuration.GetConnectionString("Default"));
-builder.Services.JwtDependencyInjection(builder.Configuration);
-builder.Services.ApiDenpendencyInjection();
+builder.Services.AddRepository(builder.Configuration.GetConnectionString("Default"));
+builder.Services.AddJwtService(builder.Configuration);
 
 var app = builder.Build();
 

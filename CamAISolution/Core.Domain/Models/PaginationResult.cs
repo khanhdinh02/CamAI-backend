@@ -1,4 +1,5 @@
 ﻿namespace Core.Domain.Models;
+
 public class PaginationResult<T>
 {
     public IList<T> Values { get; set; } = new List<T>();

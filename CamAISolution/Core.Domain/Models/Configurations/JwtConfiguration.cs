@@ -1,4 +1,5 @@
 namespace Core.Domain.Models.Configurations;
+
 public class JwtConfiguration
 {
     public string JwtSecret { get; set; } = string.Empty;

@@ -1,13 +1,15 @@
-﻿namespace Infrastructure.Repositories.Base;
-
+﻿using System.Linq.Expressions;
 using Core.Application.Exceptions;
 using Core.Domain.Interfaces.Repositories.Base;
 using Core.Domain.Models;
+using Grace.DependencyInjection.Attributes;
 using Microsoft.EntityFrameworkCore;
-using System.Linq.Expressions;
-using System.Linq;
 
-public class Repository<T> : IRepository<T> where T : class
+namespace Infrastructure.Repositories.Base;
+
+[Export(typeof(IRepository<>))]
+public class Repository<T> : IRepository<T>
+    where T : class
 {
     protected readonly DbContext context;
 
@@ -37,23 +39,30 @@ public class Repository<T> : IRepository<T> where T : class
         return entity;
     }
 
-    public virtual async Task<PaginationResult<T>> GetAsync(Expression<Func<T, bool>>? expression = null, Func<IQueryable<T>, IOrderedQueryable<T>>? orderBy = null, string[]? includeProperties = null, bool disableTracking = true, bool takeAll = false, int pageIndex = 0, int pageSize = 5)
+    public virtual async Task<PaginationResult<T>> GetAsync(
+        Expression<Func<T, bool>>? expression = null,
+        Func<IQueryable<T>, IOrderedQueryable<T>>? orderBy = null,
+        string[]? includeProperties = null,
+        bool disableTracking = true,
+        bool takeAll = false,
+        int pageIndex = 0,
+        int pageSize = 5
+    )
     {
         IQueryable<T> query = context.Set<T>();
         var paginationResult = new PaginationResult<T>();
         paginationResult.TotalCount = await CountAsync(expression);
         if (expression != null)
             query = query.Where(expression);
-        if (disableTracking is true)
+        if (disableTracking)
             query = query.AsNoTracking();
         if (includeProperties != null && includeProperties.Length > 0)
         {
             foreach (var includeItem in includeProperties)
                 query = query.Include(includeItem);
             query = query.AsSplitQuery();
-
         }
-        if (takeAll is true)
+        if (takeAll)
         {
             if (orderBy != null)
                 paginationResult.Values = await orderBy(query).ToListAsync();

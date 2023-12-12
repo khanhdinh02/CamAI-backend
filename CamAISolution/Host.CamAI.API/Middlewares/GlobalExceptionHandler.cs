@@ -1,40 +1,44 @@
-﻿namespace Host.CamAI.API.Middlewares;
-
+﻿using System.Net;
 using Core.Application.Exceptions.Base;
-using System.Net;
+using Serilog;
 
-public class GlobalExceptionHandler(RequestDelegate _next, ILogger<GlobalExceptionHandler> _logger, IHostEnvironment _env)
+namespace Host.CamAI.API.Middlewares;
+
+public class GlobalExceptionHandler(RequestDelegate next, IHostEnvironment env)
 {
     public async Task InvokeAsync(HttpContext context)
     {
         try
         {
-            await _next(context);
+            await next(context);
         }
         catch (Exception ex)
         {
-            await ExpcetionHandler(context, ex);
+            await ExceptionHandler(context, ex);
         }
     }
 
-    private Task ExpcetionHandler(HttpContext context, Exception ex)
+    private Task ExceptionHandler(HttpContext context, Exception ex)
     {
-        _logger.LogError(ex.Message, ex);
+        Log.Error(ex, ex.Message);
         context.Response.ContentType = "application/json";
         var statusCode = HttpStatusCode.InternalServerError;
         var message = "Error occured";
-        if (ex is BaseException)
+        if (ex is BaseException baseEx)
         {
-            var baseEx = (BaseException)ex;
             message = baseEx.ErrorMessage;
             statusCode = baseEx.StatusCode;
         }
         context.Response.StatusCode = (int)statusCode;
-        return context.Response.WriteAsJsonAsync(new
-        {
-            Message = message,
-            StatusCode = statusCode,
-            Detailed = _env.IsDevelopment() ? ex.Message : ""
-        });
+        return context
+            .Response
+            .WriteAsJsonAsync(
+                new
+                {
+                    Message = message,
+                    StatusCode = statusCode,
+                    Detailed = env.IsDevelopment() ? ex.Message : ""
+                }
+            );
     }
 }

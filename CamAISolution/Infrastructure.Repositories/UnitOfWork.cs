@@ -1,11 +1,14 @@
-﻿namespace Infrastructure.Repositories;
-
-using Core.Domain.Interfaces.Repositories;
+﻿using Core.Domain.Interfaces.Repositories;
+using Grace.DependencyInjection.Attributes;
 using Microsoft.EntityFrameworkCore;
 
+namespace Infrastructure.Repositories;
+
+[ExportByInterfaces]
 public class UnitOfWork(DbContext context) : IUnitOfWork
 {
     private bool disposed = false;
+
     public Task BeginTransaction()
     {
         return context.Database.BeginTransactionAsync();
@@ -31,15 +34,18 @@ public class UnitOfWork(DbContext context) : IUnitOfWork
         Dispose(true);
         GC.SuppressFinalize(this);
     }
+
     protected virtual void Dispose(bool disposing)
     {
-        if (disposed) return;
+        if (disposed)
+            return;
         if (disposing)
         {
             context.Dispose();
         }
         disposed = true;
     }
+
     public async ValueTask DisposeAsync()
     {
         await context.DisposeAsync();

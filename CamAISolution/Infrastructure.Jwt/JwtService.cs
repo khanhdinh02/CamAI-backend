@@ -1,9 +1,9 @@
-namespace Infrastructure.Jwt;
-
+using System.Security.Claims;
 using Core.Domain.Entities;
 using Core.Domain.Interfaces.Services;
 using Core.Domain.Models.Configurations;
-using System.Security.Claims;
+
+namespace Infrastructure.Jwt;
 
 public class JwtService(JwtConfiguration configuration) : IJwtService
 {

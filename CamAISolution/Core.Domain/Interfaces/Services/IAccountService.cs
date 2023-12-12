@@ -1,5 +1,3 @@
 namespace Core.Domain.Interfaces.Services;
 
-public interface IAccountService
-{
-}
+public interface IAccountService { }
