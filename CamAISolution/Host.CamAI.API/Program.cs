@@ -2,6 +2,8 @@ using Core.Domain.Models;
 using Host.CamAI.API.Middlewares;
 using Infrastructure.Jwt;
 using Infrastructure.Repositories;
+using Host.CamAI.API;
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
@@ -19,6 +21,7 @@ if (appConfig != null)
     builder.Services.AddSingleton(appConfig);
     builder.Services.RepositoryDependencyInjection(appConfig.ConnectionString);
     builder.Services.JwtDependencyInjection();
+    builder.Services.ApiDenpendencyInjection();
 }
 
 var app = builder.Build();
