@@ -1,8 +1,7 @@
-﻿using Core.Domain.Entities.Base;
+﻿namespace Core.Domain.Entities;
 
-namespace Core.Domain.Entities
+using Core.Domain.Entities.Base;
+
+public class Account : BaseEntity
 {
-    public class Account: BaseEntity
-    {
-    }
 }

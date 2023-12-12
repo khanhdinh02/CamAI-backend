@@ -1,12 +1,11 @@
-﻿using Core.Domain.Entities;
+﻿namespace Core.Domain.Interfaces.Services;
+
+using Core.Domain.Entities;
 using System.Security.Claims;
 
-namespace Core.Domain.Interfaces.Services
+public interface IJwtService
 {
-    public interface IJwtService
-    {
-        Task<string> GenerateToken(Account account);
-        Task ValidateToken(string token);
-        IList<Claim> GetClaims(string token);
-    }
+    Task<string> GenerateToken(Account account);
+    Task ValidateToken(string token);
+    IList<Claim> GetClaims(string token);
 }
