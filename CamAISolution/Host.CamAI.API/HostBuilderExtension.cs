@@ -29,6 +29,7 @@ public static class HostBuilderExtension
                 {
                     scope.Configure(config =>
                     {
+                        config.Export<ServiceProviderIsServiceImpl>().As<IServiceProviderIsService>();
                         config.ExportAssemblies(loadedAssemblies).ExportAttributedTypes();
                     });
                 }
@@ -43,5 +44,11 @@ public static class HostBuilderExtension
         var matcher = new Matcher();
         matcher.AddInclude("*.dll");
         return matcher.GetResultsInFullPath(path).Select(Assembly.LoadFrom).ToList();
+    }
+
+    private sealed class ServiceProviderIsServiceImpl(IExportLocatorScope locatorScope) : IServiceProviderIsService
+    {
+        public bool IsService(Type serviceType) =>
+            !serviceType.IsGenericTypeDefinition && locatorScope.CanLocate(serviceType);
     }
 }
