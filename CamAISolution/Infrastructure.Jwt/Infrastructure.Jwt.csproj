@@ -13,9 +13,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Grace"/>
-        <PackageReference Include="Grace.AspNetCore.Hosting"/>
-        <PackageReference Include="Grace.DependencyInjection.Extensions"/>
         <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer"/>
         <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions"/>
         <PackageReference Include="Microsoft.IdentityModel.Tokens"/>

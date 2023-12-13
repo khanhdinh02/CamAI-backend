@@ -8,9 +8,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Grace"/>
-        <PackageReference Include="Grace.AspNetCore.Hosting"/>
-        <PackageReference Include="Grace.DependencyInjection.Extensions"/>
         <PackageReference Include="Serilog" />
         <PackageReference Include="Serilog.AspNetCore" />
         <PackageReference Include="Serilog.Settings.Configuration" />

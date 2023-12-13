@@ -5,14 +5,12 @@ using Core.Domain.Models.Configurations;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-public static class DependencyInjection
+public static class JwtDependencyInjection
 {
     public static IServiceCollection AddJwtService(this IServiceCollection services, IConfiguration configuration)
     {
-        var jwtConfiguration = configuration.GetSection("Jwt").Get<JwtConfiguration>();
-        ArgumentNullException.ThrowIfNull(jwtConfiguration);
-
-        services.AddScoped<IJwtService>(_ => new JwtService(jwtConfiguration));
+        services.Configure<JwtConfiguration>(configuration.GetRequiredSection("Jwt"));
+        services.AddScoped<IJwtService, JwtService>();
         return services;
     }
 }
