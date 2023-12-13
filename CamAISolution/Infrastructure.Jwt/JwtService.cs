@@ -2,11 +2,14 @@ using System.Security.Claims;
 using Core.Domain.Entities;
 using Core.Domain.Interfaces.Services;
 using Core.Domain.Models.Configurations;
+using Microsoft.Extensions.Options;
 
 namespace Infrastructure.Jwt;
 
-public class JwtService(JwtConfiguration configuration) : IJwtService
+public class JwtService(IOptions<JwtConfiguration> configuration) : IJwtService
 {
+    private readonly JwtConfiguration JwtConfiguration = configuration.Value;
+
     public Task<string> GenerateToken(Account account)
     {
         throw new NotImplementedException();

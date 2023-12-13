@@ -1,10 +1,8 @@
 ﻿using Core.Domain.Interfaces.Repositories;
-using Grace.DependencyInjection.Attributes;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Repositories;
 
-[ExportByInterfaces]
 public class UnitOfWork(DbContext context) : IUnitOfWork
 {
     private bool disposed = false;

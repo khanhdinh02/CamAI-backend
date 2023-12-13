@@ -2,12 +2,10 @@
 using Core.Application.Exceptions;
 using Core.Domain.Interfaces.Repositories.Base;
 using Core.Domain.Models;
-using Grace.DependencyInjection.Attributes;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Repositories.Base;
 
-[Export(typeof(IRepository<>))]
 public class Repository<T>(DbContext context) : IRepository<T>
     where T : class
 {

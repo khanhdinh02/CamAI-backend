@@ -13,9 +13,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Grace"/>
-        <PackageReference Include="Grace.AspNetCore.Hosting"/>
-        <PackageReference Include="Grace.DependencyInjection.Extensions"/>
         <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer"/>
         <PackageReference Include="Microsoft.EntityFrameworkCore.Tools">
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
