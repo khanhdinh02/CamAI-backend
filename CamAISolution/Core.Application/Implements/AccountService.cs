@@ -20,27 +20,25 @@ public class AccountService(IRepository<Account> accountRepo) : IAccountService
     public async Task<Account> GetAccountById(Guid id)
     {
         //Normal
-        var account = await accountRepo.GetAsync(expression: a => a.Id == id)
-            .ContinueWith(t => t.Result.Values.Count > 0 ? t.Result.Values.First() : throw new NotFoundException(typeof(Account), id, this.GetType()));
+        var accounts = await accountRepo.GetAsync(expression: a => a.Id == id);
 
         //With AccountSearchSpecification
-        //account = await accountRepo.GetAsync(new AccountSearchSpecification(guid: id))
-        //    .ContinueWith(t => t.Result.Values.Count > 0 ? t.Result.Values.First() : throw new NotFoundException(typeof(Account), id, this.GetType()));
+        //accounts = await accountRepo.GetAsync(new AccountSearchSpecification(guid: id));
 
 
         //With AccountByIdRepoSpecification
-        //account = await accountRepo.GetAsync(new AccountByIdRepoSpecification(id))
-        //    .ContinueWith(t => t.Result.Values.Count > 0 ? t.Result.Values.First() : throw new NotFoundException(typeof(Account), id, this.GetType()));
+        //accounts = await accountRepo.GetAsync(new AccountByIdRepoSpecification(id));
 
         //With AcocuntByIdSpecification
-        //account = await accountRepo.GetAsync(expression: new AccountByIdSpecification(id).ToExpression())
-        //    .ContinueWith(t => t.Result.Values.Count > 0 ? t.Result.Values.First() : throw new NotFoundException(typeof(Account), id, this.GetType()));
+        //accounts = await accountRepo.GetAsync(expression: new AccountByIdSpecification(id).ToExpression());
 
         //Use with another Specification which has same type
         //var combined = new AccountByIdSpecification(id).And(new AccountCreatedFromToSpecification(DateTimeHelper.VNDateTime, DateTimeHelper.VNDateTime.AddDays(10))).ToExpression();
-        //account = await accountRepo.GetAsync(expression: combined)
-        //    .ContinueWith(t => t.Result.Values.Count > 0 ? t.Result.Values.First() : throw new NotFoundException(typeof(Account), id, this.GetType()));
+        //accounts = await accountRepo.GetAsync(expression: combined);
 
-        return account;
+        if (accounts.Values.Count <= 0)
+            throw new NotFoundException(typeof(Account), id, this.GetType());
+
+        return accounts.Values.First();
     }
 }
