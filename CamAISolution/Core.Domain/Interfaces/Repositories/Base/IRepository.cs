@@ -1,4 +1,5 @@
-﻿using System.Linq.Expressions;
+using System.Linq.Expressions;
+using Core.Domain.Interfaces.Specifications.Repositories;
 using Core.Domain.Models;
 
 namespace Core.Domain.Interfaces.Repositories.Base;
@@ -6,6 +7,7 @@ namespace Core.Domain.Interfaces.Repositories.Base;
 public interface IRepository<T>
 {
     public Task<T> GetByIdAsync(object key);
+    public Task<PaginationResult<T>> GetAsync(IRepositorySpecification<T>? specification = null);
     public Task<PaginationResult<T>> GetAsync(
         Expression<Func<T, bool>>? expression = null,
         Func<IQueryable<T>, IOrderedQueryable<T>>? orderBy = null,

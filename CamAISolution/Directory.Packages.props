@@ -21,5 +21,11 @@
         <!-- MS SQL Server -->
         <PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.0"/>
         <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.0"/>
+        <!-- NUnit Test -->
+        <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.6.0" />
+        <PackageVersion Include="NUnit" Version="3.13.3" />
+        <PackageVersion Include="NUnit3TestAdapter" Version="4.2.1" />
+        <PackageVersion Include="NUnit.Analyzers" Version="3.6.1" />
+        <PackageVersion Include="coverlet.collector" Version="6.0.0" />
     </ItemGroup>
 </Project>
