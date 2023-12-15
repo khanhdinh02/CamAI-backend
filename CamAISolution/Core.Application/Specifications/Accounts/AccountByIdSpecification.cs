@@ -2,9 +2,15 @@ using System.Linq.Expressions;
 using Core.Domain.Entities;
 
 namespace Core.Application.Specifications.Accounts;
-public class AccountByIdSpecification(Guid id) : Specification<Account>
+public class AccountByIdSpecification : Specification<Account>
 {
-    public override Expression<Func<Account, bool>> ToExpression()
+    private readonly Guid id;
+    public AccountByIdSpecification(Guid id)
+    {
+        this.id = id;
+        expr = GetExpression();
+    }
+    public override Expression<Func<Account, bool>> GetExpression()
     {
         return a => a.Id == id;
     }

@@ -11,7 +11,7 @@ public class AccountByIdRepoSpecification : RepositorySpecification<Account>
 {
     public AccountByIdRepoSpecification(Guid id) : base(a => a.Id == id)
     {
-        AddIncludes("Shops");
-        AddIncludes("Roles");
+        //AddIncludes("Shops");
+        //AddIncludes("Roles");
     }
 }
