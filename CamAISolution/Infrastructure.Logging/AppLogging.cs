@@ -36,12 +36,12 @@ public class AppLogging<T> : IAppLogging<T>
         throw new NotImplementedException();
     }
 
-    public void Warm(string message)
+    public void Warn(string message)
     {
         log.Warning(MessageTemplate(message));
     }
 
-    public Task WarmAsync(string message)
+    public Task WarnAsync(string message)
     {
         throw new NotImplementedException();
     }

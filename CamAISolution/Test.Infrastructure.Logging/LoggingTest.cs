@@ -22,7 +22,7 @@ public class LoggingTest
     [Test]
     public void Log_warm()
     {
-        logger.Warm("Test");
+        logger.Warn("Test");
         Assert.Pass();
     }
 
