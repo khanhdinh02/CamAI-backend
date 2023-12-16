@@ -4,9 +4,9 @@ using Core.Domain;
 
 namespace Host.CamAI.API.Middlewares;
 
-public class GlobalExceptionHandler(RequestDelegate next, IHostEnvironment env, IAppLogging<GlobalExceptionHandler> logger)
+public class GlobalExceptionHandler(RequestDelegate next)
 {
-    public async Task InvokeAsync(HttpContext context)
+    public async Task InvokeAsync(HttpContext context, IHostEnvironment env, IAppLogging<GlobalExceptionHandler> logger)
     {
         try
         {
@@ -14,13 +14,13 @@ public class GlobalExceptionHandler(RequestDelegate next, IHostEnvironment env, 
         }
         catch (Exception ex)
         {
-            await ExceptionHandler(context, ex);
+            logger.Error(ex.Message, ex);
+            await ExceptionHandler(context, ex, env);
         }
     }
 
-    private Task ExceptionHandler(HttpContext context, Exception ex)
+    private Task ExceptionHandler(HttpContext context, Exception ex, IHostEnvironment env)
     {
-        logger.Error(ex.Message, ex);
         context.Response.ContentType = "application/json";
         var statusCode = HttpStatusCode.InternalServerError;
         var message = "Error occured";

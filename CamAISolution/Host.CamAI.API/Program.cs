@@ -13,8 +13,8 @@ builder
     .Services
     .AddRepository(builder.Configuration.GetConnectionString("Default"))
     .AddJwtService(builder.Configuration)
-    .AddServices()
-    .AddLoggingDependencyInjection();
+    .AddLoggingDependencyInjection()
+    .AddServices();
 
 var app = builder.Build();
 

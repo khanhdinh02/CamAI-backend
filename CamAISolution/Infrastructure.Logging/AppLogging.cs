@@ -1,4 +1,4 @@
-﻿using Core.Domain;
+using Core.Domain;
 using Serilog;
 using Serilog.Core;
 
@@ -15,7 +15,7 @@ public class AppLogging<T> : IAppLogging<T>
             .CreateLogger();
     }
 
-    private Func<string, string> MessageTemplate = msg => $"[{nameof(T)}]: {msg}";
+    private Func<string, string> MessageTemplate = msg => $"[{typeof(T).Name}]: {msg}";
     public void Error(string message, Exception? exception)
     {
         log.Error(exception, MessageTemplate(message));
