@@ -1,5 +1,6 @@
 using Core.Domain.Interfaces.Repositories;
 using Core.Domain.Interfaces.Repositories.Base;
+using Infrastructure.Repositories.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -11,7 +12,7 @@ public static class RepositoriesDependencyInjection
     {
         ArgumentNullException.ThrowIfNull(connectionString);
 
-        services.AddDbContext<DbContext>(options =>
+        services.AddDbContext<CamAIContext>(options =>
         {
             options.UseSqlServer(connectionString);
         });

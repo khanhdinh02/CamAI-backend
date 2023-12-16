@@ -1,9 +1,9 @@
-﻿using Core.Domain.Interfaces.Repositories;
-using Microsoft.EntityFrameworkCore;
+using Core.Domain.Interfaces.Repositories;
+using Infrastructure.Repositories.Data;
 
 namespace Infrastructure.Repositories;
 
-public class UnitOfWork(DbContext context) : IUnitOfWork
+public class UnitOfWork(CamAIContext context) : IUnitOfWork
 {
     private bool disposed = false;
 

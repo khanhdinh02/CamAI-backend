@@ -1,15 +1,16 @@
-﻿using System.Linq.Expressions;
+using System.Linq.Expressions;
 using Core.Application.Exceptions;
 using Core.Domain.Interfaces.Repositories.Base;
+using Core.Domain.Interfaces.Specifications.Repositories;
 using Core.Domain.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Repositories.Base;
 
-public class Repository<T>(DbContext context) : IRepository<T>
+public class Repository<T>(DbContext context, IRepositorySpecificationEvaluator<T> specificationEvaluator) : IRepository<T>
     where T : class
 {
-    protected readonly DbContext Context = context;
+    protected DbContext Context => context;
 
     public virtual async Task<T> AddAsync(T entity)
     {
@@ -72,6 +73,23 @@ public class Repository<T>(DbContext context) : IRepository<T>
         paginationResult.PageIndex = pageIndex;
         paginationResult.PageSize = pageSize;
         return paginationResult;
+    }
+
+    public async Task<PaginationResult<T>> GetAsync(IRepositorySpecification<T>? specification = null)
+    {
+        if (specification == null)
+            return new PaginationResult<T>();
+        var query = specificationEvaluator.GetQuery(context.Set<T>(), specification);
+        var count = await query.CountAsync();
+        var data = await query.ToListAsync();
+        //TODO: recalculate the page index
+        return new PaginationResult<T>
+        {
+            PageIndex = 0,
+            PageSize = data.Count,
+            TotalCount = count,
+            Values = data,
+        };
     }
 
     public virtual async Task<T> GetByIdAsync(object key)
