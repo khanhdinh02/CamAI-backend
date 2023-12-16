@@ -1,10 +1,10 @@
 ﻿using System.Net;
 using Core.Application.Exceptions.Base;
-using Serilog;
+using Core.Domain;
 
 namespace Host.CamAI.API.Middlewares;
 
-public class GlobalExceptionHandler(RequestDelegate next, IHostEnvironment env)
+public class GlobalExceptionHandler(RequestDelegate next, IHostEnvironment env, IAppLogging<GlobalExceptionHandler> logger)
 {
     public async Task InvokeAsync(HttpContext context)
     {
@@ -20,7 +20,7 @@ public class GlobalExceptionHandler(RequestDelegate next, IHostEnvironment env)
 
     private Task ExceptionHandler(HttpContext context, Exception ex)
     {
-        Log.Error(ex, ex.Message);
+        logger.Error(ex.Message, ex);
         context.Response.ContentType = "application/json";
         var statusCode = HttpStatusCode.InternalServerError;
         var message = "Error occured";
