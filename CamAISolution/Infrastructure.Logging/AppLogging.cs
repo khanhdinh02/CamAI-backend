@@ -1,24 +1,21 @@
 using Core.Domain;
-using Serilog;
-using Serilog.Core;
+using Microsoft.Extensions.Logging;
 
 namespace Infrastructure.Logging;
 
 public class AppLogging<T> : IAppLogging<T>
 {
-    private readonly Logger log;
+    private readonly ILogger logger;
 
-    public AppLogging()
+    public AppLogging(ILoggerFactory loggerFactory)
     {
-        log = new LoggerConfiguration()
-            .WriteTo.Console()
-            .CreateLogger();
+        logger = loggerFactory.CreateLogger($"{typeof(T).FullName}");
     }
 
     private Func<string, string> MessageTemplate = msg => $"[{typeof(T).Name}]: {msg}";
     public void Error(string message, Exception? exception)
     {
-        log.Error(exception, MessageTemplate(message));
+        logger.LogError(exception, MessageTemplate(message));
     }
 
     public Task ErrorAsync(string message, Exception? exception)
@@ -28,7 +25,7 @@ public class AppLogging<T> : IAppLogging<T>
 
     public void Info(string message)
     {
-        log.Information(MessageTemplate(message));
+        logger.LogInformation(MessageTemplate(message));
     }
 
     public Task InfoAsync(string message)
@@ -38,7 +35,7 @@ public class AppLogging<T> : IAppLogging<T>
 
     public void Warn(string message)
     {
-        log.Warning(MessageTemplate(message));
+        logger.LogWarning(MessageTemplate(message));
     }
 
     public Task WarnAsync(string message)

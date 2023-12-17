@@ -1,15 +1,22 @@
 using Core.Domain;
 using Infrastructure.Logging;
+using Microsoft.Extensions.Logging;
 
 namespace Test.Infrastructure.Logging;
 
 public class LoggingTest
 {
     private IAppLogging<LoggingTest> logger;
+
     [OneTimeSetUp]
     public void Setup()
     {
-        logger = new AppLogging<LoggingTest>();
+        var loggerFactory = LoggerFactory.Create(builder =>
+        {
+            builder.AddConsole();
+            builder.AddDebug();
+        });
+        logger = new AppLogging<LoggingTest>(loggerFactory);
     }
 
     [Test]
