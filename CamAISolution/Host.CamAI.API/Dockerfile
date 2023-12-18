@@ -16,10 +16,10 @@ COPY ["Infrastructure.Logging/Infrastructure.Logging.csproj", "Infrastructure.Lo
 RUN dotnet restore "Host.CamAI.API/Host.CamAI.API.csproj"
 COPY . .
 WORKDIR "/src/Host.CamAI.API"
-RUN dotnet build "Host.CamAI.API.csproj" -c Release -o /app/build
+RUN dotnet build "Host.CamAI.API.csproj" --no-restore -c Release --no-restore -o /app/build 
 
 FROM build AS publish
-RUN dotnet publish "Host.CamAI.API.csproj" -c Release -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "Host.CamAI.API.csproj" -c Release --no-restore -o /app/publish
 
 FROM base AS final
 WORKDIR /app
