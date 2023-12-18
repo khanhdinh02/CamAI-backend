@@ -10,8 +10,8 @@ public class AuthService(IJwtService jwtService) : IAuthService
     {
         /*Account account = await this.GetAccountByUsernameAndPassword(username, password);*/
         Account account = new Account() { Id = new Guid("11223344-5566-7788-99AA-BBCCDDEEFF00"), Username = username, Password = password, Role = "test" };
-        string accessToken = jwtService.GenerateToken(account, TokenType.ACCESS_TOKEN);
-        string refreshToken = jwtService.GenerateToken(account, TokenType.REFRESH_TOKEN);
+        string accessToken = jwtService.GenerateToken(account, TokenType.AccessToken);
+        string refreshToken = jwtService.GenerateToken(account, TokenType.RefreshToken);
         TokenResponseDTO tokenResponseDTO = new TokenResponseDTO() { AccessToken = accessToken, RefreshToken = refreshToken };
         return tokenResponseDTO;
     }

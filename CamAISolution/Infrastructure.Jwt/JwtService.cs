@@ -21,10 +21,9 @@ public class JwtService(IOptions<JwtConfiguration> configuration, IServiceProvid
     public string GenerateToken(Account account, TokenType tokenType)
     {
         int tokenDurationInMinute;
-        bool isAccessTokenType = tokenType == TokenType.ACCESS_TOKEN;
         string jwtSecret;
 
-        if (isAccessTokenType)
+        if (tokenType == TokenType.AccessToken)
         {
             jwtSecret = JwtConfiguration.AccessTokenSecretKey;
             tokenDurationInMinute = 5; // 5 minutes
@@ -59,17 +58,15 @@ public class JwtService(IOptions<JwtConfiguration> configuration, IServiceProvid
 
     public Guid GetCurrentUserId()
     {
-        using (var scope = serviceProvider.CreateScope())
+        using var scope = serviceProvider.CreateScope();
+        var httpContextAccessor = scope.ServiceProvider.GetService<IHttpContextAccessor>();
+        if (httpContextAccessor != null)
         {
-            var httpContextAccessor = serviceProvider.GetService<IHttpContextAccessor>();
-            if (httpContextAccessor != null)
-            {
-                var claimsIdentity = httpContextAccessor.HttpContext?.User;
-                if (claimsIdentity != null &&
-                    claimsIdentity.Claims.Count() != 0 &&
-                    Guid.TryParse(claimsIdentity.Claims.First(c => c.Type == "user_id").Value, out Guid userId))
-                    return userId;
-            }
+            var claimsIdentity = httpContextAccessor.HttpContext?.User;
+            if (claimsIdentity != null &&
+                claimsIdentity.Claims.Count() != 0 &&
+                Guid.TryParse(claimsIdentity.Claims.First(c => c.Type == "user_id").Value, out Guid userId))
+                return userId;
         }
         return Guid.Empty;
     }
@@ -79,17 +76,15 @@ public class JwtService(IOptions<JwtConfiguration> configuration, IServiceProvid
     {
         try
         {
-            Guid userId = Guid.Empty;
-            string userRole = string.Empty;
             var tokenHandler = new JwtSecurityTokenHandler();
-            bool isAccessTokenType = tokenType == TokenType.ACCESS_TOKEN;
 
-            if (token == null || token == string.Empty)
-                throw new UnauthorizeException("Unauthorized");
+            if (token.IsNullOrEmpty())
+                throw new UnauthorizedException("Unauthorized");
             if (!token.StartsWith("Bearer "))
                 throw new BadRequestException("Missing Bearer or wrong type");
 
             token = token.Substring("Bearer ".Length);
+            var key = tokenType == TokenType.AccessToken ? JwtConfiguration.AccessTokenSecretKey : JwtConfiguration.RefreshTokenSecretKey;
             TokenValidationParameters validationParameters = new TokenValidationParameters
             {
                 ValidateIssuer = true,
@@ -98,7 +93,7 @@ public class JwtService(IOptions<JwtConfiguration> configuration, IServiceProvid
                 ValidIssuer = JwtConfiguration.Issuer,
                 ValidAudience = JwtConfiguration.Audience,
                 ValidateLifetime = true,
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(isAccessTokenType ? JwtConfiguration.AccessTokenSecretKey : JwtConfiguration.RefreshTokenSecretKey)),
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key)),
                 ClockSkew = TimeSpan.Zero
             };
 
@@ -106,15 +101,14 @@ public class JwtService(IOptions<JwtConfiguration> configuration, IServiceProvid
 
             var jwtToken = (JwtSecurityToken)validatedToken;
             var userIdClaim = jwtToken.Claims.FirstOrDefault(c => c.Type == "user_id") ?? throw new BadRequestException("Cannot get user id from jwt");
-            userId = Guid.Parse(userIdClaim.Value);
+            Guid userId = Guid.Parse(userIdClaim.Value);
             var roleClaim = jwtToken.Claims.FirstOrDefault(c => c.Type == "user_role") ?? throw new BadRequestException("Cannot get user role from jwt");
-
-            userRole = roleClaim.Value;
+            string userRole = roleClaim.Value;
             if (userRole == string.Empty)
                 throw new BadRequestException("Cannot get user role from jwt");
 
             if (!roles.Contains(userRole))
-                throw new UnauthorizeException("Unauthorized");
+                throw new UnauthorizedException("Unauthorized");
 
             if (userId == Guid.Empty)
                 throw new BadRequestException("Cannot get user id from jwt");
@@ -124,20 +118,17 @@ public class JwtService(IOptions<JwtConfiguration> configuration, IServiceProvid
         catch (SecurityTokenValidationException ex)
         {
             logger.Error(ex.Message, ex);
-            throw new UnauthorizeException("Unauthorized");
+            throw new UnauthorizedException("Unauthorized");
         }
     }
 
     private void AddClaimToUserContext(IEnumerable<Claim> claims)
     {
-        var scope = serviceProvider.CreateScope();
-        var httpContextAccessor = serviceProvider.GetService<IHttpContextAccessor>() ?? throw new NullReferenceException($"Null object of {nameof(IHttpContextAccessor)} type");
+        using var scope = serviceProvider.CreateScope();
+        var httpContextAccessor = scope.ServiceProvider.GetService<IHttpContextAccessor>() ?? throw new NullReferenceException($"Null object of {nameof(IHttpContextAccessor)} type");
         if (httpContextAccessor.HttpContext != null)
         {
-            httpContextAccessor.HttpContext.Items["user_claims"] = claims;
             httpContextAccessor.HttpContext.User.AddIdentity(new ClaimsIdentity(claims));
         }
     }
-
-
 }

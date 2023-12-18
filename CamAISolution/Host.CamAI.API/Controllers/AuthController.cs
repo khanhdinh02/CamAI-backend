@@ -1,6 +1,5 @@
 using Core.Domain.Interfaces.Services;
 using Core.Domain.Models.DTOs.Auths;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Infrastructure.Jwt.Attribute;
 

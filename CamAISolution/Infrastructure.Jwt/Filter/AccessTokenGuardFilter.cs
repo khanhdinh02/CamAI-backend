@@ -21,11 +21,11 @@ public class AccessTokenGuardFilter : IAuthorizationFilter
     {
         string token = context.HttpContext.Request.Headers.Authorization.ToString();
         IJwtService jwtService = context.HttpContext.RequestServices.GetRequiredService(typeof(IJwtService)) as IJwtService ?? throw new NullReferenceException($"Null object of {nameof(IJwtService)} type");
-        bool isTokenValid = jwtService.ValidateToken(token, TokenType.ACCESS_TOKEN, roles);
+        bool isTokenValid = jwtService.ValidateToken(token, TokenType.AccessToken, roles);
         if (!isTokenValid)
         {
             //TODO: CREATE ERROR HANDLER FOR TOKEN INVALID
-            throw new UnauthorizeException("Token invalid");
+            throw new UnauthorizedException("Token invalid");
         }
         // Auth logic
     }
