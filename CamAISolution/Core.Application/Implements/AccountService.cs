@@ -6,9 +6,9 @@ using Core.Domain.Entities;
 using Core.Domain.Interfaces.Repositories.Base;
 using Core.Domain.Interfaces.Services;
 using Core.Domain.Models;
-using Core.Domain.Models.dtos.auth;
+using Core.Domain.Models.DTOs.Auths;
 using Core.Domain.Utilities;
-using Core.Domain.Models.enums;
+using Core.Domain.Models.Enums;
 
 namespace Core.Application.Implements;
 
@@ -47,7 +47,7 @@ public class AccountService() : IAccountService
         throw new NotImplementedException();
     }
 
-    
+
 
 
 

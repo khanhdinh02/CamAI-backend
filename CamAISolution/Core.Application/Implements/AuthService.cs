@@ -1,23 +1,15 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Core.Application.Exceptions;
 using Core.Domain.Entities;
-using Core.Domain.Interfaces.Repositories.Base;
 using Core.Domain.Interfaces.Services;
-using Core.Domain.Models.dtos.auth;
-using Core.Domain.Models.enums;
-using Core.Domain.Utilities;
+using Core.Domain.Models.DTOs.Auths;
+using Core.Domain.Models.Enums;
 
 namespace Core.Application.Implements;
-public class AuthService( IJwtService jwtService) : IAuthService
+public class AuthService(IJwtService jwtService) : IAuthService
 {
-    public async Task<TokenResponseDTO> getTokensByUsernameAndPassword(string username, string password)
+    public async Task<TokenResponseDTO> GetTokensByUsernameAndPassword(string username, string password)
     {
         /*Account account = await this.GetAccountByUsernameAndPassword(username, password);*/
-        Account account = new Account() { Id= new Guid("11223344-5566-7788-99AA-BBCCDDEEFF00"), Username = username, Password= password, Role= "test" };
+        Account account = new Account() { Id = new Guid("11223344-5566-7788-99AA-BBCCDDEEFF00"), Username = username, Password = password, Role = "test" };
         string accessToken = jwtService.GenerateToken(account, TokenType.ACCESS_TOKEN);
         string refreshToken = jwtService.GenerateToken(account, TokenType.REFRESH_TOKEN);
         TokenResponseDTO tokenResponseDTO = new TokenResponseDTO() { AccessToken = accessToken, RefreshToken = refreshToken };
@@ -35,9 +27,9 @@ public class AuthService( IJwtService jwtService) : IAuthService
         return accounts.Values.First();
     }*/
 
-    public Guid test()
+    public Guid Test()
     {
-       return jwtService.GetCurrentUserId();
+        return jwtService.GetCurrentUserId();
     }
 
 }

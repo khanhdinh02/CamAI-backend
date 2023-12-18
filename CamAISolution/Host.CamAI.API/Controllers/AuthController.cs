@@ -1,5 +1,5 @@
 using Core.Domain.Interfaces.Services;
-using Core.Domain.Models.dtos.auth;
+using Core.Domain.Models.DTOs.Auths;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Infrastructure.Jwt.Attribute;
@@ -10,17 +10,16 @@ namespace Host.CamAI.API.Controllers;
 public class AuthController(IAuthService authService) : ControllerBase
 {
     [HttpPost]
-    public async Task<IActionResult> login(LoginDTO loginParams)
+    public async Task<IActionResult> Login(LoginDTO loginParams)
     {
-        TokenResponseDTO tokenResponseDTO = await authService.getTokensByUsernameAndPassword(loginParams.Username, loginParams.Password);
+        TokenResponseDTO tokenResponseDTO = await authService.GetTokensByUsernameAndPassword(loginParams.Username, loginParams.Password);
         return Ok(tokenResponseDTO);
     }
 
     [HttpGet]
     [AccessTokenGuard(roles: ["test", "test2", "test3"])]
-    public async Task<IActionResult> TestATGuard()
+    public IActionResult TestATGuard()
     {
-        
-        return Ok(authService.test());
+        return Ok(authService.Test());
     }
 }

@@ -1,6 +1,6 @@
 using System.Security.Claims;
 using Core.Domain.Entities;
-using Core.Domain.Models.enums;
+using Core.Domain.Models.Enums;
 
 namespace Core.Domain.Interfaces.Services;
 
