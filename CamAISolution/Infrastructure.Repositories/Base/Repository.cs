@@ -3,11 +3,12 @@ using Core.Application.Exceptions;
 using Core.Domain.Interfaces.Repositories.Base;
 using Core.Domain.Interfaces.Specifications.Repositories;
 using Core.Domain.Models;
+using Infrastructure.Repositories.Data;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Repositories.Base;
 
-public class Repository<T>(DbContext context, IRepositorySpecificationEvaluator<T> specificationEvaluator) : IRepository<T>
+public class Repository<T>(CamAIContext context, IRepositorySpecificationEvaluator<T> specificationEvaluator) : IRepository<T>
     where T : class
 {
     protected DbContext Context => context;
