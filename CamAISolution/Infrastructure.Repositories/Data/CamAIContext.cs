@@ -1,3 +1,4 @@
+using Core.Domain;
 using Core.Domain.Entities;
 using Core.Domain.Entities.Base;
 using Core.Domain.Utilities;
@@ -35,4 +36,5 @@ public class CamAIContext : DbContext
         return base.SaveChangesAsync(cancellationToken);
     }
     public virtual DbSet<Account> Accounts { get; set; }
+    public virtual DbSet<Shop> Shops { get; set; }
 }
