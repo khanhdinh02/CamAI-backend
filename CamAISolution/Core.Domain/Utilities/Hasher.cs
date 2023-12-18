@@ -8,7 +8,7 @@ public static class Hasher
     private const int Iterations = 50000;
     private static readonly HashAlgorithmName Algorithm = HashAlgorithmName.SHA256;
 
-    private const char segmentDelimiter = ':';
+    private const char SegmentDelimiter = ':';
 
     public static string Hash(string input)
     {
@@ -21,7 +21,7 @@ public static class Hasher
             KeySize
         );
         return string.Join(
-            segmentDelimiter,
+            SegmentDelimiter,
             Convert.ToHexString(hash),
             Convert.ToHexString(salt),
             Iterations,
@@ -31,7 +31,7 @@ public static class Hasher
 
     public static bool Verify(string input, string hashString)
     {
-        string[] segments = hashString.Split(segmentDelimiter);
+        string[] segments = hashString.Split(SegmentDelimiter);
         byte[] hash = Convert.FromHexString(segments[0]);
         byte[] salt = Convert.FromHexString(segments[1]);
         int iterations = int.Parse(segments[2]);
