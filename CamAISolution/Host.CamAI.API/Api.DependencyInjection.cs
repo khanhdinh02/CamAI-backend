@@ -22,7 +22,7 @@ public static class ApiDependencyInjection
                 Scheme = "Bearer"
             });
             option.AddSecurityRequirement(new OpenApiSecurityRequirement
-        {
+            {
                 {
                     new OpenApiSecurityScheme
                     {
@@ -34,7 +34,7 @@ public static class ApiDependencyInjection
                     },
                     new string[] { }
                 }
-        });
+            });
         });
 
         services.AddAutoMapper(typeof(Program));
