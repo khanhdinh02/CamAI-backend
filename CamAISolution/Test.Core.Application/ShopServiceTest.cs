@@ -1,11 +1,6 @@
-using System.Linq.Expressions;
 using Core.Application;
 using Core.Application.Exceptions;
 using Core.Domain;
-using Core.Domain.Entities;
-using Core.Domain.Interfaces.Repositories;
-using Core.Domain.Models;
-using Moq;
 
 namespace Test.Core.Application;
 
