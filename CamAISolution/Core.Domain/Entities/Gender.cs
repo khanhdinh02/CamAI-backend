@@ -6,5 +6,5 @@ namespace Core.Domain.Entities;
 public class Gender : BaseEntity
 {
     [StringLength(20)]
-    public string Name { get; set; } = string.Empty;
+    public string Name { get; set; } = null!;
 }
