@@ -3,11 +3,11 @@ using Core.Domain.Entities.Base;
 
 namespace Core.Domain.Entities;
 
-public class Ward : BaseEntity
+public class Role : BaseEntity
 {
     [StringLength(50)]
     public string Name { get; set; } = string.Empty;
-    public Guid DistrictId { get; set; }
+    public string? Description { get; set; }
 
-    public virtual District District { get; set; } = null!;
+    public virtual ICollection<AccountRole> AccountRoles { get; set; } = new HashSet<AccountRole>();
 }

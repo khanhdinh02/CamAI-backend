@@ -3,17 +3,14 @@ using Core.Domain.Entities.Base;
 
 namespace Core.Domain.Entities;
 
-public class Shop : BaseEntity
+public class Brand : BaseEntity
 {
     [StringLength(50)]
     public string Name { get; set; } = string.Empty;
+    public string? Email { get; set; }
 
     [StringLength(50)]
     public string? Phone { get; set; }
-    public Guid WardId { get; set; }
-    public string? AddressLine { get; set; }
-
-    public virtual Ward Ward { get; set; } = null!;
 
     [StringLength(20)]
     public string Status { get; set; } = Statuses.Inactive;

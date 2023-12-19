@@ -3,11 +3,8 @@ using Core.Domain.Entities.Base;
 
 namespace Core.Domain.Entities;
 
-public class Ward : BaseEntity
+public class Gender : BaseEntity
 {
-    [StringLength(50)]
+    [StringLength(20)]
     public string Name { get; set; } = string.Empty;
-    public Guid DistrictId { get; set; }
-
-    public virtual District District { get; set; } = null!;
 }
