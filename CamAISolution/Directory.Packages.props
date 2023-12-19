@@ -21,6 +21,7 @@
     <!-- MS SQL Server -->
     <PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.0" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.0" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.0" />
     <!-- In Memory Database -->
     <PackageVersion Include="Microsoft.EntityFrameworkCore.InMemory" Version="8.0.0" />
     <!-- NUnit Test -->
