@@ -13,7 +13,7 @@ public class AccountsController (IAccountService accountService) : ControllerBas
         return Ok(await accountService.GetAccount(guid, from, to, pageSize, pageIndex));
     }
 
-    [HttpGet]
+    [HttpGet("id")]
     public async Task<IActionResult> GetAccountById(Guid id)
     {
         return Ok(await accountService.GetAccountById(id));

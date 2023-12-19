@@ -14,4 +14,5 @@ public class AccountByIdRepoSpecification : RepositorySpecification<Account>
         //AddIncludes("Shops");
         //AddIncludes("Roles");
     }
+
 }

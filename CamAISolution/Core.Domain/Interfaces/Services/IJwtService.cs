@@ -1,11 +1,14 @@
-﻿using System.Security.Claims;
+using System.Security.Claims;
 using Core.Domain.Entities;
+using Core.Domain.Models.enums;
 
 namespace Core.Domain.Interfaces.Services;
 
 public interface IJwtService
 {
-    Task<string> GenerateToken(Account account);
-    Task ValidateToken(string token);
+    string GenerateToken(Account account, TokenType tokenType);
+    bool ValidateToken(string token, TokenType tokenType, string[] roles);
     IList<Claim> GetClaims(string token);
+
+    Guid GetCurrentUserId();
 }

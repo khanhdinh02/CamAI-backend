@@ -1,9 +1,12 @@
 namespace Infrastructure.Jwt;
 
+using System.Text;
 using Core.Domain.Interfaces.Services;
 using Core.Domain.Models.Configurations;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Tokens;
 
 public static class JwtDependencyInjection
 {
@@ -11,6 +14,7 @@ public static class JwtDependencyInjection
     {
         services.Configure<JwtConfiguration>(configuration.GetRequiredSection("Jwt"));
         services.AddScoped<IJwtService, JwtService>();
+       
         return services;
     }
 }
