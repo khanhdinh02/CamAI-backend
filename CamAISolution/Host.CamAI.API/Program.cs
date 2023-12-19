@@ -4,6 +4,7 @@ using Host.CamAI.API;
 using Host.CamAI.API.Middlewares;
 using Infrastructure.Jwt;
 using Infrastructure.Repositories;
+using Infrastructure.Logging;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 
@@ -19,6 +20,7 @@ builder
     .Services
     .AddRepository(builder.Configuration.GetConnectionString("Default"))
     .AddJwtService(builder.Configuration)
+    .AddLoggingDependencyInjection()
     .AddHttpContextAccessor()
     .AddServices();
 

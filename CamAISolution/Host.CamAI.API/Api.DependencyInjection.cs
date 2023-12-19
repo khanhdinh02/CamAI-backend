@@ -7,6 +7,7 @@ public static class ApiDependencyInjection
 {
     public static IServiceCollection AddServices(this IServiceCollection services)
     {
+        services.AddAutoMapper(typeof(Program));
         services.AddScoped<IAccountService, AccountService>();
         services.AddScoped<IAuthService, AuthService>();
         return services;

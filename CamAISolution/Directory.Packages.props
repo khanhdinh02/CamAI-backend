@@ -19,9 +19,10 @@
     <!-- Dependency injection -->
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.0" />
     <!-- MS SQL Server -->
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.InMemory" Version="8.0.0" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.0" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.0" />
+    <!-- In Memory Database -->
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.InMemory" Version="8.0.0" />
     <!-- NUnit Test -->
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.6.0" />
     <PackageVersion Include="NUnit" Version="3.13.3" />
@@ -29,6 +30,9 @@
     <PackageVersion Include="NUnit.Analyzers" Version="3.6.1" />
     <PackageVersion Include="coverlet.collector" Version="6.0.0" />
     <PackageVersion Include="Moq" Version="4.20.69" />
+    <!-- AutoMapper -->
+    <PackageVersion Include="AutoMapper" Version="12.0.1" />
+    <PackageVersion Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.1" />
     <PackageVersion Include="System.IdentityModel.Tokens.Jwt" Version="7.0.3" />
   </ItemGroup>
 </Project>
