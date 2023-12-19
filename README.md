@@ -56,3 +56,18 @@ Defined endpoint of the project.
 - Host.Something.API
 - Host.Something.BlazorWeb
 - ...
+
+## Docker
+
+### Build Image:
+
+**Make sure your Docker Desktop has been started.**  
+In terminal, move to folder that includes Dockerfile (in this project is Host.CamAI.API) then run: 
+```
+docker build -t <img-name> -f Dockerfile .
+```
+When build success run:
+```
+docker run --rm -d -e ASPNETCORE_ENVIRONMENT=Development -p <Machine's port>:<Container's port> <img-name>
+```
+Note: `-e ASPNETCORE_ENVIRONMENT=Development` to run on `Development` stage.
