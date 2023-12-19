@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 
 namespace Core.Domain.Utilities;
+
 public static class Hasher
 {
     private const int SaltSize = 16; // 128 bits
@@ -12,8 +13,8 @@ public static class Hasher
 
     public static string Hash(string input)
     {
-        byte[] salt = RandomNumberGenerator.GetBytes(SaltSize);
-        byte[] hash = Rfc2898DeriveBytes.Pbkdf2(
+        var salt = RandomNumberGenerator.GetBytes(SaltSize);
+        var hash = Rfc2898DeriveBytes.Pbkdf2(
             input,
             salt,
             Iterations,
@@ -31,12 +32,12 @@ public static class Hasher
 
     public static bool Verify(string input, string hashString)
     {
-        string[] segments = hashString.Split(SegmentDelimiter);
-        byte[] hash = Convert.FromHexString(segments[0]);
-        byte[] salt = Convert.FromHexString(segments[1]);
-        int iterations = int.Parse(segments[2]);
+        var segments = hashString.Split(SegmentDelimiter);
+        var hash = Convert.FromHexString(segments[0]);
+        var salt = Convert.FromHexString(segments[1]);
+        var iterations = int.Parse(segments[2]);
         var algorithm = new HashAlgorithmName(segments[3]);
-        byte[] inputHash = Rfc2898DeriveBytes.Pbkdf2(
+        var inputHash = Rfc2898DeriveBytes.Pbkdf2(
             input,
             salt,
             iterations,

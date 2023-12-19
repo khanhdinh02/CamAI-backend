@@ -32,7 +32,7 @@ public static class ApiDependencyInjection
                             Id = "Bearer"
                         }
                     },
-                    new string[] { }
+                    Array.Empty<string>()
                 }
             });
         });

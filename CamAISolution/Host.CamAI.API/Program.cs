@@ -1,4 +1,3 @@
-using Core.Domain.Models.Configurations;
 using Host.CamAI.API;
 using Host.CamAI.API.Middlewares;
 using Infrastructure.Jwt;
@@ -6,8 +5,6 @@ using Infrastructure.Repositories;
 using Infrastructure.Logging;
 
 var builder = WebApplication.CreateBuilder(args).ConfigureSerilog();
-var configuration = builder.Configuration.Get<JwtConfiguration>();
-
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -20,7 +17,6 @@ builder
     .AddLoggingDependencyInjection()
     .AddHttpContextAccessor()
     .AddServices();
-
 
 
 var app = builder.Build();

@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Infrastructure.Jwt.Attribute;
 
 namespace Host.CamAI.API.Controllers;
+
 [Route("api/[controller]")]
 [ApiController]
 public class AuthController(IAuthService authService) : ControllerBase
@@ -11,7 +12,7 @@ public class AuthController(IAuthService authService) : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Login(LoginDTO loginParams)
     {
-        TokenResponseDTO tokenResponseDTO = await authService.GetTokensByUsernameAndPassword(loginParams.Username, loginParams.Password);
+        var tokenResponseDTO = await authService.GetTokensByUsernameAndPassword(loginParams.Username, loginParams.Password);
         return Ok(tokenResponseDTO);
     }
 

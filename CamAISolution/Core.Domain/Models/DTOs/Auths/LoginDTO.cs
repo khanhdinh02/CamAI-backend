@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 
 namespace Core.Domain.Models.DTOs.Auths;
+
 public class LoginDTO
 {
     [Required]
