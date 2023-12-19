@@ -1,6 +1,6 @@
-﻿using Core.Domain.Entities.Base;
+using Core.Domain.Entities.Base;
 
-namespace Core.Domain;
+namespace Core.Domain.Entities;
 
 public class Shop : BaseEntity
 {
