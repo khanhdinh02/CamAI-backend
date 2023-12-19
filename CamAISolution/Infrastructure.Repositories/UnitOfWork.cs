@@ -1,11 +1,17 @@
+using Core.Domain.Entities;
 using Core.Domain.Interfaces.Repositories;
+using Core.Domain.Interfaces.Repositories.Base;
 using Infrastructure.Repositories.Data;
 
 namespace Infrastructure.Repositories;
 
-public class UnitOfWork(CamAIContext context) : IUnitOfWork
+public class UnitOfWork(CamAIContext context, IRepository<Shop> shops, IRepository<Ward> wards) : IUnitOfWork
 {
     private bool disposed = false;
+
+    public IRepository<Shop> Shops => shops;
+
+    public IRepository<Ward> Wards => wards;
 
     public Task BeginTransaction()
     {

@@ -1,4 +1,6 @@
+using Core.Application;
 using Core.Application.Implements;
+using Core.Domain;
 using Core.Domain.Interfaces.Services;
 
 namespace Host.CamAI.API;
@@ -9,6 +11,7 @@ public static class ApiDependencyInjection
     {
         services.AddAutoMapper(typeof(Program));
         services.AddScoped<IAccountService, AccountService>();
+        services.AddScoped<IShopService, ShopService>();
         return services;
     }
 }

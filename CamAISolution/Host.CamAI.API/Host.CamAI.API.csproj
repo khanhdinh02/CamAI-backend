@@ -15,8 +15,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\Infrastructure.Jwt\Infrastructure.Jwt.csproj" />
-        <ProjectReference
-            Include="..\Infrastructure.Repositories\Infrastructure.Repositories.csproj" />
+        <ProjectReference Include="..\Infrastructure.Repositories\Infrastructure.Repositories.csproj" />
         <ProjectReference Include="..\Infrastructure.Logging\Infrastructure.Logging.csproj" />
     </ItemGroup>
 
