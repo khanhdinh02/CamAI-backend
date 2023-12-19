@@ -20,7 +20,6 @@ public class AuthController(IAuthService authService) : ControllerBase
     [AccessTokenGuard(roles: ["test", "test2", "test3"])]
     public async Task<IActionResult> TestATGuard()
     {
-        
         return Ok(authService.test());
     }
 }

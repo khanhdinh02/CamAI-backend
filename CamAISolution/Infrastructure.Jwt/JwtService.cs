@@ -8,7 +8,7 @@ using Core.Application.Exceptions;
 using Core.Domain.Entities;
 using Core.Domain.Interfaces.Services;
 using Core.Domain.Models.Configurations;
-using Core.Domain.Models.enums;
+using Core.Domain.Models.Enums;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -82,6 +82,7 @@ public class JwtService(IOptions<JwtConfiguration> configuration, IServiceProvid
     //TODO: CHECK USER STATUS FROM STORAGE
     public bool ValidateToken(string token, TokenType tokenType, string[] roles)
     {
+      
         try
         {
         Guid userId = Guid.Empty;
@@ -126,9 +127,9 @@ public class JwtService(IOptions<JwtConfiguration> configuration, IServiceProvid
             addClaimToUserContext(jwtToken.Claims);
             return true;
         }
-        catch(SecurityTokenValidationException ex)
+        catch(SecurityTokenValidationException)
         {
-            throw new UnauthorizeException("Unauthorized");
+            return false;
         }
        
     }

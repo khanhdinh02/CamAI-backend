@@ -7,7 +7,7 @@ using Core.Domain.Interfaces.Services;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Filters;
-using Core.Domain.Models.enums;
+using Core.Domain.Models.Enums;
 using Microsoft.AspNetCore.Mvc;
 using Infrastructure.Jwt.Guard;
 using Microsoft.Extensions.DependencyInjection;

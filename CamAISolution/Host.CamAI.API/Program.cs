@@ -1,12 +1,9 @@
-using System.Text;
 using Core.Domain.Models.Configurations;
 using Host.CamAI.API;
 using Host.CamAI.API.Middlewares;
 using Infrastructure.Jwt;
-using Infrastructure.Repositories;
 using Infrastructure.Logging;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
+using Infrastructure.Repositories;
 
 var builder = WebApplication.CreateBuilder(args).ConfigureSerilog();
 var configuration = builder.Configuration.Get<JwtConfiguration>();

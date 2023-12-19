@@ -1,15 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Core.Application.Exceptions;
 using Core.Domain.Entities;
-using Core.Domain.Interfaces.Repositories.Base;
 using Core.Domain.Interfaces.Services;
 using Core.Domain.Models.dtos.auth;
-using Core.Domain.Models.enums;
-using Core.Domain.Utilities;
+using Core.Domain.Models.Enums;
 
 namespace Core.Application.Implements;
 public class AuthService( IJwtService jwtService) : IAuthService
