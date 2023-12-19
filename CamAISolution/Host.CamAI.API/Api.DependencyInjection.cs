@@ -9,6 +9,7 @@ public static class ApiDependencyInjection
     {
         services.AddAutoMapper(typeof(Program));
         services.AddScoped<IAccountService, AccountService>();
+        services.AddScoped<IBrandService, BrandService>();
         return services;
     }
 }

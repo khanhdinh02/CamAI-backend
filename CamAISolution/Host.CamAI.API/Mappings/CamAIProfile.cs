@@ -9,5 +9,9 @@ public class CamAIProfile : Profile
     public CamAIProfile()
     {
         CreateMap<Shop, ShopDto>();
+
+        CreateMap<Brand, BrandDto>();
+        CreateMap<CreateBrandDto, Brand>();
+        CreateMap<UpdateBrandDto, Brand>();
     }
 }
