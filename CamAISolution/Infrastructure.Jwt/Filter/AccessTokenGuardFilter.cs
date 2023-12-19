@@ -1,45 +1,26 @@
+using Core.Application.Exceptions;
 using Core.Domain.Interfaces.Services;
 using Core.Domain.Models.Enums;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Primitives;
-using Core.Application.Exceptions;
+using System.Security.Claims;
 
 namespace Infrastructure.Jwt.Guard;
 
-public class AccessTokenGuardFilter : IAuthorizationFilter
+public class AccessTokenGuardFilter(string[] roles) : IAuthorizationFilter
 {
-
-    readonly string[] roles;
-
-    public AccessTokenGuardFilter(string[] roles)
+    public void OnAuthorization(AuthorizationFilterContext context)
     {
-        this.roles = roles;
-    }
-
-
-    public async void OnAuthorization(AuthorizationFilterContext context)
-    {
-        if (context != null)
+        var token = context.HttpContext.Request.Headers.Authorization.ToString();
+        var jwtService =
+            context.HttpContext.RequestServices.GetRequiredService(typeof(IJwtService)) as IJwtService
+            ?? throw new NullReferenceException($"Null object of {nameof(IJwtService)} type");
+        var isTokenValid = jwtService.ValidateToken(token, TokenType.AccessToken, roles);
+        if (!isTokenValid)
         {
-            
-
-            StringValues token = context.HttpContext.Request.Headers.Authorization;
-            IJwtService? jwtService = context.HttpContext.RequestServices.GetRequiredService(typeof(IJwtService)) as IJwtService;
-            try
-            {
-                bool isTokenValid = jwtService.ValidateToken(token, TokenType.ACCESS_TOKEN, roles);
-            }
-            catch (UnauthorizeException ex)
-            {
-
-            }
-            /*if (!isTokenValid)
-            {
-                //TODO: CREATE ERROR HANDLER FOR TOKEN INVALID
-                throw new UnauthorizeException("test");
-            */}
-            // Auth logic
+            //TODO: CREATE ERROR HANDLER FOR TOKEN INVALID
+            throw new UnauthorizedException("Token invalid");
         }
+        // Auth logic
     }
 }
