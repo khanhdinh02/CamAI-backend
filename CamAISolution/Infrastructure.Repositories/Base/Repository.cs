@@ -92,9 +92,9 @@ public class Repository<T>(CamAIContext context, IRepositorySpecificationEvaluat
         };
     }
 
-    public virtual async Task<T> GetByIdAsync(object key)
+    public virtual async Task<T?> GetByIdAsync(object key)
     {
-        return await Context.Set<T>().FindAsync(key) ?? throw new NotFoundException(typeof(T), key, GetType());
+        return await Context.Set<T>().FindAsync(key);
     }
 
     public virtual T Update(T entity)

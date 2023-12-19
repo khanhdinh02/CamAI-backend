@@ -29,4 +29,18 @@ public class ShopsController(IShopService shopService, IMapper mapper) : Control
         var createdShop = await shopService.CreateShop(mapper.Map<Shop>(shop));
         return Ok(createdShop);
     }
+
+    [HttpPut("{id:guid}")]
+    public async Task<IActionResult> UpdateShop(Guid id, [FromBody] UpdateShopDto shop)
+    {
+        var updatedShop = await shopService.UpdateShop(id, shop);
+        return Ok(mapper.Map<ShopDto>(updatedShop));
+    }
+
+    [HttpDelete("{id:guid}")]
+    public async Task<IActionResult> DeleteShop(Guid id)
+    {
+        await shopService.DeleteShop(id);
+        return Accepted();
+    }
 }

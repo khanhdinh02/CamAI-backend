@@ -43,8 +43,26 @@ public class ShopService(IUnitOfWork unitOfWork, IAppLogging<ShopService> logger
         return shops;
     }
 
-    public Task<Shop> UpdateShop()
+    //TODO: Create Mapper interface and inject to map
+    public async Task<Shop> UpdateShop(Guid id, UpdateShopDto shop)
     {
-        throw new NotImplementedException();
+        var findShop = await unitOfWork.Shops.GetByIdAsync(id);
+        if (findShop is null)
+            throw new NotFoundException(typeof(Shop), id, GetType());
+        if (findShop.Status == Shop.Statuses.Inactive)
+            throw new BadRequestException($"Cannot modified {findShop.Status} shop");
+        findShop.Name = shop.Name ?? findShop.Name;
+        findShop.AddressLine = shop.AddressLine ?? findShop.AddressLine;
+        findShop.Phone = shop.Phone ?? findShop.Phone;
+        if (shop.WardId.HasValue)
+        {
+            var findWard = await unitOfWork.Wards.GetAsync(expression: new WardByIdSepcification(shop.WardId.Value).GetExpression());
+            if (findWard.Values.Count == 0)
+                throw new NotFoundException(typeof(Ward), shop.WardId, GetType());
+            findShop.WardId = shop.WardId.Value;
+        }
+        findShop.Status = shop.Status ?? findShop.Status;
+        await unitOfWork.CompleteAsync();
+        return findShop;
     }
 }

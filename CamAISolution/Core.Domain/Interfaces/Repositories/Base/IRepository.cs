@@ -6,7 +6,7 @@ namespace Core.Domain.Interfaces.Repositories.Base;
 
 public interface IRepository<T>
 {
-    public Task<T> GetByIdAsync(object key);
+    public Task<T?> GetByIdAsync(object key);
     public Task<PaginationResult<T>> GetAsync(IRepositorySpecification<T>? specification = null);
     public Task<PaginationResult<T>> GetAsync(
         Expression<Func<T, bool>>? expression = null,

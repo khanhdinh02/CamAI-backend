@@ -1,4 +1,5 @@
-﻿using Core.Domain.Entities;
+﻿using System.Data.Common;
+using Core.Domain.Entities;
 using Core.Domain.Interfaces.Specifications.Repositories;
 using Core.Domain.Models;
 
@@ -9,6 +10,6 @@ public interface IShopService
     Task<PaginationResult<Shop>> GetShops(SearchShopRequest searchRequest);
     Task<Shop> GetShopById(Guid id);
     Task<Shop> CreateShop(Shop shop);
-    Task<Shop> UpdateShop();
+    Task<Shop> UpdateShop(Guid id, UpdateShopDto shop);
     Task DeleteShop(Guid id);
 }
