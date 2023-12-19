@@ -11,7 +11,7 @@ namespace Test.Infrastrure.Repositories;
 public class RepositorySpecificationTest : BaseSetUpTest
 {
     private IRepository<Account> accountRepository;
-    [OneTimeSetUp]
+    [SetUp]
     public void Setup()
     {
         accountRepository = new Repository<Account>(context, new RepositorySpecificationEvaluator<Account>());

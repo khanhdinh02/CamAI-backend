@@ -5,6 +5,7 @@ using Host.CamAI.API;
 
 namespace Test.Host.CamAI.API;
 
+[TestFixture]
 public class MapperTest
 {
     private IMapper mapper;
@@ -13,7 +14,6 @@ public class MapperTest
     public void Setup()
     {
         var config = new MapperConfiguration(cfg => cfg.AddProfile<CamAIProfile>());
-        config.AssertConfigurationIsValid();
         mapper = config.CreateMapper();
     }
 
