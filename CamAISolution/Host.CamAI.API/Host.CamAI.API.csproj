@@ -5,9 +5,12 @@
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <LangVersion>preview</LangVersion>
+        <UserSecretsId>00692f0f-9d19-407e-8420-a3f5e750ce1b</UserSecretsId>
+        <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" />
         <PackageReference Include="Swashbuckle.AspNetCore" />
         <PackageReference Include="AutoMapper" />
         <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" />
@@ -15,8 +18,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\Infrastructure.Jwt\Infrastructure.Jwt.csproj" />
-        <ProjectReference
-            Include="..\Infrastructure.Repositories\Infrastructure.Repositories.csproj" />
+        <ProjectReference Include="..\Infrastructure.Repositories\Infrastructure.Repositories.csproj" />
         <ProjectReference Include="..\Infrastructure.Logging\Infrastructure.Logging.csproj" />
     </ItemGroup>
 
