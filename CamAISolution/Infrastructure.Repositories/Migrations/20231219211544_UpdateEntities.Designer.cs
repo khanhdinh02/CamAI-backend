@@ -4,6 +4,7 @@ using Infrastructure.Repositories.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Repositories.Migrations
 {
     [DbContext(typeof(CamAIContext))]
-    partial class CamAIContextModelSnapshot : ModelSnapshot
+    [Migration("20231219211544_UpdateEntities")]
+    partial class UpdateEntities
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -89,8 +92,8 @@ namespace Infrastructure.Repositories.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("6a29f2b2-8383-400f-b2e4-55ed0d73baf2"),
-                            AccountStatusId = new Guid("b9a32e8b-b87e-4d30-8b7e-2d0d95ba25d4"),
+                            Id = new Guid("32915eea-c925-40c0-951b-f2e47605d738"),
+                            AccountStatusId = new Guid("10c2d167-a1ff-49c7-bf3a-67036a4fc2b6"),
                             CreatedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Email = "admin@camai.com",
                             ModifiedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
@@ -116,8 +119,8 @@ namespace Infrastructure.Repositories.Migrations
                     b.HasData(
                         new
                         {
-                            AccountId = new Guid("6a29f2b2-8383-400f-b2e4-55ed0d73baf2"),
-                            RoleId = new Guid("445e1e75-a049-4080-b7b9-39f0230db10b")
+                            AccountId = new Guid("32915eea-c925-40c0-951b-f2e47605d738"),
+                            RoleId = new Guid("264d8150-8ca6-4053-aa86-ffa7f48b859d")
                         });
                 });
 
@@ -153,21 +156,14 @@ namespace Infrastructure.Repositories.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("7fe2231d-eff1-49a5-83a0-08b3d24e23c1"),
-                            CreatedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            ModifiedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Name = "New"
-                        },
-                        new
-                        {
-                            Id = new Guid("b9a32e8b-b87e-4d30-8b7e-2d0d95ba25d4"),
+                            Id = new Guid("10c2d167-a1ff-49c7-bf3a-67036a4fc2b6"),
                             CreatedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             ModifiedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Name = "Active"
                         },
                         new
                         {
-                            Id = new Guid("d6b279cf-9db7-48b4-a757-0e794721ffba"),
+                            Id = new Guid("57b3d470-6e56-42ea-86a2-1829d7ca36f3"),
                             CreatedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             ModifiedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Name = "Inactive"
@@ -252,14 +248,14 @@ namespace Infrastructure.Repositories.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("fd8b6d47-8022-4c09-812f-b54057bd4609"),
+                            Id = new Guid("23f91444-f222-415e-a157-0b3025484790"),
                             CreatedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             ModifiedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Name = "Active"
                         },
                         new
                         {
-                            Id = new Guid("db3cd2ca-46a9-4ba6-b45f-495399fbe499"),
+                            Id = new Guid("d9cf4ff4-feea-497d-8b16-aecbe79313b5"),
                             CreatedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             ModifiedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Name = "Inactive"
@@ -327,14 +323,14 @@ namespace Infrastructure.Repositories.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("852936da-122b-4f14-9431-36968d57a30b"),
+                            Id = new Guid("cf4becd3-a873-4442-8125-1aded90ce9fe"),
                             CreatedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             ModifiedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Name = "Male"
                         },
                         new
                         {
-                            Id = new Guid("ecc62be4-c48f-4d58-bfd5-14e4317352a3"),
+                            Id = new Guid("da289168-d11a-4bee-a7ee-0ffdac975da4"),
                             CreatedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             ModifiedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Name = "Female"
@@ -400,35 +396,35 @@ namespace Infrastructure.Repositories.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("445e1e75-a049-4080-b7b9-39f0230db10b"),
+                            Id = new Guid("264d8150-8ca6-4053-aa86-ffa7f48b859d"),
                             CreatedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             ModifiedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Name = "Admin"
                         },
                         new
                         {
-                            Id = new Guid("1f8005b4-a7e0-4829-94b0-55d58e79200f"),
+                            Id = new Guid("3e240936-d048-4c21-87fb-efd7607b68b6"),
                             CreatedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             ModifiedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Name = "Technician"
                         },
                         new
                         {
-                            Id = new Guid("10fc3a85-cb58-45a1-8f6e-e97859ea6a07"),
+                            Id = new Guid("7f1c2c74-1d31-4b4f-a68c-07bafec0b531"),
                             CreatedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             ModifiedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Name = "Brand manager"
                         },
                         new
                         {
-                            Id = new Guid("3950dc6f-d89b-42a1-b6de-cc14ec3755ef"),
+                            Id = new Guid("38b513f0-6259-4662-a77a-f1c11fceb6b0"),
                             CreatedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             ModifiedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Name = "Shop manager"
                         },
                         new
                         {
-                            Id = new Guid("e7e269b9-a273-4212-96f3-063c22cb513e"),
+                            Id = new Guid("a891d4b6-57a5-4456-8fae-1d7d39882815"),
                             CreatedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             ModifiedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Name = "Employee"
@@ -518,14 +514,14 @@ namespace Infrastructure.Repositories.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("7e0ef477-5f32-498b-b1e6-5cb5a79192a4"),
+                            Id = new Guid("866f5ce5-c8d3-4fb6-82f8-ffd6ef368895"),
                             CreatedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             ModifiedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Name = "Active"
                         },
                         new
                         {
-                            Id = new Guid("d49dd0b3-a5c6-4b16-9527-2674578fc05b"),
+                            Id = new Guid("09766616-57b4-4696-9fa8-a2178c93f3f2"),
                             CreatedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             ModifiedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Name = "Inactive"
@@ -567,7 +563,7 @@ namespace Infrastructure.Repositories.Migrations
             modelBuilder.Entity("Core.Domain.Entities.Account", b =>
                 {
                     b.HasOne("Core.Domain.Entities.AccountStatus", "AccountStatus")
-                        .WithMany()
+                        .WithMany("Accounts")
                         .HasForeignKey("AccountStatusId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -619,7 +615,7 @@ namespace Infrastructure.Repositories.Migrations
                         .HasForeignKey("Core.Domain.Entities.Brand", "BrandManagerId");
 
                     b.HasOne("Core.Domain.Entities.BrandStatus", "BrandStatus")
-                        .WithMany()
+                        .WithMany("Brands")
                         .HasForeignKey("BrandStatusId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -647,7 +643,7 @@ namespace Infrastructure.Repositories.Migrations
                         .HasForeignKey("Core.Domain.Entities.Shop", "ShopManagerId");
 
                     b.HasOne("Core.Domain.Entities.ShopStatus", "ShopStatus")
-                        .WithMany()
+                        .WithMany("Shops")
                         .HasForeignKey("ShopStatusId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -685,6 +681,16 @@ namespace Infrastructure.Repositories.Migrations
                     b.Navigation("ManagingShop");
                 });
 
+            modelBuilder.Entity("Core.Domain.Entities.AccountStatus", b =>
+                {
+                    b.Navigation("Accounts");
+                });
+
+            modelBuilder.Entity("Core.Domain.Entities.BrandStatus", b =>
+                {
+                    b.Navigation("Brands");
+                });
+
             modelBuilder.Entity("Core.Domain.Entities.District", b =>
                 {
                     b.Navigation("Wards");
@@ -703,6 +709,11 @@ namespace Infrastructure.Repositories.Migrations
             modelBuilder.Entity("Core.Domain.Entities.Shop", b =>
                 {
                     b.Navigation("Employees");
+                });
+
+            modelBuilder.Entity("Core.Domain.Entities.ShopStatus", b =>
+                {
+                    b.Navigation("Shops");
                 });
 #pragma warning restore 612, 618
         }

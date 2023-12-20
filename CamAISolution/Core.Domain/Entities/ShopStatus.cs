@@ -3,11 +3,9 @@ using Core.Domain.Entities.Base;
 
 namespace Core.Domain.Entities;
 
-public class Role : BaseEntity
+public class ShopStatus : BaseEntity
 {
-    [StringLength(50)]
+    [StringLength(20)]
     public string Name { get; set; } = null!;
     public string? Description { get; set; }
-
-    public virtual ICollection<AccountRole> AccountRoles { get; set; } = new HashSet<AccountRole>();
 }

@@ -42,6 +42,9 @@ public class CamAIContext : DbContext
     public virtual DbSet<Province> Provinces { get; set; }
     public virtual DbSet<District> Districts { get; set; }
     public virtual DbSet<Ward> Wards { get; set; }
+    public virtual DbSet<ShopStatus> ShopStatuses { get; set; }
+    public virtual DbSet<BrandStatus> BrandStatuses { get; set; }
+    public virtual DbSet<AccountStatus> AccountStatuses { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -50,13 +53,25 @@ public class CamAIContext : DbContext
         modelBuilder.Entity<AccountRole>().HasKey(e => new { e.AccountId, e.RoleId });
 
         var adminRole = new Role { Name = "Admin" };
+        var accountStatusActive = new AccountStatus { Name = "Active" };
         var adminAccount = new Account
         {
             Email = "admin@camai.com",
             Password = "9eb622419ace52f259e858a7f2a10743d35e36fe0d22fc2d224c320cbc68d3af",
             Name = "Admin",
-            Status = Account.Statuses.Active
+            AccountStatusId = accountStatusActive.Id
         };
+
+        // AccountStatus=New when account is created and its password have not been changed.
+        modelBuilder
+            .Entity<AccountStatus>()
+            .HasData(new AccountStatus { Name = "New" }, accountStatusActive, new AccountStatus { Name = "Inactive" });
+        modelBuilder
+            .Entity<BrandStatus>()
+            .HasData(new BrandStatus { Name = "Active" }, new BrandStatus { Name = "Inactive" });
+        modelBuilder
+            .Entity<ShopStatus>()
+            .HasData(new ShopStatus { Name = "Active" }, new ShopStatus { Name = "Inactive" });
 
         modelBuilder
             .Entity<Role>()
