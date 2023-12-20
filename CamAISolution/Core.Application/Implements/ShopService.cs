@@ -1,10 +1,8 @@
-﻿using System.Runtime.InteropServices.Marshalling;
-using Core.Application.Exceptions;
+﻿using Core.Application.Exceptions;
 using Core.Application.Specifications.Repositories;
 using Core.Domain;
 using Core.Domain.Entities;
 using Core.Domain.Interfaces.Repositories;
-using Core.Domain.Interfaces.Specifications.Repositories;
 using Core.Domain.Models;
 
 namespace Core.Application;
@@ -13,8 +11,8 @@ public class ShopService(IUnitOfWork unitOfWork, IAppLogging<ShopService> logger
 {
     public async Task<Shop> CreateShop(Shop shop)
     {
-        var findWard = await unitOfWork.Wards.GetAsync(expression: new WardByIdSepcification(shop.WardId).GetExpression());
-        if (findWard.Values.Count == 0)
+        var isFoundWard = await unitOfWork.Wards.IsExisted(shop.WardId);
+        if (isFoundWard)
             throw new NotFoundException(typeof(Ward), shop.WardId, GetType());
         shop.Status = Shop.Statuses.Active;
         shop = await unitOfWork.Shops.AddAsync(shop);
@@ -31,10 +29,10 @@ public class ShopService(IUnitOfWork unitOfWork, IAppLogging<ShopService> logger
 
     public async Task<Shop> GetShopById(Guid id)
     {
-        var find = await unitOfWork.Shops.GetAsync(new ShopByIdRepoSpecfication(id));
-        if (find.Values.Count == 0)
+        var foundShop = await unitOfWork.Shops.GetAsync(new ShopByIdRepoSpecfication(id));
+        if (foundShop.Values.Count == 0)
             throw new NotFoundException(typeof(Shop), id, GetType());
-        return find.Values.First();
+        return foundShop.Values.First();
     }
 
     public async Task<PaginationResult<Shop>> GetShops(SearchShopRequest searchRequest)
@@ -44,25 +42,25 @@ public class ShopService(IUnitOfWork unitOfWork, IAppLogging<ShopService> logger
     }
 
     //TODO: Create Mapper interface and inject to map
-    public async Task<Shop> UpdateShop(Guid id, UpdateShopDto shop)
+    public async Task<Shop> UpdateShop(Guid id, UpdateShopDto shopDto)
     {
-        var findShop = await unitOfWork.Shops.GetByIdAsync(id);
-        if (findShop is null)
+        var foundShop = await unitOfWork.Shops.GetByIdAsync(id);
+        if (foundShop is null)
             throw new NotFoundException(typeof(Shop), id, GetType());
-        if (findShop.Status == Shop.Statuses.Inactive)
-            throw new BadRequestException($"Cannot modified {findShop.Status} shop");
-        findShop.Name = shop.Name ?? findShop.Name;
-        findShop.AddressLine = shop.AddressLine ?? findShop.AddressLine;
-        findShop.Phone = shop.Phone ?? findShop.Phone;
-        if (shop.WardId.HasValue)
+        if (foundShop.Status == Shop.Statuses.Inactive)
+            throw new BadRequestException($"Cannot modified {foundShop.Status} shop");
+        foundShop.Name = shopDto.Name ?? foundShop.Name;
+        foundShop.AddressLine = shopDto.AddressLine ?? foundShop.AddressLine;
+        foundShop.Phone = foundShop.Phone;
+        if (shopDto.WardId.HasValue)
         {
-            var findWard = await unitOfWork.Wards.GetAsync(expression: new WardByIdSepcification(shop.WardId.Value).GetExpression());
-            if (findWard.Values.Count == 0)
-                throw new NotFoundException(typeof(Ward), shop.WardId, GetType());
-            findShop.WardId = shop.WardId.Value;
+            var isFoundWard = await unitOfWork.Wards.IsExisted(shopDto.WardId.Value);
+            if (isFoundWard)
+                throw new NotFoundException(typeof(Ward), shopDto.WardId, GetType());
+            foundShop.WardId = shopDto.WardId.Value;
         }
-        findShop.Status = shop.Status ?? findShop.Status;
+        foundShop.Status = shopDto.Status ?? foundShop.Status;
         await unitOfWork.CompleteAsync();
-        return findShop;
+        return foundShop;
     }
 }

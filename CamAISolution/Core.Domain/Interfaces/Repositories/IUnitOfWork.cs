@@ -9,6 +9,7 @@ public interface IUnitOfWork : IDisposable, IAsyncDisposable
     IRepository<Ward> Wards { get; }
     Task BeginTransaction();
     Task CommitTransaction();
+    Task RollBack();
     int Complete();
     Task<int> CompleteAsync();
 }

@@ -24,16 +24,16 @@ public class ShopsController(IShopService shopService, IMapper mapper) : Control
     }
 
     [HttpPost]
-    public async Task<IActionResult> AddShop(CreateShopDto shop)
+    public async Task<IActionResult> AddShop(CreateShopDto shopDto)
     {
-        var createdShop = await shopService.CreateShop(mapper.Map<Shop>(shop));
+        var createdShop = await shopService.CreateShop(mapper.Map<Shop>(shopDto));
         return Ok(createdShop);
     }
 
     [HttpPut("{id:guid}")]
-    public async Task<IActionResult> UpdateShop(Guid id, [FromBody] UpdateShopDto shop)
+    public async Task<IActionResult> UpdateShop(Guid id, [FromBody] UpdateShopDto shopDto)
     {
-        var updatedShop = await shopService.UpdateShop(id, shop);
+        var updatedShop = await shopService.UpdateShop(id, shopDto);
         return Ok(mapper.Map<ShopDto>(updatedShop));
     }
 
