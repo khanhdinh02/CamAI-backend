@@ -37,7 +37,6 @@ public class CamAIContext : DbContext
     public virtual DbSet<Brand> Brands { get; set; }
     public virtual DbSet<Shop> Shops { get; set; }
     public virtual DbSet<Role> Roles { get; set; }
-    public virtual DbSet<Gender> Genders { get; set; }
     public virtual DbSet<Province> Provinces { get; set; }
     public virtual DbSet<District> Districts { get; set; }
     public virtual DbSet<Ward> Wards { get; set; }
@@ -85,6 +84,7 @@ public class CamAIContext : DbContext
             const string roleId = "RoleId";
             const string accountId = "AccountId";
 
+            builder.Property(e => e.Gender).HasConversion<string>();
             builder.HasData(adminAccount);
             builder
                 .HasMany(e => e.Roles)
@@ -99,7 +99,5 @@ public class CamAIContext : DbContext
                     }
                 );
         });
-
-        modelBuilder.Entity<Gender>().HasData(new Gender { Name = "Male" }, new Gender { Name = "Female" });
     }
 }
