@@ -11,6 +11,5 @@ public class CamAIProfile : Profile
     {
         CreateMap<Shop, ShopDto>();
         CreateMap<CreateShopDto, Shop>();
-        CreateMap<UpdateShopDto, Shop>();
     }
 }
