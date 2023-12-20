@@ -9,5 +9,5 @@ public class Role : BaseEntity
     public string Name { get; set; } = null!;
     public string? Description { get; set; }
 
-    public virtual ICollection<AccountRole> AccountRoles { get; set; } = new HashSet<AccountRole>();
+    public virtual ICollection<Account> Accounts { get; set; } = new HashSet<Account>();
 }

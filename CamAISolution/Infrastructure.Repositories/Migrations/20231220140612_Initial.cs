@@ -46,21 +46,6 @@ namespace Infrastructure.Repositories.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Genders",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
-                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    ModifiedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Timestamp = table.Column<byte[]>(type: "rowversion", rowVersion: true, nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Genders", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Provinces",
                 columns: table => new
                 {
@@ -155,12 +140,12 @@ namespace Infrastructure.Repositories.Migrations
                 name: "AccountRole",
                 columns: table => new
                 {
-                    AccountId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    RoleId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                    RoleId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    AccountId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_AccountRole", x => new { x.AccountId, x.RoleId });
+                    table.PrimaryKey("PK_AccountRole", x => new { x.RoleId, x.AccountId });
                     table.ForeignKey(
                         name: "FK_AccountRole_Roles_RoleId",
                         column: x => x.RoleId,
@@ -177,7 +162,7 @@ namespace Infrastructure.Repositories.Migrations
                     Email = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Password = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Name = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    GenderId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    Gender = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: true),
                     Phone = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
                     Birthday = table.Column<DateOnly>(type: "date", nullable: true),
                     WardId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
@@ -197,11 +182,6 @@ namespace Infrastructure.Repositories.Migrations
                         principalTable: "AccountStatuses",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_Accounts_Genders_GenderId",
-                        column: x => x.GenderId,
-                        principalTable: "Genders",
-                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_Accounts_Wards_WardId",
                         column: x => x.WardId,
@@ -296,15 +276,6 @@ namespace Infrastructure.Repositories.Migrations
                 });
 
             migrationBuilder.InsertData(
-                table: "Genders",
-                columns: new[] { "Id", "CreatedDate", "ModifiedDate", "Name" },
-                values: new object[,]
-                {
-                    { new Guid("08a14c6c-edc4-4c56-aa18-a847d3b39a07"), new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "Male" },
-                    { new Guid("6caf2cdd-6ab8-452c-af23-959c2fbe99c7"), new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "Female" }
-                });
-
-            migrationBuilder.InsertData(
                 table: "Roles",
                 columns: new[] { "Id", "CreatedDate", "Description", "ModifiedDate", "Name" },
                 values: new object[,]
@@ -327,28 +298,23 @@ namespace Infrastructure.Repositories.Migrations
 
             migrationBuilder.InsertData(
                 table: "Accounts",
-                columns: new[] { "Id", "AccountStatusId", "AddressLine", "Birthday", "CreatedDate", "Email", "GenderId", "ModifiedDate", "Name", "Password", "Phone", "WardId", "WorkingShopId" },
-                values: new object[] { new Guid("9a8a504f-e054-4cf3-8a6a-beeed8ada48d"), new Guid("f4468b33-ee55-4e34-898d-7ec37db36ca0"), null, null, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "admin@camai.com", null, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "Admin", "9eb622419ace52f259e858a7f2a10743d35e36fe0d22fc2d224c320cbc68d3af", null, null, null });
+                columns: new[] { "Id", "AccountStatusId", "AddressLine", "Birthday", "CreatedDate", "Email", "Gender", "ModifiedDate", "Name", "Password", "Phone", "WardId", "WorkingShopId" },
+                values: new object[] { new Guid("3227e76d-8693-4911-93d4-8ea837985868"), new Guid("f4468b33-ee55-4e34-898d-7ec37db36ca0"), null, null, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "admin@camai.com", null, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "Admin", "9eb622419ace52f259e858a7f2a10743d35e36fe0d22fc2d224c320cbc68d3af", null, null, null });
 
             migrationBuilder.InsertData(
                 table: "AccountRole",
                 columns: new[] { "AccountId", "RoleId" },
-                values: new object[] { new Guid("9a8a504f-e054-4cf3-8a6a-beeed8ada48d"), new Guid("2381d027-707a-41ee-b53a-26e967b78d75") });
+                values: new object[] { new Guid("3227e76d-8693-4911-93d4-8ea837985868"), new Guid("2381d027-707a-41ee-b53a-26e967b78d75") });
 
             migrationBuilder.CreateIndex(
-                name: "IX_AccountRole_RoleId",
+                name: "IX_AccountRole_AccountId",
                 table: "AccountRole",
-                column: "RoleId");
+                column: "AccountId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Accounts_AccountStatusId",
                 table: "Accounts",
                 column: "AccountStatusId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Accounts_GenderId",
-                table: "Accounts",
-                column: "GenderId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Accounts_WardId",
@@ -439,9 +405,6 @@ namespace Infrastructure.Repositories.Migrations
 
             migrationBuilder.DropTable(
                 name: "AccountStatuses");
-
-            migrationBuilder.DropTable(
-                name: "Genders");
 
             migrationBuilder.DropTable(
                 name: "Shops");

@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Repositories.Migrations
 {
     [DbContext(typeof(CamAIContext))]
-    [Migration("20231220131055_Initial")]
+    [Migration("20231220140612_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -24,6 +24,28 @@ namespace Infrastructure.Repositories.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("AccountRole", b =>
+                {
+                    b.Property<Guid>("RoleId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("AccountId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("RoleId", "AccountId");
+
+                    b.HasIndex("AccountId");
+
+                    b.ToTable("AccountRole");
+
+                    b.HasData(
+                        new
+                        {
+                            RoleId = new Guid("2381d027-707a-41ee-b53a-26e967b78d75"),
+                            AccountId = new Guid("3227e76d-8693-4911-93d4-8ea837985868")
+                        });
+                });
 
             modelBuilder.Entity("Core.Domain.Entities.Account", b =>
                 {
@@ -47,8 +69,9 @@ namespace Infrastructure.Repositories.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid?>("GenderId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<string>("Gender")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
 
                     b.Property<DateTime>("ModifiedDate")
                         .HasColumnType("datetime2");
@@ -81,8 +104,6 @@ namespace Infrastructure.Repositories.Migrations
 
                     b.HasIndex("AccountStatusId");
 
-                    b.HasIndex("GenderId");
-
                     b.HasIndex("WardId");
 
                     b.HasIndex("WorkingShopId");
@@ -92,35 +113,13 @@ namespace Infrastructure.Repositories.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("9a8a504f-e054-4cf3-8a6a-beeed8ada48d"),
+                            Id = new Guid("3227e76d-8693-4911-93d4-8ea837985868"),
                             AccountStatusId = new Guid("f4468b33-ee55-4e34-898d-7ec37db36ca0"),
                             CreatedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Email = "admin@camai.com",
                             ModifiedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Name = "Admin",
                             Password = "9eb622419ace52f259e858a7f2a10743d35e36fe0d22fc2d224c320cbc68d3af"
-                        });
-                });
-
-            modelBuilder.Entity("Core.Domain.Entities.AccountRole", b =>
-                {
-                    b.Property<Guid>("AccountId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("RoleId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("AccountId", "RoleId");
-
-                    b.HasIndex("RoleId");
-
-                    b.ToTable("AccountRole");
-
-                    b.HasData(
-                        new
-                        {
-                            AccountId = new Guid("9a8a504f-e054-4cf3-8a6a-beeed8ada48d"),
-                            RoleId = new Guid("2381d027-707a-41ee-b53a-26e967b78d75")
                         });
                 });
 
@@ -299,49 +298,6 @@ namespace Infrastructure.Repositories.Migrations
                     b.HasIndex("ProvinceId");
 
                     b.ToTable("Districts");
-                });
-
-            modelBuilder.Entity("Core.Domain.Entities.Gender", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("ModifiedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<byte[]>("Timestamp")
-                        .IsConcurrencyToken()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Genders");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("08a14c6c-edc4-4c56-aa18-a847d3b39a07"),
-                            CreatedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            ModifiedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Name = "Male"
-                        },
-                        new
-                        {
-                            Id = new Guid("6caf2cdd-6ab8-452c-af23-959c2fbe99c7"),
-                            CreatedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            ModifiedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Name = "Female"
-                        });
                 });
 
             modelBuilder.Entity("Core.Domain.Entities.Province", b =>
@@ -567,6 +523,21 @@ namespace Infrastructure.Repositories.Migrations
                     b.ToTable("Wards");
                 });
 
+            modelBuilder.Entity("AccountRole", b =>
+                {
+                    b.HasOne("Core.Domain.Entities.Account", null)
+                        .WithMany()
+                        .HasForeignKey("AccountId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Core.Domain.Entities.Role", null)
+                        .WithMany()
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Core.Domain.Entities.Account", b =>
                 {
                     b.HasOne("Core.Domain.Entities.AccountStatus", "AccountStatus")
@@ -574,10 +545,6 @@ namespace Infrastructure.Repositories.Migrations
                         .HasForeignKey("AccountStatusId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.HasOne("Core.Domain.Entities.Gender", "Gender")
-                        .WithMany()
-                        .HasForeignKey("GenderId");
 
                     b.HasOne("Core.Domain.Entities.Ward", "Ward")
                         .WithMany()
@@ -589,30 +556,9 @@ namespace Infrastructure.Repositories.Migrations
 
                     b.Navigation("AccountStatus");
 
-                    b.Navigation("Gender");
-
                     b.Navigation("Ward");
 
                     b.Navigation("WorkingShop");
-                });
-
-            modelBuilder.Entity("Core.Domain.Entities.AccountRole", b =>
-                {
-                    b.HasOne("Core.Domain.Entities.Account", "Account")
-                        .WithMany("AccountRoles")
-                        .HasForeignKey("AccountId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Core.Domain.Entities.Role", "Role")
-                        .WithMany("AccountRoles")
-                        .HasForeignKey("RoleId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Account");
-
-                    b.Navigation("Role");
                 });
 
             modelBuilder.Entity("Core.Domain.Entities.Brand", b =>
@@ -681,8 +627,6 @@ namespace Infrastructure.Repositories.Migrations
 
             modelBuilder.Entity("Core.Domain.Entities.Account", b =>
                 {
-                    b.Navigation("AccountRoles");
-
                     b.Navigation("Brand");
 
                     b.Navigation("ManagingShop");
@@ -696,11 +640,6 @@ namespace Infrastructure.Repositories.Migrations
             modelBuilder.Entity("Core.Domain.Entities.Province", b =>
                 {
                     b.Navigation("Districts");
-                });
-
-            modelBuilder.Entity("Core.Domain.Entities.Role", b =>
-                {
-                    b.Navigation("AccountRoles");
                 });
 
             modelBuilder.Entity("Core.Domain.Entities.Shop", b =>
