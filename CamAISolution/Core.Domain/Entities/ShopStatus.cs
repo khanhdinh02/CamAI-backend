@@ -8,6 +8,4 @@ public class ShopStatus : BaseEntity
     [StringLength(20)]
     public string Name { get; set; } = null!;
     public string? Description { get; set; }
-
-    public virtual ICollection<Shop> Shops { get; set; } = new HashSet<Shop>();
 }
