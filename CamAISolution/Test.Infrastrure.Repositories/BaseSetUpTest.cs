@@ -1,7 +1,12 @@
 using Core.Domain.Entities;
+using Core.Domain.Interfaces.Repositories;
 using Core.Domain.Utilities;
+using Infrastructure.Repositories;
+using Infrastructure.Repositories.Base;
 using Infrastructure.Repositories.Data;
+using Infrastructure.Repositories.Specifications;
 using Microsoft.EntityFrameworkCore;
+using Moq;
 
 namespace Test.Infrastrure.Repositories;
 
@@ -9,6 +14,7 @@ namespace Test.Infrastrure.Repositories;
 public class BaseSetUpTest
 {
     protected CamAIContext context;
+    protected IUnitOfWork unitOfWork;
     [OneTimeSetUp]
     public async Task BaseSetUp()
     {
@@ -16,6 +22,8 @@ public class BaseSetUpTest
             .UseInMemoryDatabase(Guid.NewGuid().ToString())
             .Options;
         context = new CamAIContext(options);
+        var serviceProvider = new Mock<IServiceProvider>();
+        unitOfWork = new UnitOfWork(context, serviceProvider.Object);
         var listAccount = new List<Account>
         {
             new Account
@@ -39,7 +47,22 @@ public class BaseSetUpTest
                 CreatedDate = DateTimeHelper.VNDateTime.AddDays(-10)
             }
         };
+        var ward = new Ward
+        {
+            Id = Guid.Parse("cd147fbd-a6e7-4ae4-b0ac-119651b710c9"),
+            CreatedDate = DateTimeHelper.VNDateTime.AddDays(-10)
+        };
+        var shop = new Shop
+        {
+            Id = Guid.Parse("cd147fbd-a6e7-4ae4-b0ac-119651b710c9"),
+            AddressLine = "test",
+            Name = "Test",
+            Phone = "test",
+            WardId = Guid.Parse("cd147fbd-a6e7-4ae4-b0ac-119651b710c9")
+        };
+        await context.Set<Ward>().AddAsync(ward);
         await context.Set<Account>().AddRangeAsync(listAccount);
+        await context.Set<Shop>().AddAsync(shop);
         await context.SaveChangesAsync();
     }
 }

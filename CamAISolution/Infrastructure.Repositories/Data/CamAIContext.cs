@@ -1,3 +1,4 @@
+using Core.Domain;
 using Core.Domain.Entities;
 using Core.Domain.Entities.Base;
 using Core.Domain.Utilities;
@@ -37,43 +38,77 @@ public class CamAIContext : DbContext
     public virtual DbSet<Brand> Brands { get; set; }
     public virtual DbSet<Shop> Shops { get; set; }
     public virtual DbSet<Role> Roles { get; set; }
-    public virtual DbSet<AccountRole> AccountRoles { get; set; }
-    public virtual DbSet<Gender> Genders { get; set; }
     public virtual DbSet<Province> Provinces { get; set; }
     public virtual DbSet<District> Districts { get; set; }
     public virtual DbSet<Ward> Wards { get; set; }
+    public virtual DbSet<ShopStatus> ShopStatuses { get; set; }
+    public virtual DbSet<BrandStatus> BrandStatuses { get; set; }
+    public virtual DbSet<AccountStatus> AccountStatuses { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
 
-        modelBuilder.Entity<AccountRole>().HasKey(e => new { e.AccountId, e.RoleId });
-
-        var adminRole = new Role { Name = "Admin" };
+        var adminRole = new Role { Id = AppConstant.RoleAdmin, Name = "Admin" };
+        var accountStatusActive = new AccountStatus { Id = AppConstant.AccountActiveStatus, Name = "Active" };
         var adminAccount = new Account
         {
             Email = "admin@camai.com",
             Password = "9eb622419ace52f259e858a7f2a10743d35e36fe0d22fc2d224c320cbc68d3af",
             Name = "Admin",
-            Status = Account.Statuses.Active
+            AccountStatusId = accountStatusActive.Id
         };
+
+        // AccountStatus=New when account is created and its password have not been changed.
+        modelBuilder
+            .Entity<AccountStatus>()
+            .HasData(
+                new AccountStatus { Id = AppConstant.AccountNewStatus, Name = "New" },
+                accountStatusActive,
+                new AccountStatus { Id = AppConstant.AccountInactiveStatus, Name = "Inactive" }
+            );
+        modelBuilder
+            .Entity<BrandStatus>()
+            .HasData(
+                new BrandStatus { Id = AppConstant.BrandActiveStatus, Name = "Active" },
+                new BrandStatus { Id = AppConstant.BrandInactiveStatus, Name = "Inactive" }
+            );
+        modelBuilder
+            .Entity<ShopStatus>()
+            .HasData(
+                new ShopStatus { Id = AppConstant.ShopActiveStatus, Name = "Active" },
+                new ShopStatus { Id = AppConstant.ShopInactiveStatus, Name = "Inactive" }
+            );
 
         modelBuilder
             .Entity<Role>()
             .HasData(
                 adminRole,
-                new Role { Name = "Technician" },
-                new Role { Name = "Brand manager" },
-                new Role { Name = "Shop manager" },
-                new Role { Name = "Employee" }
+                new Role { Id = AppConstant.RoleTenician, Name = "Technician" },
+                new Role { Id = AppConstant.RoleBrandManager, Name = "Brand manager" },
+                new Role { Id = AppConstant.RoleShopManager, Name = "Shop manager" },
+                new Role { Id = AppConstant.RoleEmployee, Name = "Employee" }
             );
 
-        modelBuilder.Entity<Account>().HasData(adminAccount);
+        modelBuilder.Entity<Account>(builder =>
+        {
+            const string roleId = "RoleId";
+            const string accountId = "AccountId";
 
-        modelBuilder
-            .Entity<AccountRole>()
-            .HasData(new AccountRole { AccountId = adminAccount.Id, RoleId = adminRole.Id });
-
-        modelBuilder.Entity<Gender>().HasData(new Gender { Name = "Male" }, new Gender { Name = "Female" });
+            builder.Property(e => e.Gender).HasConversion<string>();
+            builder.HasData(adminAccount);
+            builder
+                .HasMany(e => e.Roles)
+                .WithMany(e => e.Accounts)
+                .UsingEntity(
+                    r => r.HasOne(typeof(Role)).WithMany().HasForeignKey(roleId),
+                    l => l.HasOne(typeof(Account)).WithMany().HasForeignKey(accountId),
+                    je =>
+                    {
+                        je.HasKey(roleId, accountId);
+                        je.HasData(new { AccountId = adminAccount.Id, RoleId = adminRole.Id });
+                    }
+                );
+        });
     }
 }

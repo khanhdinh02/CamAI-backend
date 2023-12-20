@@ -3,8 +3,9 @@ using Core.Domain.Entities.Base;
 
 namespace Core.Domain.Entities;
 
-public class Gender : BaseEntity
+public class BrandStatus : BaseEntity
 {
     [StringLength(20)]
-    public string Name { get; set; } = string.Empty;
+    public string Name { get; set; } = null!;
+    public string? Description { get; set; }
 }

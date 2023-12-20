@@ -28,14 +28,14 @@ namespace Infrastructure.Repositories.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid>("AccountStatusId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<string>("AddressLine")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateOnly?>("Birthday")
                         .HasColumnType("date");
-
-                    b.Property<Guid?>("BrandId")
-                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
@@ -44,8 +44,9 @@ namespace Infrastructure.Repositories.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid?>("GenderId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<string>("Gender")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
 
                     b.Property<DateTime>("ModifiedDate")
                         .HasColumnType("datetime2");
@@ -63,10 +64,56 @@ namespace Infrastructure.Repositories.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<Guid?>("ShopId")
+                    b.Property<byte[]>("Timestamp")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<Guid?>("WardId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("Status")
+                    b.Property<Guid?>("WorkingShopId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AccountStatusId");
+
+                    b.HasIndex("WardId");
+
+                    b.HasIndex("WorkingShopId");
+
+                    b.ToTable("Accounts");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("9a8a504f-e054-4cf3-8a6a-beeed8ada48d"),
+                            AccountStatusId = new Guid("f4468b33-ee55-4e34-898d-7ec37db36ca0"),
+                            CreatedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Email = "admin@camai.com",
+                            ModifiedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Name = "Admin",
+                            Password = "9eb622419ace52f259e858a7f2a10743d35e36fe0d22fc2d224c320cbc68d3af"
+                        });
+                });
+
+            modelBuilder.Entity("Core.Domain.Entities.AccountStatus", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("ModifiedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
@@ -76,53 +123,31 @@ namespace Infrastructure.Repositories.Migrations
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("rowversion");
 
-                    b.Property<Guid?>("WardId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.HasKey("Id");
 
-                    b.HasIndex("BrandId");
-
-                    b.HasIndex("GenderId");
-
-                    b.HasIndex("ShopId");
-
-                    b.HasIndex("WardId");
-
-                    b.ToTable("Accounts");
+                    b.ToTable("AccountStatuses");
 
                     b.HasData(
                         new
                         {
-                            Id = new Guid("49a589fc-c5be-4f75-b48a-7f6408ea46ba"),
+                            Id = new Guid("3a62b31e-ea0f-4b8d-8f37-8bb9da899c23"),
                             CreatedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Email = "admin@camai.com",
                             ModifiedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Name = "Admin",
-                            Password = "9eb622419ace52f259e858a7f2a10743d35e36fe0d22fc2d224c320cbc68d3af",
-                            Status = "Active"
-                        });
-                });
-
-            modelBuilder.Entity("Core.Domain.Entities.AccountRole", b =>
-                {
-                    b.Property<Guid>("AccountId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("RoleId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("AccountId", "RoleId");
-
-                    b.HasIndex("RoleId");
-
-                    b.ToTable("AccountRole");
-
-                    b.HasData(
+                            Name = "New"
+                        },
                         new
                         {
-                            AccountId = new Guid("49a589fc-c5be-4f75-b48a-7f6408ea46ba"),
-                            RoleId = new Guid("4b17a852-9448-49b6-9e2a-f8722836574e")
+                            Id = new Guid("f4468b33-ee55-4e34-898d-7ec37db36ca0"),
+                            CreatedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            ModifiedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Name = "Active"
+                        },
+                        new
+                        {
+                            Id = new Guid("daf87982-2b47-494c-9266-28c6679c77f0"),
+                            CreatedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            ModifiedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Name = "Inactive"
                         });
                 });
 
@@ -130,6 +155,12 @@ namespace Infrastructure.Repositories.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("BrandManagerId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("BrandStatusId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreatedDate")
@@ -150,7 +181,38 @@ namespace Infrastructure.Repositories.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<string>("Status")
+                    b.Property<byte[]>("Timestamp")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BrandManagerId")
+                        .IsUnique()
+                        .HasFilter("[BrandManagerId] IS NOT NULL");
+
+                    b.HasIndex("BrandStatusId");
+
+                    b.ToTable("Brands");
+                });
+
+            modelBuilder.Entity("Core.Domain.Entities.BrandStatus", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("ModifiedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
@@ -162,7 +224,23 @@ namespace Infrastructure.Repositories.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Brands");
+                    b.ToTable("BrandStatuses");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("79f5bf99-dd0c-4787-924b-c7f175615054"),
+                            CreatedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            ModifiedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Name = "Active"
+                        },
+                        new
+                        {
+                            Id = new Guid("cc835da5-7954-4873-a029-4b472542bb3a"),
+                            CreatedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            ModifiedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Name = "Inactive"
+                        });
                 });
 
             modelBuilder.Entity("Core.Domain.Entities.District", b =>
@@ -195,49 +273,6 @@ namespace Infrastructure.Repositories.Migrations
                     b.HasIndex("ProvinceId");
 
                     b.ToTable("Districts");
-                });
-
-            modelBuilder.Entity("Core.Domain.Entities.Gender", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("ModifiedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<byte[]>("Timestamp")
-                        .IsConcurrencyToken()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Genders");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("c48e345a-88a9-488b-9646-f2b1f418d389"),
-                            CreatedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            ModifiedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Name = "Male"
-                        },
-                        new
-                        {
-                            Id = new Guid("4e33638d-4580-4b7c-adfe-f788694f7dd3"),
-                            CreatedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            ModifiedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Name = "Female"
-                        });
                 });
 
             modelBuilder.Entity("Core.Domain.Entities.Province", b =>
@@ -299,35 +334,35 @@ namespace Infrastructure.Repositories.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("4b17a852-9448-49b6-9e2a-f8722836574e"),
+                            Id = new Guid("2381d027-707a-41ee-b53a-26e967b78d75"),
                             CreatedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             ModifiedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Name = "Admin"
                         },
                         new
                         {
-                            Id = new Guid("ccfe6a28-cf35-4821-a220-6d0c7e51f8f9"),
+                            Id = new Guid("658c20e3-b4e8-46ce-a8b7-a9e1860c9ff8"),
                             CreatedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             ModifiedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Name = "Technician"
                         },
                         new
                         {
-                            Id = new Guid("8b09965b-e19f-4f17-aa8f-63a9350dfcf4"),
+                            Id = new Guid("80bf167e-7411-4727-a508-76415eb7bfbd"),
                             CreatedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             ModifiedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Name = "Brand manager"
                         },
                         new
                         {
-                            Id = new Guid("c1753259-efa3-4fa6-bb8b-126f5cb19f3e"),
+                            Id = new Guid("e991447e-723d-4a21-9779-7b0a6ea33998"),
                             CreatedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             ModifiedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Name = "Shop manager"
                         },
                         new
                         {
-                            Id = new Guid("dd454529-580a-4889-bcb7-ac0c819725e3"),
+                            Id = new Guid("c6e17622-a67a-4bf9-b12c-2761d4768d85"),
                             CreatedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             ModifiedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Name = "Employee"
@@ -358,10 +393,11 @@ namespace Infrastructure.Repositories.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                    b.Property<Guid?>("ShopManagerId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ShopStatusId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<byte[]>("Timestamp")
                         .IsConcurrencyToken()
@@ -373,9 +409,61 @@ namespace Infrastructure.Repositories.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("ShopManagerId")
+                        .IsUnique()
+                        .HasFilter("[ShopManagerId] IS NOT NULL");
+
+                    b.HasIndex("ShopStatusId");
+
                     b.HasIndex("WardId");
 
                     b.ToTable("Shops");
+                });
+
+            modelBuilder.Entity("Core.Domain.Entities.ShopStatus", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("ModifiedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<byte[]>("Timestamp")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ShopStatuses");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("1b4cf615-ffe6-4416-9450-42a11554db10"),
+                            CreatedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            ModifiedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Name = "Active"
+                        },
+                        new
+                        {
+                            Id = new Guid("9eb5c65c-3a69-459e-9ff5-1f0c15353c57"),
+                            CreatedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            ModifiedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Name = "Inactive"
+                        });
                 });
 
             modelBuilder.Entity("Core.Domain.Entities.Ward", b =>
@@ -410,50 +498,59 @@ namespace Infrastructure.Repositories.Migrations
                     b.ToTable("Wards");
                 });
 
+            modelBuilder.Entity("AccountRole", b =>
+                {
+                    b.HasOne("Core.Domain.Entities.Account", null)
+                        .WithMany()
+                        .HasForeignKey("AccountId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Core.Domain.Entities.Role", null)
+                        .WithMany()
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Core.Domain.Entities.Account", b =>
                 {
-                    b.HasOne("Core.Domain.Entities.Brand", "Brand")
+                    b.HasOne("Core.Domain.Entities.AccountStatus", "AccountStatus")
                         .WithMany()
-                        .HasForeignKey("BrandId");
-
-                    b.HasOne("Core.Domain.Entities.Gender", "Gender")
-                        .WithMany()
-                        .HasForeignKey("GenderId");
-
-                    b.HasOne("Core.Domain.Entities.Shop", "Shop")
-                        .WithMany()
-                        .HasForeignKey("ShopId");
+                        .HasForeignKey("AccountStatusId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("Core.Domain.Entities.Ward", "Ward")
                         .WithMany()
                         .HasForeignKey("WardId");
 
-                    b.Navigation("Brand");
+                    b.HasOne("Core.Domain.Entities.Shop", "WorkingShop")
+                        .WithMany("Employees")
+                        .HasForeignKey("WorkingShopId");
 
-                    b.Navigation("Gender");
-
-                    b.Navigation("Shop");
+                    b.Navigation("AccountStatus");
 
                     b.Navigation("Ward");
+
+                    b.Navigation("WorkingShop");
                 });
 
-            modelBuilder.Entity("Core.Domain.Entities.AccountRole", b =>
+            modelBuilder.Entity("Core.Domain.Entities.Brand", b =>
                 {
-                    b.HasOne("Core.Domain.Entities.Account", "Account")
-                        .WithMany("AccountRoles")
-                        .HasForeignKey("AccountId")
+                    b.HasOne("Core.Domain.Entities.Account", "BrandManager")
+                        .WithOne("Brand")
+                        .HasForeignKey("Core.Domain.Entities.Brand", "BrandManagerId");
+
+                    b.HasOne("Core.Domain.Entities.BrandStatus", "BrandStatus")
+                        .WithMany()
+                        .HasForeignKey("BrandStatusId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Core.Domain.Entities.Role", "Role")
-                        .WithMany("AccountRoles")
-                        .HasForeignKey("RoleId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.Navigation("BrandManager");
 
-                    b.Navigation("Account");
-
-                    b.Navigation("Role");
+                    b.Navigation("BrandStatus");
                 });
 
             modelBuilder.Entity("Core.Domain.Entities.District", b =>
@@ -469,11 +566,25 @@ namespace Infrastructure.Repositories.Migrations
 
             modelBuilder.Entity("Core.Domain.Entities.Shop", b =>
                 {
+                    b.HasOne("Core.Domain.Entities.Account", "ShopManager")
+                        .WithOne("ManagingShop")
+                        .HasForeignKey("Core.Domain.Entities.Shop", "ShopManagerId");
+
+                    b.HasOne("Core.Domain.Entities.ShopStatus", "ShopStatus")
+                        .WithMany()
+                        .HasForeignKey("ShopStatusId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("Core.Domain.Entities.Ward", "Ward")
                         .WithMany()
                         .HasForeignKey("WardId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("ShopManager");
+
+                    b.Navigation("ShopStatus");
 
                     b.Navigation("Ward");
                 });
@@ -491,7 +602,9 @@ namespace Infrastructure.Repositories.Migrations
 
             modelBuilder.Entity("Core.Domain.Entities.Account", b =>
                 {
-                    b.Navigation("AccountRoles");
+                    b.Navigation("Brand");
+
+                    b.Navigation("ManagingShop");
                 });
 
             modelBuilder.Entity("Core.Domain.Entities.District", b =>
@@ -504,9 +617,9 @@ namespace Infrastructure.Repositories.Migrations
                     b.Navigation("Districts");
                 });
 
-            modelBuilder.Entity("Core.Domain.Entities.Role", b =>
+            modelBuilder.Entity("Core.Domain.Entities.Shop", b =>
                 {
-                    b.Navigation("AccountRoles");
+                    b.Navigation("Employees");
                 });
 #pragma warning restore 612, 618
         }

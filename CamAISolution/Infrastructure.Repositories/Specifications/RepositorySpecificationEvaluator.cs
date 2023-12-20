@@ -26,6 +26,10 @@ public class RepositorySpecificationEvaluator<T> : IRepositorySpecificationEvalu
             query = specification.Includes.Aggregate(query, (current, include) => current.Include(include));
         if (specification.IncludeStrings != null)
             query = specification.IncludeStrings.Aggregate(query, (current, include) => current.Include(include));
+        if (specification.OrderByDescending != null)
+            query = query.OrderByDescending(specification.OrderByDescending);
+        if (specification.OrderBy != null)
+            query = query.OrderBy(specification.OrderBy);
         if (specification.IsPagingEnabled)
             query = query
                 .Skip(specification.Skip)

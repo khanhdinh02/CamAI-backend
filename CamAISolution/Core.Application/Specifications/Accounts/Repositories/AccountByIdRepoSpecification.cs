@@ -11,6 +11,8 @@ public class AccountByIdRepoSpecification : RepositorySpecification<Account>
 {
     public AccountByIdRepoSpecification(Guid id) : base(a => a.Id == id)
     {
+        ApplyingPaging(1, 0);
+        ApplyOrderBy(a => a.CreatedDate);
         //AddIncludes("Shops");
         //AddIncludes("Roles");
     }
