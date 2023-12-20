@@ -23,7 +23,7 @@ public class AuthController(IAuthService authService) : ControllerBase
         return Ok(authService.Test());
     }
 
-    [HttpPost("renew")]
+    [HttpPost("refresh")]
     public IActionResult RenewToken(RenewTokenDto renewTokenDto)
     {
         return Ok(authService.RenewToken(renewTokenDto.AccessToken, renewTokenDto.RefreshToken));
