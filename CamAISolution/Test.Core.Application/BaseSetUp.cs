@@ -3,6 +3,7 @@ using Core.Application;
 using Core.Domain;
 using Core.Domain.Entities;
 using Core.Domain.Interfaces.Repositories;
+using Core.Domain.Interfaces.Specifications.Repositories;
 using Core.Domain.Models;
 using Moq;
 
@@ -27,6 +28,17 @@ public class BaseSetUp
             Values = new List<Ward>
             {
                 new Ward { Id = Guid.Parse("0a984765-57df-4fb1-a9b8-304e3dd3b69c"), Name = "Test"}
+            }
+        });
+        mockUOW.Setup(uow => uow.Shops.GetAsync(It.IsAny<IRepositorySpecification<Shop>>())).ReturnsAsync(new PaginationResult<Shop>
+        {
+            PageIndex = 0,
+            PageSize = 1,
+            TotalCount = 1,
+            Values = new List<Shop>
+            {
+                new Shop { Name = "Test1"},
+                new Shop { Name = "Test2"}
             }
         });
         mockUOW.Setup(uow => uow.Shops.AddAsync(It.IsAny<Shop>())).ReturnsAsync(new Shop());
