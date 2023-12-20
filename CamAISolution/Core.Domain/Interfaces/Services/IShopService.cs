@@ -1,6 +1,4 @@
-﻿using System.Data.Common;
-using Core.Domain.Entities;
-using Core.Domain.Interfaces.Specifications.Repositories;
+﻿using Core.Domain.Entities;
 using Core.Domain.Models;
 
 namespace Core.Domain;
