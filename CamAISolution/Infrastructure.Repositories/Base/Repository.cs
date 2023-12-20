@@ -1,4 +1,5 @@
 using System.Linq.Expressions;
+using Core.Domain;
 using Core.Domain.Entities.Base;
 using Core.Domain.Interfaces.Repositories.Base;
 using Core.Domain.Interfaces.Specifications.Repositories;
@@ -9,7 +10,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Infrastructure.Repositories.Base;
 
 public class Repository<T>(CamAIContext context, IRepositorySpecificationEvaluator<T> specificationEvaluator) : IRepository<T>
-    where T : BaseEntity
+    where T : BaseBasicEntity
 {
     protected DbContext Context => context;
 

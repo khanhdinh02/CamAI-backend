@@ -328,12 +328,12 @@ namespace Infrastructure.Repositories.Migrations
             migrationBuilder.InsertData(
                 table: "Accounts",
                 columns: new[] { "Id", "AccountStatusId", "AddressLine", "Birthday", "CreatedDate", "Email", "GenderId", "ModifiedDate", "Name", "Password", "Phone", "WardId", "WorkingShopId" },
-                values: new object[] { new Guid("5949826a-fc01-46f8-8039-240d71b1c82b"), new Guid("f4468b33-ee55-4e34-898d-7ec37db36ca0"), null, null, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "admin@camai.com", null, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "Admin", "9eb622419ace52f259e858a7f2a10743d35e36fe0d22fc2d224c320cbc68d3af", null, null, null });
+                values: new object[] { new Guid("9a8a504f-e054-4cf3-8a6a-beeed8ada48d"), new Guid("f4468b33-ee55-4e34-898d-7ec37db36ca0"), null, null, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "admin@camai.com", null, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "Admin", "9eb622419ace52f259e858a7f2a10743d35e36fe0d22fc2d224c320cbc68d3af", null, null, null });
 
             migrationBuilder.InsertData(
                 table: "AccountRole",
                 columns: new[] { "AccountId", "RoleId" },
-                values: new object[] { new Guid("5949826a-fc01-46f8-8039-240d71b1c82b"), new Guid("2381d027-707a-41ee-b53a-26e967b78d75") });
+                values: new object[] { new Guid("9a8a504f-e054-4cf3-8a6a-beeed8ada48d"), new Guid("2381d027-707a-41ee-b53a-26e967b78d75") });
 
             migrationBuilder.CreateIndex(
                 name: "IX_AccountRole_RoleId",

@@ -89,7 +89,7 @@ namespace Infrastructure.Repositories.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("5949826a-fc01-46f8-8039-240d71b1c82b"),
+                            Id = new Guid("9a8a504f-e054-4cf3-8a6a-beeed8ada48d"),
                             AccountStatusId = new Guid("f4468b33-ee55-4e34-898d-7ec37db36ca0"),
                             CreatedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Email = "admin@camai.com",
@@ -116,7 +116,7 @@ namespace Infrastructure.Repositories.Migrations
                     b.HasData(
                         new
                         {
-                            AccountId = new Guid("5949826a-fc01-46f8-8039-240d71b1c82b"),
+                            AccountId = new Guid("9a8a504f-e054-4cf3-8a6a-beeed8ada48d"),
                             RoleId = new Guid("2381d027-707a-41ee-b53a-26e967b78d75")
                         });
                 });
