@@ -1,46 +1,54 @@
-﻿using Core.Domain.Entities;
+﻿using System.Text.Json;
+using Core.Application.Exceptions;
+using Core.Domain;
+using Core.Domain.Entities;
 using Core.Domain.Interfaces.Repositories;
-using Core.Domain.Interfaces.Repositories.Base;
 using Core.Domain.Interfaces.Services;
 using Core.Domain.Models;
 
-namespace Core.Application.Implements;
+namespace Core.Application;
 
-// TODO: unit of work and logger
-public class BrandService(IRepository<Brand> brandRepository, IUnitOfWork unitOfWork) : IBrandService
+public class BrandService(IUnitOfWork unitOfWork, IAppLogging<BrandService> logger) : IBrandService
 {
-    public async Task<PaginationResult<Brand>> GetBrands()
+    public async Task<PaginationResult<Brand>> GetBrands(SearchBrandRequest searchRequest)
     {
-        // TODO: filter brands
-        return await brandRepository.GetAsync(null);
+        return await unitOfWork.Brands.GetAsync(new BrandSearchSpec(searchRequest));
     }
 
     public async Task<Brand> GetBrandById(Guid id)
     {
-        // TODO: filter brands
-        return await brandRepository.GetByIdAsync(id);
+        var brandResult = await unitOfWork.Brands.GetAsync(new BrandByIdRepoSpec(id));
+        return brandResult.Values.FirstOrDefault() ?? throw new NotFoundException(typeof(Brand), id, GetType());
     }
 
     public async Task<Brand> CreateBrand(Brand brand)
     {
-        brand.Id = Guid.Empty;
-        brand.Status = Brand.Statuses.Active;
-        await brandRepository.AddAsync(brand);
+        brand.BrandStatusId = AppConstant.BrandActiveStatus;
+        await unitOfWork.Brands.AddAsync(brand);
         await unitOfWork.CompleteAsync();
+        logger.Info($"Create new brand: {JsonSerializer.Serialize(brand)}");
         return brand;
     }
 
-    public Task<Brand> UpdateBrand(Brand brand)
+    public async Task<Brand> UpdateBrand(Guid id, UpdateBrandDto brandDto)
     {
+        var brand = await unitOfWork.Brands.GetByIdAsync(id);
+        if (brand is null)
+            throw new NotFoundException(typeof(Brand), id, GetType());
+        // TODO:
+        if (brand.BrandStatusId == AppConstant.BrandInactiveStatus)
+            throw new BadRequestException("Cannot modified inactive brand");
         // TODO: can it update the status
-        brandRepository.Update(brand);
+        unitOfWork.Brands.Update(brand);
         unitOfWork.Complete();
-        return Task.FromResult(brand);
+        return brand;
     }
 
     public async Task DeleteBrand(Guid id)
     {
-        var brand = await brandRepository.GetByIdAsync(id);
-        brandRepository.Delete(brand);
+        // TODO [Duy]: implement more business in here
+        var brand = await unitOfWork.Brands.GetByIdAsync(id);
+        if (brand != null)
+            unitOfWork.Brands.Delete(brand);
     }
 }

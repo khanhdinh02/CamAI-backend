@@ -12,11 +12,10 @@ namespace Host.CamAI.API.Controllers;
 public class BrandsController(IBrandService brandService, IMapper mapper) : ControllerBase
 {
     [HttpGet]
-    public async Task<PaginationResult<BrandDto>> GetBrands()
+    public async Task<PaginationResult<BrandDto>> GetBrands([FromQuery] SearchBrandRequest searchRequest)
     {
-        // TODO pagingResult util extensions
-        var pagingResult = await brandService.GetBrands();
-        return new PaginationResult<BrandDto>();
+        var brands = await brandService.GetBrands(searchRequest);
+        return mapper.MapPaginationResult<BrandDto, Brand>(brands);
     }
 
     [HttpGet("{id}")]
@@ -37,9 +36,7 @@ public class BrandsController(IBrandService brandService, IMapper mapper) : Cont
     [HttpPut("{id}")]
     public async Task<Brand> UpdateBrand([FromRoute] Guid id, [FromBody] UpdateBrandDto brandDto)
     {
-        var brand = mapper.Map<Brand>(brandDto);
-        brand.Id = id;
-        var resultBrand = await brandService.UpdateBrand(brand);
+        var resultBrand = await brandService.UpdateBrand(id, brandDto);
         return resultBrand;
     }
 

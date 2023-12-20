@@ -7,11 +7,17 @@ using Core.Domain.Interfaces.Services;
 using Core.Domain.Models;
 using Core.Domain.Utilities;
 
-namespace Core.Application.Implements;
+namespace Core.Application;
 
 public class AccountService(IRepository<Account> accountRepo) : IAccountService
 {
-    public Task<PaginationResult<Account>> GetAccount(Guid? guid = null, DateTime? from = null, DateTime? to = null, int pageSize = 1, int pageIndex = 0)
+    public Task<PaginationResult<Account>> GetAccount(
+        Guid? guid = null,
+        DateTime? from = null,
+        DateTime? to = null,
+        int pageSize = 1,
+        int pageIndex = 0
+    )
     {
         var specification = new AccountSearchSpecification(guid, from, to, pageSize, pageIndex);
         return accountRepo.GetAsync(specification);

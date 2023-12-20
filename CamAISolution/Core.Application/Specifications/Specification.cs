@@ -2,14 +2,11 @@ using System.Linq.Expressions;
 using Core.Domain.Interfaces.Specifications;
 
 namespace Core.Application.Specifications;
+
 public class Specification<T> : ISpecification<T>
 {
-    protected Expression<Func<T, bool>> expr;
+    protected Expression<Func<T, bool>> expr = _ => true;
 
-    public Specification()
-    {
-        expr = _ => true;
-    }
     public bool IsSatisfied(T entity)
     {
         return GetExpression().Compile().Invoke(entity);
@@ -90,7 +87,5 @@ public class NotSpecification<T>(ISpecification<T> specification) : Specificatio
 
 internal class ParameterReplacer(ParameterExpression parameter) : ExpressionVisitor
 {
-
-    protected override Expression VisitParameter(ParameterExpression node)
-        => base.VisitParameter(parameter);
+    protected override Expression VisitParameter(ParameterExpression node) => base.VisitParameter(parameter);
 }

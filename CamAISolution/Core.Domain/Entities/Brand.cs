@@ -14,6 +14,8 @@ public class Brand : BaseEntity
     public Guid? BrandManagerId { get; set; }
     public Guid BrandStatusId { get; set; }
 
+    // TODO: add brand logo and banner
+
     public virtual Account? BrandManager { get; set; }
     public virtual BrandStatus BrandStatus { get; set; } = null!;
 }
