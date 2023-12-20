@@ -1,15 +1,18 @@
 using Core.Domain.Entities;
 using Core.Domain.Interfaces.Services;
 using Core.Domain.Models;
-using Core.Domain.Models.dtos.auth;
-using Core.Domain.Utilities;
-using Core.Domain.Models.enums;
 
 namespace Core.Application.Implements;
 
 public class AccountService() : IAccountService
 {
-    public Task<PaginationResult<Account>> GetAccount(Guid? guid = null, DateTime? from = null, DateTime? to = null, int pageSize = 1, int pageIndex = 0)
+    public Task<PaginationResult<Account>> GetAccount(
+        Guid? guid = null,
+        DateTime? from = null,
+        DateTime? to = null,
+        int pageSize = 1,
+        int pageIndex = 0
+    )
     {
         /* var specification = new AccountSearchSpecification(guid, from, to, pageSize, pageIndex);
          return accountRepo.GetAsync(specification);*/
@@ -41,10 +44,4 @@ public class AccountService() : IAccountService
         return accounts.Values.First();*/
         throw new NotImplementedException();
     }
-
-
-
-
-
 }
-

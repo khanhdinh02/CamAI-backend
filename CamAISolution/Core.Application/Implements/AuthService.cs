@@ -1,7 +1,9 @@
+using Core.Application.Exceptions;
 using Core.Domain.Entities;
 using Core.Domain.Interfaces.Services;
 using Core.Domain.Models.DTOs.Auths;
 using Core.Domain.Models.Enums;
+using Core.Domain.Utilities;
 
 namespace Core.Application.Implements;
 
@@ -15,12 +17,27 @@ public class AuthService(IJwtService jwtService) : IAuthService
             Id = new Guid("11223344-5566-7788-99AA-BBCCDDEEFF00"),
             Username = username,
             Password = password,
-            Role = "test"
+            Role = ["test"]
         };
-        var accessToken = jwtService.GenerateToken(account, TokenType.AccessToken);
-        var refreshToken = jwtService.GenerateToken(account, TokenType.RefreshToken);
-        var tokenResponseDTO = new TokenResponseDTO { AccessToken = accessToken, RefreshToken = refreshToken };
-        return tokenResponseDTO;
+        string hash = Hasher.Hash("1234");
+        bool isHashedCorrect = Hasher.Verify("123", hash);
+        var accessToken = jwtService.GenerateToken(account.Id, account.Role, TokenType.AccessToken);
+        var refreshToken = jwtService.GenerateToken(account.Id, account.Role, TokenType.RefreshToken);
+        return new TokenResponseDTO { AccessToken = accessToken, RefreshToken = refreshToken };
+    }
+
+    //TODO: check account status - check refreshToken in storage
+    public string RenewToken(string oldAccessToken, string refreshToken)
+    {
+        TokenDetailDTO accessTokenDetail = jwtService.ValidateToken(oldAccessToken, TokenType.AccessToken);
+        TokenDetailDTO refreshTokenDetail = jwtService.ValidateToken(refreshToken, TokenType.RefreshToken);
+
+        if (!accessTokenDetail.UserID.Equals(refreshTokenDetail.UserID))
+        {
+            throw new UnauthorizedException("Invalid Tokens");
+        }
+
+        return accessTokenDetail.Token;
     }
 
     /*private async Task<Account> GetAccountByUsernameAndPassword(string username, string password)

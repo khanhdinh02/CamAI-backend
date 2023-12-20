@@ -2,8 +2,7 @@ using Host.CamAI.API;
 using Host.CamAI.API.Middlewares;
 using Infrastructure.Jwt;
 using Infrastructure.Logging;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
+using Infrastructure.Repositories;
 
 var builder = WebApplication.CreateBuilder(args).ConfigureSerilog();
 
@@ -19,7 +18,6 @@ builder
     .AddHttpContextAccessor()
     .AddServices();
 
-
 var app = builder.Build();
 
 app.UseMiddleware<GlobalExceptionHandler>();
@@ -31,6 +29,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
 /*
 app.UseAuthentication();
 app.UseAuthorization();*/

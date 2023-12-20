@@ -1,11 +1,13 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using System.Text.Json;
 using Core.Application.Exceptions;
 using Core.Domain;
 using Core.Domain.Entities;
 using Core.Domain.Interfaces.Services;
 using Core.Domain.Models.Configurations;
+using Core.Domain.Models.DTOs.Auths;
 using Core.Domain.Models.Enums;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -22,7 +24,7 @@ public class JwtService(
 {
     private readonly JwtConfiguration JwtConfiguration = configuration.Value;
 
-    public string GenerateToken(Account account, TokenType tokenType)
+    public string GenerateToken(Guid userID, string[] roles, TokenType tokenType)
     {
         int tokenDurationInMinute;
         string jwtSecret;
@@ -40,7 +42,12 @@ public class JwtService(
         var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret));
 
         var credentials = new SigningCredentials(secretKey, SecurityAlgorithms.HmacSha256);
-        var claims = new List<Claim> { new("user_id", account.Id.ToString()), new("user_role", account.Role), };
+        var claims = new List<Claim>
+        {
+            new("user_id", userID.ToString()),
+            new("user_role", JsonSerializer.Serialize(roles)),
+        };
+
         var token = new JwtSecurityToken(
             issuer: JwtConfiguration.Issuer,
             audience: JwtConfiguration.Audience,
@@ -51,40 +58,14 @@ public class JwtService(
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
 
-    public IList<Claim> GetClaims(string token)
+    public IEnumerable<Claim> GetClaims(string token, TokenType tokenType)
     {
-        throw new NotImplementedException();
-    }
-
-    public Guid GetCurrentUserId()
-    {
-        using var scope = serviceProvider.CreateScope();
-        var httpContextAccessor = scope.ServiceProvider.GetService<IHttpContextAccessor>();
-
-        var claimsIdentity = httpContextAccessor?.HttpContext?.User;
-        if (
-            claimsIdentity != null
-            && claimsIdentity.Claims.Any()
-            && Guid.TryParse(claimsIdentity.Claims.First(c => c.Type == "user_id").Value, out var userId)
-        )
-            return userId;
-        return Guid.Empty;
-    }
-
-    //TODO: CHECK USER STATUS FROM STORAGE
-    public bool ValidateToken(string token, TokenType tokenType, string[] roles)
-    {
-      
         try
         {
             var tokenHandler = new JwtSecurityTokenHandler();
-
             if (token.IsNullOrEmpty())
                 throw new UnauthorizedException("Unauthorized");
-            if (!token.StartsWith("Bearer "))
-                throw new BadRequestException("Missing Bearer or wrong type");
 
-            token = token.Substring("Bearer ".Length);
             var secretKey =
                 tokenType == TokenType.AccessToken
                     ? JwtConfiguration.AccessTokenSecretKey
@@ -103,26 +84,7 @@ public class JwtService(
 
             tokenHandler.ValidateToken(token, validationParameters, out var validatedToken);
             var jwtToken = (JwtSecurityToken)validatedToken;
-
-            var userId =
-                jwtToken.Claims.FirstOrDefault(c => c.Type == "user_id")?.Value
-                ?? throw new BadRequestException("Cannot get user id from jwt");
-
-            if (userId == string.Empty)
-                throw new BadRequestException("Cannot get user id from jwt");
-
-            var userRole =
-                jwtToken.Claims.FirstOrDefault(c => c.Type == "user_role")?.Value
-                ?? throw new BadRequestException("Cannot get user role from jwt");
-
-            if (userRole == string.Empty)
-                throw new BadRequestException("Cannot get user role from jwt");
-
-            if (!roles.Contains(userRole))
-                throw new UnauthorizedException("Unauthorized");
-
-            AddClaimToUserContext(jwtToken.Claims);
-            return true;
+            return jwtToken.Claims;
         }
         catch (SecurityTokenValidationException ex)
         {
@@ -130,6 +92,70 @@ public class JwtService(
             throw new UnauthorizedException("Unauthorized");
         }
     }
+
+    public Guid GetCurrentUserId()
+    {
+        using var scope = serviceProvider.CreateScope();
+        var httpContextAccessor = scope.ServiceProvider.GetService<IHttpContextAccessor>();
+
+        var claimsIdentity = httpContextAccessor?.HttpContext?.User;
+        if (
+            claimsIdentity != null
+            && claimsIdentity.Claims.Any()
+            && Guid.TryParse(claimsIdentity.Claims.First(c => c.Type == "user_id").Value, out var userId)
+        )
+            return userId;
+        return Guid.Empty;
+    }
+
+    //TODO: CHECK USER STATUS FROM STORAGE
+    public TokenDetailDTO ValidateToken(string token, TokenType tokenType, string[] acceptableRoles = null)
+    {
+        IEnumerable<Claim> tokenClaims = this.GetClaims(token, tokenType);
+        var userId =
+            tokenClaims.FirstOrDefault(c => c.Type == "user_id")?.Value
+            ?? throw new BadRequestException("Cannot get user id from jwt");
+
+        if (userId == string.Empty)
+            throw new BadRequestException("Cannot get user id from jwt");
+
+        var userRoleString =
+            tokenClaims.FirstOrDefault(c => c.Type == "user_role")?.Value
+            ?? throw new BadRequestException("Cannot get user role from jwt");
+
+        if (userRoleString == string.Empty)
+            throw new BadRequestException("Cannot get user role from jwt");
+
+        string[] userRoleArray = JsonSerializer.Deserialize<string[]>(userRoleString) ?? [];
+
+        if (acceptableRoles != null && (acceptableRoles.Length != 0) && !acceptableRoles.Intersect(userRoleArray).Any())
+            throw new UnauthorizedException("Unauthorized");
+
+        this.AddClaimToUserContext(tokenClaims);
+
+        return new TokenDetailDTO
+        {
+            Token = token,
+            TokenType = tokenType,
+            UserID = new Guid(userId),
+            UserRoles = userRoleArray
+        };
+    }
+
+    /*public bool ValidateTokens(List<TokenDetailDTO> tokenDetails, string[]? acceptableRoles)
+    {
+        Guid previousUserId = Guid.Empty;
+        foreach (var tokenDTO in tokenDetails)
+        {
+            Guid userId = this.ValidateToken(tokenDTO, acceptableRoles);
+            if (previousUserId != Guid.Empty && !previousUserId.Equals(userId))
+            {
+                return false;
+            }
+            previousUserId = userId;
+        }
+        return true;
+    }*/
 
     private void AddClaimToUserContext(IEnumerable<Claim> claims)
     {
