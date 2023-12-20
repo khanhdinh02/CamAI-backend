@@ -12,9 +12,9 @@ public class ShopService(IUnitOfWork unitOfWork, IAppLogging<ShopService> logger
     public async Task<Shop> CreateShop(Shop shop)
     {
         var isFoundWard = await unitOfWork.Wards.IsExisted(shop.WardId);
-        if (isFoundWard)
+        if (!isFoundWard)
             throw new NotFoundException(typeof(Ward), shop.WardId, GetType());
-        shop.Status = Shop.Statuses.Active;
+        shop.ShopStatusId = AppConstant.ShopActiveStatus;
         shop = await unitOfWork.Shops.AddAsync(shop);
         await unitOfWork.CompleteAsync();
         logger.Info($"New shop: {System.Text.Json.JsonSerializer.Serialize(shop)}");
@@ -47,19 +47,25 @@ public class ShopService(IUnitOfWork unitOfWork, IAppLogging<ShopService> logger
         var foundShop = await unitOfWork.Shops.GetByIdAsync(id);
         if (foundShop is null)
             throw new NotFoundException(typeof(Shop), id, GetType());
-        if (foundShop.Status == Shop.Statuses.Inactive)
-            throw new BadRequestException($"Cannot modified {foundShop.Status} shop");
+        if (foundShop.ShopStatusId == AppConstant.ShopInactiveStatus)
+            throw new BadRequestException($"Cannot modified inactive shop");
         foundShop.Name = shopDto.Name ?? foundShop.Name;
         foundShop.AddressLine = shopDto.AddressLine ?? foundShop.AddressLine;
         foundShop.Phone = foundShop.Phone;
         if (shopDto.WardId.HasValue)
         {
             var isFoundWard = await unitOfWork.Wards.IsExisted(shopDto.WardId.Value);
-            if (isFoundWard)
+            if (!isFoundWard)
                 throw new NotFoundException(typeof(Ward), shopDto.WardId, GetType());
             foundShop.WardId = shopDto.WardId.Value;
         }
-        foundShop.Status = shopDto.Status ?? foundShop.Status;
+        if (shopDto.Status.HasValue)
+        {
+            var isFoundStatus = await unitOfWork.ShopStatuses.IsExisted(shopDto.Status.Value);
+            if (!isFoundStatus)
+                throw new NotFoundException(typeof(ShopStatus), shopDto.Status.Value, GetType());
+            foundShop.ShopStatusId = shopDto.Status.Value;
+        }
         await unitOfWork.CompleteAsync();
         return foundShop;
     }

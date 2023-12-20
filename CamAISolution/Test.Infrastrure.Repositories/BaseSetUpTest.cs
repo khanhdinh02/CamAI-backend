@@ -6,6 +6,7 @@ using Infrastructure.Repositories.Base;
 using Infrastructure.Repositories.Data;
 using Infrastructure.Repositories.Specifications;
 using Microsoft.EntityFrameworkCore;
+using Moq;
 
 namespace Test.Infrastrure.Repositories;
 
@@ -21,7 +22,8 @@ public class BaseSetUpTest
             .UseInMemoryDatabase(Guid.NewGuid().ToString())
             .Options;
         context = new CamAIContext(options);
-        unitOfWork = new UnitOfWork(context, new Repository<Shop>(context, new RepositorySpecificationEvaluator<Shop>()), new Repository<Ward>(context, new RepositorySpecificationEvaluator<Ward>()));
+        var serviceProvider = new Mock<IServiceProvider>();
+        unitOfWork = new UnitOfWork(context, serviceProvider.Object);
         var listAccount = new List<Account>
         {
             new Account

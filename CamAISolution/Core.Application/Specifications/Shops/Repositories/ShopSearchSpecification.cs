@@ -11,8 +11,8 @@ public class SearchShopSpecification : RepositorySpecification<Shop>
         var baseSpec = new Specification<Shop>();
         if (!String.IsNullOrEmpty(search.Name))
             baseSpec.And(new ShopByNameSpecification(search.Name));
-        if (!String.IsNullOrEmpty(search.Status))
-            baseSpec.And(new ShopByStatusSpecification(search.Status));
+        if (search.StatusId.HasValue)
+            baseSpec.And(new ShopByStatusSpecification(search.StatusId.Value));
         return baseSpec.GetExpression();
     }
 

@@ -11,5 +11,5 @@ public class UpdateShopDto
     public string? Phone { get; set; }
     public Guid? WardId { get; set; }
     public string? AddressLine { get; set; }
-    public string? Status { get; set; }
+    public Guid? Status { get; set; }
 }

@@ -1,3 +1,4 @@
+using Core.Domain;
 using Core.Domain.Entities;
 using Core.Domain.Entities.Base;
 using Core.Domain.Utilities;
@@ -52,8 +53,8 @@ public class CamAIContext : DbContext
 
         modelBuilder.Entity<AccountRole>().HasKey(e => new { e.AccountId, e.RoleId });
 
-        var adminRole = new Role { Name = "Admin" };
-        var accountStatusActive = new AccountStatus { Name = "Active" };
+        var adminRole = new Role { Id = AppConstant.RoleAdmin, Name = "Admin" };
+        var accountStatusActive = new AccountStatus { Id = AppConstant.AccountActiveStatus, Name = "Active" };
         var adminAccount = new Account
         {
             Email = "admin@camai.com",
@@ -65,22 +66,32 @@ public class CamAIContext : DbContext
         // AccountStatus=New when account is created and its password have not been changed.
         modelBuilder
             .Entity<AccountStatus>()
-            .HasData(new AccountStatus { Name = "New" }, accountStatusActive, new AccountStatus { Name = "Inactive" });
+            .HasData(
+                new AccountStatus { Id = AppConstant.AccountNewStatus, Name = "New" },
+                accountStatusActive,
+                new AccountStatus { Id = AppConstant.AccountInactiveStatus, Name = "Inactive" }
+            );
         modelBuilder
             .Entity<BrandStatus>()
-            .HasData(new BrandStatus { Name = "Active" }, new BrandStatus { Name = "Inactive" });
+            .HasData(
+                new BrandStatus { Id = AppConstant.BrandActiveStatus, Name = "Active" },
+                new BrandStatus { Id = AppConstant.BrandInactiveStatus, Name = "Inactive" }
+            );
         modelBuilder
             .Entity<ShopStatus>()
-            .HasData(new ShopStatus { Name = "Active" }, new ShopStatus { Name = "Inactive" });
+            .HasData(
+                new ShopStatus { Id = AppConstant.ShopActiveStatus, Name = "Active" },
+                new ShopStatus { Id = AppConstant.ShopInactiveStatus, Name = "Inactive" }
+            );
 
         modelBuilder
             .Entity<Role>()
             .HasData(
                 adminRole,
-                new Role { Name = "Technician" },
-                new Role { Name = "Brand manager" },
-                new Role { Name = "Shop manager" },
-                new Role { Name = "Employee" }
+                new Role { Id = AppConstant.RoleTenician, Name = "Technician" },
+                new Role { Id = AppConstant.RoleBrandManager, Name = "Brand manager" },
+                new Role { Id = AppConstant.RoleShopManager, Name = "Shop manager" },
+                new Role { Id = AppConstant.RoleEmployee, Name = "Employee" }
             );
 
         modelBuilder.Entity<Account>().HasData(adminAccount);
@@ -89,6 +100,11 @@ public class CamAIContext : DbContext
             .Entity<AccountRole>()
             .HasData(new AccountRole { AccountId = adminAccount.Id, RoleId = adminRole.Id });
 
-        modelBuilder.Entity<Gender>().HasData(new Gender { Name = "Male" }, new Gender { Name = "Female" });
+        modelBuilder
+            .Entity<Gender>()
+            .HasData(
+                new Gender { Id = AppConstant.GenderMale, Name = "Male" },
+                new Gender { Id = AppConstant.GenderFemale, Name = "Female" }
+            );
     }
 }

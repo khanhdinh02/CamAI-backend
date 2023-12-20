@@ -11,5 +11,5 @@ public class ShopDto : BaseDto
     public string? Phone { get; set; }
     public Guid WardId { get; set; }
     public string? AddressLine { get; set; }
-    public string Status { get; set; } = Statuses.Inactive;
+    public ShopStatusDto Status { get; set; } = null!;
 }

@@ -6,15 +6,15 @@ namespace Core.Application;
 
 public class ShopByStatusSpecification : Specification<Shop>
 {
-    private readonly string status;
+    private readonly Guid status;
 
-    public ShopByStatusSpecification(string status)
+    public ShopByStatusSpecification(Guid status)
     {
         this.status = status;
         expr = GetExpression();
     }
     public override Expression<Func<Shop, bool>> GetExpression()
     {
-        return s => s.Status.Trim().ToLower().Equals(status.Trim().ToLower());
+        return s => s.ShopStatus.Id == status;
     }
 }
