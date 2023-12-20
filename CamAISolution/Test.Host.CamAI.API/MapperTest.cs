@@ -1,5 +1,6 @@
 using AutoMapper;
 using Core.Domain;
+using Core.Domain.Entities;
 using Host.CamAI.API;
 
 namespace Test.Host.CamAI.API;
@@ -19,13 +20,14 @@ public class MapperTest
     [Test]
     public void Map_to_ShopDto_must_return_true_when_given_valid_ShopEntity()
     {
-        Shop shop = new()
-        {
-            Id = Guid.NewGuid(),
-            CreatedDate = DateTime.Now,
-            Name = "Test",
-            ModifiedDate = DateTime.Now.AddDays(1)
-        };
+        Shop shop =
+            new()
+            {
+                Id = Guid.NewGuid(),
+                CreatedDate = DateTime.Now,
+                Name = "Test",
+                ModifiedDate = DateTime.Now.AddDays(1)
+            };
         var mappedShop = mapper.Map<ShopDto>(shop);
         Assert.Multiple(() =>
         {
