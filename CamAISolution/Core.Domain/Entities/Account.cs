@@ -29,5 +29,5 @@ public class Account : BaseEntity
 
     [InverseProperty(nameof(Shop.ShopManager))]
     public virtual Shop? ManagingShop { get; set; }
-    public virtual ICollection<AccountRole> AccountRoles { get; set; } = new HashSet<AccountRole>();
+    public virtual ICollection<Role> Roles { get; set; } = new HashSet<Role>();
 }

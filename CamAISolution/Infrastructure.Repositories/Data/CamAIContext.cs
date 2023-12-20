@@ -37,7 +37,6 @@ public class CamAIContext : DbContext
     public virtual DbSet<Brand> Brands { get; set; }
     public virtual DbSet<Shop> Shops { get; set; }
     public virtual DbSet<Role> Roles { get; set; }
-    public virtual DbSet<AccountRole> AccountRoles { get; set; }
     public virtual DbSet<Gender> Genders { get; set; }
     public virtual DbSet<Province> Provinces { get; set; }
     public virtual DbSet<District> Districts { get; set; }
@@ -49,8 +48,6 @@ public class CamAIContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
-
-        modelBuilder.Entity<AccountRole>().HasKey(e => new { e.AccountId, e.RoleId });
 
         var adminRole = new Role { Name = "Admin" };
         var accountStatusActive = new AccountStatus { Name = "Active" };
@@ -83,11 +80,25 @@ public class CamAIContext : DbContext
                 new Role { Name = "Employee" }
             );
 
-        modelBuilder.Entity<Account>().HasData(adminAccount);
+        modelBuilder.Entity<Account>(builder =>
+        {
+            const string roleId = "RoleId";
+            const string accountId = "AccountId";
 
-        modelBuilder
-            .Entity<AccountRole>()
-            .HasData(new AccountRole { AccountId = adminAccount.Id, RoleId = adminRole.Id });
+            builder.HasData(adminAccount);
+            builder
+                .HasMany(e => e.Roles)
+                .WithMany(e => e.Accounts)
+                .UsingEntity(
+                    r => r.HasOne(typeof(Role)).WithMany().HasForeignKey(roleId),
+                    l => l.HasOne(typeof(Account)).WithMany().HasForeignKey(accountId),
+                    je =>
+                    {
+                        je.HasKey(roleId, accountId);
+                        je.HasData(new { AccountId = adminAccount.Id, RoleId = adminRole.Id });
+                    }
+                );
+        });
 
         modelBuilder.Entity<Gender>().HasData(new Gender { Name = "Male" }, new Gender { Name = "Female" });
     }
