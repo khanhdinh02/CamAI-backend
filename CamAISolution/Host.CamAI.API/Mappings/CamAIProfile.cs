@@ -9,7 +9,9 @@ public class CamAIProfile : Profile
 {
     public CamAIProfile()
     {
-        CreateMap<Shop, ShopDto>();
+        CreateMap<Shop, ShopDto>()
+        .ForMember(s => s.Status, opts => opts.MapFrom(s => s.ShopStatus));
+        CreateMap<ShopStatus, ShopStatusDto>();
         CreateMap<CreateShopDto, Shop>();
     }
 }

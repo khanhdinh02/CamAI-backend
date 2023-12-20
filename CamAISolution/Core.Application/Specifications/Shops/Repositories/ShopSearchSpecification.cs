@@ -18,6 +18,7 @@ public class SearchShopSpecification : RepositorySpecification<Shop>
 
     public SearchShopSpecification(SearchShopRequest search) : base(GetExpression(search))
     {
+        AddIncludes(s => s.ShopStatus);
         ApplyingPaging(search.Size, search.PageIndex * search.Size);
         ApplyOrderByDescending(s => s.CreatedDate);
     }
