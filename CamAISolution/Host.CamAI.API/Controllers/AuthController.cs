@@ -10,12 +10,9 @@ namespace Host.CamAI.API.Controllers;
 public class AuthController(IAuthService authService) : ControllerBase
 {
     [HttpPost]
-    public async Task<IActionResult> Login(LoginDTO loginParams)
+    public async Task<IActionResult> Login(LoginDto loginDto)
     {
-        var tokenResponseDTO = await authService.GetTokensByUsernameAndPassword(
-            loginParams.Username,
-            loginParams.Password
-        );
+        var tokenResponseDTO = await authService.GetTokensByUsernameAndPassword(loginDto.Username, loginDto.Password);
         return Ok(tokenResponseDTO);
     }
 
@@ -27,8 +24,8 @@ public class AuthController(IAuthService authService) : ControllerBase
     }
 
     [HttpPost("renew")]
-    public IActionResult RenewToken(RenewTokenParam param)
+    public IActionResult RenewToken(RenewTokenDto renewTokenDto)
     {
-        return Ok(authService.RenewToken(param.AccessToken, param.RefreshToken));
+        return Ok(authService.RenewToken(renewTokenDto.AccessToken, renewTokenDto.RefreshToken));
     }
 }

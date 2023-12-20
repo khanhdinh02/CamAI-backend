@@ -109,36 +109,32 @@ public class JwtService(
     }
 
     //TODO: CHECK USER STATUS FROM STORAGE
-    public TokenDetailDTO ValidateToken(string token, TokenType tokenType, string[] acceptableRoles = null)
+    public TokenDetailDto ValidateToken(string token, TokenType tokenType, string[]? acceptableRoles)
     {
         IEnumerable<Claim> tokenClaims = this.GetClaims(token, tokenType);
-        var userId =
-            tokenClaims.FirstOrDefault(c => c.Type == "user_id")?.Value
-            ?? throw new BadRequestException("Cannot get user id from jwt");
 
-        if (userId == string.Empty)
+        var userId = tokenClaims.FirstOrDefault(c => c.Type == "user_id")?.Value;
+        var userRoleString = tokenClaims.FirstOrDefault(c => c.Type == "user_role")?.Value;
+
+        if (userId.IsNullOrEmpty())
             throw new BadRequestException("Cannot get user id from jwt");
 
-        var userRoleString =
-            tokenClaims.FirstOrDefault(c => c.Type == "user_role")?.Value
-            ?? throw new BadRequestException("Cannot get user role from jwt");
-
-        if (userRoleString == string.Empty)
+        if (userRoleString.IsNullOrEmpty())
             throw new BadRequestException("Cannot get user role from jwt");
 
-        string[] userRoleArray = JsonSerializer.Deserialize<string[]>(userRoleString) ?? [];
+        string[] userRoles = JsonSerializer.Deserialize<string[]>(userRoleString) ?? [];
 
-        if (acceptableRoles != null && (acceptableRoles.Length != 0) && !acceptableRoles.Intersect(userRoleArray).Any())
+        if (acceptableRoles != null && !acceptableRoles.Intersect(userRoles).Any())
             throw new UnauthorizedException("Unauthorized");
 
         this.AddClaimToUserContext(tokenClaims);
 
-        return new TokenDetailDTO
+        return new TokenDetailDto
         {
             Token = token,
             TokenType = tokenType,
-            UserID = new Guid(userId),
-            UserRoles = userRoleArray
+            UserId = new Guid(userId),
+            UserRoles = userRoles
         };
     }
 

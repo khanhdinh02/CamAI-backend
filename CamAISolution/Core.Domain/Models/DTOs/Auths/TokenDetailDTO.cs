@@ -2,9 +2,9 @@ using Core.Domain.Models.Enums;
 
 namespace Core.Domain.Models.DTOs.Auths;
 
-public class TokenDetailDTO
+public class TokenDetailDto
 {
-    public Guid UserID { get; set; } = Guid.Empty;
+    public Guid UserId { get; set; } = Guid.Empty;
 
     public string[] UserRoles { get; set; } = [];
 

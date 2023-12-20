@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Core.Domain.Models.DTOs.Auths;
 
-public class RenewTokenParam
+public class RenewTokenDto
 {
     public string AccessToken { get; set; } = string.Empty;
     public string RefreshToken { get; set; } = string.Empty;

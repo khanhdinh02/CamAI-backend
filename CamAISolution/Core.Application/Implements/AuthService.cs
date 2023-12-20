@@ -9,7 +9,7 @@ namespace Core.Application.Implements;
 
 public class AuthService(IJwtService jwtService) : IAuthService
 {
-    public async Task<TokenResponseDTO> GetTokensByUsernameAndPassword(string username, string password)
+    public async Task<TokenResponseDto> GetTokensByUsernameAndPassword(string username, string password)
     {
         /*Account account = await this.GetAccountByUsernameAndPassword(username, password);*/
         var account = new Account
@@ -23,16 +23,16 @@ public class AuthService(IJwtService jwtService) : IAuthService
         bool isHashedCorrect = Hasher.Verify("123", hash);
         var accessToken = jwtService.GenerateToken(account.Id, account.Role, TokenType.AccessToken);
         var refreshToken = jwtService.GenerateToken(account.Id, account.Role, TokenType.RefreshToken);
-        return new TokenResponseDTO { AccessToken = accessToken, RefreshToken = refreshToken };
+        return new TokenResponseDto { AccessToken = accessToken, RefreshToken = refreshToken };
     }
 
     //TODO: check account status - check refreshToken in storage
     public string RenewToken(string oldAccessToken, string refreshToken)
     {
-        TokenDetailDTO accessTokenDetail = jwtService.ValidateToken(oldAccessToken, TokenType.AccessToken);
-        TokenDetailDTO refreshTokenDetail = jwtService.ValidateToken(refreshToken, TokenType.RefreshToken);
+        TokenDetailDto accessTokenDetail = jwtService.ValidateToken(oldAccessToken, TokenType.AccessToken);
+        TokenDetailDto refreshTokenDetail = jwtService.ValidateToken(refreshToken, TokenType.RefreshToken);
 
-        if (!accessTokenDetail.UserID.Equals(refreshTokenDetail.UserID))
+        if (!accessTokenDetail.UserId.Equals(refreshTokenDetail.UserId))
         {
             throw new UnauthorizedException("Invalid Tokens");
         }
