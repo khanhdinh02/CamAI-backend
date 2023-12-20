@@ -62,7 +62,10 @@ public class CamAIContext : DbContext
             AccountStatusId = accountStatusActive.Id
         };
 
-        modelBuilder.Entity<AccountStatus>().HasData(accountStatusActive, new AccountStatus { Name = "Inactive" });
+        // AccountStatus=New when account is created and its password have not been changed.
+        modelBuilder
+            .Entity<AccountStatus>()
+            .HasData(new AccountStatus { Name = "New" }, accountStatusActive, new AccountStatus { Name = "Inactive" });
         modelBuilder
             .Entity<BrandStatus>()
             .HasData(new BrandStatus { Name = "Active" }, new BrandStatus { Name = "Inactive" });
