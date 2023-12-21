@@ -1,6 +1,6 @@
 ﻿using System.Linq.Expressions;
-using Core.Domain;
 using Core.Domain.Entities;
+using Core.Domain.Models.DTOs.Shops;
 
 namespace Core.Application.Specifications.Repositories;
 

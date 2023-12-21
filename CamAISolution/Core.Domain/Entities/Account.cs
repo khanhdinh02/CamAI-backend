@@ -25,7 +25,7 @@ public class Account : BaseEntity
     public Guid AccountStatusId { get; set; }
 
     public virtual Ward? Ward { get; set; }
-    public virtual Shop? WorkingShop { get; set; } = null!;
+    public virtual Shop? WorkingShop { get; set; }
     public virtual AccountStatus AccountStatus { get; set; } = null!;
     public virtual Brand? Brand { get; set; }
 

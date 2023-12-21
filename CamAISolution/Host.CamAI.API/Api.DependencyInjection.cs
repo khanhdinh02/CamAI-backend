@@ -1,5 +1,5 @@
 using Core.Application;
-using Core.Domain;
+using Core.Application.Implements;
 using Core.Domain.Interfaces.Services;
 
 namespace Host.CamAI.API;

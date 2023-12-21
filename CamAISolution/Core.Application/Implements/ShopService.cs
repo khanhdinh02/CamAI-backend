@@ -3,7 +3,9 @@ using Core.Application.Specifications.Repositories;
 using Core.Domain;
 using Core.Domain.Entities;
 using Core.Domain.Interfaces.Repositories;
+using Core.Domain.Interfaces.Services;
 using Core.Domain.Models;
+using Core.Domain.Models.DTOs.Shops;
 
 namespace Core.Application;
 
@@ -29,7 +31,7 @@ public class ShopService(IUnitOfWork unitOfWork, IAppLogging<ShopService> logger
 
     public async Task<Shop> GetShopById(Guid id)
     {
-        var foundShop = await unitOfWork.Shops.GetAsync(new ShopByIdRepoSpecfication(id));
+        var foundShop = await unitOfWork.Shops.GetAsync(new ShopByIdRepoSpec(id));
         if (foundShop.Values.Count == 0)
             throw new NotFoundException(typeof(Shop), id, GetType());
         return foundShop.Values.First();

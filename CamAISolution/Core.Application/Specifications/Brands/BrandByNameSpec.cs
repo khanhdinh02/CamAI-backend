@@ -1,8 +1,7 @@
 ﻿using System.Linq.Expressions;
-using Core.Application.Specifications;
 using Core.Domain.Entities;
 
-namespace Core.Application;
+namespace Core.Application.Specifications.Brands;
 
 public class BrandByNameSpec : Specification<Brand>
 {

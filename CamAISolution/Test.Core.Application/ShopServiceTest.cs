@@ -3,6 +3,7 @@ using Core.Application.Exceptions;
 using Core.Domain;
 using Core.Domain.Entities;
 using Core.Domain.Interfaces.Repositories;
+using Core.Domain.Models.DTOs.Shops;
 using Moq;
 
 namespace Test.Core.Application;

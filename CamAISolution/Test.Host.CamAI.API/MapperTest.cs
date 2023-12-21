@@ -1,7 +1,7 @@
 using AutoMapper;
 using Core.Domain;
 using Core.Domain.Entities;
-using Host.CamAI.API;
+using Host.CamAI.API.Mappings;
 
 namespace Test.Host.CamAI.API;
 

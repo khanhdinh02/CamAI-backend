@@ -1,14 +1,18 @@
 ﻿using System.Linq.Expressions;
-using Core.Application.Specifications;
 using Core.Application.Specifications.Repositories;
-using Core.Domain;
 using Core.Domain.Entities;
+using Core.Domain.Models.DTOs.Brands;
 
-namespace Core.Application;
+namespace Core.Application.Specifications.Brands.Repositories;
 
-public class BrandSearchSpec(SearchBrandRequest searchRequest)
-    : RepositorySpecification<Brand>(GetExpression(searchRequest))
+public class BrandSearchSpec : RepositorySpecification<Brand>
 {
+    public BrandSearchSpec(SearchBrandRequest searchRequest)
+        : base(GetExpression(searchRequest))
+    {
+        ApplyingPaging(searchRequest.Size, searchRequest.PageIndex * searchRequest.Size);
+    }
+
     private static Expression<Func<Brand, bool>> GetExpression(SearchBrandRequest searchRequest)
     {
         var baseSpec = new Specification<Brand>();

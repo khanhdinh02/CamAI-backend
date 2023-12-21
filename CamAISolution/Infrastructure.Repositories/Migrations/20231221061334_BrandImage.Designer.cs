@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Repositories.Migrations
 {
     [DbContext(typeof(CamAIContext))]
-    [Migration("20231220140612_Initial")]
-    partial class Initial
+    [Migration("20231221061334_BrandImage")]
+    partial class BrandImage
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -43,7 +43,7 @@ namespace Infrastructure.Repositories.Migrations
                         new
                         {
                             RoleId = new Guid("2381d027-707a-41ee-b53a-26e967b78d75"),
-                            AccountId = new Guid("3227e76d-8693-4911-93d4-8ea837985868")
+                            AccountId = new Guid("06f9eca4-e1a8-4768-b937-6a97c1c98057")
                         });
                 });
 
@@ -113,7 +113,7 @@ namespace Infrastructure.Repositories.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("3227e76d-8693-4911-93d4-8ea837985868"),
+                            Id = new Guid("06f9eca4-e1a8-4768-b937-6a97c1c98057"),
                             AccountStatusId = new Guid("f4468b33-ee55-4e34-898d-7ec37db36ca0"),
                             CreatedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Email = "admin@camai.com",
@@ -182,6 +182,9 @@ namespace Infrastructure.Repositories.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("BannerUri")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<Guid?>("BrandManagerId")
                         .HasColumnType("uniqueidentifier");
 
@@ -192,6 +195,9 @@ namespace Infrastructure.Repositories.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Email")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("LogoUri")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("ModifiedDate")

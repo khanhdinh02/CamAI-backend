@@ -1,4 +1,6 @@
-﻿namespace Core.Domain;
+﻿using Core.Domain.Models.DTOs.Base;
+
+namespace Core.Domain.Models.DTOs.Shops;
 
 public class SearchShopRequest : BaseSearchRequest
 {

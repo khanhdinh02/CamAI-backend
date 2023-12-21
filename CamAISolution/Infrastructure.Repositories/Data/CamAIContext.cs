@@ -90,6 +90,7 @@ public class CamAIContext : DbContext
                 new Role { Id = AppConstant.RoleEmployee, Name = "Employee" }
             );
 
+        // AccountRole junction table
         modelBuilder.Entity<Account>(builder =>
         {
             const string roleId = "RoleId";
@@ -109,6 +110,12 @@ public class CamAIContext : DbContext
                         je.HasData(new { AccountId = adminAccount.Id, RoleId = adminRole.Id });
                     }
                 );
+        });
+
+        modelBuilder.Entity<Brand>(builder =>
+        {
+            builder.Property(x => x.LogoUri).HasConversion(v => v!.ToString(), v => new Uri(v));
+            builder.Property(x => x.BannerUri).HasConversion(v => v!.ToString(), v => new Uri(v));
         });
     }
 }

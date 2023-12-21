@@ -22,6 +22,28 @@ namespace Infrastructure.Repositories.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("AccountRole", b =>
+                {
+                    b.Property<Guid>("RoleId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("AccountId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("RoleId", "AccountId");
+
+                    b.HasIndex("AccountId");
+
+                    b.ToTable("AccountRole");
+
+                    b.HasData(
+                        new
+                        {
+                            RoleId = new Guid("2381d027-707a-41ee-b53a-26e967b78d75"),
+                            AccountId = new Guid("06f9eca4-e1a8-4768-b937-6a97c1c98057")
+                        });
+                });
+
             modelBuilder.Entity("Core.Domain.Entities.Account", b =>
                 {
                     b.Property<Guid>("Id")
@@ -88,7 +110,7 @@ namespace Infrastructure.Repositories.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("9a8a504f-e054-4cf3-8a6a-beeed8ada48d"),
+                            Id = new Guid("06f9eca4-e1a8-4768-b937-6a97c1c98057"),
                             AccountStatusId = new Guid("f4468b33-ee55-4e34-898d-7ec37db36ca0"),
                             CreatedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Email = "admin@camai.com",
@@ -157,6 +179,9 @@ namespace Infrastructure.Repositories.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("BannerUri")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<Guid?>("BrandManagerId")
                         .HasColumnType("uniqueidentifier");
 
@@ -167,6 +192,9 @@ namespace Infrastructure.Repositories.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Email")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("LogoUri")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("ModifiedDate")
