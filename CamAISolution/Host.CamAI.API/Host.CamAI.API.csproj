@@ -12,14 +12,13 @@
     <ItemGroup>
         <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" />
         <PackageReference Include="Swashbuckle.AspNetCore" />
-        <PackageReference Include="AutoMapper" />
-        <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" />
     </ItemGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\Infrastructure.Jwt\Infrastructure.Jwt.csproj" />
         <ProjectReference Include="..\Infrastructure.Mapping\Infrastructure.Mapping.csproj" />
-        <ProjectReference Include="..\Infrastructure.Repositories\Infrastructure.Repositories.csproj" />
+        <ProjectReference
+            Include="..\Infrastructure.Repositories\Infrastructure.Repositories.csproj" />
         <ProjectReference Include="..\Infrastructure.Logging\Infrastructure.Logging.csproj" />
     </ItemGroup>
 
