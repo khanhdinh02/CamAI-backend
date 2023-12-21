@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Core.Domain.Models.DTOs.Brands;
+namespace Core.Domain.DTOs;
 
 public class UpdateBrandDto
 {

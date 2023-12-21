@@ -1,4 +1,4 @@
-﻿namespace Core.Domain.Models.DTOs;
+﻿namespace Core.Domain.DTOs;
 
 public class BrandDto : BaseDto
 {

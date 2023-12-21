@@ -1,12 +1,12 @@
 ﻿using System.Text.Json;
 using Core.Application.Exceptions;
-using Core.Application.Specifications.Brands.Repositories;
+using Core.Application.Specifications.Repositories;
 using Core.Domain;
+using Core.Domain.DTOs;
 using Core.Domain.Entities;
-using Core.Domain.Interfaces.Repositories;
-using Core.Domain.Interfaces.Services;
 using Core.Domain.Models;
-using Core.Domain.Models.DTOs.Brands;
+using Core.Domain.Repositories;
+using Core.Domain.Services;
 
 namespace Core.Application;
 

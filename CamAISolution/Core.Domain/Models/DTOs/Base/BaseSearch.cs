@@ -1,3 +1,5 @@
+﻿using System.ComponentModel.DataAnnotations;
+
 namespace Core.Domain.DTOs;
 
 public abstract class BaseSearchRequest

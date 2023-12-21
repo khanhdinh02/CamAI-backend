@@ -1,9 +1,8 @@
 ﻿using System.Linq.Expressions;
-using Core.Application.Specifications.Repositories;
+using Core.Domain.DTOs;
 using Core.Domain.Entities;
-using Core.Domain.Models.DTOs.Brands;
 
-namespace Core.Application.Specifications.Brands.Repositories;
+namespace Core.Application.Specifications.Repositories;
 
 public class BrandSearchSpec : RepositorySpecification<Brand>
 {

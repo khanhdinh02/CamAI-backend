@@ -1,6 +1,4 @@
-﻿using Core.Domain.Models.DTOs.Base;
-
-namespace Core.Domain.Models.DTOs.Brands;
+﻿namespace Core.Domain.DTOs;
 
 public class SearchBrandRequest : BaseSearchRequest
 {

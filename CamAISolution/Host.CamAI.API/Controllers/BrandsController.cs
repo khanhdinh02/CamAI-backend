@@ -1,8 +1,8 @@
 ﻿using AutoMapper;
+using Core.Domain.DTOs;
 using Core.Domain.Entities;
-using Core.Domain.Interfaces.Services;
 using Core.Domain.Models;
-using Core.Domain.Models.DTOs;
+using Core.Domain.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Host.CamAI.API.Controllers;
