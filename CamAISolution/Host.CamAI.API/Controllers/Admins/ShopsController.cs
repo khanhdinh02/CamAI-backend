@@ -1,6 +1,7 @@
 using AutoMapper;
 using Core.Domain;
 using Core.Domain.Entities;
+using Core.Domain.Interfaces.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Host.CamAI.API.Controllers.Admins;

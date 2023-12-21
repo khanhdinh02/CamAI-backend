@@ -1,7 +1,7 @@
 ﻿using Core.Domain.Entities;
 using Core.Domain.Models;
 
-namespace Core.Domain;
+namespace Core.Domain.Interfaces.Services;
 
 public interface IShopService
 {

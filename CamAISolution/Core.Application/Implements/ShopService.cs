@@ -3,6 +3,7 @@ using Core.Application.Specifications.Repositories;
 using Core.Domain;
 using Core.Domain.Entities;
 using Core.Domain.Interfaces.Repositories;
+using Core.Domain.Interfaces.Services;
 using Core.Domain.Models;
 
 namespace Core.Application;
@@ -32,7 +33,7 @@ public class ShopService(IUnitOfWork unitOfWork, IAppLogging<ShopService> logger
         var foundShop = await unitOfWork.Shops.GetAsync(new ShopByIdRepoSpecfication(id));
         if (foundShop.Values.Count == 0)
             throw new NotFoundException(typeof(Shop), id, GetType());
-        return foundShop.Values.First();
+        return foundShop.Values[0];
     }
 
     public async Task<PaginationResult<Shop>> GetShops(SearchShopRequest searchRequest)
@@ -51,7 +52,7 @@ public class ShopService(IUnitOfWork unitOfWork, IAppLogging<ShopService> logger
             throw new BadRequestException($"Cannot modified inactive shop");
         foundShop.Name = shopDto.Name ?? foundShop.Name;
         foundShop.AddressLine = shopDto.AddressLine ?? foundShop.AddressLine;
-        foundShop.Phone = foundShop.Phone;
+        foundShop.Phone = shopDto.Phone;
         if (shopDto.WardId.HasValue)
         {
             var isFoundWard = await unitOfWork.Wards.IsExisted(shopDto.WardId.Value);
