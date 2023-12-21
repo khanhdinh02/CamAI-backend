@@ -1,8 +1,5 @@
-﻿using Core.Application.Exceptions.Base;
+﻿using System.Net;
 
-namespace Core.Application;
+namespace Core.Application.Exceptions;
 
-public class ServiceUnavailableException(string message) : BaseException(message, System.Net.HttpStatusCode.ServiceUnavailable)
-{
-
-}
+public class ServiceUnavailableException(string message) : BaseException(message, HttpStatusCode.ServiceUnavailable) { }

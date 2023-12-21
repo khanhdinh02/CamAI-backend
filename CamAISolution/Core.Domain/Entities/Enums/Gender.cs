@@ -1,4 +1,4 @@
-namespace Core.Domain.Entities.Enums;
+namespace Core.Domain.Entities;
 
 public enum Gender
 {

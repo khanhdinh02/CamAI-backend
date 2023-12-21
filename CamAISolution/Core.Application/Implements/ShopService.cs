@@ -1,10 +1,11 @@
 ﻿using Core.Application.Exceptions;
 using Core.Application.Specifications.Repositories;
 using Core.Domain;
+using Core.Domain.DTOs;
 using Core.Domain.Entities;
-using Core.Domain.Interfaces.Repositories;
-using Core.Domain.Interfaces.Services;
 using Core.Domain.Models;
+using Core.Domain.Repositories;
+using Core.Domain.Services;
 
 namespace Core.Application;
 
@@ -24,13 +25,13 @@ public class ShopService(IUnitOfWork unitOfWork, IAppLogging<ShopService> logger
 
     public Task DeleteShop(Guid id)
     {
-        logger.Info($"{nameof(this.DeleteShop)} was not Implemented");
+        logger.Info($"{nameof(DeleteShop)} was not Implemented");
         throw new ServiceUnavailableException("");
     }
 
     public async Task<Shop> GetShopById(Guid id)
     {
-        var foundShop = await unitOfWork.Shops.GetAsync(new ShopByIdRepoSpecfication(id));
+        var foundShop = await unitOfWork.Shops.GetAsync(new ShopByIdRepoSpec(id));
         if (foundShop.Values.Count == 0)
             throw new NotFoundException(typeof(Shop), id, GetType());
         return foundShop.Values[0];
@@ -38,7 +39,7 @@ public class ShopService(IUnitOfWork unitOfWork, IAppLogging<ShopService> logger
 
     public async Task<PaginationResult<Shop>> GetShops(SearchShopRequest searchRequest)
     {
-        var shops = await unitOfWork.Shops.GetAsync(new SearchShopSpecification(searchRequest));
+        var shops = await unitOfWork.Shops.GetAsync(new SearchShopSpec(searchRequest));
         return shops;
     }
 

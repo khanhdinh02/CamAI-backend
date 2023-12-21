@@ -1,6 +1,5 @@
 using Core.Domain.Entities;
-using Core.Domain.Interfaces.Repositories;
-using Core.Domain.Interfaces.Repositories.Base;
+using Core.Domain.Repositories;
 using Infrastructure.Repositories.Data;
 using Microsoft.Extensions.DependencyInjection;
 

@@ -1,7 +1,6 @@
 ﻿using Core.Domain.Entities;
-using Core.Domain.Interfaces.Repositories.Base;
 
-namespace Core.Domain.Interfaces.Repositories;
+namespace Core.Domain.Repositories;
 
 public interface IUnitOfWork : IDisposable, IAsyncDisposable
 {

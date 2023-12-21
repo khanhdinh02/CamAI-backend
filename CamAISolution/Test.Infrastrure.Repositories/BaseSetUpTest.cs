@@ -1,20 +1,19 @@
 using Core.Domain.Entities;
-using Core.Domain.Interfaces.Repositories;
+using Core.Domain.Repositories;
 using Core.Domain.Utilities;
 using Infrastructure.Repositories;
-using Infrastructure.Repositories.Base;
 using Infrastructure.Repositories.Data;
-using Infrastructure.Repositories.Specifications;
 using Microsoft.EntityFrameworkCore;
 using Moq;
 
-namespace Test.Infrastrure.Repositories;
+namespace Test.Infrastructure.Repositories;
 
 [SetUpFixture]
 public class BaseSetUpTest
 {
     protected CamAIContext context;
     protected IUnitOfWork unitOfWork;
+
     [OneTimeSetUp]
     public async Task BaseSetUp()
     {

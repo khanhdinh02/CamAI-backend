@@ -1,15 +1,15 @@
 using System.Linq.Expressions;
-using Core.Domain;
-using Core.Domain.Entities.Base;
-using Core.Domain.Interfaces.Repositories.Base;
-using Core.Domain.Interfaces.Specifications.Repositories;
+using Core.Domain.Entities;
 using Core.Domain.Models;
+using Core.Domain.Repositories;
+using Core.Domain.Specifications.Repositories;
 using Infrastructure.Repositories.Data;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Repositories.Base;
 
-public class Repository<T>(CamAIContext context, IRepositorySpecificationEvaluator<T> specificationEvaluator) : IRepository<T>
+public class Repository<T>(CamAIContext context, IRepositorySpecificationEvaluator<T> specificationEvaluator)
+    : IRepository<T>
     where T : BaseBasicEntity
 {
     protected DbContext Context => context;

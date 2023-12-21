@@ -1,6 +1,7 @@
 using System.Linq.Expressions;
 using System.Text.Json.Serialization;
-using Core.Domain.Interfaces.Specifications.Repositories;
+using Core.Domain.DTOs;
+using Core.Domain.Specifications.Repositories;
 
 namespace Core.Application.Specifications.Repositories;
 
@@ -9,7 +10,8 @@ namespace Core.Application.Specifications.Repositories;
 /// </summary>
 /// <typeparam name="T"></typeparam>
 /// <param name="criteria"></param>
-public abstract class RepositorySpecification<T>(Expression<Func<T, bool>>? criteria = null) : IRepositorySpecification<T>
+public abstract class RepositorySpecification<T>(Expression<Func<T, bool>>? criteria = null)
+    : IRepositorySpecification<T>
 {
     [JsonIgnore]
     public Expression<Func<T, bool>>? Criteria => criteria;
@@ -38,15 +40,26 @@ public abstract class RepositorySpecification<T>(Expression<Func<T, bool>>? crit
     [JsonIgnore]
     public bool IsDisableTracking { get; private set; } = false;
 
-    protected virtual void AddIncludes(Expression<Func<T, object>> include) { Includes?.Add(include); }
+    protected virtual void AddIncludes(Expression<Func<T, object>> include)
+    {
+        Includes?.Add(include);
+    }
 
-    protected virtual void AddIncludes(string include) { IncludeStrings?.Add(include); }
+    protected virtual void AddIncludes(string include)
+    {
+        IncludeStrings?.Add(include);
+    }
 
     protected virtual void ApplyingPaging(int take, int skip)
     {
         Take = take;
         Skip = skip;
         IsPagingEnabled = true;
+    }
+
+    protected virtual void ApplyingPaging(BaseSearchRequest searchRequest)
+    {
+        ApplyingPaging(searchRequest.Size, searchRequest.PageIndex * searchRequest.Size);
     }
 
     protected virtual void ApplyOrderBy(Expression<Func<T, object>> orderBy)

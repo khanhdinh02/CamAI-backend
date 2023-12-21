@@ -1,18 +1,18 @@
 ﻿using System.Linq.Expressions;
-using Core.Application.Specifications;
 using Core.Domain.Entities;
 
-namespace Core.Application;
+namespace Core.Application.Specifications;
 
-public class ShopByStatusSpecification : Specification<Shop>
+public class ShopByStatusSpec : Specification<Shop>
 {
     private readonly Guid status;
 
-    public ShopByStatusSpecification(Guid status)
+    public ShopByStatusSpec(Guid status)
     {
         this.status = status;
-        expr = GetExpression();
+        Expr = GetExpression();
     }
+
     public override Expression<Func<Shop, bool>> GetExpression()
     {
         return s => s.ShopStatus.Id == status;

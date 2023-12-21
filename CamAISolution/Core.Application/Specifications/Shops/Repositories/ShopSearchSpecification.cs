@@ -1,25 +1,26 @@
 ﻿using System.Linq.Expressions;
-using Core.Domain;
+using Core.Domain.DTOs;
 using Core.Domain.Entities;
 
 namespace Core.Application.Specifications.Repositories;
 
-public class SearchShopSpecification : RepositorySpecification<Shop>
+public class SearchShopSpec : RepositorySpecification<Shop>
 {
     private static Expression<Func<Shop, bool>> GetExpression(SearchShopRequest search)
     {
         var baseSpec = new Specification<Shop>();
-        if (!String.IsNullOrEmpty(search.Name))
-            baseSpec.And(new ShopByNameSpecification(search.Name));
+        if (!string.IsNullOrEmpty(search.Name))
+            baseSpec.And(new ShopByNameSpec(search.Name));
         if (search.StatusId.HasValue)
-            baseSpec.And(new ShopByStatusSpecification(search.StatusId.Value));
+            baseSpec.And(new ShopByStatusSpec(search.StatusId.Value));
         return baseSpec.GetExpression();
     }
 
-    public SearchShopSpecification(SearchShopRequest search) : base(GetExpression(search))
+    public SearchShopSpec(SearchShopRequest search)
+        : base(GetExpression(search))
     {
         AddIncludes(s => s.ShopStatus);
-        ApplyingPaging(search.Size, search.PageIndex * search.Size);
+        ApplyingPaging(search);
         ApplyOrderByDescending(s => s.CreatedDate);
     }
 }

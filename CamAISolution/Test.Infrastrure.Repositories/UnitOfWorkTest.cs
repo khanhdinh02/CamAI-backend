@@ -1,6 +1,6 @@
 ﻿using Core.Domain.Entities;
 
-namespace Test.Infrastrure.Repositories;
+namespace Test.Infrastructure.Repositories;
 
 [TestFixture]
 public class UnitOfWorkTest : BaseSetUpTest
