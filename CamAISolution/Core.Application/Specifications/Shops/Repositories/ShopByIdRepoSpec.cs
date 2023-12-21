@@ -2,7 +2,7 @@
 
 namespace Core.Application.Specifications.Repositories;
 
-public class ShopByIdRepoSpec : RepositorySpecification<Shop>
+public class ShopByIdRepoSpec : EntityByIdSpec<Shop>
 {
     public ShopByIdRepoSpec(Guid id, bool includeAll = true)
         : base(s => s.Id == id)
