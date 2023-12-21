@@ -1,5 +1,5 @@
 ﻿using System.Linq.Expressions;
-using Core.Domain.DTOs;
+using Core.Domain.DTO;
 using Core.Domain.Entities;
 
 namespace Core.Application.Specifications.Repositories;

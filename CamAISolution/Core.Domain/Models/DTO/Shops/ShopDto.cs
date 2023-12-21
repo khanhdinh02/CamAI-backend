@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Core.Domain.DTOs;
+namespace Core.Domain.DTO;
 
 public class ShopDto : BaseDto
 {

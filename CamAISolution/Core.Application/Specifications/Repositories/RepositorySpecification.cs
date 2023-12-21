@@ -1,6 +1,6 @@
 using System.Linq.Expressions;
 using System.Text.Json.Serialization;
-using Core.Domain.DTOs;
+using Core.Domain.DTO;
 using Core.Domain.Specifications.Repositories;
 
 namespace Core.Application.Specifications.Repositories;
