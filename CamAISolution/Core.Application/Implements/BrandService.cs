@@ -20,12 +20,12 @@ public class BrandService(IUnitOfWork unitOfWork, IAppLogging<BrandService> logg
     public async Task<Brand> GetBrandById(Guid id)
     {
         var brandResult = await unitOfWork.Brands.GetAsync(new BrandByIdRepoSpec(id));
-        return brandResult.Values.FirstOrDefault() ?? throw new NotFoundException(typeof(Brand), id, GetType());
+        return brandResult.Values.FirstOrDefault() ?? throw new NotFoundException(typeof(Brand), id);
     }
 
     public async Task<Brand> CreateBrand(Brand brand)
     {
-        // TODO [Duy]: create with logo and banner
+        // TODO [Duy]: create brand with logo and banner
         brand.BrandStatusId = AppConstant.BrandActiveStatus;
         await unitOfWork.Brands.AddAsync(brand);
         await unitOfWork.CompleteAsync();
@@ -37,7 +37,7 @@ public class BrandService(IUnitOfWork unitOfWork, IAppLogging<BrandService> logg
     {
         var brand = await unitOfWork.Brands.GetByIdAsync(id);
         if (brand is null)
-            throw new NotFoundException(typeof(Brand), id, GetType());
+            throw new NotFoundException(typeof(Brand), id);
         // TODO [Duy]: divide the AppConstant to multiple constant
         if (brand.BrandStatusId == AppConstant.BrandInactiveStatus)
             throw new BadRequestException("Cannot modified inactive brand");
@@ -55,7 +55,7 @@ public class BrandService(IUnitOfWork unitOfWork, IAppLogging<BrandService> logg
     {
         var brand = await unitOfWork.Brands.GetByIdAsync(id);
         if (brand == null)
-            throw new NotFoundException(typeof(Brand), id, GetType());
+            throw new NotFoundException(typeof(Brand), id);
         if (brand.BrandStatusId != AppConstant.BrandActiveStatus)
             throw new BadRequestException("Brand is already active");
 

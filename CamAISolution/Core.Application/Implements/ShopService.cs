@@ -15,7 +15,7 @@ public class ShopService(IUnitOfWork unitOfWork, IAppLogging<ShopService> logger
     {
         var isFoundWard = await unitOfWork.Wards.IsExisted(shop.WardId);
         if (!isFoundWard)
-            throw new NotFoundException(typeof(Ward), shop.WardId, GetType());
+            throw new NotFoundException(typeof(Ward), shop.WardId);
         shop.ShopStatusId = AppConstant.ShopActiveStatus;
         shop = await unitOfWork.Shops.AddAsync(shop);
         await unitOfWork.CompleteAsync();
@@ -33,7 +33,7 @@ public class ShopService(IUnitOfWork unitOfWork, IAppLogging<ShopService> logger
     {
         var foundShop = await unitOfWork.Shops.GetAsync(new ShopByIdRepoSpec(id));
         if (foundShop.Values.Count == 0)
-            throw new NotFoundException(typeof(Shop), id, GetType());
+            throw new NotFoundException(typeof(Shop), id);
         return foundShop.Values[0];
     }
 
@@ -48,7 +48,7 @@ public class ShopService(IUnitOfWork unitOfWork, IAppLogging<ShopService> logger
     {
         var foundShop = await unitOfWork.Shops.GetByIdAsync(id);
         if (foundShop is null)
-            throw new NotFoundException(typeof(Shop), id, GetType());
+            throw new NotFoundException(typeof(Shop), id);
         if (foundShop.ShopStatusId == AppConstant.ShopInactiveStatus)
             throw new BadRequestException($"Cannot modified inactive shop");
         foundShop.Name = shopDto.Name ?? foundShop.Name;
@@ -58,14 +58,14 @@ public class ShopService(IUnitOfWork unitOfWork, IAppLogging<ShopService> logger
         {
             var isFoundWard = await unitOfWork.Wards.IsExisted(shopDto.WardId.Value);
             if (!isFoundWard)
-                throw new NotFoundException(typeof(Ward), shopDto.WardId, GetType());
+                throw new NotFoundException(typeof(Ward), shopDto.WardId);
             foundShop.WardId = shopDto.WardId.Value;
         }
         if (shopDto.Status.HasValue)
         {
             var isFoundStatus = await unitOfWork.ShopStatuses.IsExisted(shopDto.Status.Value);
             if (!isFoundStatus)
-                throw new NotFoundException(typeof(ShopStatus), shopDto.Status.Value, GetType());
+                throw new NotFoundException(typeof(ShopStatus), shopDto.Status.Value);
             foundShop.ShopStatusId = shopDto.Status.Value;
         }
         await unitOfWork.CompleteAsync();

@@ -41,7 +41,7 @@ public class AccountService(IRepository<Account> accountRepo) : IAccountService
         //accounts = await accountRepo.GetAsync(expression: combined);
 
         if (accounts.Values.Count <= 0)
-            throw new NotFoundException(typeof(Account), id, this.GetType());
+            throw new NotFoundException(typeof(Account), id);
 
         return accounts.Values[0];
     }
