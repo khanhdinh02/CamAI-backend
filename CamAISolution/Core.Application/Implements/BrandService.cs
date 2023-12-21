@@ -4,13 +4,15 @@ using Core.Application.Specifications.Repositories;
 using Core.Domain;
 using Core.Domain.DTO;
 using Core.Domain.Entities;
+using Core.Domain.Interfaces.Mappings;
 using Core.Domain.Models;
 using Core.Domain.Repositories;
 using Core.Domain.Services;
 
 namespace Core.Application;
 
-public class BrandService(IUnitOfWork unitOfWork, IAppLogging<BrandService> logger) : IBrandService
+public class BrandService(IUnitOfWork unitOfWork, IAppLogging<BrandService> logger, IBaseMapping mapping)
+    : IBrandService
 {
     public async Task<PaginationResult<Brand>> GetBrands(SearchBrandRequest searchRequest)
     {
@@ -26,7 +28,7 @@ public class BrandService(IUnitOfWork unitOfWork, IAppLogging<BrandService> logg
     public async Task<Brand> CreateBrand(Brand brand)
     {
         // TODO [Duy]: create brand with logo and banner
-        brand.BrandStatusId = AppConstant.BrandActiveStatus;
+        brand.BrandStatusId = BrandStatusEnum.Active;
         await unitOfWork.Brands.AddAsync(brand);
         await unitOfWork.CompleteAsync();
         logger.Info($"Create new brand: {JsonSerializer.Serialize(brand)}");
@@ -39,12 +41,10 @@ public class BrandService(IUnitOfWork unitOfWork, IAppLogging<BrandService> logg
         if (brand is null)
             throw new NotFoundException(typeof(Brand), id);
         // TODO [Duy]: divide the AppConstant to multiple constant
-        if (brand.BrandStatusId == AppConstant.BrandInactiveStatus)
+        if (brand.BrandStatusId == BrandStatusEnum.Inactive)
             throw new BadRequestException("Cannot modified inactive brand");
 
-        brand.Name = brandDto.Name;
-        brand.Phone = brandDto.Phone;
-        brand.Email = brandDto.Email;
+        mapping.Map(brandDto, brand);
 
         brand = unitOfWork.Brands.Update(brand);
         unitOfWork.Complete();
@@ -56,10 +56,10 @@ public class BrandService(IUnitOfWork unitOfWork, IAppLogging<BrandService> logg
         var brand = await unitOfWork.Brands.GetByIdAsync(id);
         if (brand == null)
             throw new NotFoundException(typeof(Brand), id);
-        if (brand.BrandStatusId != AppConstant.BrandActiveStatus)
+        if (brand.BrandStatusId != BrandStatusEnum.Active)
             throw new BadRequestException("Brand is already active");
 
-        brand.BrandStatusId = AppConstant.BrandActiveStatus;
+        brand.BrandStatusId = BrandStatusEnum.Active;
         brand = unitOfWork.Brands.Update(brand);
         await unitOfWork.CompleteAsync();
         return brand;
@@ -88,7 +88,7 @@ public class BrandService(IUnitOfWork unitOfWork, IAppLogging<BrandService> logg
             unitOfWork.Brands.Delete(brand);
         else
         {
-            brand.BrandManagerId = AppConstant.BrandInactiveStatus;
+            brand.BrandManagerId = BrandStatusEnum.Inactive;
             unitOfWork.Brands.Update(brand);
         }
 

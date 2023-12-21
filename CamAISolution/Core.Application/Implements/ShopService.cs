@@ -17,7 +17,7 @@ public class ShopService(IUnitOfWork unitOfWork, IAppLogging<ShopService> logger
         var isFoundWard = await unitOfWork.Wards.IsExisted(shop.WardId);
         if (!isFoundWard)
             throw new NotFoundException(typeof(Ward), shop.WardId);
-        shop.ShopStatusId = AppConstant.ShopActiveStatus;
+        shop.ShopStatusId = ShopStatusEnum.Active;
         shop = await unitOfWork.Shops.AddAsync(shop);
         await unitOfWork.CompleteAsync();
         logger.Info($"New shop: {System.Text.Json.JsonSerializer.Serialize(shop)}");
@@ -48,12 +48,12 @@ public class ShopService(IUnitOfWork unitOfWork, IAppLogging<ShopService> logger
 
     public async Task<Shop> UpdateShop(Guid id, UpdateShopDto shopDto)
     {
+        // validation
         var foundShop = await unitOfWork.Shops.GetByIdAsync(id);
         if (foundShop is null)
             throw new NotFoundException(typeof(Shop), id);
-        if (foundShop.ShopStatusId == AppConstant.ShopInactiveStatus)
+        if (foundShop.ShopStatusId == BrandStatusEnum.Inactive)
             throw new BadRequestException($"Cannot modified inactive shop");
-        foundShop = mapping.Map(shopDto, foundShop);
         if (shopDto.WardId.HasValue)
         {
             var isFoundWard = await unitOfWork.Wards.IsExisted(shopDto.WardId.Value);
@@ -66,6 +66,8 @@ public class ShopService(IUnitOfWork unitOfWork, IAppLogging<ShopService> logger
             if (!isFoundStatus)
                 throw new NotFoundException(typeof(ShopStatus), shopDto.Status.Value);
         }
+
+        foundShop = mapping.Map(shopDto, foundShop);
         await unitOfWork.CompleteAsync();
         return foundShop;
     }
