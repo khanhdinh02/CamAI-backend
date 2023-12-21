@@ -1,8 +1,9 @@
 using Host.CamAI.API;
 using Host.CamAI.API.Middlewares;
 using Infrastructure.Jwt;
-using Infrastructure.Repositories;
 using Infrastructure.Logging;
+using Infrastructure.Repositories;
+
 var builder = WebApplication.CreateBuilder(args).ConfigureSerilog();
 
 builder.Services.AddControllers();

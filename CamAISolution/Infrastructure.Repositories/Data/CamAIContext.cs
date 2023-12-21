@@ -1,6 +1,5 @@
 using Core.Domain;
 using Core.Domain.Entities;
-using Core.Domain.Entities.Base;
 using Core.Domain.Utilities;
 using Microsoft.EntityFrameworkCore;
 

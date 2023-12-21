@@ -1,8 +1,8 @@
 using System.Linq.Expressions;
-using Core.Domain.Interfaces.Specifications.Repositories;
 using Core.Domain.Models;
+using Core.Domain.Specifications.Repositories;
 
-namespace Core.Domain.Interfaces.Repositories.Base;
+namespace Core.Domain.Repositories;
 
 public interface IRepository<T>
 {

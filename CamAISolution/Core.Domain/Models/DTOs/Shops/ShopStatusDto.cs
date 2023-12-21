@@ -1,4 +1,4 @@
-﻿namespace Core.Domain;
+﻿namespace Core.Domain.DTOs;
 
 public class ShopStatusDto : BaseDto
 {

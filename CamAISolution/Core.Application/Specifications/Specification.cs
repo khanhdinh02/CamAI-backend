@@ -1,11 +1,10 @@
 using System.Linq.Expressions;
-using Core.Domain.Interfaces.Specifications;
+using Core.Domain.Specifications;
 
 namespace Core.Application.Specifications;
-
 public class Specification<T> : ISpecification<T>
 {
-    protected Expression<Func<T, bool>> expr = _ => true;
+    protected Expression<Func<T, bool>> Expr = _ => true;
 
     public bool IsSatisfied(T entity)
     {
@@ -14,27 +13,27 @@ public class Specification<T> : ISpecification<T>
 
     public virtual Expression<Func<T, bool>> GetExpression()
     {
-        return expr;
+        return Expr;
     }
 
     public ISpecification<T> And(ISpecification<T> specification)
     {
         var spec = new AndSpecification<T>(this, specification);
-        expr = spec.GetExpression();
+        Expr = spec.GetExpression();
         return spec;
     }
 
     public ISpecification<T> Not(ISpecification<T> specification)
     {
         var spec = new NotSpecification<T>(specification);
-        expr = spec.GetExpression();
+        Expr = spec.GetExpression();
         return spec;
     }
 
     public ISpecification<T> Or(ISpecification<T> specification)
     {
         var spec = new OrSpecification<T>(this, specification);
-        expr = spec.GetExpression();
+        Expr = spec.GetExpression();
         return spec;
     }
 }
@@ -87,5 +86,7 @@ public class NotSpecification<T>(ISpecification<T> specification) : Specificatio
 
 internal class ParameterReplacer(ParameterExpression parameter) : ExpressionVisitor
 {
-    protected override Expression VisitParameter(ParameterExpression node) => base.VisitParameter(parameter);
+
+    protected override Expression VisitParameter(ParameterExpression node)
+        => base.VisitParameter(parameter);
 }

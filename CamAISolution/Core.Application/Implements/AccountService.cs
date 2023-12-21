@@ -1,11 +1,9 @@
 using Core.Application.Exceptions;
-using Core.Application.Specifications.Accounts;
-using Core.Application.Specifications.Accounts.Repositories;
+using Core.Application.Specifications.Repositories;
 using Core.Domain.Entities;
-using Core.Domain.Interfaces.Repositories.Base;
-using Core.Domain.Interfaces.Services;
 using Core.Domain.Models;
-using Core.Domain.Utilities;
+using Core.Domain.Repositories;
+using Core.Domain.Services;
 
 namespace Core.Application;
 
@@ -19,7 +17,7 @@ public class AccountService(IRepository<Account> accountRepo) : IAccountService
         int pageIndex = 0
     )
     {
-        var specification = new AccountSearchSpecification(guid, from, to, pageSize, pageIndex);
+        var specification = new AccountSearchSpec(guid, from, to, pageSize, pageIndex);
         return accountRepo.GetAsync(specification);
     }
 
@@ -45,6 +43,6 @@ public class AccountService(IRepository<Account> accountRepo) : IAccountService
         if (accounts.Values.Count <= 0)
             throw new NotFoundException(typeof(Account), id, this.GetType());
 
-        return accounts.Values.First();
+        return accounts.Values[0];
     }
 }

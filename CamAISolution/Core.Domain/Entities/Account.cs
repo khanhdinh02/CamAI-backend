@@ -1,7 +1,5 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Core.Domain.Entities.Base;
-using Core.Domain.Entities.Enums;
 
 namespace Core.Domain.Entities;
 

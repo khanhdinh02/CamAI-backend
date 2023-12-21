@@ -1,16 +1,16 @@
 ﻿using System.Linq.Expressions;
-using Core.Application.Specifications;
 using Core.Domain.Entities;
 
-namespace Core.Application;
+namespace Core.Application.Specifications;
 
-public class ShopByNameSpecification : Specification<Shop>
+public class ShopByNameSpec : Specification<Shop>
 {
     private readonly string name;
-    public ShopByNameSpecification(string name)
+
+    public ShopByNameSpec(string name)
     {
         this.name = name;
-        expr = GetExpression();
+        Expr = GetExpression();
     }
 
     public override Expression<Func<Shop, bool>> GetExpression()

@@ -1,5 +1,5 @@
 using AutoMapper;
-using Core.Domain;
+using Core.Domain.DTOs;
 using Core.Domain.Entities;
 using Host.CamAI.API.Mappings;
 
@@ -33,10 +33,14 @@ public class MapperTest
         {
             Assert.NotNull(mappedShop);
             Assert.IsNotEmpty(mappedShop.Name);
-            Assert.That(mappedShop.Name.CompareTo(shop.Name) == 0, $"Expected {shop.Name} but was {mappedShop.Name}");
-            Assert.That(mappedShop.CreatedDate == shop.CreatedDate);
-            Assert.That(mappedShop.Id == shop.Id);
-            Assert.That(mappedShop.ModifiedDate == shop.ModifiedDate);
+            Assert.That(
+                string.Compare(mappedShop.Name, shop.Name, StringComparison.Ordinal),
+                Is.EqualTo(0),
+                $"Expected {shop.Name} but was {mappedShop.Name}"
+            );
+            Assert.That(mappedShop.CreatedDate, Is.EqualTo(shop.CreatedDate));
+            Assert.That(mappedShop.Id, Is.EqualTo(shop.Id));
+            Assert.That(mappedShop.ModifiedDate, Is.EqualTo(shop.ModifiedDate));
         });
     }
 }

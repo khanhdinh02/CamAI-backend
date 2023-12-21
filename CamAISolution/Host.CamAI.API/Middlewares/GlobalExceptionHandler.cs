@@ -1,5 +1,5 @@
 ﻿using System.Net;
-using Core.Application.Exceptions.Base;
+using Core.Application.Exceptions;
 using Core.Domain;
 
 namespace Host.CamAI.API.Middlewares;

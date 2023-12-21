@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Core.Domain;
+namespace Core.Domain.DTOs;
 
 public class UpdateShopDto
 {

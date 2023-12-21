@@ -1,17 +1,15 @@
 using AutoMapper;
-using Core.Domain;
+using Core.Domain.DTOs;
 using Core.Domain.Entities;
-using Core.Domain.Interfaces.Services;
-using Core.Domain.Models.DTOs.Shops;
+using Core.Domain.Services;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Host.CamAI.API.Controllers.Admins;
+namespace Host.CamAI.API.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
 public class ShopsController(IShopService shopService, IMapper mapper) : ControllerBase
 {
-
     [HttpGet]
     public async Task<IActionResult> GetShop([FromQuery] SearchShopRequest search)
     {
