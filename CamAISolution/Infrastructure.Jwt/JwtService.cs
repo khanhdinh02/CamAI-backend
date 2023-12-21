@@ -7,7 +7,7 @@ using Core.Domain;
 using Core.Domain.Entities;
 using Core.Domain.Interfaces.Services;
 using Core.Domain.Models.Configurations;
-using Core.Domain.Models.DTOs.Auths;
+using Core.Domain.Models.DTO.Auths;
 using Core.Domain.Models.Enums;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -137,21 +137,6 @@ public class JwtService(
             UserRoles = userRoles
         };
     }
-
-    /*public bool ValidateTokens(List<TokenDetailDTO> tokenDetails, string[]? acceptableRoles)
-    {
-        Guid previousUserId = Guid.Empty;
-        foreach (var tokenDTO in tokenDetails)
-        {
-            Guid userId = this.ValidateToken(tokenDTO, acceptableRoles);
-            if (previousUserId != Guid.Empty && !previousUserId.Equals(userId))
-            {
-                return false;
-            }
-            previousUserId = userId;
-        }
-        return true;
-    }*/
 
     private void AddClaimToUserContext(IEnumerable<Claim> claims)
     {

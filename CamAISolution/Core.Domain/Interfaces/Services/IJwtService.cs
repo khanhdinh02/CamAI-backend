@@ -1,6 +1,6 @@
 using System.Security.Claims;
 using Core.Domain.Entities;
-using Core.Domain.Models.DTOs.Auths;
+using Core.Domain.Models.DTO.Auths;
 using Core.Domain.Models.Enums;
 
 namespace Core.Domain.Interfaces.Services;

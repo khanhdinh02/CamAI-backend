@@ -1,7 +1,7 @@
 using System.Security.Claims;
 using Core.Application.Exceptions;
 using Core.Domain.Interfaces.Services;
-using Core.Domain.Models.DTOs.Auths;
+using Core.Domain.Models.DTO.Auths;
 using Core.Domain.Models.Enums;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.DependencyInjection;

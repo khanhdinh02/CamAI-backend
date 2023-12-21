@@ -1,5 +1,5 @@
 using Core.Domain.Interfaces.Services;
-using Core.Domain.Models.DTOs.Auths;
+using Core.Domain.Models.DTO.Auths;
 using Infrastructure.Jwt.Attribute;
 using Microsoft.AspNetCore.Mvc;
 
@@ -14,13 +14,6 @@ public class AuthController(IAuthService authService) : ControllerBase
     {
         var tokenResponseDTO = await authService.GetTokensByUsernameAndPassword(loginDto.Username, loginDto.Password);
         return Ok(tokenResponseDTO);
-    }
-
-    [HttpGet]
-    [AccessTokenGuard(roles: ["test4", "test2", "test3"])]
-    public IActionResult TestATGuard()
-    {
-        return Ok(authService.Test());
     }
 
     [HttpPost("refresh")]
