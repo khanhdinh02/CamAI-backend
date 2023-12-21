@@ -13,6 +13,7 @@ COPY ["Core.Application/Core.Application.csproj", "Core.Application/"]
 COPY ["Core.Domain/Core.Domain.csproj", "Core.Domain/"]
 COPY ["Infrastructure.Repositories/Infrastructure.Repositories.csproj", "Infrastructure.Repositories/"]
 COPY ["Infrastructure.Logging/Infrastructure.Logging.csproj", "Infrastructure.Logging/"]
+COPY ["Infrastructure.Mapping/Infrastructure.Mapping.csproj", "Infrastructure.Mapping/"]
 RUN dotnet restore "Host.CamAI.API/Host.CamAI.API.csproj"
 COPY . .
 WORKDIR "/src/Host.CamAI.API"

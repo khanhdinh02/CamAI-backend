@@ -15,6 +15,6 @@ public class ShopByNameSpec : Specification<Shop>
 
     public override Expression<Func<Shop, bool>> GetExpression()
     {
-        return s => s.Name.Trim().ToLower().Equals(name.Trim().ToLower());
+        return s => s.Name.Trim().ToLower().Contains(name.Trim().ToLower());
     }
 }
