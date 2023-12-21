@@ -1,7 +1,7 @@
 using Core.Application;
 using Core.Application.Exceptions;
 using Core.Domain;
-using Core.Domain.DTOs;
+using Core.Domain.DTO;
 using Core.Domain.Entities;
 using Core.Domain.Repositories;
 using Moq;
