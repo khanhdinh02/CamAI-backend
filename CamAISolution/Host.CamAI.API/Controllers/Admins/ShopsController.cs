@@ -1,3 +1,4 @@
+using Core.Domain;
 using Core.Domain.DTO;
 using Core.Domain.Entities;
 using Core.Domain.Interfaces.Mappings;
@@ -20,16 +21,25 @@ public class ShopsController(IShopService shopService, IBaseMapping baseMapping)
     }
 
     [HttpPost]
-    public async Task<IActionResult> AddShop(UpdateShopDto shopDto)
+    public async Task<IActionResult> CreateShop(CreateOrUpdateShopDto shopDto)
     {
-        var createdShop = await shopService.CreateShop(baseMapping.Map<UpdateShopDto, Shop>(shopDto));
+        var createdShop = await shopService.CreateShop(baseMapping.Map<CreateOrUpdateShopDto, Shop>(shopDto));
         return Ok(createdShop);
     }
 
     [HttpPut("{id:guid}")]
-    public async Task<IActionResult> UpdateShop(Guid id, [FromBody] UpdateShopDto shopDto)
+    public async Task<IActionResult> UpdateShop(Guid id, [FromBody] CreateOrUpdateShopDto shopDto)
     {
         var updatedShop = await shopService.UpdateShop(id, shopDto);
+        return Ok(baseMapping.Map<Shop, ShopDto>(updatedShop));
+    }
+
+    [HttpPatch("{id:guid}")]
+    public async Task<IActionResult> UpdateShopStatus(Guid id, Guid shopStatusId)
+    {
+        Shop updatedShop = await shopService.UpdateStatus(id, shopStatusId);
+        if (updatedShop.ShopStatusId == AppConstant.ShopInactiveStatus)
+            return Ok();
         return Ok(baseMapping.Map<Shop, ShopDto>(updatedShop));
     }
 

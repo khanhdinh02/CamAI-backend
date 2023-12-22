@@ -2,7 +2,7 @@
 
 namespace Core.Domain.DTO;
 
-public class CreateShopDto
+public class CreateOrUpdateShopDto
 {
     [Required, MaxLength(50)]
     public string Name { get; set; } = null!;

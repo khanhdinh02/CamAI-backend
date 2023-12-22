@@ -39,7 +39,7 @@ public class ShopServiceTest : BaseSetUp
     public void When_given_invalid_shop_id_must_throw_not_found_excpetion()
     {
         Assert.ThrowsAsync<NotFoundException>(
-            async () => await shopService.UpdateShop(Guid.Empty, new UpdateShopDto())
+            async () => await shopService.UpdateShop(Guid.Empty, new CreateOrUpdateShopDto())
         );
     }
 
@@ -56,7 +56,7 @@ public class ShopServiceTest : BaseSetUp
         shopService = new ShopService(mockUOW.Object, logging, new Mock<IBaseMapping>().Object);
         Assert.ThrowsAsync<BadRequestException>(
             async () =>
-                await shopService.UpdateShop(Guid.Parse("0a984765-57df-4fb1-a9b8-304e3dd3b69c"), new UpdateShopDto())
+                await shopService.UpdateShop(Guid.Parse("0a984765-57df-4fb1-a9b8-304e3dd3b69c"), new CreateOrUpdateShopDto())
         );
     }
 }

@@ -2,6 +2,7 @@ using AutoMapper;
 using Core.Domain.DTO;
 using Core.Domain.Entities;
 using Host.CamAI.API;
+using Infrastructure.Mapping.Profiles;
 
 namespace Test.Host.CamAI.API;
 
@@ -13,7 +14,7 @@ public class MapperTest
     [OneTimeSetUp]
     public void Setup()
     {
-        var config = new MapperConfiguration(cfg => cfg.AddProfile<CamAIProfile>());
+        var config = new MapperConfiguration(cfg => cfg.AddProfile<ShopProfile>());
         mapper = config.CreateMapper();
     }
 

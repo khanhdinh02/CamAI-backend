@@ -12,8 +12,7 @@ public class ShopProfile : Profile
         CreateMap<Shop, ShopDto>()
             .ForMember(s => s.Status, opts => opts.MapFrom(s => s.ShopStatus));
         CreateMap<ShopStatus, ShopStatusDto>();
-        CreateMap<CreateShopDto, Shop>();
-        CreateMap<UpdateShopDto, Shop>();
+        CreateMap<CreateOrUpdateShopDto, Shop>();
         CreateMap<PaginationResult<Shop>, PaginationResult<ShopDto>>();
     }
 }
