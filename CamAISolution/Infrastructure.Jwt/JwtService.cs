@@ -44,8 +44,8 @@ public class JwtService(
         var credentials = new SigningCredentials(secretKey, SecurityAlgorithms.HmacSha256);
         var claims = new List<Claim>
         {
-            new("user_id", userID.ToString()),
-            new("user_role", JsonSerializer.Serialize(roles)),
+            new("id", userID.ToString()),
+            new("roles", JsonSerializer.Serialize(roles)),
         };
 
         var token = new JwtSecurityToken(
@@ -119,12 +119,11 @@ public class JwtService(
         IEnumerable<Claim> tokenClaims = this.GetClaims(token, tokenType);
 
         var userId = tokenClaims.FirstOrDefault(c => c.Type == "user_id")?.Value;
-        var userRoleString = tokenClaims.FirstOrDefault(c => c.Type == "user_role")?.Value;
-
-        if (userId.IsNullOrEmpty())
+        if (string.IsNullOrEmpty(userId))
             throw new BadRequestException("Cannot get user id from jwt");
 
-        if (userRoleString.IsNullOrEmpty())
+        var userRoleString = tokenClaims.FirstOrDefault(c => c.Type == "user_role")?.Value;
+        if (string.IsNullOrEmpty(userRoleString))
             throw new BadRequestException("Cannot get user role from jwt");
         string[] userRoles = JsonSerializer.Deserialize<string[]>(userRoleString) ?? [];
 
