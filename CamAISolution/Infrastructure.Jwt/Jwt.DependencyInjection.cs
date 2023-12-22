@@ -1,5 +1,5 @@
-using Core.Domain.Interfaces.Services;
 using Core.Domain.Models.Configurations;
+using Core.Domain.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 

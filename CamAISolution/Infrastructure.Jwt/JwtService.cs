@@ -3,15 +3,14 @@ using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
 using Core.Application.Exceptions;
-using Core.Application.Exceptions.Base;
 using Core.Domain;
 using Core.Domain.Entities;
-using Core.Domain.Interfaces.Services;
 using Core.Domain.Models.Configurations;
 using Core.Domain.Models.DTO.Auths;
 using Core.Domain.Models.Enums;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Core.Domain.Services;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 

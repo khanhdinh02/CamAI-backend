@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 
-namespace Host.CamAI.API;
+namespace Host.CamAI.API.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]

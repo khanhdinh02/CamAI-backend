@@ -1,10 +1,11 @@
+using Core.Domain.Repositories;
+using Core.Domain.Services;
 using Core.Domain.Entities;
-using Core.Domain.Interfaces.Services;
 using Core.Domain.Models;
 
-namespace Core.Application.Implements;
+namespace Core.Application;
 
-public class AccountService() : IAccountService
+public class AccountService(IRepository<Account> accountRepo) : IAccountService
 {
     public Task<PaginationResult<Account>> GetAccount(
         Guid? guid = null,
@@ -17,6 +18,7 @@ public class AccountService() : IAccountService
         /* var specification = new AccountSearchSpecification(guid, from, to, pageSize, pageIndex);
          return accountRepo.GetAsync(specification);*/
         throw new NotImplementedException();
+        //return accountRepo.GetAsync(specification);
     }
 
     public async Task<Account> GetAccountById(Guid id)
@@ -40,8 +42,8 @@ public class AccountService() : IAccountService
 
         if (accounts.Values.Count <= 0)
             throw new NotFoundException(typeof(Account), id, this.GetType());
-
         return accounts.Values.First();*/
         throw new NotImplementedException();
+        //return accounts.Values.First();
     }
 }

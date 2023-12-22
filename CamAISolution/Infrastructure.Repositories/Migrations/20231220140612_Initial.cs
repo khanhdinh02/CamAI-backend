@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Infrastructure.Repositories.Migrations
 {
     /// <inheritdoc />
-    public partial class RemoveGender : Migration
+    public partial class Initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -261,9 +261,9 @@ namespace Infrastructure.Repositories.Migrations
                 columns: new[] { "Id", "CreatedDate", "Description", "ModifiedDate", "Name" },
                 values: new object[,]
                 {
-                    { new Guid("0154c1da-ffa1-4bd4-ad64-e6932df6ecdc"), new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "New" },
-                    { new Guid("3c19e6fa-4ba8-4ff6-97ca-d381790807c2"), new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "Active" },
-                    { new Guid("c2da0716-198d-4cd6-834b-ca6e0cc23600"), new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "Inactive" }
+                    { new Guid("3a62b31e-ea0f-4b8d-8f37-8bb9da899c23"), new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "New" },
+                    { new Guid("daf87982-2b47-494c-9266-28c6679c77f0"), new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "Inactive" },
+                    { new Guid("f4468b33-ee55-4e34-898d-7ec37db36ca0"), new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "Active" }
                 });
 
             migrationBuilder.InsertData(
@@ -271,8 +271,8 @@ namespace Infrastructure.Repositories.Migrations
                 columns: new[] { "Id", "CreatedDate", "Description", "ModifiedDate", "Name" },
                 values: new object[,]
                 {
-                    { new Guid("b1b1e493-41f2-4a0d-9a65-1a17364fb19b"), new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "Inactive" },
-                    { new Guid("fd850f89-eeef-42f4-995a-cc45977d61bb"), new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "Active" }
+                    { new Guid("79f5bf99-dd0c-4787-924b-c7f175615054"), new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "Active" },
+                    { new Guid("cc835da5-7954-4873-a029-4b472542bb3a"), new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "Inactive" }
                 });
 
             migrationBuilder.InsertData(
@@ -280,11 +280,11 @@ namespace Infrastructure.Repositories.Migrations
                 columns: new[] { "Id", "CreatedDate", "Description", "ModifiedDate", "Name" },
                 values: new object[,]
                 {
-                    { new Guid("3df5f580-1dec-4d89-9758-19b6399c5040"), new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "Shop manager" },
-                    { new Guid("99d945f2-1ab0-4f0a-b717-330a7e0cf188"), new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "Brand manager" },
-                    { new Guid("b7a203b8-0e44-4333-922b-34375bf0ff50"), new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "Employee" },
-                    { new Guid("be70dc81-e850-43f5-802b-2d10b37596cd"), new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "Admin" },
-                    { new Guid("d99e7300-fd21-413c-bde1-6ada94ec2e53"), new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "Technician" }
+                    { new Guid("2381d027-707a-41ee-b53a-26e967b78d75"), new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "Admin" },
+                    { new Guid("658c20e3-b4e8-46ce-a8b7-a9e1860c9ff8"), new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "Technician" },
+                    { new Guid("80bf167e-7411-4727-a508-76415eb7bfbd"), new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "Brand manager" },
+                    { new Guid("c6e17622-a67a-4bf9-b12c-2761d4768d85"), new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "Employee" },
+                    { new Guid("e991447e-723d-4a21-9779-7b0a6ea33998"), new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "Shop manager" }
                 });
 
             migrationBuilder.InsertData(
@@ -292,19 +292,19 @@ namespace Infrastructure.Repositories.Migrations
                 columns: new[] { "Id", "CreatedDate", "Description", "ModifiedDate", "Name" },
                 values: new object[,]
                 {
-                    { new Guid("4acb4303-b3fb-4517-af5d-54b701e5a3a1"), new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "Inactive" },
-                    { new Guid("e0fa5b0b-ed84-4533-a62c-e9ada2471a18"), new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "Active" }
+                    { new Guid("1b4cf615-ffe6-4416-9450-42a11554db10"), new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "Active" },
+                    { new Guid("9eb5c65c-3a69-459e-9ff5-1f0c15353c57"), new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "Inactive" }
                 });
 
             migrationBuilder.InsertData(
                 table: "Accounts",
                 columns: new[] { "Id", "AccountStatusId", "AddressLine", "Birthday", "CreatedDate", "Email", "Gender", "ModifiedDate", "Name", "Password", "Phone", "WardId", "WorkingShopId" },
-                values: new object[] { new Guid("bf2cfb0d-8926-45f7-aa4f-781c74ab1a7a"), new Guid("3c19e6fa-4ba8-4ff6-97ca-d381790807c2"), null, null, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "admin@camai.com", null, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "Admin", "9eb622419ace52f259e858a7f2a10743d35e36fe0d22fc2d224c320cbc68d3af", null, null, null });
+                values: new object[] { new Guid("3227e76d-8693-4911-93d4-8ea837985868"), new Guid("f4468b33-ee55-4e34-898d-7ec37db36ca0"), null, null, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "admin@camai.com", null, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "Admin", "9eb622419ace52f259e858a7f2a10743d35e36fe0d22fc2d224c320cbc68d3af", null, null, null });
 
             migrationBuilder.InsertData(
                 table: "AccountRole",
                 columns: new[] { "AccountId", "RoleId" },
-                values: new object[] { new Guid("bf2cfb0d-8926-45f7-aa4f-781c74ab1a7a"), new Guid("be70dc81-e850-43f5-802b-2d10b37596cd") });
+                values: new object[] { new Guid("3227e76d-8693-4911-93d4-8ea837985868"), new Guid("2381d027-707a-41ee-b53a-26e967b78d75") });
 
             migrationBuilder.CreateIndex(
                 name: "IX_AccountRole_AccountId",

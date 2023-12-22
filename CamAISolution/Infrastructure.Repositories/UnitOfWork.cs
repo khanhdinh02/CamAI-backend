@@ -1,20 +1,37 @@
-using Core.Domain.Interfaces.Repositories;
+using Core.Domain.Entities;
+using Core.Domain.Repositories;
 using Infrastructure.Repositories.Data;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Infrastructure.Repositories;
 
-public class UnitOfWork(CamAIContext context) : IUnitOfWork
+public class UnitOfWork(CamAIContext context, IServiceProvider serviceProvider) : IUnitOfWork
 {
     private bool disposed = false;
+    private bool haveTransaction = false;
+
+    public IRepository<Shop> Shops => serviceProvider.GetRequiredService<IRepository<Shop>>();
+
+    public IRepository<Ward> Wards => serviceProvider.GetRequiredService<IRepository<Ward>>();
+
+    public IRepository<ShopStatus> ShopStatuses => serviceProvider.GetRequiredService<IRepository<ShopStatus>>();
 
     public Task BeginTransaction()
     {
+        haveTransaction = true;
         return context.Database.BeginTransactionAsync();
     }
 
     public Task CommitTransaction()
     {
-        return context.Database.CommitTransactionAsync();
+        if (haveTransaction)
+            return context.Database.CommitTransactionAsync();
+        return Task.CompletedTask;
+    }
+
+    public Task RollBack()
+    {
+        return context.Database.RollbackTransactionAsync();
     }
 
     public int Complete()

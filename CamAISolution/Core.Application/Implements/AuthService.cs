@@ -3,6 +3,7 @@ using Core.Domain.Entities;
 using Core.Domain.Interfaces.Services;
 using Core.Domain.Models.DTO.Auths;
 using Core.Domain.Models.Enums;
+using Core.Domain.Services;
 
 namespace Core.Application.Implements;
 
