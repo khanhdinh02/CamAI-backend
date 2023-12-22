@@ -1,5 +1,6 @@
-﻿using AutoMapper;
+using AutoMapper;
 using Core.Domain;
+using Core.Domain.Entities;
 
 namespace Host.CamAI.API;
 

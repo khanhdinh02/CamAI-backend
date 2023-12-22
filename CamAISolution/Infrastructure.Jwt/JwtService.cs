@@ -3,6 +3,7 @@ using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
 using Core.Application.Exceptions;
+using Core.Application.Exceptions.Base;
 using Core.Domain;
 using Core.Domain.Entities;
 using Core.Domain.Interfaces.Services;
@@ -56,6 +57,11 @@ public class JwtService(
             signingCredentials: credentials
         );
         return new JwtSecurityTokenHandler().WriteToken(token);
+    }
+
+    public string GenerateToken(Guid userID, ICollection<Role> roles, TokenType tokenType)
+    {
+        throw new NotImplementedException();
     }
 
     public IEnumerable<Claim> GetClaims(string token, TokenType tokenType)
@@ -121,13 +127,12 @@ public class JwtService(
 
         if (userRoleString.IsNullOrEmpty())
             throw new BadRequestException("Cannot get user role from jwt");
-
         string[] userRoles = JsonSerializer.Deserialize<string[]>(userRoleString) ?? [];
 
         if (acceptableRoles != null && !acceptableRoles.Intersect(userRoles).Any())
             throw new UnauthorizedException("Unauthorized");
 
-        this.AddClaimToUserContext(tokenClaims);
+        AddClaimToUserContext(tokenClaims);
 
         return new TokenDetailDto
         {
@@ -141,9 +146,12 @@ public class JwtService(
     private void AddClaimToUserContext(IEnumerable<Claim> claims)
     {
         using var scope = serviceProvider.CreateScope();
-        var httpContextAccessor =
-            scope.ServiceProvider.GetService<IHttpContextAccessor>()
-            ?? throw new NullReferenceException($"Null object of {nameof(IHttpContextAccessor)} type");
+        var httpContextAccessor = scope.ServiceProvider.GetService<IHttpContextAccessor>();
+        if (httpContextAccessor == null)
+        {
+            logger.Info($"Null object of {nameof(IHttpContextAccessor)} type");
+            throw new BaseException();
+        }
         httpContextAccessor.HttpContext?.User.AddIdentity(new ClaimsIdentity(claims));
     }
 }
