@@ -10,7 +10,7 @@ namespace Core.Application.Specifications.Repositories;
 /// </summary>
 /// <typeparam name="T"></typeparam>
 /// <param name="criteria"></param>
-public abstract class RepositorySpecification<T>(Expression<Func<T, bool>>? criteria = null)
+public abstract class RepositorySpec<T>(Expression<Func<T, bool>>? criteria = null)
     : IRepositorySpecification<T>
 {
     [JsonIgnore]

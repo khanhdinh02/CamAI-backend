@@ -3,7 +3,7 @@ using Core.Domain.Entities;
 
 namespace Core.Application.Specifications.Repositories;
 
-public class AccountSearchSpec : RepositorySpecification<Account>
+public class AccountSearchSpec : RepositorySpec<Account>
 {
     // Use static method to get Expression from ISpecification<Account> object for passing to the RepositorySpecification<Account> when creating object
     private static Expression<Func<Account, bool>> GetExpression(Guid? guid, DateTime? from, DateTime? to)

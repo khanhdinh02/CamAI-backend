@@ -4,7 +4,7 @@ using Core.Domain.Entities;
 
 namespace Core.Application.Specifications.Repositories;
 
-public class SearchShopSpec : RepositorySpecification<Shop>
+public class SearchShopSpec : RepositorySpec<Shop>
 {
     private static Expression<Func<Shop, bool>> GetExpression(SearchShopRequest search)
     {

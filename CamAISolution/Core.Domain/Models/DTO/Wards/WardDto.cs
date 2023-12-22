@@ -1,6 +1,4 @@
-﻿using Core.Domain.DTO;
-
-namespace Core.Domain.DTOs;
+namespace Core.Domain.DTO;
 
 public class WardDto : BaseDto
 {
