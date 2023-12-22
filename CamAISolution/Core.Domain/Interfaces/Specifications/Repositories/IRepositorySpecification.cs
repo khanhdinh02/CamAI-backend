@@ -1,6 +1,6 @@
 using System.Linq.Expressions;
 
-namespace Core.Domain.Interfaces.Specifications.Repositories;
+namespace Core.Domain.Specifications.Repositories;
 
 /// <summary>
 /// Provide method to adjust data when query: including, ordering...

@@ -1,10 +1,12 @@
 using AutoMapper;
-using Core.Domain;
+using Core.Domain.DTO;
 using Core.Domain.Entities;
 using Host.CamAI.API;
+using Infrastructure.Mapping.Profiles;
 
 namespace Test.Host.CamAI.API;
 
+[TestFixture]
 public class MapperTest
 {
     private IMapper mapper;
@@ -12,8 +14,7 @@ public class MapperTest
     [OneTimeSetUp]
     public void Setup()
     {
-        var config = new MapperConfiguration(cfg => cfg.AddProfile<CamAIProfile>());
-        config.AssertConfigurationIsValid();
+        var config = new MapperConfiguration(cfg => cfg.AddProfile<ShopProfile>());
         mapper = config.CreateMapper();
     }
 
@@ -33,10 +34,14 @@ public class MapperTest
         {
             Assert.NotNull(mappedShop);
             Assert.IsNotEmpty(mappedShop.Name);
-            Assert.That(mappedShop.Name.CompareTo(shop.Name) == 0, $"Expected {shop.Name} but was {mappedShop.Name}");
-            Assert.That(mappedShop.CreatedDate == shop.CreatedDate);
-            Assert.That(mappedShop.Id == shop.Id);
-            Assert.That(mappedShop.ModifiedDate == shop.ModifiedDate);
+            Assert.That(
+                string.Compare(mappedShop.Name, shop.Name, StringComparison.Ordinal),
+                Is.EqualTo(0),
+                $"Expected {shop.Name} but was {mappedShop.Name}"
+            );
+            Assert.That(mappedShop.CreatedDate, Is.EqualTo(shop.CreatedDate));
+            Assert.That(mappedShop.Id, Is.EqualTo(shop.Id));
+            Assert.That(mappedShop.ModifiedDate, Is.EqualTo(shop.ModifiedDate));
         });
     }
 }

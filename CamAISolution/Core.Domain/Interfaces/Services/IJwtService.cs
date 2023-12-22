@@ -1,7 +1,7 @@
 ﻿using System.Security.Claims;
 using Core.Domain.Entities;
 
-namespace Core.Domain.Interfaces.Services;
+namespace Core.Domain.Services;
 
 public interface IJwtService
 {

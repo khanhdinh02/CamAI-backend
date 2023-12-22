@@ -1,15 +1,16 @@
 using System.Linq.Expressions;
-using Core.Application.Exceptions;
-using Core.Domain.Interfaces.Repositories.Base;
-using Core.Domain.Interfaces.Specifications.Repositories;
+using Core.Domain.Entities;
 using Core.Domain.Models;
+using Core.Domain.Repositories;
+using Core.Domain.Specifications.Repositories;
 using Infrastructure.Repositories.Data;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Repositories.Base;
 
-public class Repository<T>(CamAIContext context, IRepositorySpecificationEvaluator<T> specificationEvaluator) : IRepository<T>
-    where T : class
+public class Repository<T>(CamAIContext context, IRepositorySpecificationEvaluator<T> specificationEvaluator)
+    : IRepository<T>
+    where T : BaseBasicEntity
 {
     protected DbContext Context => context;
 
@@ -83,19 +84,24 @@ public class Repository<T>(CamAIContext context, IRepositorySpecificationEvaluat
         var query = specificationEvaluator.GetQuery(context.Set<T>(), specification);
         var count = await query.CountAsync();
         var data = await query.ToListAsync();
-        //TODO: recalculate the page index
         return new PaginationResult<T>
         {
-            PageIndex = 0,
+            PageIndex = specification.Skip / specification.Take,
             PageSize = data.Count,
             TotalCount = count,
             Values = data,
         };
     }
 
-    public virtual async Task<T> GetByIdAsync(object key)
+    public virtual async Task<T?> GetByIdAsync(object key)
     {
-        return await Context.Set<T>().FindAsync(key) ?? throw new NotFoundException(typeof(T), key, GetType());
+        return await Context.Set<T>().FindAsync(key);
+    }
+
+    public async Task<bool> IsExisted(object key)
+    {
+        var data = await context.Set<T>().Where(o => o.Id == (Guid)key).Select(o => o.Id).FirstOrDefaultAsync();
+        return data == (Guid)key;
     }
 
     public virtual T Update(T entity)
