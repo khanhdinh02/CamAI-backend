@@ -4,7 +4,7 @@ using Core.Domain.Entities;
 
 namespace Core.Application.Specifications.Repositories;
 
-public class BrandSearchSpec : RepositorySpecification<Brand>
+public class BrandSearchSpec : RepositorySpec<Brand>
 {
     public BrandSearchSpec(SearchBrandRequest searchRequest)
         : base(GetExpression(searchRequest))

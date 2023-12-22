@@ -35,7 +35,7 @@ public class ShopsController(IShopService shopService, IBaseMapping baseMapping)
     public async Task<IActionResult> UpdateShopStatus(Guid id, Guid shopStatusId)
     {
         Shop updatedShop = await shopService.UpdateStatus(id, shopStatusId);
-        if (updatedShop.ShopStatusId == AppConstant.ShopInactiveStatus)
+        if (updatedShop.ShopStatusId == ShopStatusEnum.Inactive)
             return Ok();
         return Ok(baseMapping.Map<Shop, ShopDto>(updatedShop));
     }
