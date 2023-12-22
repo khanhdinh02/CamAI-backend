@@ -5,9 +5,9 @@ namespace Infrastructure.Jwt.Attribute;
 
 public sealed class AccessTokenGuardAttribute : TypeFilterAttribute
 {
-    public AccessTokenGuardAttribute(string[] roles)
+    public AccessTokenGuardAttribute(Guid[] roleGuid)
         : base(typeof(AccessTokenGuardFilter))
     {
-        Arguments = new[] { roles };
+        Arguments = new[] { roleGuid };
     }
 }

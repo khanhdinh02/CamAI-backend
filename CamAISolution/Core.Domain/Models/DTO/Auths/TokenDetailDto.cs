@@ -6,7 +6,7 @@ public class TokenDetailDto
 {
     public Guid UserId { get; set; } = Guid.Empty;
 
-    public string[] UserRoles { get; set; } = [];
+    public Guid[] UserRoles { get; set; } = [];
 
     public TokenType TokenType { get; set; }
 

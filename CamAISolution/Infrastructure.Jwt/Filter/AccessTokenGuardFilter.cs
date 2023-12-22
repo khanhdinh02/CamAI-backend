@@ -6,7 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Infrastructure.Jwt.Guard;
 
-public class AccessTokenGuardFilter(string[] roles) : IAuthorizationFilter
+public class AccessTokenGuardFilter(Guid[] roles) : IAuthorizationFilter
 {
     public void OnAuthorization(AuthorizationFilterContext context)
     {

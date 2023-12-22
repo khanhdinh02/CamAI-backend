@@ -9,7 +9,7 @@ public interface IJwtService
 {
     string GenerateToken(Guid userID, ICollection<Role> roles, TokenType tokenType);
 
-    TokenDetailDto ValidateToken(string token, TokenType tokenType, string[]? acceptableRoles = null);
+    TokenDetailDto ValidateToken(string token, TokenType tokenType, Guid[]? acceptableRoles = null);
 
     IEnumerable<Claim> GetClaims(string token, TokenType tokenType);
 

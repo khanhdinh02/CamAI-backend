@@ -24,7 +24,7 @@ public class JwtService(
 {
     private readonly JwtConfiguration JwtConfiguration = configuration.Value;
 
-    public string GenerateToken(Guid userID, string[] roles, TokenType tokenType)
+    public string GenerateToken(Guid userID, ICollection<Role> roles, TokenType tokenType)
     {
         int tokenDurationInMinute;
         string jwtSecret;
@@ -56,11 +56,6 @@ public class JwtService(
             signingCredentials: credentials
         );
         return new JwtSecurityTokenHandler().WriteToken(token);
-    }
-
-    public string GenerateToken(Guid userID, ICollection<Role> roles, TokenType tokenType)
-    {
-        throw new NotImplementedException();
     }
 
     public IEnumerable<Claim> GetClaims(string token, TokenType tokenType)
@@ -114,7 +109,7 @@ public class JwtService(
     }
 
     //TODO: CHECK USER STATUS FROM STORAGE
-    public TokenDetailDto ValidateToken(string token, TokenType tokenType, string[]? acceptableRoles)
+    public TokenDetailDto ValidateToken(string token, TokenType tokenType, Guid[]? acceptableRoles = null)
     {
         IEnumerable<Claim> tokenClaims = this.GetClaims(token, tokenType);
 
@@ -125,7 +120,7 @@ public class JwtService(
         var userRoleString = tokenClaims.FirstOrDefault(c => c.Type == "user_role")?.Value;
         if (string.IsNullOrEmpty(userRoleString))
             throw new BadRequestException("Cannot get user role from jwt");
-        string[] userRoles = JsonSerializer.Deserialize<string[]>(userRoleString) ?? [];
+        Guid[] userRoles = JsonSerializer.Deserialize<Guid[]>(userRoleString) ?? [];
 
         if (acceptableRoles != null && !acceptableRoles.Intersect(userRoles).Any())
             throw new UnauthorizedException("Unauthorized");

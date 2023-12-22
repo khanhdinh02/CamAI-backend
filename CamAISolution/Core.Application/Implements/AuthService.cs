@@ -3,26 +3,25 @@ using Core.Domain.Entities;
 using Core.Domain.Interfaces.Services;
 using Core.Domain.Models.DTO.Auths;
 using Core.Domain.Models.Enums;
+using Core.Domain.Repositories;
 using Core.Domain.Services;
 
 namespace Core.Application.Implements;
 
-public class AuthService(IJwtService jwtService) : IAuthService
+public class AuthService(IJwtService jwtService, IRepository<Account> accountRepo) : IAuthService
 {
     //TODO: ckeck user from storage
-    public Task<TokenResponseDto> GetTokensByUsernameAndPassword(string username, string password)
+    public async Task<TokenResponseDto> GetTokensByUsernameAndPassword(string email, string password)
     {
-        var account = new Account
-        {
-            Id = new Guid("11223344-5566-7788-99AA-BBCCDDEEFF00"),
-            Email = username,
-            Password = password,
-        };
+        var foundAccount = await accountRepo.GetAsync(expression: a => a.Email == email && a.Password == password);
+        if (foundAccount.Values.Count == 0)
+            throw new UnauthorizedException("Wrong email or password");
+        var account = foundAccount.Values[0];
         // string hash = Hasher.Hash("1234");
         // bool isHashedCorrect = Hasher.Verify("123", hash);
         var accessToken = jwtService.GenerateToken(account.Id, account.Roles, TokenType.AccessToken);
         var refreshToken = jwtService.GenerateToken(account.Id, account.Roles, TokenType.RefreshToken);
-        return Task.FromResult(new TokenResponseDto { AccessToken = accessToken, RefreshToken = refreshToken });
+        return new TokenResponseDto { AccessToken = accessToken, RefreshToken = refreshToken };
     }
 
     //TODO: check account status - check refreshToken in storage
