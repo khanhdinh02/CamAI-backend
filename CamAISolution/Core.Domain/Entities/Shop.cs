@@ -22,4 +22,6 @@ public class Shop : BaseEntity
 
     [InverseProperty(nameof(Account.WorkingShop))]
     public virtual ICollection<Account> Employees { get; set; } = new HashSet<Account>();
+    public virtual ICollection<Camera> Cameras { get; set; } = new HashSet<Camera>();
+    public virtual ICollection<EdgeBoxInstall> EdgeBoxInstalls { get; set; } = new HashSet<EdgeBoxInstall>();
 }

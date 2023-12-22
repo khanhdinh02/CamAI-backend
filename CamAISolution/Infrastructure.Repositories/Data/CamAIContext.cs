@@ -43,6 +43,12 @@ public class CamAIContext : DbContext
     public virtual DbSet<ShopStatus> ShopStatuses { get; set; }
     public virtual DbSet<BrandStatus> BrandStatuses { get; set; }
     public virtual DbSet<AccountStatus> AccountStatuses { get; set; }
+    public virtual DbSet<EdgeBox> EdgeBoxes { get; set; }
+    public virtual DbSet<EdgeBoxStatus> EdgeBoxStatuses { get; set; }
+    public virtual DbSet<EdgeBoxInstall> EdgeBoxInstalls { get; set; }
+    public virtual DbSet<EdgeBoxInstallStatus> EdgeBoxInstallStatuses { get; set; }
+    public virtual DbSet<EdgeBoxActivity> EdgeBoxActivities { get; set; }
+    public virtual DbSet<Camera> Cameras { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -99,5 +105,13 @@ public class CamAIContext : DbContext
                     }
                 );
         });
+
+        modelBuilder
+            .Entity<EdgeBoxStatus>()
+            .HasData(new EdgeBoxStatus { Name = "Active" }, new EdgeBoxStatus { Name = "Inactive" });
+
+        modelBuilder
+            .Entity<EdgeBoxInstallStatus>()
+            .HasData(new EdgeBoxInstallStatus { Name = "Valid" }, new EdgeBoxInstallStatus { Name = "Expired" });
     }
 }
