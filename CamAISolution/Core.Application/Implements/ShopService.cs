@@ -50,21 +50,29 @@ public class ShopService(IUnitOfWork unitOfWork, IAppLogging<ShopService> logger
             throw new NotFoundException(typeof(Shop), id, GetType());
         //TODO: If current acctor has role Admin, allow to update inactive shop
         if (foundShop.ShopStatusId == AppConstant.ShopInactiveStatus)
-            throw new BadRequestException($"Cannot modified inactive shop");
-        foundShop = mapping.Map(shopDto, foundShop);
+            throw new BadRequestException($"Cannot update inactive shop");
+
+        shopDto.Name = shopDto.Name ?? foundShop.Name;
         if (shopDto.WardId.HasValue)
         {
             var isFoundWard = await unitOfWork.Wards.IsExisted(shopDto.WardId.Value);
             if (!isFoundWard)
                 throw new NotFoundException(typeof(Ward), shopDto.WardId, GetType());
         }
+        else
+            shopDto.WardId = foundShop.WardId;
+
         if (shopDto.Status.HasValue)
         {
             var isFoundStatus = await unitOfWork.ShopStatuses.IsExisted(shopDto.Status.Value);
             if (!isFoundStatus)
                 throw new NotFoundException(typeof(ShopStatus), shopDto.Status.Value, GetType());
         }
+        else
+            shopDto.Status = foundShop.ShopStatusId;
+
+        mapping.Map(shopDto, foundShop);
         await unitOfWork.CompleteAsync();
-        return foundShop;
+        return await GetShopById(id);
     }
 }

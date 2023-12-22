@@ -11,6 +11,7 @@ public class ShopByIdRepoSpec : EntityByIdSpec<Shop>
         {
             //Include all data of address
             // AddIncludes(s => s.Ward.District.Province);
+            AddIncludes(s => s.ShopStatus);
         }
     }
 }
