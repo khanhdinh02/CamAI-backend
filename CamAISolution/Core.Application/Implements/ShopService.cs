@@ -20,7 +20,6 @@ public class ShopService(IUnitOfWork unitOfWork, IAppLogging<ShopService> logger
         shop.ShopStatusId = AppConstant.ShopActiveStatus;
         shop = await unitOfWork.Shops.AddAsync(shop);
         await unitOfWork.CompleteAsync();
-        logger.Info($"New shop: {System.Text.Json.JsonSerializer.Serialize(shop)}");
         return shop;
     }
 
@@ -33,8 +32,6 @@ public class ShopService(IUnitOfWork unitOfWork, IAppLogging<ShopService> logger
     public async Task<Shop> GetShopById(Guid id)
     {
         var foundShop = await unitOfWork.Shops.GetAsync(new ShopByIdRepoSpec(id));
-        logger.Info($"Shop: {System.Text.Json.JsonSerializer.Serialize(foundShop)}");
-
         if (foundShop.Values.Count == 0)
             throw new NotFoundException(typeof(Shop), id, GetType());
         return foundShop.Values[0];
@@ -51,7 +48,7 @@ public class ShopService(IUnitOfWork unitOfWork, IAppLogging<ShopService> logger
         var foundShop = await unitOfWork.Shops.GetByIdAsync(id);
         if (foundShop is null)
             throw new NotFoundException(typeof(Shop), id, GetType());
-        //TODO: Admin can modify this
+        //TODO: If current acctor has role Admin, allow to update inactive shop
         if (foundShop.ShopStatusId == AppConstant.ShopInactiveStatus)
             throw new BadRequestException($"Cannot modified inactive shop");
         foundShop = mapping.Map(shopDto, foundShop);

@@ -16,7 +16,6 @@ public class ShopsController(IShopService shopService, IBaseMapping baseMapping,
     public async Task<IActionResult> GetShop([FromQuery] SearchShopRequest search)
     {
         var shops = await shopService.GetShops(search);
-        logger.LogInformation(System.Text.Json.JsonSerializer.Serialize(shops));
         return Ok(baseMapping.Map<PaginationResult<Shop>, PaginationResult<ShopDto>>(shops));
     }
 

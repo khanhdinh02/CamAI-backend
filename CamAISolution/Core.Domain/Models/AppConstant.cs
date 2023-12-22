@@ -21,8 +21,4 @@ public static class AppConstant
     public static readonly Guid RoleBrandManager = Guid.Parse("80bf167e-7411-4727-a508-76415eb7bfbd");
     public static readonly Guid RoleShopManager = Guid.Parse("e991447e-723d-4a21-9779-7b0a6ea33998");
     public static readonly Guid RoleEmployee = Guid.Parse("c6e17622-a67a-4bf9-b12c-2761d4768d85");
-
-    //Gender
-    public static readonly Guid GenderMale = Guid.Parse("08a14c6c-edc4-4c56-aa18-a847d3b39a07");
-    public static readonly Guid GenderFemale = Guid.Parse("6caf2cdd-6ab8-452c-af23-959c2fbe99c7");
 }
