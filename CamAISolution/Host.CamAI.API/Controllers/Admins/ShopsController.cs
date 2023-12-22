@@ -10,7 +10,7 @@ namespace Host.CamAI.API.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class ShopsController(IShopService shopService, IBaseMapping baseMapping, ILogger<ShopsController> logger) : ControllerBase
+public class ShopsController(IShopService shopService, IBaseMapping baseMapping) : ControllerBase
 {
     [HttpGet]
     public async Task<IActionResult> GetShop([FromQuery] SearchShopRequest search)
@@ -20,9 +20,9 @@ public class ShopsController(IShopService shopService, IBaseMapping baseMapping,
     }
 
     [HttpPost]
-    public async Task<IActionResult> AddShop(CreateShopDto shopDto)
+    public async Task<IActionResult> AddShop(UpdateShopDto shopDto)
     {
-        var createdShop = await shopService.CreateShop(baseMapping.Map<CreateShopDto, Shop>(shopDto));
+        var createdShop = await shopService.CreateShop(baseMapping.Map<UpdateShopDto, Shop>(shopDto));
         return Ok(createdShop);
     }
 

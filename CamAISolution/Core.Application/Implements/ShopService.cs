@@ -45,33 +45,20 @@ public class ShopService(IUnitOfWork unitOfWork, IAppLogging<ShopService> logger
 
     public async Task<Shop> UpdateShop(Guid id, UpdateShopDto shopDto)
     {
-        var foundShop = await unitOfWork.Shops.GetByIdAsync(id);
-        if (foundShop is null)
-            throw new NotFoundException(typeof(Shop), id, GetType());
+        var foundShops = await unitOfWork.Shops.GetAsync(new ShopByIdRepoSpec(id, false));
+        if (foundShops.Values.Count == 0)
+            return await CreateShop(mapping.Map<UpdateShopDto, Shop>(shopDto));
+        var foundShop = foundShops.Values[0];
         //TODO: If current acctor has role Admin, allow to update inactive shop
         if (foundShop.ShopStatusId == AppConstant.ShopInactiveStatus)
             throw new BadRequestException($"Cannot update inactive shop");
-
-        shopDto.Name = shopDto.Name ?? foundShop.Name;
-        if (shopDto.WardId.HasValue)
-        {
-            var isFoundWard = await unitOfWork.Wards.IsExisted(shopDto.WardId.Value);
-            if (!isFoundWard)
-                throw new NotFoundException(typeof(Ward), shopDto.WardId, GetType());
-        }
-        else
-            shopDto.WardId = foundShop.WardId;
-
-        if (shopDto.Status.HasValue)
-        {
-            var isFoundStatus = await unitOfWork.ShopStatuses.IsExisted(shopDto.Status.Value);
-            if (!isFoundStatus)
-                throw new NotFoundException(typeof(ShopStatus), shopDto.Status.Value, GetType());
-        }
-        else
-            shopDto.Status = foundShop.ShopStatusId;
+        if (!await unitOfWork.Wards.IsExisted(shopDto.WardId))
+            throw new NotFoundException(typeof(Ward), shopDto.WardId, GetType());
+        if (!await unitOfWork.ShopStatuses.IsExisted(shopDto.Status))
+            throw new NotFoundException(typeof(ShopStatus), shopDto.Status, GetType());
 
         mapping.Map(shopDto, foundShop);
+
         await unitOfWork.CompleteAsync();
         return await GetShopById(id);
     }
