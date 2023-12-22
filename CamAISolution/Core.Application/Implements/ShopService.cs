@@ -47,7 +47,7 @@ public class ShopService(IUnitOfWork unitOfWork, IAppLogging<ShopService> logger
     {
         var foundShops = await unitOfWork.Shops.GetAsync(new ShopByIdRepoSpec(id, false));
         if (foundShops.Values.Count == 0)
-            return await CreateShop(mapping.Map<CreateOrUpdateShopDto, Shop>(shopDto));
+            throw new NotFoundException(typeof(Shop), id);
         var foundShop = foundShops.Values[0];
         if (!await unitOfWork.Wards.IsExisted(shopDto.WardId))
             throw new NotFoundException(typeof(Ward), shopDto.WardId);
