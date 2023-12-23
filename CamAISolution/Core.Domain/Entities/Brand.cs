@@ -16,4 +16,5 @@ public class Brand : BaseEntity
 
     public virtual Account? BrandManager { get; set; }
     public virtual BrandStatus BrandStatus { get; set; } = null!;
+    public virtual ICollection<Shop> Shops { get; set; } = new HashSet<Shop>();
 }
