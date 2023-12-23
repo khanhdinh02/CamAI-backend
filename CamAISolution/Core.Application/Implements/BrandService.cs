@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 using Core.Application.Exceptions;
 using Core.Application.Specifications.Repositories;
 using Core.Domain;
@@ -95,7 +95,7 @@ public class BrandService(IUnitOfWork unitOfWork, IAppLogging<BrandService> logg
         await unitOfWork.CompleteAsync();
     }
 
-    private static bool HasRelatedEntities(Brand brand)
+    private bool HasRelatedEntities(Brand brand)
     {
         return brand.BrandManagerId != null;
     }
