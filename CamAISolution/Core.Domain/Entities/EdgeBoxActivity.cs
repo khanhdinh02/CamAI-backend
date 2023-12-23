@@ -9,6 +9,7 @@ public class EdgeBoxActivity
     public Guid EdgeBoxId { get; set; }
     public Guid OldStatusId { get; set; }
     public Guid NewStatusId { get; set; }
+    public string? Description { get; set; }
     public Guid ModifiedById { get; set; }
     public DateTime ModifiedTime { get; set; }
 

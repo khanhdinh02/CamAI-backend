@@ -5,11 +5,11 @@ namespace Core.Domain.Entities;
 
 public class EdgeBox : BaseEntity
 {
-    [StringLength(50)]
-    public string Address { get; set; } = null!;
-    public int Port { get; set; }
     public string Username { get; set; } = null!;
     public string Password { get; set; } = null!;
+
+    [StringLength(50)]
+    public string? Model { get; set; }
     public Guid EdgeBoxStatusId { get; set; }
 
     public virtual EdgeBoxStatus EdgeBoxStatus { get; set; } = null!;
