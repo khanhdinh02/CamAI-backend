@@ -9,6 +9,6 @@ public abstract class LookupEntity : UpdatableEntity<int>
     public override int Id { get; set; }
 
     [StringLength(20)]
-    public string Name { get; set; } = null!;
-    public string? Description { get; set; }
+    public virtual string Name { get; set; } = null!;
+    public virtual string? Description { get; set; }
 }

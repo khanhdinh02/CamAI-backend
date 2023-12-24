@@ -49,6 +49,14 @@ public class CamAIContext : DbContext
     public virtual DbSet<EdgeBoxInstallStatus> EdgeBoxInstallStatuses { get; set; }
     public virtual DbSet<EdgeBoxActivity> EdgeBoxActivities { get; set; }
     public virtual DbSet<Camera> Cameras { get; set; }
+    public virtual DbSet<Request> Requests { get; set; }
+    public virtual DbSet<RequestStatus> RequestStatuses { get; set; }
+    public virtual DbSet<RequestType> RequestTypes { get; set; }
+    public virtual DbSet<RequestActivity> RequestActivities { get; set; }
+    public virtual DbSet<Ticket> Tickets { get; set; }
+    public virtual DbSet<TicketStatus> TicketStatuses { get; set; }
+    public virtual DbSet<TicketType> TicketTypes { get; set; }
+    public virtual DbSet<TicketActivity> TicketActivities { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -119,6 +127,40 @@ public class CamAIContext : DbContext
             .HasData(
                 new EdgeBoxInstallStatus { Id = 1, Name = "Valid" },
                 new EdgeBoxInstallStatus { Id = 2, Name = "Expired" }
+            );
+
+        modelBuilder
+            .Entity<RequestStatus>()
+            .HasData(
+                new RequestStatus { Id = 1, Name = "Open" },
+                new RequestStatus { Id = 2, Name = "Cancelled" },
+                new RequestStatus { Id = 3, Name = "Done" },
+                new RequestStatus { Id = 4, Name = "Rejected" }
+            );
+
+        modelBuilder
+            .Entity<RequestType>()
+            .HasData(
+                new RequestType { Id = 1, Name = "Install" },
+                new RequestType { Id = 2, Name = "Repair" },
+                new RequestType { Id = 3, Name = "Remove" }
+            );
+
+        modelBuilder
+            .Entity<TicketStatus>()
+            .HasData(
+                new TicketStatus { Id = 1, Name = "Open" },
+                new TicketStatus { Id = 2, Name = "Cancelled" },
+                new TicketStatus { Id = 3, Name = "Done" },
+                new TicketStatus { Id = 4, Name = "Failed" }
+            );
+
+        modelBuilder
+            .Entity<TicketType>()
+            .HasData(
+                new TicketType { Id = 1, Name = "Install" },
+                new TicketType { Id = 2, Name = "Repair" },
+                new TicketType { Id = 3, Name = "Remove" }
             );
     }
 }
