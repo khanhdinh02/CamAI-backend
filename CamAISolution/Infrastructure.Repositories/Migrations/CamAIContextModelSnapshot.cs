@@ -24,8 +24,8 @@ namespace Infrastructure.Repositories.Migrations
 
             modelBuilder.Entity("AccountRole", b =>
                 {
-                    b.Property<Guid>("RoleId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<int>("RoleId")
+                        .HasColumnType("int");
 
                     b.Property<Guid>("AccountId")
                         .HasColumnType("uniqueidentifier");
@@ -39,8 +39,8 @@ namespace Infrastructure.Repositories.Migrations
                     b.HasData(
                         new
                         {
-                            RoleId = new Guid("be70dc81-e850-43f5-802b-2d10b37596cd"),
-                            AccountId = new Guid("bf2cfb0d-8926-45f7-aa4f-781c74ab1a7a")
+                            RoleId = 1,
+                            AccountId = new Guid("4e0f625a-b000-4d9a-9ecb-82f37c8950f5")
                         });
                 });
 
@@ -50,8 +50,8 @@ namespace Infrastructure.Repositories.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("AccountStatusId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<int>("AccountStatusId")
+                        .HasColumnType("int");
 
                     b.Property<string>("AddressLine")
                         .HasColumnType("nvarchar(max)");
@@ -110,8 +110,8 @@ namespace Infrastructure.Repositories.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("bf2cfb0d-8926-45f7-aa4f-781c74ab1a7a"),
-                            AccountStatusId = new Guid("3c19e6fa-4ba8-4ff6-97ca-d381790807c2"),
+                            Id = new Guid("4e0f625a-b000-4d9a-9ecb-82f37c8950f5"),
+                            AccountStatusId = 2,
                             CreatedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Email = "admin@camai.com",
                             ModifiedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
@@ -122,18 +122,14 @@ namespace Infrastructure.Repositories.Migrations
 
             modelBuilder.Entity("Core.Domain.Entities.AccountStatus", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("int");
 
-                    b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("datetime2");
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("ModifiedDate")
-                        .HasColumnType("datetime2");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -152,23 +148,17 @@ namespace Infrastructure.Repositories.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("0154c1da-ffa1-4bd4-ad64-e6932df6ecdc"),
-                            CreatedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            ModifiedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Id = 1,
                             Name = "New"
                         },
                         new
                         {
-                            Id = new Guid("3c19e6fa-4ba8-4ff6-97ca-d381790807c2"),
-                            CreatedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            ModifiedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Id = 2,
                             Name = "Active"
                         },
                         new
                         {
-                            Id = new Guid("c2da0716-198d-4cd6-834b-ca6e0cc23600"),
-                            CreatedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            ModifiedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Id = 3,
                             Name = "Inactive"
                         });
                 });
@@ -182,8 +172,8 @@ namespace Infrastructure.Repositories.Migrations
                     b.Property<Guid?>("BrandManagerId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("BrandStatusId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<int>("BrandStatusId")
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
@@ -221,18 +211,14 @@ namespace Infrastructure.Repositories.Migrations
 
             modelBuilder.Entity("Core.Domain.Entities.BrandStatus", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("int");
 
-                    b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("datetime2");
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("ModifiedDate")
-                        .HasColumnType("datetime2");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -251,18 +237,54 @@ namespace Infrastructure.Repositories.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("fd850f89-eeef-42f4-995a-cc45977d61bb"),
-                            CreatedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            ModifiedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Id = 1,
                             Name = "Active"
                         },
                         new
                         {
-                            Id = new Guid("b1b1e493-41f2-4a0d-9a65-1a17364fb19b"),
-                            CreatedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            ModifiedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Id = 2,
                             Name = "Inactive"
                         });
+                });
+
+            modelBuilder.Entity("Core.Domain.Entities.Camera", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("EdgeBoxId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("EdgeBoxInstallId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("ModifiedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<Guid>("ShopId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<byte[]>("Timestamp")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EdgeBoxInstallId");
+
+                    b.HasIndex("ShopId");
+
+                    b.ToTable("Cameras");
                 });
 
             modelBuilder.Entity("Core.Domain.Entities.District", b =>
@@ -297,6 +319,209 @@ namespace Infrastructure.Repositories.Migrations
                     b.ToTable("Districts");
                 });
 
+            modelBuilder.Entity("Core.Domain.Entities.EdgeBox", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("EdgeBoxStatusId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Model")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime>("ModifiedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Password")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<byte[]>("Timestamp")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<string>("Username")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EdgeBoxStatusId");
+
+                    b.ToTable("EdgeBoxes");
+                });
+
+            modelBuilder.Entity("Core.Domain.Entities.EdgeBoxActivity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("EdgeBoxId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ModifiedById")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("ModifiedTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("NewStatusId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("OldStatusId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EdgeBoxId");
+
+                    b.HasIndex("ModifiedById");
+
+                    b.HasIndex("NewStatusId");
+
+                    b.HasIndex("OldStatusId");
+
+                    b.ToTable("EdgeBoxActivities");
+                });
+
+            modelBuilder.Entity("Core.Domain.Entities.EdgeBoxInstall", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("EdgeBoxId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("EdgeBoxInstallStatusId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("IpAddress")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime>("ModifiedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Port")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("ShopId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<byte[]>("Timestamp")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<DateTime>("ValidFrom")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("ValidUntil")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EdgeBoxId");
+
+                    b.HasIndex("EdgeBoxInstallStatusId");
+
+                    b.HasIndex("ShopId");
+
+                    b.ToTable("EdgeBoxInstalls");
+                });
+
+            modelBuilder.Entity("Core.Domain.Entities.EdgeBoxInstallStatus", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<byte[]>("Timestamp")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("EdgeBoxInstallStatuses");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Name = "Valid"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Name = "Expired"
+                        });
+                });
+
+            modelBuilder.Entity("Core.Domain.Entities.EdgeBoxStatus", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<byte[]>("Timestamp")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("EdgeBoxStatuses");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Name = "Active"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Name = "Inactive"
+                        });
+                });
+
             modelBuilder.Entity("Core.Domain.Entities.Province", b =>
                 {
                     b.Property<Guid>("Id")
@@ -326,23 +551,19 @@ namespace Infrastructure.Repositories.Migrations
 
             modelBuilder.Entity("Core.Domain.Entities.Role", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("int");
 
-                    b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("datetime2");
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("ModifiedDate")
-                        .HasColumnType("datetime2");
-
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
 
                     b.Property<byte[]>("Timestamp")
                         .IsConcurrencyToken()
@@ -356,37 +577,27 @@ namespace Infrastructure.Repositories.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("be70dc81-e850-43f5-802b-2d10b37596cd"),
-                            CreatedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            ModifiedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Id = 1,
                             Name = "Admin"
                         },
                         new
                         {
-                            Id = new Guid("d99e7300-fd21-413c-bde1-6ada94ec2e53"),
-                            CreatedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            ModifiedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Id = 2,
                             Name = "Technician"
                         },
                         new
                         {
-                            Id = new Guid("99d945f2-1ab0-4f0a-b717-330a7e0cf188"),
-                            CreatedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            ModifiedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Id = 3,
                             Name = "Brand manager"
                         },
                         new
                         {
-                            Id = new Guid("3df5f580-1dec-4d89-9758-19b6399c5040"),
-                            CreatedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            ModifiedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Id = 4,
                             Name = "Shop manager"
                         },
                         new
                         {
-                            Id = new Guid("b7a203b8-0e44-4333-922b-34375bf0ff50"),
-                            CreatedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            ModifiedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Id = 5,
                             Name = "Employee"
                         });
                 });
@@ -399,6 +610,9 @@ namespace Infrastructure.Repositories.Migrations
 
                     b.Property<string>("AddressLine")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("BrandId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
@@ -418,8 +632,8 @@ namespace Infrastructure.Repositories.Migrations
                     b.Property<Guid?>("ShopManagerId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("ShopStatusId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<int>("ShopStatusId")
+                        .HasColumnType("int");
 
                     b.Property<byte[]>("Timestamp")
                         .IsConcurrencyToken()
@@ -430,6 +644,8 @@ namespace Infrastructure.Repositories.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("BrandId");
 
                     b.HasIndex("ShopManagerId")
                         .IsUnique()
@@ -444,18 +660,14 @@ namespace Infrastructure.Repositories.Migrations
 
             modelBuilder.Entity("Core.Domain.Entities.ShopStatus", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("int");
 
-                    b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("datetime2");
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("ModifiedDate")
-                        .HasColumnType("datetime2");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -474,16 +686,12 @@ namespace Infrastructure.Repositories.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("e0fa5b0b-ed84-4533-a62c-e9ada2471a18"),
-                            CreatedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            ModifiedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Id = 1,
                             Name = "Active"
                         },
                         new
                         {
-                            Id = new Guid("4acb4303-b3fb-4517-af5d-54b701e5a3a1"),
-                            CreatedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            ModifiedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Id = 2,
                             Name = "Inactive"
                         });
                 });
@@ -575,6 +783,23 @@ namespace Infrastructure.Repositories.Migrations
                     b.Navigation("BrandStatus");
                 });
 
+            modelBuilder.Entity("Core.Domain.Entities.Camera", b =>
+                {
+                    b.HasOne("Core.Domain.Entities.EdgeBoxInstall", "EdgeBoxInstall")
+                        .WithMany("Cameras")
+                        .HasForeignKey("EdgeBoxInstallId");
+
+                    b.HasOne("Core.Domain.Entities.Shop", "Shop")
+                        .WithMany("Cameras")
+                        .HasForeignKey("ShopId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("EdgeBoxInstall");
+
+                    b.Navigation("Shop");
+                });
+
             modelBuilder.Entity("Core.Domain.Entities.District", b =>
                 {
                     b.HasOne("Core.Domain.Entities.Province", "Province")
@@ -586,8 +811,83 @@ namespace Infrastructure.Repositories.Migrations
                     b.Navigation("Province");
                 });
 
+            modelBuilder.Entity("Core.Domain.Entities.EdgeBox", b =>
+                {
+                    b.HasOne("Core.Domain.Entities.EdgeBoxStatus", "EdgeBoxStatus")
+                        .WithMany()
+                        .HasForeignKey("EdgeBoxStatusId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("EdgeBoxStatus");
+                });
+
+            modelBuilder.Entity("Core.Domain.Entities.EdgeBoxActivity", b =>
+                {
+                    b.HasOne("Core.Domain.Entities.EdgeBox", "EdgeBox")
+                        .WithMany()
+                        .HasForeignKey("EdgeBoxId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Core.Domain.Entities.Account", "ModifiedBy")
+                        .WithMany()
+                        .HasForeignKey("ModifiedById")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Core.Domain.Entities.EdgeBoxStatus", "NewStatus")
+                        .WithMany()
+                        .HasForeignKey("NewStatusId");
+
+                    b.HasOne("Core.Domain.Entities.EdgeBoxStatus", "OldStatus")
+                        .WithMany()
+                        .HasForeignKey("OldStatusId");
+
+                    b.Navigation("EdgeBox");
+
+                    b.Navigation("ModifiedBy");
+
+                    b.Navigation("NewStatus");
+
+                    b.Navigation("OldStatus");
+                });
+
+            modelBuilder.Entity("Core.Domain.Entities.EdgeBoxInstall", b =>
+                {
+                    b.HasOne("Core.Domain.Entities.EdgeBox", "EdgeBox")
+                        .WithMany("Installs")
+                        .HasForeignKey("EdgeBoxId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Core.Domain.Entities.EdgeBoxInstallStatus", "EdgeBoxInstallStatus")
+                        .WithMany()
+                        .HasForeignKey("EdgeBoxInstallStatusId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Core.Domain.Entities.Shop", "Shop")
+                        .WithMany("EdgeBoxInstalls")
+                        .HasForeignKey("ShopId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("EdgeBox");
+
+                    b.Navigation("EdgeBoxInstallStatus");
+
+                    b.Navigation("Shop");
+                });
+
             modelBuilder.Entity("Core.Domain.Entities.Shop", b =>
                 {
+                    b.HasOne("Core.Domain.Entities.Brand", "Brand")
+                        .WithMany("Shops")
+                        .HasForeignKey("BrandId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("Core.Domain.Entities.Account", "ShopManager")
                         .WithOne("ManagingShop")
                         .HasForeignKey("Core.Domain.Entities.Shop", "ShopManagerId");
@@ -603,6 +903,8 @@ namespace Infrastructure.Repositories.Migrations
                         .HasForeignKey("WardId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Brand");
 
                     b.Navigation("ShopManager");
 
@@ -629,9 +931,24 @@ namespace Infrastructure.Repositories.Migrations
                     b.Navigation("ManagingShop");
                 });
 
+            modelBuilder.Entity("Core.Domain.Entities.Brand", b =>
+                {
+                    b.Navigation("Shops");
+                });
+
             modelBuilder.Entity("Core.Domain.Entities.District", b =>
                 {
                     b.Navigation("Wards");
+                });
+
+            modelBuilder.Entity("Core.Domain.Entities.EdgeBox", b =>
+                {
+                    b.Navigation("Installs");
+                });
+
+            modelBuilder.Entity("Core.Domain.Entities.EdgeBoxInstall", b =>
+                {
+                    b.Navigation("Cameras");
                 });
 
             modelBuilder.Entity("Core.Domain.Entities.Province", b =>
@@ -641,6 +958,10 @@ namespace Infrastructure.Repositories.Migrations
 
             modelBuilder.Entity("Core.Domain.Entities.Shop", b =>
                 {
+                    b.Navigation("Cameras");
+
+                    b.Navigation("EdgeBoxInstalls");
+
                     b.Navigation("Employees");
                 });
 #pragma warning restore 612, 618

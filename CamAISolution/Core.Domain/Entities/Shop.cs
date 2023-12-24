@@ -4,7 +4,7 @@ using Core.Domain.Entities.Base;
 
 namespace Core.Domain.Entities;
 
-public class Shop : BaseEntity
+public class Shop : BusinessEntity
 {
     [StringLength(50)]
     public string Name { get; set; } = null!;
@@ -15,7 +15,7 @@ public class Shop : BaseEntity
     public string? AddressLine { get; set; }
     public Guid? ShopManagerId { get; set; }
     public Guid BrandId { get; set; }
-    public Guid ShopStatusId { get; set; }
+    public int ShopStatusId { get; set; }
 
     public virtual Account? ShopManager { get; set; }
     public virtual Ward Ward { get; set; } = null!;

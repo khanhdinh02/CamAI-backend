@@ -15,7 +15,7 @@ public class CamAIContext : DbContext
     public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = new CancellationToken())
     {
         //TODO: Add CreatedBy and ModifiedBy in BaseEntity and implement update here.
-        foreach (var entry in ChangeTracker.Entries<BaseEntity>())
+        foreach (var entry in ChangeTracker.Entries<BusinessEntity>())
         {
             switch (entry.State)
             {
@@ -54,8 +54,8 @@ public class CamAIContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
-        var adminRole = new Role { Name = "Admin" };
-        var accountStatusActive = new AccountStatus { Name = "Active" };
+        var adminRole = new Role { Id = 1, Name = "Admin" };
+        var accountStatusActive = new AccountStatus { Id = 2, Name = "Active" };
         var adminAccount = new Account
         {
             Email = "admin@camai.com",
@@ -67,22 +67,26 @@ public class CamAIContext : DbContext
         // AccountStatus=New when account is created and its password have not been changed.
         modelBuilder
             .Entity<AccountStatus>()
-            .HasData(new AccountStatus { Name = "New" }, accountStatusActive, new AccountStatus { Name = "Inactive" });
+            .HasData(
+                new AccountStatus { Id = 1, Name = "New" },
+                accountStatusActive,
+                new AccountStatus { Id = 3, Name = "Inactive" }
+            );
         modelBuilder
             .Entity<BrandStatus>()
-            .HasData(new BrandStatus { Name = "Active" }, new BrandStatus { Name = "Inactive" });
+            .HasData(new BrandStatus { Id = 1, Name = "Active" }, new BrandStatus { Id = 2, Name = "Inactive" });
         modelBuilder
             .Entity<ShopStatus>()
-            .HasData(new ShopStatus { Name = "Active" }, new ShopStatus { Name = "Inactive" });
+            .HasData(new ShopStatus { Id = 1, Name = "Active" }, new ShopStatus { Id = 2, Name = "Inactive" });
 
         modelBuilder
             .Entity<Role>()
             .HasData(
                 adminRole,
-                new Role { Name = "Technician" },
-                new Role { Name = "Brand manager" },
-                new Role { Name = "Shop manager" },
-                new Role { Name = "Employee" }
+                new Role { Id = 2, Name = "Technician" },
+                new Role { Id = 3, Name = "Brand manager" },
+                new Role { Id = 4, Name = "Shop manager" },
+                new Role { Id = 5, Name = "Employee" }
             );
 
         modelBuilder.Entity<Account>(builder =>
@@ -108,10 +112,13 @@ public class CamAIContext : DbContext
 
         modelBuilder
             .Entity<EdgeBoxStatus>()
-            .HasData(new EdgeBoxStatus { Name = "Active" }, new EdgeBoxStatus { Name = "Inactive" });
+            .HasData(new EdgeBoxStatus { Id = 1, Name = "Active" }, new EdgeBoxStatus { Id = 2, Name = "Inactive" });
 
         modelBuilder
             .Entity<EdgeBoxInstallStatus>()
-            .HasData(new EdgeBoxInstallStatus { Name = "Valid" }, new EdgeBoxInstallStatus { Name = "Expired" });
+            .HasData(
+                new EdgeBoxInstallStatus { Id = 1, Name = "Valid" },
+                new EdgeBoxInstallStatus { Id = 2, Name = "Expired" }
+            );
     }
 }

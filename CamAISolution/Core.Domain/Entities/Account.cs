@@ -5,7 +5,7 @@ using Core.Domain.Entities.Enums;
 
 namespace Core.Domain.Entities;
 
-public class Account : BaseEntity
+public class Account : BusinessEntity
 {
     public string Email { get; set; } = null!;
     public string Password { get; set; } = null!;
@@ -22,7 +22,7 @@ public class Account : BaseEntity
     public Guid? WardId { get; set; }
     public string? AddressLine { get; set; }
     public Guid? WorkingShopId { get; set; }
-    public Guid AccountStatusId { get; set; }
+    public int AccountStatusId { get; set; }
 
     public virtual Ward? Ward { get; set; }
     public virtual Shop? WorkingShop { get; set; } = null!;
