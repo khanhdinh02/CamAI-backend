@@ -1,8 +1,6 @@
-﻿using AutoMapper;
 using Core.Domain.DTO;
 using Core.Domain.Entities;
 using Core.Domain.Interfaces.Mappings;
-using Core.Domain.Models;
 using Core.Domain.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -13,36 +11,38 @@ namespace Host.CamAI.API.Controllers;
 public class BrandsController(IBrandService brandService, IBaseMapping mapping) : ControllerBase
 {
     [HttpGet]
-    public async Task<PaginationResult<BrandDto>> GetBrands([FromQuery] SearchBrandRequest searchRequest)
+    public async Task<IActionResult> GetBrands([FromQuery] SearchBrandRequest searchRequest)
     {
         var brands = await brandService.GetBrands(searchRequest);
-        return mapping.Map<Brand, BrandDto>(brands);
+        return Ok(mapping.Map<Brand, BrandDto>(brands));
     }
 
     [HttpGet("{id}")]
-    public async Task<BrandDto> GetBrandById([FromRoute] Guid id)
+    public async Task<IActionResult> GetBrandById([FromRoute] Guid id)
     {
         var brand = await brandService.GetBrandById(id);
-        return mapping.Map<Brand, BrandDto>(brand);
+        return Ok(mapping.Map<Brand, BrandDto>(brand));
     }
 
     [HttpPost]
-    public async Task<Brand> CreateBrand([FromBody] CreateBrandDto brandDto)
+    public async Task<IActionResult> CreateBrand([FromBody] CreateBrandDto brandDto)
     {
-        var brand = mapping.Map<CreateBrandDto, Brand>(brandDto);
-        return await brandService.CreateBrand(brand);
+        var createdBrand = await brandService.CreateBrand(mapping.Map<CreateBrandDto, Brand>(brandDto));
+        return Ok(mapping.Map<Brand, BrandDto>(createdBrand));
     }
 
     [HttpPut("{id}")]
-    public async Task<Brand> UpdateBrand([FromRoute] Guid id, [FromBody] UpdateBrandDto brandDto)
+    public async Task<IActionResult> UpdateBrand([FromRoute] Guid id, [FromBody] UpdateBrandDto brandDto)
     {
-        return await brandService.UpdateBrand(id, brandDto);
+        var updatedBrand = await brandService.UpdateBrand(id, brandDto);
+        return Ok(mapping.Map<Brand, BrandDto>(updatedBrand));
     }
 
     [HttpPut("{id}/reactivate")]
-    public async Task<Brand> ReactivateBrand([FromRoute] Guid id)
+    public async Task<IActionResult> ReactivateBrand([FromRoute] Guid id)
     {
-        return await brandService.ReactivateBrand(id);
+        var reactivatedBrand = await brandService.ReactivateBrand(id);
+        return Ok(mapping.Map<Brand, BrandDto>(reactivatedBrand));
     }
 
     [HttpDelete("{id}")]
