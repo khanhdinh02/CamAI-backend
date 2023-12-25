@@ -2,6 +2,7 @@
 using Core.Application;
 using Core.Domain;
 using Core.Domain.Entities;
+using Core.Domain.Interfaces.Mappings;
 using Core.Domain.Models;
 using Core.Domain.Repositories;
 using Core.Domain.Specifications.Repositories;
@@ -14,11 +15,13 @@ public class BaseSetUp
 {
     protected IUnitOfWork unitOfWork;
     protected IAppLogging<ShopService> logging;
+    protected IBaseMapping mapping;
 
     [OneTimeSetUp]
     public void SetUp()
     {
         logging = new Mock<IAppLogging<ShopService>>().Object;
+        mapping = new Mock<IBaseMapping>().Object;
         var mockUOW = new Mock<IUnitOfWork>();
         mockUOW
             .Setup(

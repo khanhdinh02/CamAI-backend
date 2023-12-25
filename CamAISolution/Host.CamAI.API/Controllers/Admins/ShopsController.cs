@@ -1,10 +1,7 @@
-using Core.Domain;
 using Core.Domain.DTO;
 using Core.Domain.Entities;
 using Core.Domain.Interfaces.Mappings;
-using Core.Domain.Models;
 using Core.Domain.Services;
-
 using Microsoft.AspNetCore.Mvc;
 
 namespace Host.CamAI.API.Controllers;
@@ -17,7 +14,7 @@ public class ShopsController(IShopService shopService, IBaseMapping baseMapping)
     public async Task<IActionResult> GetShop([FromQuery] SearchShopRequest search)
     {
         var shops = await shopService.GetShops(search);
-        return Ok(baseMapping.Map<PaginationResult<Shop>, PaginationResult<ShopDto>>(shops));
+        return Ok(baseMapping.Map<Shop, ShopDto>(shops));
     }
 
     [HttpPost]
@@ -38,7 +35,7 @@ public class ShopsController(IShopService shopService, IBaseMapping baseMapping)
     public async Task<IActionResult> UpdateShopStatus(Guid id, Guid shopStatusId)
     {
         Shop updatedShop = await shopService.UpdateStatus(id, shopStatusId);
-        if (updatedShop.ShopStatusId == AppConstant.ShopInactiveStatus)
+        if (updatedShop.ShopStatusId == ShopStatusEnum.Inactive)
             return Ok();
         return Ok(baseMapping.Map<Shop, ShopDto>(updatedShop));
     }
