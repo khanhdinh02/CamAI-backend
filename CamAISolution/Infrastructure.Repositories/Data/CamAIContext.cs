@@ -57,6 +57,10 @@ public class CamAIContext : DbContext
     public virtual DbSet<TicketStatus> TicketStatuses { get; set; }
     public virtual DbSet<TicketType> TicketTypes { get; set; }
     public virtual DbSet<TicketActivity> TicketActivities { get; set; }
+    public virtual DbSet<Behavior> Behaviors { get; set; }
+    public virtual DbSet<BehaviorType> BehaviorTypes { get; set; }
+    public virtual DbSet<Evidence> Evidences { get; set; }
+    public virtual DbSet<EvidenceType> EvidenceTypes { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
