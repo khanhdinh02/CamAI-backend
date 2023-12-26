@@ -42,6 +42,7 @@ public static class ApiDependencyInjection
         services.AddAutoMapper(typeof(Program));
         services.AddScoped<IAccountService, AccountService>();
         services.AddScoped<IAuthService, AuthService>();
+        services.AddScoped<IBrandService, BrandService>();
         services.AddScoped<IShopService, ShopService>();
         return services;
     }

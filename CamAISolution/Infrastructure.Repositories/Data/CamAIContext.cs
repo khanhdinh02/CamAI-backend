@@ -1,5 +1,6 @@
-using Core.Domain;
+using Core.Domain.DTO;
 using Core.Domain.Entities;
+using Core.Domain.Models.DTO.Accounts;
 using Core.Domain.Utilities;
 using Microsoft.EntityFrameworkCore;
 
@@ -48,8 +49,8 @@ public class CamAIContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
-        var adminRole = new Role { Id = AppConstant.RoleAdmin, Name = "Admin" };
-        var accountStatusActive = new AccountStatus { Id = AppConstant.AccountActiveStatus, Name = "Active" };
+        var adminRole = new Role { Id = RoleEnum.Admin, Name = "Admin" };
+        var accountStatusActive = new AccountStatus { Id = AccountStatusEnum.Active, Name = "Active" };
         var adminAccount = new Account
         {
             Email = "admin@camai.com",
@@ -62,33 +63,34 @@ public class CamAIContext : DbContext
         modelBuilder
             .Entity<AccountStatus>()
             .HasData(
-                new AccountStatus { Id = AppConstant.AccountNewStatus, Name = "New" },
+                new AccountStatus { Id = AccountStatusEnum.New, Name = "New" },
                 accountStatusActive,
-                new AccountStatus { Id = AppConstant.AccountInactiveStatus, Name = "Inactive" }
+                new AccountStatus { Id = AccountStatusEnum.Inactive, Name = "Inactive" }
             );
         modelBuilder
             .Entity<BrandStatus>()
             .HasData(
-                new BrandStatus { Id = AppConstant.BrandActiveStatus, Name = "Active" },
-                new BrandStatus { Id = AppConstant.BrandInactiveStatus, Name = "Inactive" }
+                new BrandStatus { Id = BrandStatusEnum.Active, Name = "Active" },
+                new BrandStatus { Id = BrandStatusEnum.Inactive, Name = "Inactive" }
             );
         modelBuilder
             .Entity<ShopStatus>()
             .HasData(
-                new ShopStatus { Id = AppConstant.ShopActiveStatus, Name = "Active" },
-                new ShopStatus { Id = AppConstant.ShopInactiveStatus, Name = "Inactive" }
+                new ShopStatus { Id = ShopStatusEnum.Active, Name = "Active" },
+                new ShopStatus { Id = ShopStatusEnum.Inactive, Name = "Inactive" }
             );
 
         modelBuilder
             .Entity<Role>()
             .HasData(
                 adminRole,
-                new Role { Id = AppConstant.RoleTenician, Name = "Technician" },
-                new Role { Id = AppConstant.RoleBrandManager, Name = "Brand manager" },
-                new Role { Id = AppConstant.RoleShopManager, Name = "Shop manager" },
-                new Role { Id = AppConstant.RoleEmployee, Name = "Employee" }
+                new Role { Id = RoleEnum.Technician, Name = "Technician" },
+                new Role { Id = RoleEnum.BrandManager, Name = "Brand manager" },
+                new Role { Id = RoleEnum.ShopManager, Name = "Shop manager" },
+                new Role { Id = RoleEnum.Employee, Name = "Employee" }
             );
 
+        // AccountRole junction table
         modelBuilder.Entity<Account>(builder =>
         {
             const string roleId = "RoleId";
@@ -108,6 +110,12 @@ public class CamAIContext : DbContext
                         je.HasData(new { AccountId = adminAccount.Id, RoleId = adminRole.Id });
                     }
                 );
+        });
+
+        modelBuilder.Entity<Brand>(builder =>
+        {
+            builder.Property(x => x.LogoUri).HasConversion(v => v!.ToString(), v => new Uri(v));
+            builder.Property(x => x.BannerUri).HasConversion(v => v!.ToString(), v => new Uri(v));
         });
     }
 }

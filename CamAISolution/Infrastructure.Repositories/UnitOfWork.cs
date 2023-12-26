@@ -10,6 +10,7 @@ public class UnitOfWork(CamAIContext context, IServiceProvider serviceProvider) 
     private bool disposed = false;
     private bool haveTransaction = false;
 
+    public IRepository<Brand> Brands => serviceProvider.GetRequiredService<IRepository<Brand>>();
     public IRepository<Shop> Shops => serviceProvider.GetRequiredService<IRepository<Shop>>();
 
     public IRepository<Ward> Wards => serviceProvider.GetRequiredService<IRepository<Ward>>();

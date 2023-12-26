@@ -17,7 +17,7 @@ public class ShopService(IUnitOfWork unitOfWork, IAppLogging<ShopService> logger
         var isFoundWard = await unitOfWork.Wards.IsExisted(shop.WardId);
         if (!isFoundWard)
             throw new NotFoundException(typeof(Ward), shop.WardId);
-        shop.ShopStatusId = AppConstant.ShopActiveStatus;
+        shop.ShopStatusId = ShopStatusEnum.Active;
         shop = await unitOfWork.Shops.AddAsync(shop);
         await unitOfWork.CompleteAsync();
         return shop;
@@ -49,6 +49,9 @@ public class ShopService(IUnitOfWork unitOfWork, IAppLogging<ShopService> logger
         if (foundShops.Values.Count == 0)
             throw new NotFoundException(typeof(Shop), id);
         var foundShop = foundShops.Values[0];
+        //TODO: If current actor has role Admin, allow to update inactive shop
+        if (foundShop.ShopStatusId == BrandStatusEnum.Inactive)
+            throw new BadRequestException("Cannot modified inactive shop");
         if (!await unitOfWork.Wards.IsExisted(shopDto.WardId))
             throw new NotFoundException(typeof(Ward), shopDto.WardId);
 
@@ -63,8 +66,8 @@ public class ShopService(IUnitOfWork unitOfWork, IAppLogging<ShopService> logger
         var foundShop = await unitOfWork.Shops.GetByIdAsync(shopId);
         if (foundShop == null)
             throw new NotFoundException(typeof(Shop), shopId);
-        //TODO: If current acctor has role Admin, allow to update inactive shop
-        if (foundShop.ShopStatusId == AppConstant.ShopInactiveStatus)
+        //TODO: If current actor has role Admin, allow to update inactive shop
+        if (foundShop.ShopStatusId == ShopStatusEnum.Inactive)
             throw new BadRequestException($"Cannot update inactive shop");
         foundShop.ShopStatusId = shopStatusId;
         await unitOfWork.CompleteAsync();

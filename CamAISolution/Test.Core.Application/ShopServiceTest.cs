@@ -1,6 +1,5 @@
 using Core.Application;
 using Core.Application.Exceptions;
-using Core.Domain;
 using Core.Domain.DTO;
 using Core.Domain.Entities;
 using Core.Domain.Interfaces.Mappings;
@@ -27,7 +26,7 @@ public class ShopServiceTest : BaseSetUp
             new SearchShopRequest()
             {
                 Name = "Test",
-                StatusId = AppConstant.ShopActiveStatus,
+                StatusId = ShopStatusEnum.Active,
                 Size = 10,
                 PageIndex = 0,
             }
@@ -52,7 +51,7 @@ public class ShopServiceTest : BaseSetUp
                 uow =>
                     uow.Shops.GetByIdAsync(It.Is<Guid>(id => id == Guid.Parse("0a984765-57df-4fb1-a9b8-304e3dd3b69c")))
             )
-            .ReturnsAsync(new Shop { ShopStatusId = AppConstant.ShopInactiveStatus, Name = "Test" });
+            .ReturnsAsync(new Shop { ShopStatusId = ShopStatusEnum.Inactive, Name = "Test" });
         shopService = new ShopService(mockUOW.Object, logging, new Mock<IBaseMapping>().Object);
         Assert.ThrowsAsync<BadRequestException>(
             async () =>
