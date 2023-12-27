@@ -2,6 +2,8 @@ using Core.Domain.Repositories;
 using Core.Domain.Services;
 using Core.Domain.Entities;
 using Core.Domain.Models;
+using Core.Application.Specifications.Accounts.Repositories;
+using Core.Application.Exceptions;
 
 namespace Core.Application;
 
@@ -21,29 +23,9 @@ public class AccountService(IRepository<Account> accountRepo) : IAccountService
         //return accountRepo.GetAsync(specification);
     }
 
-    public async Task<Account> GetAccountById(Guid id)
+    public Task<Account> GetAccountById(Guid id)
     {
-        //Normal
-        /*var accounts = await accountRepo.GetAsync(expression: a => a.Id == id);
-
-        //With AccountSearchSpecification
-        //accounts = await accountRepo.GetAsync(new AccountSearchSpecification(guid: id));
-
-
-        //With AccountByIdRepoSpecification
-        //accounts = await accountRepo.GetAsync(new AccountByIdRepoSpecification(id));
-
-        //With AcocuntByIdSpecification
-        //accounts = await accountRepo.GetAsync(expression: new AccountByIdSpecification(id).ToExpression());
-
-        //Use with another Specification which has same type
-        //var combined = new AccountByIdSpecification(id).And(new AccountCreatedFromToSpecification(DateTimeHelper.VNDateTime, DateTimeHelper.VNDateTime.AddDays(10))).ToExpression();
-        //accounts = await accountRepo.GetAsync(expression: combined);
-
-        if (accounts.Values.Count <= 0)
-            throw new NotFoundException(typeof(Account), id, this.GetType());
-        return accounts.Values.First();*/
-        throw new NotImplementedException();
-        //return accounts.Values.First();
+        var foundAccountTask = accountRepo.GetAsync(new AccountByIdRepoSpec(id));
+        return foundAccountTask.ContinueWith(task => task.Result.Values.Count > 0 ? task.Result.Values.First() : throw new NotFoundException(typeof(Account), id));
     }
 }

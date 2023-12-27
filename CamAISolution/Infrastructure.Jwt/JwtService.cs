@@ -42,7 +42,7 @@ public class JwtService(
         var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret));
 
         var credentials = new SigningCredentials(secretKey, SecurityAlgorithms.HmacSha256);
-        var claims = new List<Claim> { new("id", userID.ToString()), new("roles", JsonSerializer.Serialize(roles)), };
+        var claims = new List<Claim> { new("id", userID.ToString()), new("roles", JsonSerializer.Serialize(roles.Select(r => new { r.Id, r.Name }))), };
 
         var token = new JwtSecurityToken(
             issuer: JwtConfiguration.Issuer,
@@ -105,18 +105,18 @@ public class JwtService(
     }
 
     //TODO: CHECK USER STATUS FROM STORAGE
-    public TokenDetailDto ValidateToken(string token, TokenTypeEnum tokenType, Guid[]? acceptableRoles = null)
+    public TokenDetailDto ValidateToken(string token, TokenTypeEnum tokenType, int[]? acceptableRoles = null)
     {
         IEnumerable<Claim> tokenClaims = this.GetClaims(token, tokenType);
 
-        var userId = tokenClaims.FirstOrDefault(c => c.Type == "user_id")?.Value;
+        var userId = tokenClaims.FirstOrDefault(c => c.Type == "id")?.Value;
         if (string.IsNullOrEmpty(userId))
             throw new BadRequestException("Cannot get user id from jwt");
 
-        var userRoleString = tokenClaims.FirstOrDefault(c => c.Type == "user_role")?.Value;
+        var userRoleString = tokenClaims.FirstOrDefault(c => c.Type == "roles")?.Value;
         if (string.IsNullOrEmpty(userRoleString))
             throw new BadRequestException("Cannot get user role from jwt");
-        Guid[] userRoles = JsonSerializer.Deserialize<Guid[]>(userRoleString) ?? [];
+        int[] userRoles = (JsonSerializer.Deserialize<Role[]>(userRoleString) ?? []).Select(r => r.Id).ToArray();
 
         if (acceptableRoles != null && !acceptableRoles.Intersect(userRoles).Any())
             throw new UnauthorizedException("Unauthorized");

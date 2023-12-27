@@ -2,7 +2,9 @@ using Core.Domain.DTO;
 using Core.Domain.Entities;
 using Core.Domain.Interfaces.Mappings;
 using Core.Domain.Interfaces.Services;
+using Core.Domain.Models.DTO.Accounts;
 using Core.Domain.Models.DTO.Shops;
+using Infrastructure.Jwt.Attribute;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Host.CamAI.API.Controllers.Admins;
@@ -19,6 +21,7 @@ public class ShopsController(IShopService shopService, IBaseMapping baseMapping)
     }
 
     [HttpPost]
+    [AccessTokenGuard(RoleEnum.Admin)]
     public async Task<IActionResult> CreateShop(CreateOrUpdateShopDto shopDto)
     {
         var createdShop = await shopService.CreateShop(baseMapping.Map<CreateOrUpdateShopDto, Shop>(shopDto));
@@ -26,6 +29,7 @@ public class ShopsController(IShopService shopService, IBaseMapping baseMapping)
     }
 
     [HttpPut("{id:guid}")]
+    [AccessTokenGuard(RoleEnum.ShopManager, RoleEnum.Admin, RoleEnum.BrandManager)]
     public async Task<IActionResult> UpdateShop(Guid id, [FromBody] CreateOrUpdateShopDto shopDto)
     {
         var updatedShop = await shopService.UpdateShop(id, shopDto);
@@ -33,6 +37,7 @@ public class ShopsController(IShopService shopService, IBaseMapping baseMapping)
     }
 
     [HttpPatch("{id:guid}")]
+    [AccessTokenGuard(RoleEnum.ShopManager, RoleEnum.Admin, RoleEnum.BrandManager)]
     public async Task<IActionResult> UpdateShopStatus(Guid id, int shopStatusId)
     {
         Shop updatedShop = await shopService.UpdateStatus(id, shopStatusId);

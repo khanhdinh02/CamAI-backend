@@ -10,10 +10,13 @@ namespace Core.Application.Implements;
 
 public class AuthService(IJwtService jwtService, IRepository<Account> accountRepo) : IAuthService
 {
-    //TODO: ckeck user from storage
     public async Task<TokenResponseDto> GetTokensByUsernameAndPassword(string email, string password)
     {
-        var foundAccount = await accountRepo.GetAsync(expression: a => a.Email == email && a.Password == password);
+        var foundAccount = await accountRepo.GetAsync(
+            expression: a => a.Email == email && a.Password == password && a.AccountStatusId == AccountStatusEnum.Active,
+            orderBy: e => e.OrderBy(a => a.Id),
+            includeProperties: [nameof(Account.Roles)]
+        );
         if (foundAccount.Values.Count == 0)
             throw new UnauthorizedException("Wrong email or password");
         var account = foundAccount.Values[0];
