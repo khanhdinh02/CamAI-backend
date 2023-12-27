@@ -1,14 +1,17 @@
-﻿using Core.Application.Exceptions;
+using Core.Application.Exceptions;
 using Core.Application.Specifications.Repositories;
+using Core.Application.Specifications.Shops.Repositories;
 using Core.Domain;
 using Core.Domain.DTO;
 using Core.Domain.Entities;
 using Core.Domain.Interfaces.Mappings;
+using Core.Domain.Interfaces.Services;
 using Core.Domain.Models;
+using Core.Domain.Models.DTO.Brands;
+using Core.Domain.Models.DTO.Shops;
 using Core.Domain.Repositories;
-using Core.Domain.Services;
 
-namespace Core.Application;
+namespace Core.Application.Implements;
 
 public class ShopService(IUnitOfWork unitOfWork, IAppLogging<ShopService> logger, IBaseMapping mapping) : IShopService
 {
@@ -61,7 +64,7 @@ public class ShopService(IUnitOfWork unitOfWork, IAppLogging<ShopService> logger
         return await GetShopById(id);
     }
 
-    public async Task<Shop> UpdateStatus(Guid shopId, Guid shopStatusId)
+    public async Task<Shop> UpdateStatus(Guid shopId, int shopStatusId)
     {
         var foundShop = await unitOfWork.Shops.GetByIdAsync(shopId);
         if (foundShop == null)

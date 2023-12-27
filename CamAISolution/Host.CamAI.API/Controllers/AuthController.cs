@@ -1,6 +1,5 @@
 using Core.Domain.Interfaces.Services;
 using Core.Domain.Models.DTO.Auths;
-using Infrastructure.Jwt.Attribute;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Host.CamAI.API.Controllers;

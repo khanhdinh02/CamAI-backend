@@ -1,8 +1,9 @@
-﻿using System.Linq.Expressions;
-using Core.Domain.DTO;
+using System.Linq.Expressions;
+using Core.Application.Specifications.Repositories;
 using Core.Domain.Entities;
+using Core.Domain.Models.DTO.Shops;
 
-namespace Core.Application.Specifications.Repositories;
+namespace Core.Application.Specifications.Shops.Repositories;
 
 public class SearchShopSpec : RepositorySpec<Shop>
 {

@@ -1,7 +1,7 @@
-﻿namespace Core.Domain.DTO;
+namespace Core.Domain.DTO;
 
 public class SearchBrandRequest : BaseSearchRequest
 {
     public string? Name { get; set; }
-    public Guid? StatusId { get; set; }
+    public int? StatusId { get; set; }
 }
