@@ -24,6 +24,8 @@ var app = builder.Build();
 
 app.UseMiddleware<GlobalExceptionHandler>();
 
+app.Migration();
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
