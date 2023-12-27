@@ -1,7 +1,9 @@
-namespace Core.Domain.DTO;
+using Core.Domain.DTO;
+
+namespace Core.Domain.Models.DTO.Shops;
 
 public class SearchShopRequest : BaseSearchRequest
 {
     public string? Name { get; set; }
-    public Guid? StatusId { get; set; }
+    public int? StatusId { get; set; }
 }

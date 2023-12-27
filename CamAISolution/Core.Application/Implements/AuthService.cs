@@ -1,8 +1,8 @@
 using Core.Application.Exceptions;
 using Core.Domain.Entities;
 using Core.Domain.Interfaces.Services;
+using Core.Domain.Models.DTO.Accounts;
 using Core.Domain.Models.DTO.Auths;
-using Core.Domain.Models.Enums;
 using Core.Domain.Repositories;
 using Core.Domain.Services;
 
@@ -19,16 +19,16 @@ public class AuthService(IJwtService jwtService, IRepository<Account> accountRep
         var account = foundAccount.Values[0];
         // string hash = Hasher.Hash("1234");
         // bool isHashedCorrect = Hasher.Verify("123", hash);
-        var accessToken = jwtService.GenerateToken(account.Id, account.Roles, TokenType.AccessToken);
-        var refreshToken = jwtService.GenerateToken(account.Id, account.Roles, TokenType.RefreshToken);
+        var accessToken = jwtService.GenerateToken(account.Id, account.Roles, TokenTypeEnum.AccessToken);
+        var refreshToken = jwtService.GenerateToken(account.Id, account.Roles, TokenTypeEnum.RefreshToken);
         return new TokenResponseDto { AccessToken = accessToken, RefreshToken = refreshToken };
     }
 
     //TODO: check account status - check refreshToken in storage
     public string RenewToken(string oldAccessToken, string refreshToken)
     {
-        TokenDetailDto accessTokenDetail = jwtService.ValidateToken(oldAccessToken, TokenType.AccessToken);
-        TokenDetailDto refreshTokenDetail = jwtService.ValidateToken(refreshToken, TokenType.RefreshToken);
+        TokenDetailDto accessTokenDetail = jwtService.ValidateToken(oldAccessToken, TokenTypeEnum.AccessToken);
+        TokenDetailDto refreshTokenDetail = jwtService.ValidateToken(refreshToken, TokenTypeEnum.RefreshToken);
 
         if (accessTokenDetail.UserId != refreshTokenDetail.UserId)
         {

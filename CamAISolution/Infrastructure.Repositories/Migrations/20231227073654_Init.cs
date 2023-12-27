@@ -8,11 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Infrastructure.Repositories.Migrations
 {
     /// <inheritdoc />
-<<<<<<<< HEAD:CamAISolution/Infrastructure.Repositories/Migrations/20231224092638_Update.cs
-    public partial class Update : Migration
-========
-    public partial class BrandImage : Migration
->>>>>>>> main:CamAISolution/Infrastructure.Repositories/Migrations/20231221061334_BrandImage.cs
+    public partial class Init : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -30,6 +26,21 @@ namespace Infrastructure.Repositories.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_AccountStatuses", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "BehaviorTypes",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Timestamp = table.Column<byte[]>(type: "rowversion", rowVersion: true, nullable: true),
+                    Name = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_BehaviorTypes", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -78,6 +89,21 @@ namespace Infrastructure.Repositories.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "EvidenceTypes",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Timestamp = table.Column<byte[]>(type: "rowversion", rowVersion: true, nullable: true),
+                    Name = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_EvidenceTypes", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Provinces",
                 columns: table => new
                 {
@@ -90,6 +116,36 @@ namespace Infrastructure.Repositories.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Provinces", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "RequestStatuses",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Timestamp = table.Column<byte[]>(type: "rowversion", rowVersion: true, nullable: true),
+                    Name = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_RequestStatuses", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "RequestTypes",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Timestamp = table.Column<byte[]>(type: "rowversion", rowVersion: true, nullable: true),
+                    Name = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_RequestTypes", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -120,6 +176,36 @@ namespace Infrastructure.Repositories.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_ShopStatuses", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "TicketStatuses",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Timestamp = table.Column<byte[]>(type: "rowversion", rowVersion: true, nullable: true),
+                    Name = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_TicketStatuses", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "TicketTypes",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Timestamp = table.Column<byte[]>(type: "rowversion", rowVersion: true, nullable: true),
+                    Name = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_TicketTypes", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -398,6 +484,91 @@ namespace Infrastructure.Repositories.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Requests",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    RequestTypeId = table.Column<int>(type: "int", nullable: false),
+                    AccountId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ShopId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    Detail = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Reply = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    RequestStatusId = table.Column<int>(type: "int", nullable: false),
+                    Timestamp = table.Column<byte[]>(type: "rowversion", rowVersion: true, nullable: true),
+                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ModifiedDate = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Requests", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Requests_Accounts_AccountId",
+                        column: x => x.AccountId,
+                        principalTable: "Accounts",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Requests_RequestStatuses_RequestStatusId",
+                        column: x => x.RequestStatusId,
+                        principalTable: "RequestStatuses",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Requests_RequestTypes_RequestTypeId",
+                        column: x => x.RequestTypeId,
+                        principalTable: "RequestTypes",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Requests_Shops_ShopId",
+                        column: x => x.ShopId,
+                        principalTable: "Shops",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Tickets",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    TicketTypeId = table.Column<int>(type: "int", nullable: false),
+                    AssignedToId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    ShopId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    Detail = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Reply = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    TicketStatusId = table.Column<int>(type: "int", nullable: false),
+                    Timestamp = table.Column<byte[]>(type: "rowversion", rowVersion: true, nullable: true),
+                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ModifiedDate = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Tickets", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Tickets_Accounts_AssignedToId",
+                        column: x => x.AssignedToId,
+                        principalTable: "Accounts",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_Tickets_Shops_ShopId",
+                        column: x => x.ShopId,
+                        principalTable: "Shops",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_Tickets_TicketStatuses_TicketStatusId",
+                        column: x => x.TicketStatusId,
+                        principalTable: "TicketStatuses",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Tickets_TicketTypes_TicketTypeId",
+                        column: x => x.TicketTypeId,
+                        principalTable: "TicketTypes",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Cameras",
                 columns: table => new
                 {
@@ -426,20 +597,152 @@ namespace Infrastructure.Repositories.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "RequestActivities",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    RequestId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    OldStatusId = table.Column<int>(type: "int", nullable: true),
+                    NewStatusId = table.Column<int>(type: "int", nullable: true),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ModifiedById = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ModifiedTime = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_RequestActivities", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_RequestActivities_Accounts_ModifiedById",
+                        column: x => x.ModifiedById,
+                        principalTable: "Accounts",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_RequestActivities_RequestStatuses_NewStatusId",
+                        column: x => x.NewStatusId,
+                        principalTable: "RequestStatuses",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_RequestActivities_RequestStatuses_OldStatusId",
+                        column: x => x.OldStatusId,
+                        principalTable: "RequestStatuses",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_RequestActivities_Requests_RequestId",
+                        column: x => x.RequestId,
+                        principalTable: "Requests",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "TicketActivities",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    TicketId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    OldStatusId = table.Column<int>(type: "int", nullable: true),
+                    NewStatusId = table.Column<int>(type: "int", nullable: true),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ModifiedById = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ModifiedTime = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_TicketActivities", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_TicketActivities_Accounts_ModifiedById",
+                        column: x => x.ModifiedById,
+                        principalTable: "Accounts",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_TicketActivities_TicketStatuses_NewStatusId",
+                        column: x => x.NewStatusId,
+                        principalTable: "TicketStatuses",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_TicketActivities_TicketStatuses_OldStatusId",
+                        column: x => x.OldStatusId,
+                        principalTable: "TicketStatuses",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_TicketActivities_Tickets_TicketId",
+                        column: x => x.TicketId,
+                        principalTable: "Tickets",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Behaviors",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    BehaviorTypeId = table.Column<int>(type: "int", nullable: false),
+                    AccountId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    CameraId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    Time = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Timestamp = table.Column<byte[]>(type: "rowversion", rowVersion: true, nullable: true),
+                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ModifiedDate = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Behaviors", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Behaviors_Accounts_AccountId",
+                        column: x => x.AccountId,
+                        principalTable: "Accounts",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_Behaviors_BehaviorTypes_BehaviorTypeId",
+                        column: x => x.BehaviorTypeId,
+                        principalTable: "BehaviorTypes",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Behaviors_Cameras_CameraId",
+                        column: x => x.CameraId,
+                        principalTable: "Cameras",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Evidences",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Uri = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    EvidenceTypeId = table.Column<int>(type: "int", nullable: false),
+                    BehaviorId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    Timestamp = table.Column<byte[]>(type: "rowversion", rowVersion: true, nullable: true),
+                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ModifiedDate = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Evidences", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Evidences_Behaviors_BehaviorId",
+                        column: x => x.BehaviorId,
+                        principalTable: "Behaviors",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_Evidences_EvidenceTypes_EvidenceTypeId",
+                        column: x => x.EvidenceTypeId,
+                        principalTable: "EvidenceTypes",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
             migrationBuilder.InsertData(
                 table: "AccountStatuses",
                 columns: new[] { "Id", "Description", "Name" },
                 values: new object[,]
                 {
-<<<<<<<< HEAD:CamAISolution/Infrastructure.Repositories/Migrations/20231224092638_Update.cs
                     { 1, null, "New" },
                     { 2, null, "Active" },
                     { 3, null, "Inactive" }
-========
-                    { new Guid("3a62b31e-ea0f-4b8d-8f37-8bb9da899c23"), new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "New" },
-                    { new Guid("daf87982-2b47-494c-9266-28c6679c77f0"), new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "Inactive" },
-                    { new Guid("f4468b33-ee55-4e34-898d-7ec37db36ca0"), new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "Active" }
->>>>>>>> main:CamAISolution/Infrastructure.Repositories/Migrations/20231221061334_BrandImage.cs
                 });
 
             migrationBuilder.InsertData(
@@ -447,7 +750,6 @@ namespace Infrastructure.Repositories.Migrations
                 columns: new[] { "Id", "Description", "Name" },
                 values: new object[,]
                 {
-<<<<<<<< HEAD:CamAISolution/Infrastructure.Repositories/Migrations/20231224092638_Update.cs
                     { 1, null, "Active" },
                     { 2, null, "Inactive" }
                 });
@@ -468,10 +770,27 @@ namespace Infrastructure.Repositories.Migrations
                 {
                     { 1, null, "Active" },
                     { 2, null, "Inactive" }
-========
-                    { new Guid("79f5bf99-dd0c-4787-924b-c7f175615054"), new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "Active" },
-                    { new Guid("cc835da5-7954-4873-a029-4b472542bb3a"), new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "Inactive" }
->>>>>>>> main:CamAISolution/Infrastructure.Repositories/Migrations/20231221061334_BrandImage.cs
+                });
+
+            migrationBuilder.InsertData(
+                table: "RequestStatuses",
+                columns: new[] { "Id", "Description", "Name" },
+                values: new object[,]
+                {
+                    { 1, null, "Open" },
+                    { 2, null, "Canceled" },
+                    { 3, null, "Done" },
+                    { 4, null, "Rejected" }
+                });
+
+            migrationBuilder.InsertData(
+                table: "RequestTypes",
+                columns: new[] { "Id", "Description", "Name" },
+                values: new object[,]
+                {
+                    { 1, null, "Install" },
+                    { 3, null, "Repair" },
+                    { 4, null, "Remove" }
                 });
 
             migrationBuilder.InsertData(
@@ -479,19 +798,11 @@ namespace Infrastructure.Repositories.Migrations
                 columns: new[] { "Id", "Description", "Name" },
                 values: new object[,]
                 {
-<<<<<<<< HEAD:CamAISolution/Infrastructure.Repositories/Migrations/20231224092638_Update.cs
                     { 1, null, "Admin" },
                     { 2, null, "Technician" },
                     { 3, null, "Brand manager" },
                     { 4, null, "Shop manager" },
                     { 5, null, "Employee" }
-========
-                    { new Guid("2381d027-707a-41ee-b53a-26e967b78d75"), new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "Admin" },
-                    { new Guid("658c20e3-b4e8-46ce-a8b7-a9e1860c9ff8"), new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "Technician" },
-                    { new Guid("80bf167e-7411-4727-a508-76415eb7bfbd"), new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "Brand manager" },
-                    { new Guid("c6e17622-a67a-4bf9-b12c-2761d4768d85"), new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "Employee" },
-                    { new Guid("e991447e-723d-4a21-9779-7b0a6ea33998"), new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "Shop manager" }
->>>>>>>> main:CamAISolution/Infrastructure.Repositories/Migrations/20231221061334_BrandImage.cs
                 });
 
             migrationBuilder.InsertData(
@@ -499,32 +810,40 @@ namespace Infrastructure.Repositories.Migrations
                 columns: new[] { "Id", "Description", "Name" },
                 values: new object[,]
                 {
-<<<<<<<< HEAD:CamAISolution/Infrastructure.Repositories/Migrations/20231224092638_Update.cs
                     { 1, null, "Active" },
                     { 2, null, "Inactive" }
-========
-                    { new Guid("1b4cf615-ffe6-4416-9450-42a11554db10"), new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "Active" },
-                    { new Guid("9eb5c65c-3a69-459e-9ff5-1f0c15353c57"), new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "Inactive" }
->>>>>>>> main:CamAISolution/Infrastructure.Repositories/Migrations/20231221061334_BrandImage.cs
+                });
+
+            migrationBuilder.InsertData(
+                table: "TicketStatuses",
+                columns: new[] { "Id", "Description", "Name" },
+                values: new object[,]
+                {
+                    { 1, null, "Open" },
+                    { 2, null, "Canceled" },
+                    { 3, null, "Done" },
+                    { 4, null, "Failed" }
+                });
+
+            migrationBuilder.InsertData(
+                table: "TicketTypes",
+                columns: new[] { "Id", "Description", "Name" },
+                values: new object[,]
+                {
+                    { 1, null, "Install" },
+                    { 3, null, "Repair" },
+                    { 4, null, "Remove" }
                 });
 
             migrationBuilder.InsertData(
                 table: "Accounts",
                 columns: new[] { "Id", "AccountStatusId", "AddressLine", "Birthday", "CreatedDate", "Email", "Gender", "ModifiedDate", "Name", "Password", "Phone", "WardId", "WorkingShopId" },
-<<<<<<<< HEAD:CamAISolution/Infrastructure.Repositories/Migrations/20231224092638_Update.cs
-                values: new object[] { new Guid("4e0f625a-b000-4d9a-9ecb-82f37c8950f5"), 2, null, null, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "admin@camai.com", null, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "Admin", "9eb622419ace52f259e858a7f2a10743d35e36fe0d22fc2d224c320cbc68d3af", null, null, null });
-========
-                values: new object[] { new Guid("06f9eca4-e1a8-4768-b937-6a97c1c98057"), new Guid("f4468b33-ee55-4e34-898d-7ec37db36ca0"), null, null, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "admin@camai.com", null, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "Admin", "9eb622419ace52f259e858a7f2a10743d35e36fe0d22fc2d224c320cbc68d3af", null, null, null });
->>>>>>>> main:CamAISolution/Infrastructure.Repositories/Migrations/20231221061334_BrandImage.cs
+                values: new object[] { new Guid("a4247434-cb54-487e-ba75-42036402a949"), 2, null, null, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "admin@camai.com", null, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "Admin", "9eb622419ace52f259e858a7f2a10743d35e36fe0d22fc2d224c320cbc68d3af", null, null, null });
 
             migrationBuilder.InsertData(
                 table: "AccountRole",
                 columns: new[] { "AccountId", "RoleId" },
-<<<<<<<< HEAD:CamAISolution/Infrastructure.Repositories/Migrations/20231224092638_Update.cs
-                values: new object[] { new Guid("4e0f625a-b000-4d9a-9ecb-82f37c8950f5"), 1 });
-========
-                values: new object[] { new Guid("06f9eca4-e1a8-4768-b937-6a97c1c98057"), new Guid("2381d027-707a-41ee-b53a-26e967b78d75") });
->>>>>>>> main:CamAISolution/Infrastructure.Repositories/Migrations/20231221061334_BrandImage.cs
+                values: new object[] { new Guid("a4247434-cb54-487e-ba75-42036402a949"), 1 });
 
             migrationBuilder.CreateIndex(
                 name: "IX_AccountRole_AccountId",
@@ -545,6 +864,21 @@ namespace Infrastructure.Repositories.Migrations
                 name: "IX_Accounts_WorkingShopId",
                 table: "Accounts",
                 column: "WorkingShopId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Behaviors_AccountId",
+                table: "Behaviors",
+                column: "AccountId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Behaviors_BehaviorTypeId",
+                table: "Behaviors",
+                column: "BehaviorTypeId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Behaviors_CameraId",
+                table: "Behaviors",
+                column: "CameraId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Brands_BrandManagerId",
@@ -614,6 +948,56 @@ namespace Infrastructure.Repositories.Migrations
                 column: "ShopId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Evidences_BehaviorId",
+                table: "Evidences",
+                column: "BehaviorId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Evidences_EvidenceTypeId",
+                table: "Evidences",
+                column: "EvidenceTypeId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_RequestActivities_ModifiedById",
+                table: "RequestActivities",
+                column: "ModifiedById");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_RequestActivities_NewStatusId",
+                table: "RequestActivities",
+                column: "NewStatusId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_RequestActivities_OldStatusId",
+                table: "RequestActivities",
+                column: "OldStatusId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_RequestActivities_RequestId",
+                table: "RequestActivities",
+                column: "RequestId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Requests_AccountId",
+                table: "Requests",
+                column: "AccountId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Requests_RequestStatusId",
+                table: "Requests",
+                column: "RequestStatusId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Requests_RequestTypeId",
+                table: "Requests",
+                column: "RequestTypeId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Requests_ShopId",
+                table: "Requests",
+                column: "ShopId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Shops_BrandId",
                 table: "Shops",
                 column: "BrandId");
@@ -634,6 +1018,46 @@ namespace Infrastructure.Repositories.Migrations
                 name: "IX_Shops_WardId",
                 table: "Shops",
                 column: "WardId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TicketActivities_ModifiedById",
+                table: "TicketActivities",
+                column: "ModifiedById");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TicketActivities_NewStatusId",
+                table: "TicketActivities",
+                column: "NewStatusId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TicketActivities_OldStatusId",
+                table: "TicketActivities",
+                column: "OldStatusId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TicketActivities_TicketId",
+                table: "TicketActivities",
+                column: "TicketId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Tickets_AssignedToId",
+                table: "Tickets",
+                column: "AssignedToId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Tickets_ShopId",
+                table: "Tickets",
+                column: "ShopId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Tickets_TicketStatusId",
+                table: "Tickets",
+                column: "TicketStatusId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Tickets_TicketTypeId",
+                table: "Tickets",
+                column: "TicketTypeId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Wards_DistrictId",
@@ -671,13 +1095,49 @@ namespace Infrastructure.Repositories.Migrations
                 name: "AccountRole");
 
             migrationBuilder.DropTable(
-                name: "Cameras");
-
-            migrationBuilder.DropTable(
                 name: "EdgeBoxActivities");
 
             migrationBuilder.DropTable(
+                name: "Evidences");
+
+            migrationBuilder.DropTable(
+                name: "RequestActivities");
+
+            migrationBuilder.DropTable(
+                name: "TicketActivities");
+
+            migrationBuilder.DropTable(
                 name: "Roles");
+
+            migrationBuilder.DropTable(
+                name: "Behaviors");
+
+            migrationBuilder.DropTable(
+                name: "EvidenceTypes");
+
+            migrationBuilder.DropTable(
+                name: "Requests");
+
+            migrationBuilder.DropTable(
+                name: "Tickets");
+
+            migrationBuilder.DropTable(
+                name: "BehaviorTypes");
+
+            migrationBuilder.DropTable(
+                name: "Cameras");
+
+            migrationBuilder.DropTable(
+                name: "RequestStatuses");
+
+            migrationBuilder.DropTable(
+                name: "RequestTypes");
+
+            migrationBuilder.DropTable(
+                name: "TicketStatuses");
+
+            migrationBuilder.DropTable(
+                name: "TicketTypes");
 
             migrationBuilder.DropTable(
                 name: "EdgeBoxInstalls");

@@ -1,5 +1,5 @@
 using Core.Application.Exceptions;
-using Core.Domain.Models.Enums;
+using Core.Domain.Models.DTO.Accounts;
 using Core.Domain.Services;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,6 +19,6 @@ public class AccessTokenGuardFilter(Guid[] roles) : IAuthorizationFilter
             throw new BadRequestException("Missing Bearer or wrong type");
 
         token = token.Substring("Bearer ".Length);
-        jwtService.ValidateToken(token, TokenType.AccessToken, roles);
+        jwtService.ValidateToken(token, TokenTypeEnum.AccessToken, roles);
     }
 }

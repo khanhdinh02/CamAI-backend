@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Repositories.Migrations
 {
     [DbContext(typeof(CamAIContext))]
-    [Migration("20231226032036_AddBehavior")]
-    partial class AddBehavior
+    [Migration("20231227073654_Init")]
+    partial class Init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -43,7 +43,7 @@ namespace Infrastructure.Repositories.Migrations
                         new
                         {
                             RoleId = 1,
-                            AccountId = new Guid("b688445c-82d9-43b8-8e84-eaa1c2522adf")
+                            AccountId = new Guid("a4247434-cb54-487e-ba75-42036402a949")
                         });
                 });
 
@@ -113,7 +113,7 @@ namespace Infrastructure.Repositories.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("b688445c-82d9-43b8-8e84-eaa1c2522adf"),
+                            Id = new Guid("a4247434-cb54-487e-ba75-42036402a949"),
                             AccountStatusId = 2,
                             CreatedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Email = "admin@camai.com",
@@ -238,6 +238,9 @@ namespace Infrastructure.Repositories.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("BannerUri")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<Guid?>("BrandManagerId")
                         .HasColumnType("uniqueidentifier");
 
@@ -248,6 +251,9 @@ namespace Infrastructure.Repositories.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Email")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("LogoUri")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("ModifiedDate")
@@ -798,7 +804,7 @@ namespace Infrastructure.Repositories.Migrations
                         new
                         {
                             Id = 2,
-                            Name = "Cancelled"
+                            Name = "Canceled"
                         },
                         new
                         {
@@ -845,12 +851,12 @@ namespace Infrastructure.Repositories.Migrations
                         },
                         new
                         {
-                            Id = 2,
+                            Id = 3,
                             Name = "Repair"
                         },
                         new
                         {
-                            Id = 3,
+                            Id = 4,
                             Name = "Remove"
                         });
                 });
@@ -1121,7 +1127,7 @@ namespace Infrastructure.Repositories.Migrations
                         new
                         {
                             Id = 2,
-                            Name = "Cancelled"
+                            Name = "Canceled"
                         },
                         new
                         {
@@ -1168,12 +1174,12 @@ namespace Infrastructure.Repositories.Migrations
                         },
                         new
                         {
-                            Id = 2,
+                            Id = 3,
                             Name = "Repair"
                         },
                         new
                         {
-                            Id = 3,
+                            Id = 4,
                             Name = "Remove"
                         });
                 });

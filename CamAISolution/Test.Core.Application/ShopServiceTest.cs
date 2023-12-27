@@ -1,8 +1,9 @@
-using Core.Application;
 using Core.Application.Exceptions;
+using Core.Application.Implements;
 using Core.Domain.DTO;
 using Core.Domain.Entities;
 using Core.Domain.Interfaces.Mappings;
+using Core.Domain.Models.DTO.Shops;
 using Core.Domain.Repositories;
 using Moq;
 
@@ -55,7 +56,10 @@ public class ShopServiceTest : BaseSetUp
         shopService = new ShopService(mockUOW.Object, logging, new Mock<IBaseMapping>().Object);
         Assert.ThrowsAsync<BadRequestException>(
             async () =>
-                await shopService.UpdateShop(Guid.Parse("0a984765-57df-4fb1-a9b8-304e3dd3b69c"), new CreateOrUpdateShopDto())
+                await shopService.UpdateShop(
+                    Guid.Parse("0a984765-57df-4fb1-a9b8-304e3dd3b69c"),
+                    new CreateOrUpdateShopDto()
+                )
         );
     }
 }

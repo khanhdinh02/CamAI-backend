@@ -1,13 +1,13 @@
-﻿using System.Linq.Expressions;
+using System.Linq.Expressions;
 using Core.Domain.Entities;
 
-namespace Core.Application.Specifications;
+namespace Core.Application.Specifications.Brands;
 
 public class BrandByStatusSpec : Specification<Brand>
 {
-    private readonly Guid brandStatus;
+    private readonly int brandStatus;
 
-    public BrandByStatusSpec(Guid brandStatus)
+    public BrandByStatusSpec(int brandStatus)
     {
         this.brandStatus = brandStatus;
         Expr = GetExpression();

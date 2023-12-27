@@ -1,4 +1,4 @@
-using Core.Domain.Models.Enums;
+using Core.Domain.Models.DTO.Accounts;
 
 namespace Core.Domain.Models.DTO.Auths;
 
@@ -8,7 +8,7 @@ public class TokenDetailDto
 
     public Guid[] UserRoles { get; set; } = [];
 
-    public TokenType TokenType { get; set; }
+    public TokenTypeEnum TokenType { get; set; }
 
     public string? Token { get; set; }
 }
