@@ -98,7 +98,7 @@ public class JwtService(
         if (
             claimsIdentity != null
             && claimsIdentity.Claims.Any()
-            && Guid.TryParse(claimsIdentity.Claims.First(c => c.Type == "user_id").Value, out var userId)
+            && Guid.TryParse(claimsIdentity.Claims.First(c => c.Type == "id").Value, out var userId)
         )
             return userId;
         return Guid.Empty;
@@ -118,7 +118,7 @@ public class JwtService(
             throw new BadRequestException("Cannot get user role from jwt");
         int[] userRoles = (JsonSerializer.Deserialize<Role[]>(userRoleString) ?? []).Select(r => r.Id).ToArray();
 
-        if (acceptableRoles != null && !acceptableRoles.Intersect(userRoles).Any())
+        if (acceptableRoles != null && acceptableRoles.Length > 0 && !acceptableRoles.Intersect(userRoles).Any())
             throw new UnauthorizedException("Unauthorized");
 
         AddClaimToUserContext(tokenClaims);

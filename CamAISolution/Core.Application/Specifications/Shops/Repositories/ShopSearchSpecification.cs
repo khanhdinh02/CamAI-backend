@@ -14,6 +14,10 @@ public class SearchShopSpec : RepositorySpec<Shop>
             baseSpec.And(new ShopByNameSpec(search.Name));
         if (search.StatusId.HasValue)
             baseSpec.And(new ShopByStatusSpec(search.StatusId.Value));
+        else
+            baseSpec.And(new ShopByStatusSpec(ShopStatusEnum.Active));
+        if (search.BrandId.HasValue)
+            baseSpec.And(new ShopByBrandIdSpec(search.BrandId.Value));
         return baseSpec.GetExpression();
     }
 
@@ -21,6 +25,7 @@ public class SearchShopSpec : RepositorySpec<Shop>
         : base(GetExpression(search))
     {
         AddIncludes(s => s.ShopStatus);
+        AddIncludes(s => s.Brand);
         ApplyingPaging(search);
         ApplyOrderByDescending(s => s.CreatedDate);
     }

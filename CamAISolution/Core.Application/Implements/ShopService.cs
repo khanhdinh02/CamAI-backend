@@ -48,6 +48,8 @@ public class ShopService(
 
     public async Task<PaginationResult<Shop>> GetShops(SearchShopRequest searchRequest)
     {
+        if (searchRequest.StatusId.HasValue && searchRequest.StatusId.Value == ShopStatusEnum.Inactive && !await IsAdmin())
+            return new PaginationResult<Shop>();
         var shops = await unitOfWork.Shops.GetAsync(new SearchShopSpec(searchRequest));
         return shops;
     }

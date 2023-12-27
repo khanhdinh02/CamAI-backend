@@ -9,8 +9,7 @@ public class ShopProfile : Profile
 {
     public ShopProfile()
     {
-        CreateMap<Shop, ShopDto>()
-            .ForMember(s => s.Status, opts => opts.MapFrom(s => s.ShopStatus));
+        CreateMap<Shop, ShopDto>();
         CreateMap<ShopStatus, ShopStatusDto>();
         CreateMap<CreateOrUpdateShopDto, Shop>();
         CreateMap<PaginationResult<Shop>, PaginationResult<ShopDto>>();

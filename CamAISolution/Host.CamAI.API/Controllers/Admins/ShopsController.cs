@@ -14,6 +14,7 @@ namespace Host.CamAI.API.Controllers.Admins;
 public class ShopsController(IShopService shopService, IBaseMapping baseMapping) : ControllerBase
 {
     [HttpGet]
+    [AccessTokenGuard]
     public async Task<IActionResult> GetShop([FromQuery] SearchShopRequest search)
     {
         var shops = await shopService.GetShops(search);
@@ -24,8 +25,7 @@ public class ShopsController(IShopService shopService, IBaseMapping baseMapping)
     [AccessTokenGuard(RoleEnum.Admin)]
     public async Task<IActionResult> CreateShop(CreateOrUpdateShopDto shopDto)
     {
-        var createdShop = await shopService.CreateShop(shopDto);
-        return Ok(createdShop);
+        return Ok(baseMapping.Map<Shop, ShopDto>(await shopService.CreateShop(shopDto)));
     }
 
     [HttpPut("{id:guid}")]
