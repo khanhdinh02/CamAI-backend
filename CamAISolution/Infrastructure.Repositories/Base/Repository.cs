@@ -1,5 +1,4 @@
 using System.Linq.Expressions;
-using Core.Domain.Entities;
 using Core.Domain.Models;
 using Core.Domain.Repositories;
 using Core.Domain.Specifications.Repositories;
@@ -10,7 +9,7 @@ namespace Infrastructure.Repositories.Base;
 
 public class Repository<T>(CamAIContext context, IRepositorySpecificationEvaluator<T> specificationEvaluator)
     : IRepository<T>
-    where T : BaseBasicEntity
+    where T : class
 {
     protected DbContext Context => context;
 
@@ -100,8 +99,8 @@ public class Repository<T>(CamAIContext context, IRepositorySpecificationEvaluat
 
     public async Task<bool> IsExisted(object key)
     {
-        var data = await context.Set<T>().Where(o => o.Id == (Guid)key).Select(o => o.Id).FirstOrDefaultAsync();
-        return data == (Guid)key;
+        var data = await context.Set<T>().FindAsync(key);
+        return data != null;
     }
 
     public virtual T Update(T entity)

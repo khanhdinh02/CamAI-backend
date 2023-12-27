@@ -1,8 +1,9 @@
 using System.ComponentModel.DataAnnotations;
+using Core.Domain.Entities.Base;
 
 namespace Core.Domain.Entities;
 
-public class District : BaseEntity
+public class District : BusinessEntity
 {
     [StringLength(50)]
     public string Name { get; set; } = null!;

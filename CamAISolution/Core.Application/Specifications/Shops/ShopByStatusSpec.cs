@@ -1,13 +1,13 @@
-﻿using System.Linq.Expressions;
+using System.Linq.Expressions;
 using Core.Domain.Entities;
 
-namespace Core.Application.Specifications;
+namespace Core.Application.Specifications.Shops;
 
 public class ShopByStatusSpec : Specification<Shop>
 {
-    private readonly Guid status;
+    private readonly int status;
 
-    public ShopByStatusSpec(Guid status)
+    public ShopByStatusSpec(int status)
     {
         this.status = status;
         Expr = GetExpression();

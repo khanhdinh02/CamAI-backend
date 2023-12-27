@@ -1,8 +1,9 @@
-﻿using Core.Domain.DTO;
+using Core.Domain.DTO;
 using Core.Domain.Entities;
 using Core.Domain.Models;
+using Core.Domain.Models.DTO.Shops;
 
-namespace Core.Domain.Services;
+namespace Core.Domain.Interfaces.Services;
 
 public interface IShopService
 {
@@ -11,5 +12,5 @@ public interface IShopService
     Task<Shop> CreateShop(Shop shop);
     Task<Shop> UpdateShop(Guid id, CreateOrUpdateShopDto shopDto);
     Task DeleteShop(Guid id);
-    Task<Shop> UpdateStatus(Guid shopId, Guid shopStatusId);
+    Task<Shop> UpdateStatus(Guid shopId, int shopStatusId);
 }

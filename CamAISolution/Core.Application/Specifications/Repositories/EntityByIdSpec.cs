@@ -1,9 +1,10 @@
-﻿using System.Linq.Expressions;
-using Core.Domain.Entities;
+using System.Linq.Expressions;
+using Core.Domain.Entities.Base;
 
 namespace Core.Application.Specifications.Repositories;
 
-public abstract class EntityByIdSpec<T> : RepositorySpec<T> where T : BaseBasicEntity
+public abstract class EntityByIdSpec<T, TId> : RepositorySpec<T>
+    where T : BaseEntity<TId>
 {
     protected EntityByIdSpec(Expression<Func<T, bool>>? criteria)
         : base(criteria)

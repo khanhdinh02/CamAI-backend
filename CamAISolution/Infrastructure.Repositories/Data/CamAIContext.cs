@@ -1,6 +1,12 @@
 using Core.Domain.DTO;
 using Core.Domain.Entities;
+using Core.Domain.Entities.Base;
 using Core.Domain.Models.DTO.Accounts;
+using Core.Domain.Models.DTO.Brands;
+using Core.Domain.Models.DTO.EdgeBoxes;
+using Core.Domain.Models.DTO.Requests;
+using Core.Domain.Models.DTO.Shops;
+using Core.Domain.Models.DTO.Tickets;
 using Core.Domain.Utilities;
 using Microsoft.EntityFrameworkCore;
 
@@ -16,7 +22,7 @@ public class CamAIContext : DbContext
     public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = new CancellationToken())
     {
         //TODO: Add CreatedBy and ModifiedBy in BaseEntity and implement update here.
-        foreach (var entry in ChangeTracker.Entries<BaseEntity>())
+        foreach (var entry in ChangeTracker.Entries<BusinessEntity>())
         {
             switch (entry.State)
             {
@@ -34,16 +40,34 @@ public class CamAIContext : DbContext
         return base.SaveChangesAsync(cancellationToken);
     }
 
-    public virtual DbSet<Account> Accounts { get; set; }
-    public virtual DbSet<Brand> Brands { get; set; }
-    public virtual DbSet<Shop> Shops { get; set; }
-    public virtual DbSet<Role> Roles { get; set; }
-    public virtual DbSet<Province> Provinces { get; set; }
-    public virtual DbSet<District> Districts { get; set; }
-    public virtual DbSet<Ward> Wards { get; set; }
-    public virtual DbSet<ShopStatus> ShopStatuses { get; set; }
-    public virtual DbSet<BrandStatus> BrandStatuses { get; set; }
-    public virtual DbSet<AccountStatus> AccountStatuses { get; set; }
+    public virtual DbSet<Account> Accounts { get; set; } = null!;
+    public virtual DbSet<Brand> Brands { get; set; } = null!;
+    public virtual DbSet<Shop> Shops { get; set; } = null!;
+    public virtual DbSet<Role> Roles { get; set; } = null!;
+    public virtual DbSet<Province> Provinces { get; set; } = null!;
+    public virtual DbSet<District> Districts { get; set; } = null!;
+    public virtual DbSet<Ward> Wards { get; set; } = null!;
+    public virtual DbSet<ShopStatus> ShopStatuses { get; set; } = null!;
+    public virtual DbSet<BrandStatus> BrandStatuses { get; set; } = null!;
+    public virtual DbSet<AccountStatus> AccountStatuses { get; set; } = null!;
+    public virtual DbSet<EdgeBox> EdgeBoxes { get; set; } = null!;
+    public virtual DbSet<EdgeBoxStatus> EdgeBoxStatuses { get; set; } = null!;
+    public virtual DbSet<EdgeBoxInstall> EdgeBoxInstalls { get; set; } = null!;
+    public virtual DbSet<EdgeBoxInstallStatus> EdgeBoxInstallStatuses { get; set; } = null!;
+    public virtual DbSet<EdgeBoxActivity> EdgeBoxActivities { get; set; } = null!;
+    public virtual DbSet<Camera> Cameras { get; set; } = null!;
+    public virtual DbSet<Request> Requests { get; set; } = null!;
+    public virtual DbSet<RequestStatus> RequestStatuses { get; set; } = null!;
+    public virtual DbSet<RequestType> RequestTypes { get; set; } = null!;
+    public virtual DbSet<RequestActivity> RequestActivities { get; set; } = null!;
+    public virtual DbSet<Ticket> Tickets { get; set; } = null!;
+    public virtual DbSet<TicketStatus> TicketStatuses { get; set; } = null!;
+    public virtual DbSet<TicketType> TicketTypes { get; set; } = null!;
+    public virtual DbSet<TicketActivity> TicketActivities { get; set; } = null!;
+    public virtual DbSet<Behavior> Behaviors { get; set; } = null!;
+    public virtual DbSet<BehaviorType> BehaviorTypes { get; set; } = null!;
+    public virtual DbSet<Evidence> Evidences { get; set; } = null!;
+    public virtual DbSet<EvidenceType> EvidenceTypes { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -112,10 +136,60 @@ public class CamAIContext : DbContext
                 );
         });
 
+        modelBuilder
+            .Entity<EdgeBoxStatus>()
+            .HasData(
+                new EdgeBoxStatus { Id = EdgeBoxStatusEnum.Active, Name = "Active" },
+                new EdgeBoxStatus { Id = EdgeBoxStatusEnum.Inactive, Name = "Inactive" }
+            );
+
+        modelBuilder
+            .Entity<EdgeBoxInstallStatus>()
+            .HasData(
+                new EdgeBoxInstallStatus { Id = EdgeBoxInstallStatusEnum.Valid, Name = "Valid" },
+                new EdgeBoxInstallStatus { Id = EdgeBoxInstallStatusEnum.Expired, Name = "Expired" }
+            );
+
+        modelBuilder
+            .Entity<RequestStatus>()
+            .HasData(
+                new RequestStatus { Id = RequestStatusEnum.Open, Name = "Open" },
+                new RequestStatus { Id = RequestStatusEnum.Canceled, Name = "Canceled" },
+                new RequestStatus { Id = RequestStatusEnum.Done, Name = "Done" },
+                new RequestStatus { Id = RequestStatusEnum.Rejected, Name = "Rejected" }
+            );
+
+        modelBuilder
+            .Entity<RequestType>()
+            .HasData(
+                new RequestType { Id = RequestTypeEnum.Install, Name = "Install" },
+                new RequestType { Id = RequestTypeEnum.Repair, Name = "Repair" },
+                new RequestType { Id = RequestTypeEnum.Remove, Name = "Remove" }
+            );
+
+        modelBuilder
+            .Entity<TicketStatus>()
+            .HasData(
+                new TicketStatus { Id = TicketStatusEnum.Open, Name = "Open" },
+                new TicketStatus { Id = TicketStatusEnum.Canceled, Name = "Canceled" },
+                new TicketStatus { Id = TicketStatusEnum.Done, Name = "Done" },
+                new TicketStatus { Id = TicketStatusEnum.Failed, Name = "Failed" }
+            );
+
+        modelBuilder
+            .Entity<TicketType>()
+            .HasData(
+                new TicketType { Id = TicketTypeEnum.Install, Name = "Install" },
+                new TicketType { Id = TicketTypeEnum.Repair, Name = "Repair" },
+                new TicketType { Id = TicketTypeEnum.Remove, Name = "Remove" }
+            );
+
         modelBuilder.Entity<Brand>(builder =>
         {
-            builder.Property(x => x.LogoUri).HasConversion(v => v!.ToString(), v => new Uri(v));
-            builder.Property(x => x.BannerUri).HasConversion(v => v!.ToString(), v => new Uri(v));
+            builder.Property(x => x.LogoUri).HasConversion<string>();
+            builder.Property(x => x.BannerUri).HasConversion<string>();
         });
+
+        modelBuilder.Entity<Evidence>().Property(p => p.Uri).HasConversion<string>();
     }
 }

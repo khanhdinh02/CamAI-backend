@@ -1,12 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
-namespace Core.Domain.Entities;
+namespace Core.Domain.Entities.Base;
 
-public abstract class BaseEntity : BaseBasicEntity
+public abstract class BaseEntity<T>
 {
-    public DateTime CreatedDate { get; set; }
-    public DateTime ModifiedDate { get; set; }
-
-    [Timestamp]
-    public byte[]? Timestamp { get; set; }
+    [Key]
+    public virtual T Id { get; set; } = default!;
 }

@@ -1,10 +1,11 @@
 using Core.Domain.DTO;
 using Core.Domain.Entities;
 using Core.Domain.Interfaces.Mappings;
-using Core.Domain.Services;
+using Core.Domain.Interfaces.Services;
+using Core.Domain.Models.DTO.Shops;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Host.CamAI.API.Controllers;
+namespace Host.CamAI.API.Controllers.Admins;
 
 [Route("api/[controller]")]
 [ApiController]
@@ -32,7 +33,7 @@ public class ShopsController(IShopService shopService, IBaseMapping baseMapping)
     }
 
     [HttpPatch("{id:guid}")]
-    public async Task<IActionResult> UpdateShopStatus(Guid id, Guid shopStatusId)
+    public async Task<IActionResult> UpdateShopStatus(Guid id, int shopStatusId)
     {
         Shop updatedShop = await shopService.UpdateStatus(id, shopStatusId);
         if (updatedShop.ShopStatusId == ShopStatusEnum.Inactive)

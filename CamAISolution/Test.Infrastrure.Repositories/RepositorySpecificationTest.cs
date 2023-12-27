@@ -1,11 +1,13 @@
+using Core.Application.Specifications.Accounts.Repositories;
 using Core.Application.Specifications.Repositories;
 using Core.Domain.Entities;
 using Core.Domain.Repositories;
 using Core.Domain.Utilities;
 using Infrastructure.Repositories.Base;
 using Infrastructure.Repositories.Specifications;
+using Test.Infrastructure.Repositories;
 
-namespace Test.Infrastructure.Repositories;
+namespace Test.Infrastrure.Repositories;
 
 [TestFixture]
 public class RepositorySpecificationTest : BaseSetUpTest

@@ -1,8 +1,8 @@
-﻿using AutoMapper;
+using AutoMapper;
 using Core.Domain.DTO;
 using Core.Domain.Entities;
 
-namespace Infrastructure.Mapping;
+namespace Infrastructure.Mapping.Profiles;
 
 public class WardProfile : Profile
 {
