@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
 namespace Core.Domain.DTO;
 
@@ -10,5 +10,6 @@ public class CreateOrUpdateShopDto
     [Phone, MaxLength(50)]
     public string? Phone { get; set; }
     public Guid WardId { get; set; }
+    public Guid BrandId { get; set; }
     public string? AddressLine { get; set; }
 }

@@ -24,7 +24,7 @@ public class ShopsController(IShopService shopService, IBaseMapping baseMapping)
     [AccessTokenGuard(RoleEnum.Admin)]
     public async Task<IActionResult> CreateShop(CreateOrUpdateShopDto shopDto)
     {
-        var createdShop = await shopService.CreateShop(baseMapping.Map<CreateOrUpdateShopDto, Shop>(shopDto));
+        var createdShop = await shopService.CreateShop(shopDto);
         return Ok(createdShop);
     }
 

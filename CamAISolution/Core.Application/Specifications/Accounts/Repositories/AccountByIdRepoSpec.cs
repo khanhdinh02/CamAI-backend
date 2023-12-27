@@ -12,6 +12,7 @@ public class AccountByIdRepoSpec : EntityByIdSpec<Account, Guid>
     public AccountByIdRepoSpec(Guid id)
         : base(a => a.Id == id)
     {
+        AddIncludes(a => a.Roles);
         ApplyOrderBy(a => a.CreatedDate);
         //AddIncludes("Shops");
         //AddIncludes("Roles");

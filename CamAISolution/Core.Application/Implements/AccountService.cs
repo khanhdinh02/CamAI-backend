@@ -7,7 +7,7 @@ using Core.Application.Exceptions;
 
 namespace Core.Application;
 
-public class AccountService(IRepository<Account> accountRepo) : IAccountService
+public class AccountService(IUnitOfWork unitOfWork, IJwtService jwtService) : IAccountService
 {
     public Task<PaginationResult<Account>> GetAccount(
         Guid? guid = null,
@@ -23,9 +23,16 @@ public class AccountService(IRepository<Account> accountRepo) : IAccountService
         //return accountRepo.GetAsync(specification);
     }
 
-    public Task<Account> GetAccountById(Guid id)
+    public async Task<Account> GetAccountById(Guid id)
     {
-        var foundAccountTask = accountRepo.GetAsync(new AccountByIdRepoSpec(id));
-        return foundAccountTask.ContinueWith(task => task.Result.Values.Count > 0 ? task.Result.Values.First() : throw new NotFoundException(typeof(Account), id));
+        var foundAccounts =await unitOfWork.Accounts.GetAsync(new AccountByIdRepoSpec(id));
+        if (foundAccounts.Values.Count == 0)
+            throw new NotFoundException(typeof(Account), id);
+        return foundAccounts.Values[0];
+    }
+
+    public Task<Account> GetCurrentAccount()
+    {
+        return GetAccountById(jwtService.GetCurrentUserId());
     }
 }
