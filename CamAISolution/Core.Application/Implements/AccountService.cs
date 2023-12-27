@@ -1,9 +1,7 @@
-using Core.Application.Exceptions;
-using Core.Application.Specifications.Repositories;
-using Core.Domain.Entities;
-using Core.Domain.Models;
 using Core.Domain.Repositories;
 using Core.Domain.Services;
+using Core.Domain.Entities;
+using Core.Domain.Models;
 
 namespace Core.Application;
 
@@ -17,14 +15,16 @@ public class AccountService(IRepository<Account> accountRepo) : IAccountService
         int pageIndex = 0
     )
     {
-        var specification = new AccountSearchSpec(guid, from, to, pageSize, pageIndex);
-        return accountRepo.GetAsync(specification);
+        /* var specification = new AccountSearchSpecification(guid, from, to, pageSize, pageIndex);
+         return accountRepo.GetAsync(specification);*/
+        throw new NotImplementedException();
+        //return accountRepo.GetAsync(specification);
     }
 
     public async Task<Account> GetAccountById(Guid id)
     {
         //Normal
-        var accounts = await accountRepo.GetAsync(expression: a => a.Id == id);
+        /*var accounts = await accountRepo.GetAsync(expression: a => a.Id == id);
 
         //With AccountSearchSpecification
         //accounts = await accountRepo.GetAsync(new AccountSearchSpecification(guid: id));
@@ -41,8 +41,9 @@ public class AccountService(IRepository<Account> accountRepo) : IAccountService
         //accounts = await accountRepo.GetAsync(expression: combined);
 
         if (accounts.Values.Count <= 0)
-            throw new NotFoundException(typeof(Account), id);
-
-        return accounts.Values[0];
+            throw new NotFoundException(typeof(Account), id, this.GetType());
+        return accounts.Values.First();*/
+        throw new NotImplementedException();
+        //return accounts.Values.First();
     }
 }
