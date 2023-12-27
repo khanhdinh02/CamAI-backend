@@ -1,0 +1,27 @@
+version: '3.9'
+services:
+  mssqldb:
+    restart: always
+    user: root
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=${MS_SQL_PASS}
+    ports:
+      - "1434:1433"
+    volumes:
+      - data:/var/opt/mssql/data
+  web-api:
+    build:
+      context: ./CamAISolution
+      dockerfile: Host.CamAI.API/Dockerfile
+    ports:
+      - "8080:8080"
+      - "8081:8081"
+    environment:
+      - ConnectionStrings__Default=${MS_SQL_CONN}
+      - ASPNETCORE_ENVIRONMENT=${STAGE}
+    depends_on:
+      - mssqldb
+volumes:
+  data:

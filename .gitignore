@@ -482,5 +482,5 @@ appsettings.*.json
 # Intellij
 .idea
 
-#enviroment
+#environment
 .env
