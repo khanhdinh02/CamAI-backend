@@ -3,16 +3,12 @@ using Microsoft.Extensions.Logging;
 
 namespace Infrastructure.Logging;
 
-public class AppLogging<T> : IAppLogging<T>
+public class AppLogging<T>(ILoggerFactory loggerFactory) : IAppLogging<T>
 {
-    private readonly ILogger logger;
+    private readonly ILogger logger = loggerFactory.CreateLogger($"{typeof(T).FullName}");
 
-    public AppLogging(ILoggerFactory loggerFactory)
-    {
-        logger = loggerFactory.CreateLogger($"{typeof(T).FullName}");
-    }
+    private readonly Func<string, string> MessageTemplate = msg => $"[{typeof(T).Name}]: {msg}";
 
-    private Func<string, string> MessageTemplate = msg => $"[{typeof(T).Name}]: {msg}";
     public void Error(string message, Exception? exception)
     {
         logger.LogError(exception, MessageTemplate(message));

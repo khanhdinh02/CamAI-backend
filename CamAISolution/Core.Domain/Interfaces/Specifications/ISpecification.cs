@@ -1,6 +1,7 @@
 using System.Linq.Expressions;
 
-namespace Core.Domain.Interfaces.Specifications;
+namespace Core.Domain.Specifications;
+
 public interface ISpecification<T>
 {
     bool IsSatisfied(T entity);

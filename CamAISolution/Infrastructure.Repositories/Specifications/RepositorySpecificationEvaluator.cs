@@ -1,4 +1,4 @@
-using Core.Domain.Interfaces.Specifications.Repositories;
+using Core.Domain.Specifications.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Repositories.Specifications;
@@ -8,7 +8,8 @@ namespace Infrastructure.Repositories.Specifications;
 /// Purpose of putting this in the Infrastructure layer because AsNoTracking(), Includes() is from QueryableExtensions of EF core.
 /// </summary>
 /// <typeparam name="T">Type of object to query</typeparam>
-public class RepositorySpecificationEvaluator<T> : IRepositorySpecificationEvaluator<T> where T : class
+public class RepositorySpecificationEvaluator<T> : IRepositorySpecificationEvaluator<T>
+    where T : class
 {
     public IQueryable<T> GetQuery(IQueryable<T> inputQuery, IRepositorySpecification<T> specification)
     {
@@ -26,10 +27,12 @@ public class RepositorySpecificationEvaluator<T> : IRepositorySpecificationEvalu
             query = specification.Includes.Aggregate(query, (current, include) => current.Include(include));
         if (specification.IncludeStrings != null)
             query = specification.IncludeStrings.Aggregate(query, (current, include) => current.Include(include));
+        if (specification.OrderByDescending != null)
+            query = query.OrderByDescending(specification.OrderByDescending);
+        if (specification.OrderBy != null)
+            query = query.OrderBy(specification.OrderBy);
         if (specification.IsPagingEnabled)
-            query = query
-                .Skip(specification.Skip)
-                .Take(specification.Take);
+            query = query.Skip(specification.Skip).Take(specification.Take);
         return query;
     }
 }

@@ -8,7 +8,11 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Infrastructure.Repositories.Migrations
 {
     /// <inheritdoc />
+<<<<<<<< HEAD:CamAISolution/Infrastructure.Repositories/Migrations/20231224092638_Update.cs
     public partial class Update : Migration
+========
+    public partial class BrandImage : Migration
+>>>>>>>> main:CamAISolution/Infrastructure.Repositories/Migrations/20231221061334_BrandImage.cs
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -247,6 +251,8 @@ namespace Infrastructure.Repositories.Migrations
                     Name = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     Email = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Phone = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    LogoUri = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    BannerUri = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     BrandManagerId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     BrandStatusId = table.Column<int>(type: "int", nullable: false),
                     Timestamp = table.Column<byte[]>(type: "rowversion", rowVersion: true, nullable: true),
@@ -425,9 +431,15 @@ namespace Infrastructure.Repositories.Migrations
                 columns: new[] { "Id", "Description", "Name" },
                 values: new object[,]
                 {
+<<<<<<<< HEAD:CamAISolution/Infrastructure.Repositories/Migrations/20231224092638_Update.cs
                     { 1, null, "New" },
                     { 2, null, "Active" },
                     { 3, null, "Inactive" }
+========
+                    { new Guid("3a62b31e-ea0f-4b8d-8f37-8bb9da899c23"), new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "New" },
+                    { new Guid("daf87982-2b47-494c-9266-28c6679c77f0"), new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "Inactive" },
+                    { new Guid("f4468b33-ee55-4e34-898d-7ec37db36ca0"), new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "Active" }
+>>>>>>>> main:CamAISolution/Infrastructure.Repositories/Migrations/20231221061334_BrandImage.cs
                 });
 
             migrationBuilder.InsertData(
@@ -435,6 +447,7 @@ namespace Infrastructure.Repositories.Migrations
                 columns: new[] { "Id", "Description", "Name" },
                 values: new object[,]
                 {
+<<<<<<<< HEAD:CamAISolution/Infrastructure.Repositories/Migrations/20231224092638_Update.cs
                     { 1, null, "Active" },
                     { 2, null, "Inactive" }
                 });
@@ -455,6 +468,10 @@ namespace Infrastructure.Repositories.Migrations
                 {
                     { 1, null, "Active" },
                     { 2, null, "Inactive" }
+========
+                    { new Guid("79f5bf99-dd0c-4787-924b-c7f175615054"), new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "Active" },
+                    { new Guid("cc835da5-7954-4873-a029-4b472542bb3a"), new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "Inactive" }
+>>>>>>>> main:CamAISolution/Infrastructure.Repositories/Migrations/20231221061334_BrandImage.cs
                 });
 
             migrationBuilder.InsertData(
@@ -462,11 +479,19 @@ namespace Infrastructure.Repositories.Migrations
                 columns: new[] { "Id", "Description", "Name" },
                 values: new object[,]
                 {
+<<<<<<<< HEAD:CamAISolution/Infrastructure.Repositories/Migrations/20231224092638_Update.cs
                     { 1, null, "Admin" },
                     { 2, null, "Technician" },
                     { 3, null, "Brand manager" },
                     { 4, null, "Shop manager" },
                     { 5, null, "Employee" }
+========
+                    { new Guid("2381d027-707a-41ee-b53a-26e967b78d75"), new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "Admin" },
+                    { new Guid("658c20e3-b4e8-46ce-a8b7-a9e1860c9ff8"), new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "Technician" },
+                    { new Guid("80bf167e-7411-4727-a508-76415eb7bfbd"), new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "Brand manager" },
+                    { new Guid("c6e17622-a67a-4bf9-b12c-2761d4768d85"), new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "Employee" },
+                    { new Guid("e991447e-723d-4a21-9779-7b0a6ea33998"), new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "Shop manager" }
+>>>>>>>> main:CamAISolution/Infrastructure.Repositories/Migrations/20231221061334_BrandImage.cs
                 });
 
             migrationBuilder.InsertData(
@@ -474,19 +499,32 @@ namespace Infrastructure.Repositories.Migrations
                 columns: new[] { "Id", "Description", "Name" },
                 values: new object[,]
                 {
+<<<<<<<< HEAD:CamAISolution/Infrastructure.Repositories/Migrations/20231224092638_Update.cs
                     { 1, null, "Active" },
                     { 2, null, "Inactive" }
+========
+                    { new Guid("1b4cf615-ffe6-4416-9450-42a11554db10"), new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "Active" },
+                    { new Guid("9eb5c65c-3a69-459e-9ff5-1f0c15353c57"), new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "Inactive" }
+>>>>>>>> main:CamAISolution/Infrastructure.Repositories/Migrations/20231221061334_BrandImage.cs
                 });
 
             migrationBuilder.InsertData(
                 table: "Accounts",
                 columns: new[] { "Id", "AccountStatusId", "AddressLine", "Birthday", "CreatedDate", "Email", "Gender", "ModifiedDate", "Name", "Password", "Phone", "WardId", "WorkingShopId" },
+<<<<<<<< HEAD:CamAISolution/Infrastructure.Repositories/Migrations/20231224092638_Update.cs
                 values: new object[] { new Guid("4e0f625a-b000-4d9a-9ecb-82f37c8950f5"), 2, null, null, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "admin@camai.com", null, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "Admin", "9eb622419ace52f259e858a7f2a10743d35e36fe0d22fc2d224c320cbc68d3af", null, null, null });
+========
+                values: new object[] { new Guid("06f9eca4-e1a8-4768-b937-6a97c1c98057"), new Guid("f4468b33-ee55-4e34-898d-7ec37db36ca0"), null, null, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "admin@camai.com", null, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "Admin", "9eb622419ace52f259e858a7f2a10743d35e36fe0d22fc2d224c320cbc68d3af", null, null, null });
+>>>>>>>> main:CamAISolution/Infrastructure.Repositories/Migrations/20231221061334_BrandImage.cs
 
             migrationBuilder.InsertData(
                 table: "AccountRole",
                 columns: new[] { "AccountId", "RoleId" },
+<<<<<<<< HEAD:CamAISolution/Infrastructure.Repositories/Migrations/20231224092638_Update.cs
                 values: new object[] { new Guid("4e0f625a-b000-4d9a-9ecb-82f37c8950f5"), 1 });
+========
+                values: new object[] { new Guid("06f9eca4-e1a8-4768-b937-6a97c1c98057"), new Guid("2381d027-707a-41ee-b53a-26e967b78d75") });
+>>>>>>>> main:CamAISolution/Infrastructure.Repositories/Migrations/20231221061334_BrandImage.cs
 
             migrationBuilder.CreateIndex(
                 name: "IX_AccountRole_AccountId",

@@ -1,7 +1,6 @@
+
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Core.Domain.Entities.Base;
-using Core.Domain.Entities.Enums;
 
 namespace Core.Domain.Entities;
 
@@ -25,7 +24,7 @@ public class Account : BusinessEntity
     public int AccountStatusId { get; set; }
 
     public virtual Ward? Ward { get; set; }
-    public virtual Shop? WorkingShop { get; set; } = null!;
+    public virtual Shop? WorkingShop { get; set; }
     public virtual AccountStatus AccountStatus { get; set; } = null!;
     public virtual Brand? Brand { get; set; }
 

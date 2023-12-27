@@ -39,5 +39,4 @@ public class LoggingTest
         logger.Error("Test", new Exception("Error"));
         Assert.Pass();
     }
-
 }

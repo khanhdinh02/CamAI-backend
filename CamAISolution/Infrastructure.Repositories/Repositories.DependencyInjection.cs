@@ -1,6 +1,5 @@
-using Core.Domain.Interfaces.Repositories;
-using Core.Domain.Interfaces.Repositories.Base;
-using Core.Domain.Interfaces.Specifications.Repositories;
+using Core.Domain.Repositories;
+using Core.Domain.Specifications.Repositories;
 using Infrastructure.Repositories.Data;
 using Infrastructure.Repositories.Specifications;
 using Microsoft.EntityFrameworkCore;

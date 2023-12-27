@@ -1,8 +1,10 @@
 using Host.CamAI.API;
 using Host.CamAI.API.Middlewares;
 using Infrastructure.Jwt;
-using Infrastructure.Repositories;
 using Infrastructure.Logging;
+using Infrastructure.Repositories;
+using Infrastructure.Mapping;
+
 var builder = WebApplication.CreateBuilder(args).ConfigureSerilog();
 
 builder.Services.AddControllers();
@@ -14,7 +16,9 @@ builder
     .AddRepository(builder.Configuration.GetConnectionString("Default"))
     .AddJwtService(builder.Configuration)
     .AddLoggingDependencyInjection()
-    .AddServices();
+    .AddHttpContextAccessor()
+    .AddServices()
+    .AddMapping();
 
 var app = builder.Build();
 
@@ -27,8 +31,6 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
-app.UseAuthorization();
 
 app.MapControllers();
 
