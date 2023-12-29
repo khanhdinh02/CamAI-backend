@@ -1,4 +1,4 @@
-﻿namespace Core.Domain.Utilities;
+namespace Core.Domain.Utilities;
 
 public static class DateTimeHelper
 {

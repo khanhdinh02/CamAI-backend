@@ -7,17 +7,17 @@ using Core.Domain.Models.DTO.Shops;
 using Infrastructure.Jwt.Attribute;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Host.CamAI.API.Controllers.Admins;
+namespace Host.CamAI.API.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
 public class ShopsController(IShopService shopService, IBaseMapping baseMapping) : ControllerBase
 {
-    [HttpGet]
-    [AccessTokenGuard]
-    public async Task<IActionResult> GetShop([FromQuery] SearchShopRequest search)
+    [HttpGet("current")]
+    [AccessTokenGuard(RoleEnum.Admin, RoleEnum.BrandManager, RoleEnum.ShopManager)]
+    public async Task<IActionResult> GetCurrentShop([FromQuery] SearchShopRequest search)
     {
-        var shops = await shopService.GetShops(search);
+        var shops = await shopService.GetCurrentAccountShops(search);
         return Ok(baseMapping.Map<Shop, ShopDto>(shops));
     }
 
@@ -47,6 +47,7 @@ public class ShopsController(IShopService shopService, IBaseMapping baseMapping)
     }
 
     [HttpDelete("{id:guid}")]
+    [AccessTokenGuard(RoleEnum.Admin)]
     public async Task<IActionResult> DeleteShop(Guid id)
     {
         await shopService.DeleteShop(id);

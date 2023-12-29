@@ -48,8 +48,8 @@ public class ShopService(
 
     public async Task<PaginationResult<Shop>> GetShops(SearchShopRequest searchRequest)
     {
-        if (searchRequest.StatusId.HasValue && searchRequest.StatusId.Value == ShopStatusEnum.Inactive && !await IsRequiredRolesMatched(RoleEnum.Admin))
-            return new PaginationResult<Shop>();
+        //if (searchRequest.StatusId.HasValue && searchRequest.StatusId.Value == ShopStatusEnum.Inactive && !await IsRequiredRolesMatched(RoleEnum.Admin))
+        //    return new PaginationResult<Shop>();
         var shops = await unitOfWork.Shops.GetAsync(new SearchShopSpec(searchRequest));
         return shops;
     }
@@ -99,10 +99,41 @@ public class ShopService(
         if (!isFoundWard)
             throw new NotFoundException(typeof(Ward), shopDto.WardId);
         var foundBrand = await brandService.GetBrandById(shopDto.BrandId);
-        if(foundBrand.BrandStatusId == BrandStatusEnum.Inactive)
+        if (foundBrand.BrandStatusId == BrandStatusEnum.Inactive)
         {
             logger.Error($"Found Brand is {nameof(BrandStatusEnum.Inactive)}. Cannot updated");
             throw new NotFoundException(typeof(Brand), shopDto.BrandId);
         }
+    }
+
+    /// <summary>
+    /// Get Shops base on current user's roles.
+    /// </summary>
+    /// <param name="searchShopDto">Filtering</param>
+    /// <returns><see cref="PaginationResult{Shop}"/> </returns>
+    public async Task<PaginationResult<Shop>> GetCurrentAccountShops(SearchShopRequest searchRequest)
+    {
+        if (await IsRequiredRolesMatched(RoleEnum.Admin))
+            return await GetShops(searchRequest);
+
+        var currentAccount = await accountService.GetCurrentAccount();
+        if (await IsRequiredRolesMatched(RoleEnum.BrandManager))
+        {
+            if (currentAccount.Brand == null)
+                return new PaginationResult<Shop>();
+            else
+            {
+                searchRequest.BrandId = currentAccount.Brand.Id;
+                return await GetShops(searchRequest);
+            }
+        }
+
+        if(await IsRequiredRolesMatched(RoleEnum.ShopManager))
+        {
+            searchRequest.ShopManagerId = currentAccount.Id;
+            return await GetShops(searchRequest);
+        }
+        return new PaginationResult<Shop>();
+
     }
 }

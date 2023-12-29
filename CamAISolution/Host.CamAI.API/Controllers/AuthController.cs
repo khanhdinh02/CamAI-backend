@@ -8,6 +8,8 @@ namespace Host.CamAI.API.Controllers;
 [ApiController]
 public class AuthController(IAuthService authService) : ControllerBase
 {
+    //TODO [Dat]: Create Register endpoints.
+
     [HttpPost]
     public async Task<IActionResult> Login(LoginDto loginDto)
     {

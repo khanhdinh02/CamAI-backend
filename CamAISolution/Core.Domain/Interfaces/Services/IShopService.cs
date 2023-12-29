@@ -13,4 +13,5 @@ public interface IShopService
     Task<Shop> UpdateShop(Guid id, CreateOrUpdateShopDto shopDto);
     Task DeleteShop(Guid id);
     Task<Shop> UpdateStatus(Guid shopId, int shopStatusId);
+    Task<PaginationResult<Shop>> GetCurrentAccountShops(SearchShopRequest searchRequest);
 }

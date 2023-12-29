@@ -5,6 +5,7 @@ using Core.Domain.Models.DTO.Accounts;
 using Core.Domain.Models.DTO.Auths;
 using Core.Domain.Repositories;
 using Core.Domain.Services;
+using Core.Domain.Utilities;
 
 namespace Core.Application.Implements;
 
@@ -13,15 +14,17 @@ public class AuthService(IJwtService jwtService, IRepository<Account> accountRep
     public async Task<TokenResponseDto> GetTokensByUsernameAndPassword(string email, string password)
     {
         var foundAccount = await accountRepo.GetAsync(
-            expression: a => a.Email == email && a.Password == password && a.AccountStatusId == AccountStatusEnum.Active,
+            expression: a => a.Email == email && a.AccountStatusId == AccountStatusEnum.Active,
             orderBy: e => e.OrderBy(a => a.Id),
             includeProperties: [nameof(Account.Roles)]
         );
         if (foundAccount.Values.Count == 0)
             throw new UnauthorizedException("Wrong email or password");
         var account = foundAccount.Values[0];
-        // string hash = Hasher.Hash("1234");
-        // bool isHashedCorrect = Hasher.Verify("123", hash);
+        string hashedPassword = Hasher.Hash(password);
+        bool isHashedCorrect = Hasher.Verify(account.Password, hashedPassword);
+        if (!isHashedCorrect)
+            throw new UnauthorizedException("Wrong email or password");
         var accessToken = jwtService.GenerateToken(account.Id, account.Roles, TokenTypeEnum.AccessToken);
         var refreshToken = jwtService.GenerateToken(account.Id, account.Roles, TokenTypeEnum.RefreshToken);
         return new TokenResponseDto { AccessToken = accessToken, RefreshToken = refreshToken };
