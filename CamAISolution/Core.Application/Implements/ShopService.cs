@@ -24,7 +24,7 @@ public class ShopService(
 {
     public async Task<Shop> CreateShop(CreateOrUpdateShopDto shopDto)
     {
-        await IsValidShop(shopDto);
+        await IsValidShopDto(shopDto);
         var shop = mapping.Map<CreateOrUpdateShopDto, Shop>(shopDto);
         shop.ShopStatusId = ShopStatusEnum.Active;
         shop = await unitOfWork.Shops.AddAsync(shop);
@@ -62,7 +62,7 @@ public class ShopService(
         var foundShop = foundShops.Values[0];
         if (foundShop.ShopStatusId == ShopStatusEnum.Inactive && !await IsAdmin())
             throw new BadRequestException("Cannot modified inactive shop");
-        await IsValidShop(shopDto);
+        await IsValidShopDto(shopDto);
         mapping.Map(shopDto, foundShop);
         await unitOfWork.CompleteAsync();
         return await GetShopById(id);
@@ -86,7 +86,7 @@ public class ShopService(
         return account.Roles.Any(r => r.Id == RoleEnum.Admin);
     }
 
-    private async Task IsValidShop(CreateOrUpdateShopDto shopDto)
+    private async Task IsValidShopDto(CreateOrUpdateShopDto shopDto)
     {
         var isFoundWard = await unitOfWork.Wards.IsExisted(shopDto.WardId);
         if (!isFoundWard)
