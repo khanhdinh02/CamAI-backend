@@ -48,7 +48,7 @@ public class ShopService(
 
     public async Task<PaginationResult<Shop>> GetShops(SearchShopRequest searchRequest)
     {
-        if (searchRequest.StatusId.HasValue && searchRequest.StatusId.Value == ShopStatusEnum.Inactive && !await IsAdmin())
+        if (searchRequest.StatusId.HasValue && searchRequest.StatusId.Value == ShopStatusEnum.Inactive && !await IsRequiredRolesMatched(RoleEnum.Admin))
             return new PaginationResult<Shop>();
         var shops = await unitOfWork.Shops.GetAsync(new SearchShopSpec(searchRequest));
         return shops;
@@ -60,7 +60,7 @@ public class ShopService(
         if (foundShops.Values.Count == 0)
             throw new NotFoundException(typeof(Shop), id);
         var foundShop = foundShops.Values[0];
-        if (foundShop.ShopStatusId == ShopStatusEnum.Inactive && !await IsAdmin())
+        if (foundShop.ShopStatusId == ShopStatusEnum.Inactive && !await IsRequiredRolesMatched(RoleEnum.Admin))
             throw new BadRequestException("Cannot modified inactive shop");
         await IsValidShopDto(shopDto);
         mapping.Map(shopDto, foundShop);
@@ -73,17 +73,24 @@ public class ShopService(
         var foundShop = await unitOfWork.Shops.GetByIdAsync(shopId);
         if (foundShop == null)
             throw new NotFoundException(typeof(Shop), shopId);
-        if (foundShop.ShopStatusId == ShopStatusEnum.Inactive && !await IsAdmin())
+        if (foundShop.ShopStatusId == ShopStatusEnum.Inactive && !await IsRequiredRolesMatched(RoleEnum.Admin))
             throw new BadRequestException($"Cannot update inactive shop");
         foundShop.ShopStatusId = shopStatusId;
         await unitOfWork.CompleteAsync();
         return await GetShopById(shopId);
     }
 
-    private async Task<bool> IsAdmin()
+    //TODO [Dat]: use role service instead
+
+    /// <summary>
+    /// Check if input roles match with current user's roles
+    /// </summary>
+    /// <param name="roles">List of role IDs. Use RoleEnum.cs to get the constant role id</param>
+    /// <returns></returns>
+    private async Task<bool> IsRequiredRolesMatched(params int[] roles)
     {
         var account = await accountService.GetCurrentAccount();
-        return account.Roles.Any(r => r.Id == RoleEnum.Admin);
+        return account.Roles.Select(r => r.Id).Intersect(roles).Any();
     }
 
     private async Task IsValidShopDto(CreateOrUpdateShopDto shopDto)
