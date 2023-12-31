@@ -13,7 +13,7 @@ namespace Host.CamAI.API.Controllers;
 [ApiController]
 public class ShopsController(IShopService shopService, IBaseMapping baseMapping) : ControllerBase
 {
-    [HttpGet("current")]
+    [HttpGet]
     [AccessTokenGuard(RoleEnum.Admin, RoleEnum.BrandManager, RoleEnum.ShopManager)]
     public async Task<IActionResult> GetCurrentShop([FromQuery] SearchShopRequest search)
     {

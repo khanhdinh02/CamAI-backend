@@ -119,7 +119,7 @@ public class JwtService(
         int[] userRoles = (JsonSerializer.Deserialize<Role[]>(userRoleString) ?? []).Select(r => r.Id).ToArray();
 
         if (acceptableRoles != null && acceptableRoles.Length > 0 && !acceptableRoles.Intersect(userRoles).Any())
-            throw new UnauthorizedException("Unauthorized");
+            throw new ForbiddenException("Unauthorized");
 
         AddClaimToUserContext(tokenClaims);
 
@@ -139,7 +139,7 @@ public class JwtService(
         if (httpContextAccessor == null)
         {
             logger.Info($"Null object of {nameof(IHttpContextAccessor)} type");
-            throw new BaseException();
+            throw new ServiceUnavailableException("Error");
         }
         httpContextAccessor.HttpContext?.User.AddIdentity(new ClaimsIdentity(claims));
     }
