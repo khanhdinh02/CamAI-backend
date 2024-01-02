@@ -36,7 +36,7 @@ public class ShopsController(IShopService shopService, IBaseMapping baseMapping)
         return Ok(baseMapping.Map<Shop, ShopDto>(updatedShop));
     }
 
-    [HttpPatch("{id:guid}")]
+    [HttpPatch("{id:guid}/status")]
     [AccessTokenGuard(RoleEnum.ShopManager, RoleEnum.Admin, RoleEnum.BrandManager)]
     public async Task<ActionResult<ShopDto>> UpdateShopStatus(Guid id, int shopStatusId)
     {
