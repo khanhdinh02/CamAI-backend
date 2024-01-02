@@ -16,15 +16,17 @@ public class AuthService(IJwtService jwtService, IRepository<Account> accountRep
         var foundAccount = await accountRepo.GetAsync(
             expression: a => a.Email == email && a.AccountStatusId == AccountStatusEnum.Active,
             orderBy: e => e.OrderBy(a => a.Id),
-            includeProperties: [nameof(Account.Roles)]
+            includeProperties: [ nameof(Account.Roles) ]
         );
         if (foundAccount.Values.Count == 0)
             throw new UnauthorizedException("Wrong email or password");
+
         var account = foundAccount.Values[0];
-        string hashedPassword = Hasher.Hash(password);
-        bool isHashedCorrect = Hasher.Verify(account.Password, hashedPassword);
+        var hashedPassword = Hasher.Hash(password);
+        var isHashedCorrect = Hasher.Verify(account.Password, hashedPassword);
         if (!isHashedCorrect)
             throw new UnauthorizedException("Wrong email or password");
+
         var accessToken = jwtService.GenerateToken(account.Id, account.Roles, TokenTypeEnum.AccessToken);
         var refreshToken = jwtService.GenerateToken(account.Id, account.Roles, TokenTypeEnum.RefreshToken);
         return new TokenResponseDto { AccessToken = accessToken, RefreshToken = refreshToken };
@@ -33,18 +35,14 @@ public class AuthService(IJwtService jwtService, IRepository<Account> accountRep
     //TODO: check account status - check refreshToken in storage
     public string RenewToken(string oldAccessToken, string refreshToken)
     {
-        TokenDetailDto accessTokenDetail = jwtService.ValidateToken(oldAccessToken, TokenTypeEnum.AccessToken);
-        TokenDetailDto refreshTokenDetail = jwtService.ValidateToken(refreshToken, TokenTypeEnum.RefreshToken);
+        var accessTokenDetail = jwtService.ValidateToken(oldAccessToken, TokenTypeEnum.AccessToken);
+        var refreshTokenDetail = jwtService.ValidateToken(refreshToken, TokenTypeEnum.RefreshToken);
 
         if (accessTokenDetail.UserId != refreshTokenDetail.UserId)
-        {
             throw new UnauthorizedException("Invalid Tokens");
-        }
-
         if (accessTokenDetail.Token == null)
-        {
             throw new UnauthorizedException("Invalid Tokens");
-        }
+
         return accessTokenDetail.Token;
     }
 }
