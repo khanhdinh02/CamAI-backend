@@ -22,8 +22,7 @@ public class AuthService(IJwtService jwtService, IRepository<Account> accountRep
             throw new UnauthorizedException("Wrong email or password");
 
         var account = foundAccount.Values[0];
-        var hashedPassword = Hasher.Hash(password);
-        var isHashedCorrect = Hasher.Verify(account.Password, hashedPassword);
+        var isHashedCorrect = Hasher.Verify(password, account.Password);
         if (!isHashedCorrect)
             throw new UnauthorizedException("Wrong email or password");
 
