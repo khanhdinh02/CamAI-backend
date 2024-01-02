@@ -38,14 +38,14 @@ public class JwtService(
         string jwtSecret;
         if (tokenType == TokenType.AccessToken)
         {
-            jwtSecret = jwtConfiguration.AccessTokenSecretKey;
-            tokenDurationInMinute = 5; // 5 minutes
+            jwtSecret = jwtConfiguration.AccessToken.Secret;
+            tokenDurationInMinute = jwtConfiguration.AccessToken.Duration;
             claims.Add(new Claim("status", JsonSerializer.Serialize(new { status!.Id, status.Name })));
         }
         else
         {
-            jwtSecret = jwtConfiguration.RefreshTokenSecretKey;
-            tokenDurationInMinute = 1 * 24 * 60; // 1 week
+            jwtSecret = jwtConfiguration.RefreshToken.Secret;
+            tokenDurationInMinute = jwtConfiguration.RefreshToken.Duration;
         }
 
         var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret));
@@ -71,8 +71,8 @@ public class JwtService(
 
             var secretKey =
                 tokenType == TokenType.AccessToken
-                    ? jwtConfiguration.AccessTokenSecretKey
-                    : jwtConfiguration.RefreshTokenSecretKey;
+                    ? jwtConfiguration.AccessToken.Secret
+                    : jwtConfiguration.RefreshToken.Secret;
             var validationParameters = new TokenValidationParameters
             {
                 ValidateIssuer = true,
