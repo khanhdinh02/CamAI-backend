@@ -32,7 +32,8 @@ public class AuthService(IJwtService jwtService, IRepository<Account> accountRep
         return new TokenResponseDto { AccessToken = accessToken, RefreshToken = refreshToken };
     }
 
-    //TODO: check account status - check refreshToken in storage
+    // TODO [Huy]: check account status before renew token
+    // TODO [Huy]: check refreshToken in storage (redis)
     public string RenewToken(string oldAccessToken, string refreshToken)
     {
         var accessTokenDetail = jwtService.ValidateToken(oldAccessToken, TokenTypeEnum.AccessToken);
