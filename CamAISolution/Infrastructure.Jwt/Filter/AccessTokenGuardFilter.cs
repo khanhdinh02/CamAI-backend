@@ -1,12 +1,12 @@
 using Core.Application.Exceptions;
-using Core.Domain.Models.DTO.Accounts;
+using Core.Domain.Models.DTO;
 using Core.Domain.Services;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Infrastructure.Jwt.Guard;
 
-public class AccessTokenGuardFilter(IAccountService accountService, int[] roles) : IAuthorizationFilter
+public class AccessTokenGuardFilter(IAccountService accountService, int[] roles, bool allowNew) : IAuthorizationFilter
 {
     public async void OnAuthorization(AuthorizationFilterContext context)
     {
@@ -19,11 +19,14 @@ public class AccessTokenGuardFilter(IAccountService accountService, int[] roles)
             throw new BadRequestException("Missing Bearer or wrong type");
 
         tokenStr = tokenStr["Bearer ".Length..];
-        var token = jwtService.ValidateToken(tokenStr, TokenTypeEnum.AccessToken, roles);
+        var token = jwtService.ValidateToken(tokenStr, TokenType.AccessToken, roles);
 
-        // validate account status is not new
-        var account = await accountService.GetAccountById(token.UserId);
-        if (account.AccountStatusId == AccountStatusEnum.New)
-            throw new NewAccountException(account);
+        if (!allowNew)
+        {
+            // validate account status is not new
+            var account = await accountService.GetAccountById(token.UserId);
+            if (account.AccountStatusId == AccountStatusEnum.New)
+                throw new NewAccountException(account);
+        }
     }
 }

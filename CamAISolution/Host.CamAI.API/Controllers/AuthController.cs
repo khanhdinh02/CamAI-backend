@@ -1,5 +1,6 @@
-using Core.Domain.Interfaces.Services;
-using Core.Domain.Models.DTO.Auths;
+using Core.Domain.Models.DTO;
+using Core.Domain.Services;
+using Infrastructure.Jwt.Attribute;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Host.CamAI.API.Controllers;
@@ -8,8 +9,6 @@ namespace Host.CamAI.API.Controllers;
 [ApiController]
 public class AuthController(IAuthService authService) : ControllerBase
 {
-    //TODO [Dat]: Create Register endpoints.
-
     [HttpPost]
     public async Task<ActionResult<TokenResponseDto>> Login(LoginDto loginDto)
     {
@@ -21,5 +20,13 @@ public class AuthController(IAuthService authService) : ControllerBase
     public ActionResult<string> RenewToken(RenewTokenDto renewTokenDto)
     {
         return Ok(authService.RenewToken(renewTokenDto.AccessToken, renewTokenDto.RefreshToken));
+    }
+
+    [HttpPost("password")]
+    [AccessTokenGuard(true, [ ])]
+    public async Task<ActionResult> ChangePassword([FromBody] ChangePasswordDto changePasswordDto)
+    {
+        await authService.ChangePassword(changePasswordDto);
+        return Accepted();
     }
 }

@@ -1,4 +1,4 @@
-namespace Core.Domain.Models.DTO.Accounts;
+namespace Core.Domain.Models.DTO;
 
 public static class RoleEnum
 {
