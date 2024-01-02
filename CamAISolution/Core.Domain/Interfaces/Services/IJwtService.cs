@@ -7,7 +7,8 @@ namespace Core.Domain.Services;
 
 public interface IJwtService
 {
-    string GenerateToken(Guid userID, ICollection<Role> roles, TokenTypeEnum tokenType);
+    string GenerateToken(Guid userId, IEnumerable<Role> roles, AccountStatus? status, TokenTypeEnum tokenType);
+    string GenerateToken(Guid userId, IEnumerable<Role> roles, TokenTypeEnum tokenType);
 
     TokenDetailDto ValidateToken(string token, TokenTypeEnum tokenType, int[]? acceptableRoles = null);
 

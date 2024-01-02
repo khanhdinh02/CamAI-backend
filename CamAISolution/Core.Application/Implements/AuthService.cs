@@ -14,9 +14,11 @@ public class AuthService(IJwtService jwtService, IRepository<Account> accountRep
     public async Task<TokenResponseDto> GetTokensByUsernameAndPassword(string email, string password)
     {
         var foundAccount = await accountRepo.GetAsync(
-            expression: a => a.Email == email && a.AccountStatusId == AccountStatusEnum.Active,
+            expression: a =>
+                a.Email == email
+                && (a.AccountStatusId == AccountStatusEnum.Active || a.AccountStatusId == AccountStatusEnum.New),
             orderBy: e => e.OrderBy(a => a.Id),
-            includeProperties: [ nameof(Account.Roles) ]
+            includeProperties: [ nameof(Account.Roles), nameof(Account.AccountStatus) ]
         );
         if (foundAccount.Values.Count == 0)
             throw new UnauthorizedException("Wrong email or password");
@@ -26,7 +28,12 @@ public class AuthService(IJwtService jwtService, IRepository<Account> accountRep
         if (!isHashedCorrect)
             throw new UnauthorizedException("Wrong email or password");
 
-        var accessToken = jwtService.GenerateToken(account.Id, account.Roles, TokenTypeEnum.AccessToken);
+        var accessToken = jwtService.GenerateToken(
+            account.Id,
+            account.Roles,
+            account.AccountStatus,
+            TokenTypeEnum.AccessToken
+        );
         var refreshToken = jwtService.GenerateToken(account.Id, account.Roles, TokenTypeEnum.RefreshToken);
         return new TokenResponseDto { AccessToken = accessToken, RefreshToken = refreshToken };
     }
