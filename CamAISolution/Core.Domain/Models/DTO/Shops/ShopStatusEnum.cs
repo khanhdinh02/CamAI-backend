@@ -2,6 +2,6 @@ namespace Core.Domain.Models.DTO.Shops;
 
 public static class ShopStatusEnum
 {
-    public static readonly int Active = 1;
-    public static readonly int Inactive = 2;
+    public const int Active = 1;
+    public const int Inactive = 2;
 }

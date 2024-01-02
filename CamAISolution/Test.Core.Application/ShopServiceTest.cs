@@ -5,6 +5,7 @@ using Core.Domain.Entities;
 using Core.Domain.Interfaces.Mappings;
 using Core.Domain.Models.DTO.Shops;
 using Core.Domain.Repositories;
+using Core.Domain.Services;
 using Moq;
 
 namespace Test.Core.Application;
@@ -17,7 +18,7 @@ public class ShopServiceTest : BaseSetUp
     [SetUp]
     public void ShopServiceTestSetUp()
     {
-        shopService = new ShopService(unitOfWork, logging, new Mock<IBaseMapping>().Object);
+        shopService = new ShopService(unitOfWork, logging, new Mock<IBaseMapping>().Object, new Mock<IJwtService>().Object);
     }
 
     [Test]

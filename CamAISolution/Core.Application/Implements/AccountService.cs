@@ -2,10 +2,12 @@ using Core.Domain.Repositories;
 using Core.Domain.Services;
 using Core.Domain.Entities;
 using Core.Domain.Models;
+using Core.Application.Specifications.Accounts.Repositories;
+using Core.Application.Exceptions;
 
 namespace Core.Application;
 
-public class AccountService(IRepository<Account> accountRepo) : IAccountService
+public class AccountService(IUnitOfWork unitOfWork, IJwtService jwtService) : IAccountService
 {
     public Task<PaginationResult<Account>> GetAccount(
         Guid? guid = null,
@@ -23,27 +25,14 @@ public class AccountService(IRepository<Account> accountRepo) : IAccountService
 
     public async Task<Account> GetAccountById(Guid id)
     {
-        //Normal
-        /*var accounts = await accountRepo.GetAsync(expression: a => a.Id == id);
+        var foundAccounts =await unitOfWork.Accounts.GetAsync(new AccountByIdRepoSpec(id));
+        if (foundAccounts.Values.Count == 0)
+            throw new NotFoundException(typeof(Account), id);
+        return foundAccounts.Values[0];
+    }
 
-        //With AccountSearchSpecification
-        //accounts = await accountRepo.GetAsync(new AccountSearchSpecification(guid: id));
-
-
-        //With AccountByIdRepoSpecification
-        //accounts = await accountRepo.GetAsync(new AccountByIdRepoSpecification(id));
-
-        //With AcocuntByIdSpecification
-        //accounts = await accountRepo.GetAsync(expression: new AccountByIdSpecification(id).ToExpression());
-
-        //Use with another Specification which has same type
-        //var combined = new AccountByIdSpecification(id).And(new AccountCreatedFromToSpecification(DateTimeHelper.VNDateTime, DateTimeHelper.VNDateTime.AddDays(10))).ToExpression();
-        //accounts = await accountRepo.GetAsync(expression: combined);
-
-        if (accounts.Values.Count <= 0)
-            throw new NotFoundException(typeof(Account), id, this.GetType());
-        return accounts.Values.First();*/
-        throw new NotImplementedException();
-        //return accounts.Values.First();
+    public Task<Account> GetCurrentAccount()
+    {
+        return GetAccountById(jwtService.GetCurrentUserId());
     }
 }

@@ -12,6 +12,9 @@ public class AccountByIdRepoSpec : EntityByIdSpec<Account, Guid>
     public AccountByIdRepoSpec(Guid id)
         : base(a => a.Id == id)
     {
+        AddIncludes(a => a.Roles);
+        //Use string in order to ignore the null warning
+        AddIncludes($"{nameof(Account.Brand)}");
         ApplyOrderBy(a => a.CreatedDate);
         //AddIncludes("Shops");
         //AddIncludes("Roles");
