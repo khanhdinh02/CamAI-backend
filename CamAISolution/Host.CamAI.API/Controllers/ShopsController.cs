@@ -2,6 +2,7 @@ using Core.Domain.DTO;
 using Core.Domain.Entities;
 using Core.Domain.Interfaces.Mappings;
 using Core.Domain.Interfaces.Services;
+using Core.Domain.Models;
 using Core.Domain.Models.DTO.Accounts;
 using Core.Domain.Models.DTO.Shops;
 using Infrastructure.Jwt.Attribute;
@@ -15,7 +16,7 @@ public class ShopsController(IShopService shopService, IBaseMapping baseMapping)
 {
     [HttpGet]
     [AccessTokenGuard(RoleEnum.Admin, RoleEnum.BrandManager, RoleEnum.ShopManager)]
-    public async Task<ActionResult<ShopDto>> GetCurrentShop([FromQuery] SearchShopRequest search)
+    public async Task<ActionResult<PaginationResult<ShopDto>>> GetCurrentShop([FromQuery] SearchShopRequest search)
     {
         var shops = await shopService.GetCurrentAccountShops(search);
         return Ok(baseMapping.Map<Shop, ShopDto>(shops));
