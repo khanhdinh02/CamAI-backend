@@ -15,7 +15,7 @@ public class ShopsController(IShopService shopService, IBaseMapping baseMapping)
 {
     [HttpGet]
     [AccessTokenGuard(RoleEnum.Admin, RoleEnum.BrandManager, RoleEnum.ShopManager)]
-    public async Task<IActionResult> GetCurrentShop([FromQuery] SearchShopRequest search)
+    public async Task<ActionResult<ShopDto>> GetCurrentShop([FromQuery] SearchShopRequest search)
     {
         var shops = await shopService.GetCurrentAccountShops(search);
         return Ok(baseMapping.Map<Shop, ShopDto>(shops));
@@ -23,14 +23,14 @@ public class ShopsController(IShopService shopService, IBaseMapping baseMapping)
 
     [HttpPost]
     [AccessTokenGuard(RoleEnum.Admin)]
-    public async Task<IActionResult> CreateShop(CreateOrUpdateShopDto shopDto)
+    public async Task<ActionResult<ShopDto>> CreateShop(CreateOrUpdateShopDto shopDto)
     {
         return Ok(baseMapping.Map<Shop, ShopDto>(await shopService.CreateShop(shopDto)));
     }
 
     [HttpPut("{id:guid}")]
     [AccessTokenGuard(RoleEnum.ShopManager, RoleEnum.Admin, RoleEnum.BrandManager)]
-    public async Task<IActionResult> UpdateShop(Guid id, [FromBody] CreateOrUpdateShopDto shopDto)
+    public async Task<ActionResult<ShopDto>> UpdateShop(Guid id, [FromBody] CreateOrUpdateShopDto shopDto)
     {
         var updatedShop = await shopService.UpdateShop(id, shopDto);
         return Ok(baseMapping.Map<Shop, ShopDto>(updatedShop));
@@ -38,9 +38,9 @@ public class ShopsController(IShopService shopService, IBaseMapping baseMapping)
 
     [HttpPatch("{id:guid}")]
     [AccessTokenGuard(RoleEnum.ShopManager, RoleEnum.Admin, RoleEnum.BrandManager)]
-    public async Task<IActionResult> UpdateShopStatus(Guid id, int shopStatusId)
+    public async Task<ActionResult<ShopDto>> UpdateShopStatus(Guid id, int shopStatusId)
     {
-        Shop updatedShop = await shopService.UpdateStatus(id, shopStatusId);
+        var updatedShop = await shopService.UpdateStatus(id, shopStatusId);
         if (updatedShop.ShopStatusId == ShopStatusEnum.Inactive)
             return Ok();
         return Ok(baseMapping.Map<Shop, ShopDto>(updatedShop));
