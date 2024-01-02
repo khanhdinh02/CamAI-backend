@@ -8,7 +8,7 @@ namespace Infrastructure.Jwt.Guard;
 
 public class AccessTokenGuardFilter(IAccountService accountService, int[] roles, bool allowNew) : IAuthorizationFilter
 {
-    public async void OnAuthorization(AuthorizationFilterContext context)
+    public void OnAuthorization(AuthorizationFilterContext context)
     {
         var tokenStr = context.HttpContext.Request.Headers.Authorization.ToString();
         var jwtService = context.HttpContext.RequestServices.GetRequiredService(typeof(IJwtService)) as IJwtService;
@@ -24,7 +24,7 @@ public class AccessTokenGuardFilter(IAccountService accountService, int[] roles,
         if (!allowNew)
         {
             // validate account status is not new
-            var account = await accountService.GetAccountById(token.UserId);
+            var account = accountService.GetAccountById(token.UserId).Result;
             if (account.AccountStatusId == AccountStatusEnum.New)
                 throw new NewAccountException(account);
         }

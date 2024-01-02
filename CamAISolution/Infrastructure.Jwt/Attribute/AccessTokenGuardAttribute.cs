@@ -9,7 +9,7 @@ public sealed class AccessTokenGuardAttribute : TypeFilterAttribute
     public AccessTokenGuardAttribute(params int[] roleIds)
         : base(typeof(AccessTokenGuardFilter))
     {
-        Arguments =  [ roleIds, true ];
+        Arguments =  [ roleIds, false ];
     }
 
     public AccessTokenGuardAttribute(bool allowNew, int[]? roleIds)
