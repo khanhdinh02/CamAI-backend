@@ -7,7 +7,7 @@ namespace Host.CamAI.API.Controllers;
 public class TestsController : ControllerBase
 {
     [HttpGet]
-    public IActionResult TestEndpoint()
+    public ActionResult<string> TestEndpoint()
     {
         return Ok(new { data = $"Hello From {nameof(TestsController)}" });
     }
