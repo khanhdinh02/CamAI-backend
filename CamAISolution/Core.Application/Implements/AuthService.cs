@@ -1,8 +1,6 @@
 using Core.Application.Exceptions;
 using Core.Domain.Entities;
-using Core.Domain.Interfaces.Services;
-using Core.Domain.Models.DTO.Accounts;
-using Core.Domain.Models.DTO.Auths;
+using Core.Domain.DTO;
 using Core.Domain.Repositories;
 using Core.Domain.Services;
 using Core.Domain.Utilities;

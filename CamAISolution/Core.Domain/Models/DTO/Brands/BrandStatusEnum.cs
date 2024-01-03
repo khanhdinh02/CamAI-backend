@@ -1,4 +1,4 @@
-namespace Core.Domain.Models.DTO.Brands;
+namespace Core.Domain.DTO;
 
 public static class BrandStatusEnum
 {

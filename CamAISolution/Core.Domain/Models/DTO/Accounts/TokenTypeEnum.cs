@@ -1,4 +1,4 @@
-namespace Core.Domain.Models.DTO.Accounts;
+namespace Core.Domain.DTO;
 
 public enum TokenTypeEnum
 {

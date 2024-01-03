@@ -1,6 +1,6 @@
-using Core.Domain.Models.DTO.Auths;
+using Core.Domain.DTO;
 
-namespace Core.Domain.Interfaces.Services;
+namespace Core.Domain.Services;
 
 public interface IAuthService
 {

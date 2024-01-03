@@ -1,11 +1,7 @@
 using Core.Domain.DTO;
 using Core.Domain.Entities;
 using Core.Domain.Entities.Base;
-using Core.Domain.Models.DTO.Accounts;
-using Core.Domain.Models.DTO.Brands;
-using Core.Domain.Models.DTO.EdgeBoxes;
 using Core.Domain.Models.DTO.Requests;
-using Core.Domain.Models.DTO.Shops;
 using Core.Domain.Models.DTO.Tickets;
 using Core.Domain.Utilities;
 using Microsoft.EntityFrameworkCore;

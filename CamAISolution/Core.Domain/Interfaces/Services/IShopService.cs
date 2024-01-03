@@ -1,9 +1,8 @@
 using Core.Domain.DTO;
 using Core.Domain.Entities;
 using Core.Domain.Models;
-using Core.Domain.Models.DTO.Shops;
 
-namespace Core.Domain.Interfaces.Services;
+namespace Core.Domain.Services;
 
 public interface IShopService
 {

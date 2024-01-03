@@ -1,9 +1,7 @@
 using Core.Domain.DTO;
 using Core.Domain.Entities;
 using Core.Domain.Interfaces.Mappings;
-using Core.Domain.Interfaces.Services;
-using Core.Domain.Models.DTO.Accounts;
-using Core.Domain.Models.DTO.Shops;
+using Core.Domain.Services;
 using Infrastructure.Jwt.Attribute;
 using Microsoft.AspNetCore.Mvc;
 

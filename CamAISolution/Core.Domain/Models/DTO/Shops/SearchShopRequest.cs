@@ -1,6 +1,6 @@
 using Core.Domain.DTO;
 
-namespace Core.Domain.Models.DTO.Shops;
+namespace Core.Domain.DTO;
 
 public class SearchShopRequest : BaseSearchRequest
 {

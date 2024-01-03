@@ -1,4 +1,4 @@
-namespace Core.Domain.Models.DTO.Auths;
+namespace Core.Domain.DTO;
 
 public class RenewTokenDto
 {

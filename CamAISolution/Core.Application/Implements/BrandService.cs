@@ -1,13 +1,11 @@
 using System.Text.Json;
 using Core.Application.Exceptions;
 using Core.Application.Specifications.Brands.Repositories;
-using Core.Application.Specifications.Repositories;
 using Core.Domain;
 using Core.Domain.DTO;
 using Core.Domain.Entities;
 using Core.Domain.Interfaces.Mappings;
 using Core.Domain.Models;
-using Core.Domain.Models.DTO.Brands;
 using Core.Domain.Repositories;
 using Core.Domain.Services;
 

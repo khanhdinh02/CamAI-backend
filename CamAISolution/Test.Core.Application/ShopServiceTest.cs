@@ -3,7 +3,6 @@ using Core.Application.Implements;
 using Core.Domain.DTO;
 using Core.Domain.Entities;
 using Core.Domain.Interfaces.Mappings;
-using Core.Domain.Models.DTO.Shops;
 using Core.Domain.Repositories;
 using Core.Domain.Services;
 using Moq;

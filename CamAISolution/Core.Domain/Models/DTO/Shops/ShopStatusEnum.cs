@@ -1,4 +1,4 @@
-namespace Core.Domain.Models.DTO.Shops;
+namespace Core.Domain.DTO;
 
 public static class ShopStatusEnum
 {

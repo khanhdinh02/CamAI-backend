@@ -1,6 +1,6 @@
-using Core.Domain.Models.DTO.Accounts;
+using Core.Domain.DTO;
 
-namespace Core.Domain.Models.DTO.Auths;
+namespace Core.Domain.DTO;
 
 public class TokenDetailDto
 {
