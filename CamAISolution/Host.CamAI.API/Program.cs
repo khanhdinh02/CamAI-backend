@@ -10,7 +10,7 @@ var builder = WebApplication.CreateBuilder(args).ConfigureSerilog();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-
+var isRequireMigrate = args.Contains("--run-magrate");
 builder
     .Services
     .AddRepository(builder.Configuration.GetConnectionString("Default"))
@@ -24,7 +24,7 @@ var app = builder.Build();
 
 app.UseMiddleware<GlobalExceptionHandler>();
 
-app.Migration();
+app.Migration(isRequireMigrate);
 
 if (app.Environment.IsDevelopment())
 {
