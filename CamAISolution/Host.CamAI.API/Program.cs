@@ -2,14 +2,12 @@ using Host.CamAI.API;
 using Host.CamAI.API.Middlewares;
 using Infrastructure.Jwt;
 using Infrastructure.Logging;
-using Infrastructure.Repositories;
 using Infrastructure.Mapping;
+using Infrastructure.Repositories;
 
 var builder = WebApplication.CreateBuilder(args).ConfigureSerilog();
 
 builder.Services.AddControllers();
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
 
 builder
     .Services
@@ -17,6 +15,7 @@ builder
     .AddJwtService(builder.Configuration)
     .AddLoggingDependencyInjection()
     .AddHttpContextAccessor()
+    .AddSwagger()
     .AddServices()
     .AddMapping();
 
