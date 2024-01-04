@@ -6,7 +6,7 @@ using Core.Application.Exceptions;
 using Core.Domain;
 using Core.Domain.Entities;
 using Core.Domain.Models.Configurations;
-using Core.Domain.Models.DTO;
+using Core.Domain.DTO;
 using Core.Domain.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;

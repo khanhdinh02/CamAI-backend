@@ -1,4 +1,4 @@
-using Core.Domain.Models.DTO;
+using Core.Domain.DTO;
 using Core.Domain.Services;
 using Infrastructure.Jwt.Attribute;
 using Microsoft.AspNetCore.Mvc;

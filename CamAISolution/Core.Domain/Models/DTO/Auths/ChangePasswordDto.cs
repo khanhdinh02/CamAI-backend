@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Core.Domain.Models.DTO;
+namespace Core.Domain.DTO;
 
 public class ChangePasswordDto
 {

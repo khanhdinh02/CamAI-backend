@@ -6,8 +6,6 @@ using Core.Domain.DTO;
 using Core.Domain.Entities;
 using Core.Domain.Interfaces.Mappings;
 using Core.Domain.Models;
-using Core.Domain.Models.DTO;
-using Core.Domain.Models.DTO.Shops;
 using Core.Domain.Repositories;
 using Core.Domain.Services;
 
@@ -17,8 +15,8 @@ public class ShopService(
     IUnitOfWork unitOfWork,
     IAppLogging<ShopService> logger,
     IBaseMapping mapping,
-    IAccountService accountService,
-    IBrandService brandService) : IShopService
+    IAccountService accountService
+) : IShopService
 {
     public async Task<Shop> CreateShop(CreateOrUpdateShopDto shopDto)
     {
@@ -75,7 +73,7 @@ public class ShopService(
         var isCurrentShopManager = foundShop.ShopManagerId == currentAccount.Id;
         var isCurrentBrandManager = currentAccount.Brand != null && foundShop.BrandId == currentAccount.Brand.Id;
         var isAdmin = await AreRequiredRolesMatched(RoleEnum.Admin);
-        if((isCurrentShopManager || isCurrentBrandManager) && !isAdmin)
+        if ((isCurrentShopManager || isCurrentBrandManager) && !isAdmin)
             throw new ForbiddenException("Current user not allowed to do this action.");
 
         if (foundShop.ShopStatusId == ShopStatusEnum.Inactive && !await AreRequiredRolesMatched(RoleEnum.Admin))
@@ -103,8 +101,8 @@ public class ShopService(
         var isFoundWard = await unitOfWork.Wards.IsExisted(shopDto.WardId);
         if (!isFoundWard)
             throw new NotFoundException(typeof(Ward), shopDto.WardId);
-        var foundBrand = await brandService.GetBrandById(shopDto.BrandId);
-        if (foundBrand.BrandStatusId == BrandStatusEnum.Inactive)
+        var foundBrand = await unitOfWork.Brands.GetByIdAsync(shopDto.BrandId);
+        if (foundBrand is { BrandStatusId: BrandStatusEnum.Inactive })
         {
             logger.Error($"Found Brand is {nameof(BrandStatusEnum.Inactive)}. Cannot updated");
             throw new NotFoundException(typeof(Brand), shopDto.BrandId);
@@ -133,12 +131,11 @@ public class ShopService(
             }
         }
 
-        if(await AreRequiredRolesMatched(RoleEnum.ShopManager))
+        if (await AreRequiredRolesMatched(RoleEnum.ShopManager))
         {
             searchRequest.ShopManagerId = currentAccount.Id;
             return await GetShops(searchRequest);
         }
         return new PaginationResult<Shop>();
-
     }
 }

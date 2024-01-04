@@ -1,4 +1,4 @@
-using Core.Domain.Models.DTO;
+using Core.Domain.DTO;
 
 namespace Core.Domain.Services;
 

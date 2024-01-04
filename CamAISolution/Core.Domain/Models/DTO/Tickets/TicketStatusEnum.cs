@@ -1,4 +1,4 @@
-namespace Core.Domain.Models.DTO.Tickets;
+namespace Core.Domain.DTO.Tickets;
 
 public static class TicketStatusEnum
 {
