@@ -28,10 +28,10 @@ public class BrandService(
 
         Guid brandId;
         if (currentAccount.HasRole(RoleEnum.BrandManager))
-            brandId = currentAccount.BrandId!.Value;
+            brandId = currentAccount.Brand!.Id;
         else if (currentAccount.HasRole(RoleEnum.ShopManager))
         {
-            var shop = await shopService.GetShopById(currentAccount.ManagingShopId!.Value);
+            var shop = await shopService.GetShopById(currentAccount.ManagingShop!.Id);
             brandId = shop.BrandId;
         }
         else
@@ -153,7 +153,7 @@ public class BrandService(
     {
         if (account.HasRole(RoleEnum.ShopManager))
         {
-            var shop = await shopService.GetShopById(account.ManagingShopId!.Value);
+            var shop = await shopService.GetShopById(account.ManagingShop!.Id);
             if (shop.BrandId == brand.Id)
                 return true;
         }
@@ -164,6 +164,6 @@ public class BrandService(
     private static bool IsAccountOwnBrand(Account account, Brand brand)
     {
         return account.HasRole(RoleEnum.Admin)
-            || (account.HasRole(RoleEnum.BrandManager) && account.BrandId == brand.Id);
+            || (account.HasRole(RoleEnum.BrandManager) && account.Brand!.Id == brand.Id);
     }
 }

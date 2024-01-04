@@ -22,8 +22,6 @@ public class Account : BusinessEntity
     public string? AddressLine { get; set; }
     public Guid? WorkingShopId { get; set; }
     public int AccountStatusId { get; set; }
-    public Guid? BrandId { get; set; }
-    public Guid? ManagingShopId { get; set; }
 
     public virtual Ward? Ward { get; set; }
     public virtual Shop? WorkingShop { get; set; }
