@@ -1,6 +1,6 @@
 namespace Core.Domain.DTO;
 
-public enum TokenTypeEnum
+public enum TokenType
 {
     AccessToken,
     RefreshToken

@@ -81,7 +81,7 @@ public class Repository<T>(CamAIContext context, IRepositorySpecificationEvaluat
         if (specification == null)
             return new PaginationResult<T>();
         var query = specificationEvaluator.GetQuery(context.Set<T>(), specification);
-        var count = await query.CountAsync();
+        var count = await CountAsync(specification.Criteria);
         var data = await query.ToListAsync();
         return new PaginationResult<T>
         {

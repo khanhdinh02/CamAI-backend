@@ -1,5 +1,3 @@
-using Core.Domain.DTO;
-
 namespace Core.Domain.DTO;
 
 public class SearchShopRequest : BaseSearchRequest

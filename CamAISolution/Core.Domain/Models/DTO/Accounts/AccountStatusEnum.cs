@@ -2,7 +2,7 @@ namespace Core.Domain.DTO;
 
 public static class AccountStatusEnum
 {
-    public static readonly int New = 1;
-    public static readonly int Active = 2;
-    public static readonly int Inactive = 3;
+    public const int New = 1;
+    public const int Active = 2;
+    public const int Inactive = 3;
 }

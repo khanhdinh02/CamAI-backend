@@ -1,7 +1,7 @@
 using Core.Application.Specifications.Repositories;
 using Core.Domain.Entities;
 
-namespace Core.Application.Specifications.Accounts.Repositories;
+namespace Core.Application.Specifications.Repositories;
 
 /// <summary>
 /// Using this to fetching all Classes (Tables) which relating to Account that equal with provied Id.

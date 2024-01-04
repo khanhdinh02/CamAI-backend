@@ -1,8 +1,8 @@
 using Core.Domain.DTO;
+using Core.Domain.DTO.Requests;
+using Core.Domain.DTO.Tickets;
 using Core.Domain.Entities;
 using Core.Domain.Entities.Base;
-using Core.Domain.Models.DTO.Requests;
-using Core.Domain.Models.DTO.Tickets;
 using Core.Domain.Utilities;
 using Microsoft.EntityFrameworkCore;
 
@@ -185,6 +185,18 @@ public class CamAIContext : DbContext
             builder.Property(x => x.LogoUri).HasConversion<string>();
             builder.Property(x => x.BannerUri).HasConversion<string>();
         });
+
+        modelBuilder
+            .Entity<Brand>()
+            .HasOne(x => x.BrandManager)
+            .WithOne(x => x.Brand)
+            .HasForeignKey<Brand>(x => x.BrandManagerId);
+
+        modelBuilder
+            .Entity<Shop>()
+            .HasOne(x => x.ShopManager)
+            .WithOne(x => x.ManagingShop)
+            .HasForeignKey<Shop>(x => x.ShopManagerId);
 
         modelBuilder.Entity<Evidence>().Property(p => p.Uri).HasConversion<string>();
     }

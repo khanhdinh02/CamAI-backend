@@ -1,7 +1,7 @@
 using Core.Application.Specifications.Repositories;
 using Core.Domain.Entities;
 
-namespace Core.Application.Specifications.Brands.Repositories;
+namespace Core.Application.Specifications.Repositories;
 
 public class BrandByIdRepoSpec : EntityByIdSpec<Brand, Guid>
 {

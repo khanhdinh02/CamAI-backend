@@ -4,6 +4,7 @@ using Infrastructure.Repositories.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Repositories.Migrations
 {
     [DbContext(typeof(CamAIContext))]
-    partial class CamAIContextModelSnapshot : ModelSnapshot
+    [Migration("20240104144048_LinkBrandAndAccount")]
+    partial class LinkBrandAndAccount
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -40,7 +43,7 @@ namespace Infrastructure.Repositories.Migrations
                         new
                         {
                             RoleId = 1,
-                            AccountId = new Guid("4b077561-b84d-47bf-ab5e-68edf456cc8d")
+                            AccountId = new Guid("c8829e92-e880-4cc9-bbfe-71e4efeeb9e1")
                         });
                 });
 
@@ -59,6 +62,9 @@ namespace Infrastructure.Repositories.Migrations
                     b.Property<DateOnly?>("Birthday")
                         .HasColumnType("date");
 
+                    b.Property<Guid?>("BrandId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
 
@@ -69,6 +75,9 @@ namespace Infrastructure.Repositories.Migrations
                     b.Property<string>("Gender")
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
+
+                    b.Property<Guid?>("ManagingShopId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("ModifiedDate")
                         .HasColumnType("datetime2");
@@ -110,7 +119,7 @@ namespace Infrastructure.Repositories.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("4b077561-b84d-47bf-ab5e-68edf456cc8d"),
+                            Id = new Guid("c8829e92-e880-4cc9-bbfe-71e4efeeb9e1"),
                             AccountStatusId = 2,
                             CreatedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Email = "admin@camai.com",

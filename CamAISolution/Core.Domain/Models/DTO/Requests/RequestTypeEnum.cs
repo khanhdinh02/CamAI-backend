@@ -1,4 +1,4 @@
-namespace Core.Domain.Models.DTO.Requests;
+namespace Core.Domain.DTO.Requests;
 
 public static class RequestTypeEnum
 {

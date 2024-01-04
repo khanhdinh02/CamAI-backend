@@ -21,31 +21,39 @@ public class JwtService(
     IAppLogging<JwtService> logger
 ) : IJwtService
 {
-    private readonly JwtConfiguration JwtConfiguration = configuration.Value;
+    private readonly JwtConfiguration jwtConfiguration = configuration.Value;
 
-    public string GenerateToken(Guid userID, ICollection<Role> roles, TokenTypeEnum tokenType)
+    public string GenerateToken(Guid userId, IEnumerable<Role> roles, TokenType tokenType) =>
+        GenerateToken(userId, roles, null, tokenType);
+
+    public string GenerateToken(Guid userId, IEnumerable<Role> roles, AccountStatus? status, TokenType tokenType)
     {
+        var claims = new List<Claim>
+        {
+            new("id", userId.ToString()),
+            new("roles", JsonSerializer.Serialize(roles.Select(r => new { r.Id, r.Name }))),
+        };
+
         int tokenDurationInMinute;
         string jwtSecret;
-
-        if (tokenType == TokenTypeEnum.AccessToken)
+        if (tokenType == TokenType.AccessToken)
         {
-            jwtSecret = JwtConfiguration.AccessTokenSecretKey;
-            tokenDurationInMinute = 5; // 5 minutes
+            jwtSecret = jwtConfiguration.AccessToken.Secret;
+            tokenDurationInMinute = jwtConfiguration.AccessToken.Duration;
+            claims.Add(new Claim("status", JsonSerializer.Serialize(new { status!.Id, status.Name })));
         }
         else
         {
-            jwtSecret = JwtConfiguration.RefreshTokenSecretKey;
-            tokenDurationInMinute = 1 * 24 * 60; // 1 week
+            jwtSecret = jwtConfiguration.RefreshToken.Secret;
+            tokenDurationInMinute = jwtConfiguration.RefreshToken.Duration;
         }
-        var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret));
 
+        var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret));
         var credentials = new SigningCredentials(secretKey, SecurityAlgorithms.HmacSha256);
-        var claims = new List<Claim> { new("id", userID.ToString()), new("roles", JsonSerializer.Serialize(roles.Select(r => new { r.Id, r.Name }))), };
 
         var token = new JwtSecurityToken(
-            issuer: JwtConfiguration.Issuer,
-            audience: JwtConfiguration.Audience,
+            issuer: jwtConfiguration.Issuer,
+            audience: jwtConfiguration.Audience,
             claims: claims,
             expires: DateTime.UtcNow.AddMinutes(tokenDurationInMinute),
             signingCredentials: credentials
@@ -53,7 +61,7 @@ public class JwtService(
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
 
-    public IEnumerable<Claim> GetClaims(string token, TokenTypeEnum tokenType)
+    public IEnumerable<Claim> GetClaims(string token, TokenType tokenType)
     {
         try
         {
@@ -62,16 +70,16 @@ public class JwtService(
                 throw new UnauthorizedException("Unauthorized");
 
             var secretKey =
-                tokenType == TokenTypeEnum.AccessToken
-                    ? JwtConfiguration.AccessTokenSecretKey
-                    : JwtConfiguration.RefreshTokenSecretKey;
+                tokenType == TokenType.AccessToken
+                    ? jwtConfiguration.AccessToken.Secret
+                    : jwtConfiguration.RefreshToken.Secret;
             var validationParameters = new TokenValidationParameters
             {
                 ValidateIssuer = true,
                 ValidateAudience = true,
                 ValidateIssuerSigningKey = true,
-                ValidIssuer = JwtConfiguration.Issuer,
-                ValidAudience = JwtConfiguration.Audience,
+                ValidIssuer = jwtConfiguration.Issuer,
+                ValidAudience = jwtConfiguration.Audience,
                 ValidateLifetime = true,
                 IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey)),
                 ClockSkew = TimeSpan.Zero
@@ -104,7 +112,7 @@ public class JwtService(
     }
 
     //TODO: CHECK USER STATUS FROM STORAGE
-    public TokenDetailDto ValidateToken(string token, TokenTypeEnum tokenType, int[]? acceptableRoles = null)
+    public TokenDetailDto ValidateToken(string token, TokenType tokenType, int[]? acceptableRoles = null)
     {
         IEnumerable<Claim> tokenClaims = this.GetClaims(token, tokenType);
 
@@ -115,9 +123,9 @@ public class JwtService(
         var userRoleString = tokenClaims.FirstOrDefault(c => c.Type == "roles")?.Value;
         if (string.IsNullOrEmpty(userRoleString))
             throw new BadRequestException("Cannot get user role from jwt");
-        int[] userRoles = (JsonSerializer.Deserialize<Role[]>(userRoleString) ?? []).Select(r => r.Id).ToArray();
+        var userRoles = (JsonSerializer.Deserialize<Role[]>(userRoleString) ?? [ ]).Select(r => r.Id).ToArray();
 
-        if (acceptableRoles != null && acceptableRoles.Length > 0 && !acceptableRoles.Intersect(userRoles).Any())
+        if (acceptableRoles is { Length: > 0 } && !acceptableRoles.Intersect(userRoles).Any())
             throw new ForbiddenException("Unauthorized");
 
         AddClaimToUserContext(tokenClaims);

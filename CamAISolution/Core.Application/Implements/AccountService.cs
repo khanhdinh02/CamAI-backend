@@ -1,11 +1,11 @@
-using Core.Domain.Repositories;
-using Core.Domain.Services;
+using Core.Application.Exceptions;
+using Core.Application.Specifications.Repositories;
 using Core.Domain.Entities;
 using Core.Domain.Models;
-using Core.Application.Specifications.Accounts.Repositories;
-using Core.Application.Exceptions;
+using Core.Domain.Repositories;
+using Core.Domain.Services;
 
-namespace Core.Application;
+namespace Core.Application.Implements;
 
 public class AccountService(IUnitOfWork unitOfWork, IJwtService jwtService) : IAccountService
 {
@@ -25,7 +25,7 @@ public class AccountService(IUnitOfWork unitOfWork, IJwtService jwtService) : IA
 
     public async Task<Account> GetAccountById(Guid id)
     {
-        var foundAccounts =await unitOfWork.Accounts.GetAsync(new AccountByIdRepoSpec(id));
+        var foundAccounts = await unitOfWork.Accounts.GetAsync(new AccountByIdRepoSpec(id));
         if (foundAccounts.Values.Count == 0)
             throw new NotFoundException(typeof(Account), id);
         return foundAccounts.Values[0];

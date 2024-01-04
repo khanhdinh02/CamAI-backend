@@ -71,3 +71,23 @@ When build success run:
 docker run --rm -d -e ASPNETCORE_ENVIRONMENT=Development -p <Machine's port>:<Container's port> <img-name>
 ```
 Note: `-e ASPNETCORE_ENVIRONMENT=Development` to run on `Development` stage.
+
+## Docker Compose
+
+**Make sure your Docker Desktop has been started.**
+
+Create `.env` has same folder with `docker-compose.yml`, inside `.env` will be like: 
+
+```
+MS_SQL_PASS=C@maimssqlser2022
+MS_SQL_CONN='server=mssqldb;uid=sa;password=C@maimssqlser2022;database=CamAIDatabase;TrustServerCertificate=true'
+STAGE=Development
+
+# if you don't want to migration remove this
+MIGRATION='--run-migration'
+```
+
+Then use `docker-compose up` to start the application.
+
+
+

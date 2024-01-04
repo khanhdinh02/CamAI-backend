@@ -1,6 +1,6 @@
 using System.Text.Json;
 using Core.Application.Exceptions;
-using Core.Application.Specifications.Brands.Repositories;
+using Core.Application.Specifications.Repositories;
 using Core.Domain;
 using Core.Domain.DTO;
 using Core.Domain.Entities;
@@ -8,21 +8,56 @@ using Core.Domain.Interfaces.Mappings;
 using Core.Domain.Models;
 using Core.Domain.Repositories;
 using Core.Domain.Services;
+using Core.Domain.Utilities;
 
 namespace Core.Application.Implements;
 
-public class BrandService(IUnitOfWork unitOfWork, IAppLogging<BrandService> logger, IBaseMapping mapping)
-    : IBrandService
+public class BrandService(
+    IAccountService accountService,
+    IShopService shopService,
+    IUnitOfWork unitOfWork,
+    IAppLogging<BrandService> logger,
+    IBaseMapping mapping
+) : IBrandService
 {
     public async Task<PaginationResult<Brand>> GetBrands(SearchBrandRequest searchRequest)
     {
-        return await unitOfWork.Brands.GetAsync(new BrandSearchSpec(searchRequest));
+        var currentAccount = await accountService.GetCurrentAccount();
+        if (currentAccount.HasRole(RoleEnum.Admin))
+            return await unitOfWork.Brands.GetAsync(new BrandSearchSpec(searchRequest));
+
+        Guid brandId;
+        if (currentAccount.HasRole(RoleEnum.BrandManager))
+            brandId = currentAccount.Brand!.Id;
+        else if (currentAccount.HasRole(RoleEnum.ShopManager))
+        {
+            var shop = await shopService.GetShopById(currentAccount.ManagingShop!.Id);
+            brandId = shop.BrandId;
+        }
+        else
+            throw new ForbiddenException(currentAccount, typeof(Brand));
+
+        var brand = await GetBrandById(brandId);
+        return new PaginationResult<Brand>
+        {
+            Values =  [ brand ],
+            PageIndex = 0,
+            PageSize = 1,
+            TotalCount = 1
+        };
     }
 
     public async Task<Brand> GetBrandById(Guid id)
     {
-        var brandResult = await unitOfWork.Brands.GetAsync(new BrandByIdRepoSpec(id));
-        return brandResult.Values.FirstOrDefault() ?? throw new NotFoundException(typeof(Brand), id);
+        var currentAccount = await accountService.GetCurrentAccount();
+        var brand =
+            (await unitOfWork.Brands.GetAsync(new BrandByIdRepoSpec(id))).Values.FirstOrDefault()
+            ?? throw new NotFoundException(typeof(Brand), id);
+
+        if (!await HasAccessToBrand(currentAccount, brand))
+            throw new ForbiddenException(currentAccount, brand);
+
+        return brand;
     }
 
     public async Task<Brand> CreateBrand(Brand brand)
@@ -40,7 +75,10 @@ public class BrandService(IUnitOfWork unitOfWork, IAppLogging<BrandService> logg
         var brand = await unitOfWork.Brands.GetByIdAsync(id);
         if (brand is null)
             throw new NotFoundException(typeof(Brand), id);
-        // TODO [Duy]: divide the AppConstant to multiple constant
+
+        var currentAccount = await accountService.GetCurrentAccount();
+        if (!IsAccountOwnBrand(currentAccount, brand))
+            throw new ForbiddenException(currentAccount, brand);
         if (brand.BrandStatusId == BrandStatusEnum.Inactive)
             throw new BadRequestException("Cannot modified inactive brand");
 
@@ -98,5 +136,34 @@ public class BrandService(IUnitOfWork unitOfWork, IAppLogging<BrandService> logg
     private bool HasRelatedEntities(Brand brand)
     {
         return brand.BrandManagerId != null;
+    }
+
+    private async Task<bool> HasAccessToBrand(Account account, Brand brand)
+    {
+        if (IsAccountOwnBrand(account, brand))
+            return true;
+
+        if (await IsAccountOwnShopRelatedToBrand(account, brand))
+            return true;
+
+        return false;
+    }
+
+    private async Task<bool> IsAccountOwnShopRelatedToBrand(Account account, Brand brand)
+    {
+        if (account.HasRole(RoleEnum.ShopManager))
+        {
+            var shop = await shopService.GetShopById(account.ManagingShop!.Id);
+            if (shop.BrandId == brand.Id)
+                return true;
+        }
+
+        return false;
+    }
+
+    private static bool IsAccountOwnBrand(Account account, Brand brand)
+    {
+        return account.HasRole(RoleEnum.Admin)
+            || (account.HasRole(RoleEnum.BrandManager) && account.Brand!.Id == brand.Id);
     }
 }
