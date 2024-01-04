@@ -6,22 +6,13 @@ namespace Host.CamAI.API;
 
 public static class ApiDependencyInjection
 {
-    public const string AllowPolicy = "AllowAll";
     public static IServiceCollection AddServices(this IServiceCollection services)
     {
         services.AddScoped<IAccountService, AccountService>();
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IBrandService, BrandService>();
         services.AddScoped<IShopService, ShopService>();
-        services.AddCors(opts => opts.AddPolicy(
-            name: AllowPolicy,
-            builder => builder
-            .AllowAnyOrigin()
-            .AllowAnyHeader()
-            .AllowAnyHeader()
-            // TODO [Dat]: Enable allow credential when have specific origin
-            // .AllowCredentials()
-        ));
+
         return services;
     }
 
