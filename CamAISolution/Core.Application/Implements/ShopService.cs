@@ -1,14 +1,12 @@
-using Core.Application.Exceptions;
+﻿using Core.Application.Exceptions;
 using Core.Application.Specifications.Repositories;
 using Core.Application.Specifications.Shops.Repositories;
 using Core.Domain;
 using Core.Domain.DTO;
 using Core.Domain.Entities;
 using Core.Domain.Interfaces.Mappings;
-using Core.Domain.Interfaces.Services;
 using Core.Domain.Models;
-using Core.Domain.Models.DTO.Accounts;
-using Core.Domain.Models.DTO.Brands;
+using Core.Domain.Models.DTO;
 using Core.Domain.Models.DTO.Shops;
 using Core.Domain.Repositories;
 using Core.Domain.Services;

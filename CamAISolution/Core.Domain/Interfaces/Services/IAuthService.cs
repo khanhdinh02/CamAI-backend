@@ -1,9 +1,11 @@
-using Core.Domain.Models.DTO.Auths;
+using Core.Domain.Models.DTO;
 
-namespace Core.Domain.Interfaces.Services;
+namespace Core.Domain.Services;
 
 public interface IAuthService
 {
     Task<TokenResponseDto> GetTokensByUsernameAndPassword(string email, string password);
     public string RenewToken(string oldAccessToken, string refreshToken);
+
+    Task ChangePassword(ChangePasswordDto changePasswordDto);
 }
