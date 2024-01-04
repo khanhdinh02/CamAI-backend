@@ -17,12 +17,14 @@ COPY ["Infrastructure.Mapping/Infrastructure.Mapping.csproj", "Infrastructure.Ma
 RUN dotnet restore "Host.CamAI.API/Host.CamAI.API.csproj"
 COPY . .
 WORKDIR "/src/Host.CamAI.API"
-RUN dotnet build "Host.CamAI.API.csproj" --no-restore -c Release --no-restore -o /app/build 
+RUN dotnet build "Host.CamAI.API.csproj" --no-restore -c Release -o /app/build 
 
 FROM build AS publish
 RUN dotnet publish "Host.CamAI.API.csproj" -c Release --no-restore -o /app/publish
 
 FROM base AS final
 WORKDIR /app
+ARG MIGRATION
+ENV MIGRATION_VALUE=${MIGRATION}
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "Host.CamAI.API.dll"]
+ENTRYPOINT dotnet Host.CamAI.API.dll ${MIGRATION_VALUE}

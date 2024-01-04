@@ -2,21 +2,31 @@ using Host.CamAI.API;
 using Host.CamAI.API.Middlewares;
 using Infrastructure.Jwt;
 using Infrastructure.Logging;
-using Infrastructure.Repositories;
 using Infrastructure.Mapping;
+using Infrastructure.Repositories;
 
 var builder = WebApplication.CreateBuilder(args).ConfigureSerilog();
 
 builder.Services.AddControllers();
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+
+string AllowPolicy = "AllowAll";
 
 builder
     .Services
+    .AddCors(opts => opts.AddPolicy(
+            name: AllowPolicy,
+            builder => builder
+            .AllowAnyOrigin()
+            .AllowAnyHeader()
+            .AllowAnyHeader()
+             //TODO[Dat]: Enable allow credential when have specific origin
+             //.AllowCredentials()
+    ))
     .AddRepository(builder.Configuration.GetConnectionString("Default"))
     .AddJwtService(builder.Configuration)
     .AddLoggingDependencyInjection()
     .AddHttpContextAccessor()
+    .AddSwagger()
     .AddServices()
     .AddMapping();
 
@@ -24,7 +34,9 @@ var app = builder.Build();
 
 app.UseMiddleware<GlobalExceptionHandler>();
 
-app.Migration();
+app.UseCors(AllowPolicy);
+
+app.Migration(args);
 
 if (app.Environment.IsDevelopment())
 {
