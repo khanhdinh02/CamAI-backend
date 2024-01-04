@@ -1,6 +1,6 @@
 using Core.Application.Exceptions;
 using Core.Domain.Entities;
-using Core.Domain.Models.DTO;
+using Core.Domain.DTO;
 using Core.Domain.Repositories;
 using Core.Domain.Services;
 using Core.Domain.Utilities;
@@ -38,7 +38,8 @@ public class AuthService(IJwtService jwtService, IAccountService accountService,
         return new TokenResponseDto { AccessToken = accessToken, RefreshToken = refreshToken };
     }
 
-    //TODO: check account status - check refreshToken in storage
+    // TODO [Huy]: check account status before renew token
+    // TODO [Huy]: check refreshToken in storage (redis)
     public string RenewToken(string oldAccessToken, string refreshToken)
     {
         var accessTokenDetail = jwtService.ValidateToken(oldAccessToken, TokenType.AccessToken);

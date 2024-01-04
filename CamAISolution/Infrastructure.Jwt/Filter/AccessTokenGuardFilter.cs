@@ -1,5 +1,5 @@
 using Core.Application.Exceptions;
-using Core.Domain.Models.DTO;
+using Core.Domain.DTO;
 using Core.Domain.Services;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.DependencyInjection;

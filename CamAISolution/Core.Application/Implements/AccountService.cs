@@ -1,5 +1,5 @@
 using Core.Application.Exceptions;
-using Core.Application.Specifications.Accounts.Repositories;
+using Core.Application.Specifications.Repositories;
 using Core.Domain.Entities;
 using Core.Domain.Models;
 using Core.Domain.Repositories;

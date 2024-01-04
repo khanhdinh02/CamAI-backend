@@ -1,7 +1,7 @@
 using System.Linq.Expressions;
 using Core.Application.Specifications.Repositories;
 using Core.Domain.Entities;
-using Core.Domain.Models.DTO.Shops;
+using Core.Domain.DTO;
 
 namespace Core.Application.Specifications.Shops.Repositories;
 
