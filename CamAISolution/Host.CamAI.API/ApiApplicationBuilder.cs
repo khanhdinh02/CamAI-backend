@@ -8,13 +8,20 @@ public static class ApiApplicationBuilder
 {
     public static IApplicationBuilder Migration(this IApplicationBuilder app, string[] args)
     {
-        if (args.Contains("--run-migration"))
+        if (args.Contains(Core.Domain.Models.Configurations.AppStartUpArgumentConstant.Migration))
         {
             using var scope = app.ApplicationServices.CreateScope();
             var logger = scope.ServiceProvider.GetRequiredService<IAppLogging<Program>>();
             logger.Info("Applying migration");
-            scope.ServiceProvider.GetService<CamAIContext>()?.Database.Migrate();
-            logger.Info("Migration done");
+            try
+            {
+                scope.ServiceProvider.GetService<CamAIContext>()?.Database.Migrate();
+                logger.Info("Migration done");
+            }
+            catch(Exception ex)
+            {
+                logger.Error(ex.Message, ex);
+            }
         }
         return app;
     }
