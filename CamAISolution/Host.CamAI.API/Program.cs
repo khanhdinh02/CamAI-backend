@@ -23,6 +23,8 @@ var app = builder.Build();
 
 app.UseMiddleware<GlobalExceptionHandler>();
 
+app.UseCors(ApiDependencyInjection.AllowPolicy);
+
 app.Migration(args);
 
 if (app.Environment.IsDevelopment())

@@ -8,10 +8,6 @@ public static class ApiApplicationBuilder
 {
     public static IApplicationBuilder Migration(this IApplicationBuilder app, string[] args)
     {
-        foreach (var arg in args)
-        {
-            Console.WriteLine(arg);
-        }
         if (args.Contains("--run-migration"))
         {
             using var scope = app.ApplicationServices.CreateScope();
