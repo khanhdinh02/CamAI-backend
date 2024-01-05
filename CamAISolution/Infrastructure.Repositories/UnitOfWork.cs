@@ -11,6 +11,7 @@ public class UnitOfWork(CamAIContext context, IServiceProvider serviceProvider) 
     private bool haveTransaction = false;
 
     public IRepository<Brand> Brands => serviceProvider.GetRequiredService<IRepository<Brand>>();
+
     public IRepository<Shop> Shops => serviceProvider.GetRequiredService<IRepository<Shop>>();
 
     public IRepository<Ward> Wards => serviceProvider.GetRequiredService<IRepository<Ward>>();
@@ -18,6 +19,10 @@ public class UnitOfWork(CamAIContext context, IServiceProvider serviceProvider) 
     public IRepository<ShopStatus> ShopStatuses => serviceProvider.GetRequiredService<IRepository<ShopStatus>>();
 
     public IRepository<Account> Accounts => serviceProvider.GetRequiredService<IRepository<Account>>();
+
+    public IRepository<Ticket> Tickets => serviceProvider.GetRequiredService<IRepository<Ticket>>();
+
+    public IRepository<TicketType> TicketTypes => serviceProvider.GetRequiredService<IRepository<TicketType>>();
 
     public Task BeginTransaction()
     {

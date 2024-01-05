@@ -1,4 +1,5 @@
 using Core.Application.Implements;
+using Core.Domain.Interfaces.Services;
 using Core.Domain.Services;
 using Microsoft.OpenApi.Models;
 
@@ -12,6 +13,7 @@ public static class ApiDependencyInjection
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IBrandService, BrandService>();
         services.AddScoped<IShopService, ShopService>();
+        services.AddScoped<ITicketService, TicketService>();
 
         return services;
     }
