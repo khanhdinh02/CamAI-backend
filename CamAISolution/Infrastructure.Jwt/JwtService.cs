@@ -114,7 +114,7 @@ public class JwtService(
     //TODO: CHECK USER STATUS FROM STORAGE
     public TokenDetailDto ValidateToken(string token, TokenType tokenType, int[]? acceptableRoles = null)
     {
-        IEnumerable<Claim> tokenClaims = this.GetClaims(token, tokenType);
+        IEnumerable<Claim> tokenClaims = GetClaims(token, tokenType);
 
         var userId = tokenClaims.FirstOrDefault(c => c.Type == "id")?.Value;
         if (string.IsNullOrEmpty(userId))
