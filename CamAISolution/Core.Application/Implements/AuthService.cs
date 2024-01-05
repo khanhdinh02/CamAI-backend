@@ -42,7 +42,7 @@ public class AuthService(IJwtService jwtService, IAccountService accountService,
     // TODO [Huy]: check refreshToken in storage (redis)
     public string RenewToken(string oldAccessToken, string refreshToken)
     {
-        var accessTokenDetail = jwtService.ValidateToken(oldAccessToken, TokenType.AccessToken);
+        var accessTokenDetail = jwtService.ValidateToken(oldAccessToken, TokenType.AccessToken, isValidateTime: false);
         var refreshTokenDetail = jwtService.ValidateToken(refreshToken, TokenType.RefreshToken);
 
         if (accessTokenDetail.UserId != refreshTokenDetail.UserId)
