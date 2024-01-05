@@ -10,7 +10,7 @@ public class ShopProfile : Profile
     public ShopProfile()
     {
         CreateMap<Shop, ShopDto>();
-        CreateMap<ShopStatus, ShopStatusDto>();
+        CreateMap<ShopStatus, BaseStatusDto>();
         CreateMap<CreateOrUpdateShopDto, Shop>();
         CreateMap<PaginationResult<Shop>, PaginationResult<ShopDto>>();
     }

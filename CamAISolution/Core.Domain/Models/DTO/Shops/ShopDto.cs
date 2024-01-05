@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-using Core.Domain.Entities;
 
 namespace Core.Domain.DTO;
 
@@ -15,5 +14,5 @@ public class ShopDto : BaseDto
 
     public WardDto Ward { get; set; } = null!;
     public BrandDto Brand { get; set; } = null!;
-    public ShopStatus ShopStatus { get; set; } = null!;
+    public BaseStatusDto ShopStatus { get; set; } = null!;
 }

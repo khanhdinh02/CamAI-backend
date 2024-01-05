@@ -1,12 +1,11 @@
 using System.Linq.Expressions;
-using Core.Application.Specifications.Repositories;
 using Core.Application.Specifications.Shops;
 using Core.Domain.Entities;
 using Core.Domain.DTO;
 
 namespace Core.Application.Specifications.Repositories;
 
-public class SearchShopSpec : RepositorySpec<Shop>
+public class ShopSearchSpec : RepositorySpec<Shop>
 {
     private static Expression<Func<Shop, bool>> GetExpression(SearchShopRequest search)
     {
@@ -26,7 +25,7 @@ public class SearchShopSpec : RepositorySpec<Shop>
         return baseSpec.GetExpression();
     }
 
-    public SearchShopSpec(SearchShopRequest search)
+    public ShopSearchSpec(SearchShopRequest search)
         : base(GetExpression(search))
     {
         AddIncludes(s => s.ShopStatus);

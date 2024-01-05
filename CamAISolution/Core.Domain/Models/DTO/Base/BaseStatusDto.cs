@@ -1,6 +1,6 @@
-﻿namespace Core.Domain.DTO;
+namespace Core.Domain.DTO;
 
-public class ShopStatusDto : BaseDto
+public class BaseStatusDto
 {
     public string Name { get; set; } = null!;
     public string? Description { get; set; }
