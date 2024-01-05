@@ -61,7 +61,7 @@ public class JwtService(
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
 
-    public IEnumerable<Claim> GetClaims(string token, TokenType tokenType)
+    public IEnumerable<Claim> GetClaims(string token, TokenType tokenType, bool isValidateTime)
     {
         try
         {
@@ -80,7 +80,7 @@ public class JwtService(
                 ValidateIssuerSigningKey = true,
                 ValidIssuer = jwtConfiguration.Issuer,
                 ValidAudience = jwtConfiguration.Audience,
-                ValidateLifetime = true,
+                ValidateLifetime = isValidateTime,
                 IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey)),
                 ClockSkew = TimeSpan.Zero
             };
@@ -112,9 +112,9 @@ public class JwtService(
     }
 
     //TODO: CHECK USER STATUS FROM STORAGE
-    public TokenDetailDto ValidateToken(string token, TokenType tokenType, int[]? acceptableRoles = null)
+    public TokenDetailDto ValidateToken(string token, TokenType tokenType, int[]? acceptableRoles, bool isValidateTime)
     {
-        IEnumerable<Claim> tokenClaims = this.GetClaims(token, tokenType);
+        IEnumerable<Claim> tokenClaims = GetClaims(token, tokenType, isValidateTime);
 
         var userId = tokenClaims.FirstOrDefault(c => c.Type == "id")?.Value;
         if (string.IsNullOrEmpty(userId))
