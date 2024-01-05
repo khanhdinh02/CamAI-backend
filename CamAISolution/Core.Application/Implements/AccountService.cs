@@ -43,7 +43,7 @@ public class AccountService(IUnitOfWork unitOfWork, IJwtService jwtService, IBas
     {
         if (await unitOfWork.Accounts.CountAsync(a => a.Email == dto.Email) > 0)
             throw new BadRequestException("Email is already taken");
-        if (!await unitOfWork.Wards.IsExisted(dto.WardId))
+        if (dto.WardId != null && !await unitOfWork.Wards.IsExisted(dto.WardId))
             throw new NotFoundException(typeof(Ward), dto.WardId);
         dto.Password = Hasher.Hash(dto.Password);
         var currentUser = await GetCurrentAccount();
@@ -51,22 +51,16 @@ public class AccountService(IUnitOfWork unitOfWork, IJwtService jwtService, IBas
         if (currentUser.HasRole(RoleEnum.Admin))
         {
             if (dto.RoleIds.Any(r => r == RoleEnum.BrandManager))
-            {
                 return await CreateBrandManager(dto);
-            }
             if (dto.RoleIds.Any(r => r == RoleEnum.Technician))
-            {
                 return await CreateTechnician(dto);
-            }
             throw new BadRequestException("Admin can only create brand manager or technician");
         }
 
         if (currentUser.HasRole(RoleEnum.BrandManager))
         {
             if (dto.RoleIds.Any(r => r == RoleEnum.ShopManager))
-            {
                 return await CreateShopManager(dto);
-            }
             if (dto.RoleIds.Any(r => r == RoleEnum.Employee))
             {
                 // TODO: Create employee

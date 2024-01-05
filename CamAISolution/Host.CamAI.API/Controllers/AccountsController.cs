@@ -34,7 +34,7 @@ public class AccountsController(IAccountService accountService, IBaseMapping map
     }
 
     [HttpPost]
-    [AccessTokenGuard]
+    [AccessTokenGuard(RoleEnum.Admin, RoleEnum.BrandManager)]
     public async Task<ActionResult<AccountDto>> CreateAccount(CreateAccountDto account)
     {
         var newAccount = await accountService.CreateAccount(account);
