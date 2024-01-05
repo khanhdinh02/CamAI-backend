@@ -36,6 +36,8 @@ app.UseMiddleware<GlobalExceptionHandler>();
 
 app.UseCors(AllowPolicy);
 
+app.UseMiddleware<GlobalJwtHandler>();
+
 app.Migration(args);
 
 if (app.Environment.IsDevelopment())
