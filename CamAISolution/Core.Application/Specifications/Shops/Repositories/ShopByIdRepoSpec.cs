@@ -9,9 +9,10 @@ public class ShopByIdRepoSpec : EntityByIdSpec<Shop, Guid>
     {
         if (includeAll)
         {
-            //Include all data of address
-            // AddIncludes(s => s.Ward.District.Province);
+            AddIncludes(s => s.Ward.District.Province);
             AddIncludes(s => s.ShopStatus);
+            AddIncludes(s => s.Brand);
+            AddIncludes(nameof(Shop.ShopManager));
         }
     }
 }

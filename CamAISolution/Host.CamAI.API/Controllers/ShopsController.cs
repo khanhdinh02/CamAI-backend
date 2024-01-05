@@ -20,6 +20,13 @@ public class ShopsController(IShopService shopService, IBaseMapping baseMapping)
         return Ok(baseMapping.Map<Shop, ShopDto>(shops));
     }
 
+    [HttpGet("{id}")]
+    [AccessTokenGuard(RoleEnum.Admin, RoleEnum.BrandManager, RoleEnum.ShopManager)]
+    public async Task<ActionResult<ShopDto>> GetShopById(Guid id)
+    {
+        return Ok(baseMapping.Map<Shop, ShopDto>(await shopService.GetShopById(id)));
+    }
+
     [HttpPost]
     [AccessTokenGuard(RoleEnum.Admin)]
     public async Task<ActionResult<ShopDto>> CreateShop(CreateOrUpdateShopDto shopDto)
