@@ -1,6 +1,4 @@
-using Core.Domain.DTO;
-
-namespace Core.Domain.Models.DTO;
+namespace Core.Domain.DTO;
 
 public class TicketDto : BaseDto
 {
@@ -9,9 +7,6 @@ public class TicketDto : BaseDto
     public Guid? ShopId { get; set; }
     public string? Detail { get; set; }
 
-    /// <summary>
-    /// Reply from technician
-    /// </summary>
     public string? Reply { get; set; }
     public int TicketStatusId { get; set; }
 }

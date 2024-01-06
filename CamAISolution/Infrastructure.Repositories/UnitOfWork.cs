@@ -22,6 +22,8 @@ public class UnitOfWork(CamAIContext context, IServiceProvider serviceProvider) 
 
     public IRepository<Ticket> Tickets => serviceProvider.GetRequiredService<IRepository<Ticket>>();
 
+    public IRepository<TicketStatus> TicketStatuses => serviceProvider.GetRequiredService<IRepository<TicketStatus>>();
+
     public IRepository<TicketType> TicketTypes => serviceProvider.GetRequiredService<IRepository<TicketType>>();
 
     public Task BeginTransaction()

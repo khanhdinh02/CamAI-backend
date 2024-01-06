@@ -1,4 +1,4 @@
-namespace Core.Domain.Models.DTO;
+namespace Core.Domain.DTO;
 
 public class CreateTicketDto
 {

@@ -1,7 +1,6 @@
 using Core.Domain.DTO;
 using Core.Domain.DTO.EdgeBoxes;
 using Core.Domain.DTO.Requests;
-using Core.Domain.DTO.Tickets;
 using Core.Domain.Entities;
 using Core.Domain.Entities.Base;
 using Core.Domain.Utilities;
@@ -167,10 +166,11 @@ public class CamAIContext : DbContext
         modelBuilder
             .Entity<TicketStatus>()
             .HasData(
-                new TicketStatus { Id = TicketStatusEnum.Open, Name = "Open" },
+                new TicketStatus { Id = TicketStatusEnum.New, Name = "New" },
                 new TicketStatus { Id = TicketStatusEnum.Canceled, Name = "Canceled" },
                 new TicketStatus { Id = TicketStatusEnum.Done, Name = "Done" },
-                new TicketStatus { Id = TicketStatusEnum.Failed, Name = "Failed" }
+                new TicketStatus { Id = TicketStatusEnum.Failed, Name = "Failed" },
+                new TicketStatus { Id = TicketStatusEnum.Active, Name = "Active"}
             );
 
         modelBuilder

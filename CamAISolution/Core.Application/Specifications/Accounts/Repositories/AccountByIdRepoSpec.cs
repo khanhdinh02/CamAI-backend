@@ -1,4 +1,3 @@
-using Core.Application.Specifications.Repositories;
 using Core.Domain.Entities;
 
 namespace Core.Application.Specifications.Repositories;
