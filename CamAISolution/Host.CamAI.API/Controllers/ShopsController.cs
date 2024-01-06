@@ -18,13 +18,13 @@ public class ShopsController(IShopService shopService, IBaseMapping baseMapping)
     /// <param name="search"></param>
     /// <remarks>
     /// <para>
-    ///     If current roles include Admin, admin can search every fields.
+    ///     If current roles include Admin, admin can search every shops.
     /// </para>
     /// <para>
-    ///     If current roles include Brand manager, brand manager can search every fields but BrandId will be set to current brand manager Id no matter what is your input.
+    ///     If current roles include Brand manager, brand manager can search every search every shops in the brand.
     /// </para>
     /// <para>
-    ///     If current roles include shop manager, shop manager can search every fields but ShopManagerId will bet set to current shop manager Id no matter what is your input
+    ///     If current roles include shop manager, shop manager can search shop is currently being managed by current manager.
     /// </para>
     /// </remarks>
     /// <returns></returns>
