@@ -22,7 +22,7 @@ public class EdgeBoxService(
     {
         var foundEdgeBox = await unitOfWork.EdgeBoxes.GetAsync(new EdgeBoxByIdRepoSpec(id));
         if (foundEdgeBox.Values.Count == 0)
-            throw new NotFoundException(typeof(Shop), id);
+            throw new NotFoundException(typeof(EdgeBox), id);
         return foundEdgeBox.Values[0];
     }
 
