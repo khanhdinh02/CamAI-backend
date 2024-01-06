@@ -1,13 +1,16 @@
+using Core.Domain.DTO;
 using Core.Domain.Entities;
+using Core.Domain.Interfaces.Mappings;
 using Core.Domain.Models;
 using Core.Domain.Services;
+using Infrastructure.Jwt.Attribute;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Host.CamAI.API.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class AccountsController(IAccountService accountService) : ControllerBase
+public class AccountsController(IAccountService accountService, IBaseMapping mapper) : ControllerBase
 {
     // TODO [Dat]: account search DTO
     [HttpGet]
@@ -28,5 +31,13 @@ public class AccountsController(IAccountService accountService) : ControllerBase
     {
         // TODO: account DTO
         return Ok(await accountService.GetAccountById(id));
+    }
+
+    [HttpPost]
+    [AccessTokenGuard(RoleEnum.Admin, RoleEnum.BrandManager)]
+    public async Task<ActionResult<AccountDto>> CreateAccount(CreateAccountDto account)
+    {
+        var newAccount = await accountService.CreateAccount(account);
+        return mapper.Map<Account, AccountDto>(newAccount);
     }
 }
