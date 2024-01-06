@@ -136,7 +136,18 @@ public class CamAIContext : DbContext
             .Entity<EdgeBoxStatus>()
             .HasData(
                 new EdgeBoxStatus { Id = EdgeBoxStatusEnum.Active, Name = "Active" },
-                new EdgeBoxStatus { Id = EdgeBoxStatusEnum.Inactive, Name = "Inactive" }
+                new EdgeBoxStatus { Id = EdgeBoxStatusEnum.Inactive, Name = "Inactive" },
+                new EdgeBoxStatus { Id = EdgeBoxStatusEnum.Broken, Name = "Broken" }
+            );
+
+        modelBuilder
+            .Entity<EdgeBoxLocation>()
+            .HasData(
+                new EdgeBoxLocation { Id = EdgeBoxLocationEnum.Idle, Name = "Idle" },
+                new EdgeBoxLocation { Id = EdgeBoxLocationEnum.Installing, Name = "Installing" },
+                new EdgeBoxLocation { Id = EdgeBoxLocationEnum.Occupied, Name = "Occupied" },
+                new EdgeBoxLocation { Id = EdgeBoxLocationEnum.Uninstalling, Name = "Uninstalling" },
+                new EdgeBoxLocation { Id = EdgeBoxLocationEnum.Disposed, Name = "Disposed" }
             );
 
         modelBuilder

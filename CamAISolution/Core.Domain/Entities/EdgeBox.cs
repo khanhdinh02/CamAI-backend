@@ -10,8 +10,14 @@ public class EdgeBox : BusinessEntity
 
     [StringLength(50)]
     public string? Model { get; set; }
-    public int EdgeBoxStatusId { get; set; }
 
+    public string? Version { get; set; }
+
+    // TODO [Duy]: Edge box configuration
+    public int EdgeBoxStatusId { get; set; }
+    public int EdgeBoxLocationId { get; set; }
+
+    public virtual EdgeBoxLocation EdgeBoxLocation { get; set; } = null!;
     public virtual EdgeBoxStatus EdgeBoxStatus { get; set; } = null!;
     public virtual ICollection<EdgeBoxInstall> Installs { get; set; } = new HashSet<EdgeBoxInstall>();
 }

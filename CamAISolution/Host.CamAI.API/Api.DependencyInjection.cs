@@ -1,7 +1,6 @@
 using Core.Application.Implements;
-using Microsoft.OpenApi.Models;
-using Core.Application;
 using Core.Domain.Services;
+using Microsoft.OpenApi.Models;
 
 namespace Host.CamAI.API;
 
@@ -13,6 +12,7 @@ public static class ApiDependencyInjection
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IBrandService, BrandService>();
         services.AddScoped<IShopService, ShopService>();
+        services.AddScoped<IEdgeBoxService, EdgeBoxService>();
 
         return services;
     }
