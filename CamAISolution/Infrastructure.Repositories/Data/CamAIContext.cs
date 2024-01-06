@@ -98,7 +98,8 @@ public class CamAIContext : DbContext
             .Entity<ShopStatus>()
             .HasData(
                 new ShopStatus { Id = ShopStatusEnum.Active, Name = "Active" },
-                new ShopStatus { Id = ShopStatusEnum.Inactive, Name = "Inactive" }
+                new ShopStatus { Id = ShopStatusEnum.Inactive, Name = "Inactive" },
+                new ShopStatus { Id = ShopStatusEnum.Pending, Name = "Pending" }
             );
 
         modelBuilder

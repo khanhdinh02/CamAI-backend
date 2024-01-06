@@ -22,7 +22,7 @@ public class ShopService(
     {
         await IsValidShopDto(shopDto);
         var shop = mapping.Map<CreateOrUpdateShopDto, Shop>(shopDto);
-        shop.ShopStatusId = ShopStatusEnum.Active;
+        shop.ShopStatusId = ShopStatusEnum.Pending;
         shop = await unitOfWork.Shops.AddAsync(shop);
         await unitOfWork.CompleteAsync();
         return shop;
@@ -54,8 +54,8 @@ public class ShopService(
         if (foundShops.Values.Count == 0)
             throw new NotFoundException(typeof(Shop), id);
         var foundShop = foundShops.Values[0];
-        if (foundShop.ShopStatusId == ShopStatusEnum.Inactive && !await AreRequiredRolesMatched(RoleEnum.Admin))
-            throw new BadRequestException("Cannot modified inactive shop");
+        if (foundShop.ShopStatusId != ShopStatusEnum.Active && !await AreRequiredRolesMatched(RoleEnum.Admin))
+            throw new BadRequestException("Cannot modified inactive or pending shop");
         await IsValidShopDto(shopDto);
         mapping.Map(shopDto, foundShop);
         await unitOfWork.CompleteAsync();
@@ -76,8 +76,8 @@ public class ShopService(
         if ((isCurrentShopManager || isCurrentBrandManager) && !isAdmin)
             throw new ForbiddenException("Current user not allowed to do this action.");
 
-        if (foundShop.ShopStatusId == ShopStatusEnum.Inactive && !await AreRequiredRolesMatched(RoleEnum.Admin))
-            throw new BadRequestException($"Cannot update inactive shop");
+        if (foundShop.ShopStatusId != ShopStatusEnum.Active && !await AreRequiredRolesMatched(RoleEnum.Admin))
+            throw new BadRequestException($"Cannot update inactive or pending shop");
         foundShop.ShopStatusId = shopStatusId;
         await unitOfWork.CompleteAsync();
         return await GetShopById(shopId);
