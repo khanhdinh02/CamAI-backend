@@ -1,5 +1,6 @@
 namespace Core.Domain.DTO;
 
+// TODO [Khanh]: Inherit from BaseStatusDto
 public class AccountStatusDto
 {
     public int Id { get; set; }
