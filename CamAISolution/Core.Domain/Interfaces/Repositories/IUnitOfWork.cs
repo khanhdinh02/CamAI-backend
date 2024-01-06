@@ -4,6 +4,7 @@ namespace Core.Domain.Repositories;
 
 public interface IUnitOfWork : IDisposable, IAsyncDisposable
 {
+    IRepository<Role> Roles { get; }
     IRepository<Brand> Brands { get; }
     IRepository<Shop> Shops { get; }
     IRepository<Ward> Wards { get; }

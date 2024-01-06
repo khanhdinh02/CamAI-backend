@@ -16,6 +16,7 @@ public class UnitOfWork(CamAIContext context, IServiceProvider serviceProvider) 
     private bool disposed = false;
     private bool haveTransaction = false;
 
+    public IRepository<Role> Roles => serviceProvider.GetRequiredService<IRepository<Role>>();
     public IRepository<Brand> Brands => serviceProvider.GetRequiredService<IRepository<Brand>>();
 
     public IRepository<Shop> Shops => serviceProvider.GetRequiredService<IRepository<Shop>>();

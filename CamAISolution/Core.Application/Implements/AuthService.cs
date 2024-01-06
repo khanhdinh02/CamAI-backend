@@ -40,7 +40,7 @@ public class AuthService(IJwtService jwtService, IAccountService accountService,
 
     // TODO [Huy]: check account status before renew token
     // TODO [Huy]: check refreshToken in storage (redis)
-    public string RenewToken(string oldAccessToken, string refreshToken)
+    public async Task<string> RenewToken(string oldAccessToken, string refreshToken)
     {
         var accessTokenDetail = jwtService.ValidateToken(oldAccessToken, TokenType.AccessToken, isValidateTime: false);
         var refreshTokenDetail = jwtService.ValidateToken(refreshToken, TokenType.RefreshToken);
@@ -50,7 +50,8 @@ public class AuthService(IJwtService jwtService, IAccountService accountService,
         if (accessTokenDetail.Token == null)
             throw new UnauthorizedException("Invalid Tokens");
 
-        return accessTokenDetail.Token;
+        var account = await accountService.GetAccountById(accessTokenDetail.UserId);
+        return jwtService.GenerateToken(account.Id, account.Roles, TokenType.AccessToken);
     }
 
     public async Task ChangePassword(ChangePasswordDto changePasswordDto)
