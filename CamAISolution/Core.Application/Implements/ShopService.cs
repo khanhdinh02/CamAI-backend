@@ -8,6 +8,7 @@ using Core.Domain.Interfaces.Mappings;
 using Core.Domain.Models;
 using Core.Domain.Repositories;
 using Core.Domain.Services;
+using Core.Domain.Utilities;
 
 namespace Core.Application.Implements;
 
@@ -98,14 +99,27 @@ public class ShopService(
 
     private async Task IsValidShopDto(CreateOrUpdateShopDto shopDto)
     {
-        var isFoundWard = await unitOfWork.Wards.IsExisted(shopDto.WardId);
-        if (!isFoundWard)
+        if (!await unitOfWork.Wards.IsExisted(shopDto.WardId))
             throw new NotFoundException(typeof(Ward), shopDto.WardId);
         var foundBrand = await unitOfWork.Brands.GetByIdAsync(shopDto.BrandId);
         if (foundBrand is { BrandStatusId: BrandStatusEnum.Inactive })
         {
             logger.Error($"Found Brand is {nameof(BrandStatusEnum.Inactive)}. Cannot updated");
             throw new NotFoundException(typeof(Brand), shopDto.BrandId);
+        }
+        if (shopDto.ShopManagerId.HasValue)
+        {
+            var foundAccounts = await unitOfWork.Accounts.GetAsync(
+                expression: a => a.Id == shopDto.ShopManagerId.Value && a.AccountStatusId == AccountStatusEnum.Active,
+                includeProperties: [nameof(Account.Roles)]
+            );
+            if (!foundAccounts.IsValuesEmpty)
+                throw new NotFoundException(typeof(Account), shopDto.ShopManagerId.Value);
+            var account = foundAccounts.Values[0];
+            if (!account.HasRole(RoleEnum.ShopManager))
+                throw new BadRequestException("Account is not a shop manager");
+            if (account.WorkingShopId.HasValue)
+                throw new BadRequestException("Account is a manager of another shop");
         }
     }
 
