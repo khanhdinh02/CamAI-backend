@@ -10,6 +10,7 @@ public class GlobalJwtHandler(RequestDelegate next)
 {
     public async Task InvokeAsync(HttpContext context, IJwtService jwtService, IAccountService accountService)
     {
+        var logger = context.RequestServices.GetRequiredService<IAppLogging<GlobalJwtHandler>>();
         var token = context.Request.Headers.Authorization.ToString();
         var prefix = "Bearer ";
         if (token.StartsWith(prefix))
@@ -25,13 +26,18 @@ public class GlobalJwtHandler(RequestDelegate next)
                 }
                 catch (Exception ex) when (ex is BadRequestException || ex is ForbiddenException || ex is NotFoundException || ex is UnauthorizedException)
                 {
-                    context.RequestServices.GetRequiredService<IAppLogging<GlobalJwtHandler>>().Info($"Anonymous do action {context.Connection.RemoteIpAddress} {context.Request.Method} {context.Request.Path}");
+                    logger.Info($"Anonymous do action {context.Connection.RemoteIpAddress} {context.Request.Method} {context.Request.Path}");
+                    // auto = true: indicate client have to refresh the token.
                     context.Response.Headers.Append("auto", $"{true}");
+                }
+                catch (Exception ex)
+                {
+                    logger.Error(ex.Message, ex);
                 }
             }
         }
         else
-            context.RequestServices.GetRequiredService<IAppLogging<GlobalJwtHandler>>().Info($"Anonymous do action {context.Connection.RemoteIpAddress} {context.Request.Method} {context.Request.Path}");
+            logger.Info($"Anonymous do action {context.Connection.RemoteIpAddress} {context.Request.Method} {context.Request.Path}");
         await next(context);
     }
 }

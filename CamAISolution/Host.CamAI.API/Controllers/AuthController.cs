@@ -17,9 +17,9 @@ public class AuthController(IAuthService authService) : ControllerBase
     }
 
     [HttpPost("refresh")]
-    public ActionResult<string> RenewToken(RenewTokenDto renewTokenDto)
+    public async Task<ActionResult<string>> RenewToken(RenewTokenDto renewTokenDto)
     {
-        return Ok(authService.RenewToken(renewTokenDto.AccessToken, renewTokenDto.RefreshToken));
+        return Ok(await authService.RenewToken(renewTokenDto.AccessToken, renewTokenDto.RefreshToken));
     }
 
     [HttpPost("password")]
