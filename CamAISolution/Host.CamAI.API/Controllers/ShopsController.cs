@@ -12,6 +12,22 @@ namespace Host.CamAI.API.Controllers;
 [ApiController]
 public class ShopsController(IShopService shopService, IBaseMapping baseMapping) : ControllerBase
 {
+    /// <summary>
+    /// Search Shop base on current account's roles.
+    /// </summary>
+    /// <param name="search"></param>
+    /// <remarks>
+    /// <para>
+    ///     If current roles include Admin, admin can search every fields.
+    /// </para>
+    /// <para>
+    ///     If current roles include Brand manager, brand manager can search every fields but BrandId will be set to current brand manager Id no matter what is your input.
+    /// </para>
+    /// <para>
+    ///     If current roles include shop manager, shop manager can search every fields but ShopManagerId will bet set to current shop manager Id no matter what is your input
+    /// </para>
+    /// </remarks>
+    /// <returns></returns>
     [HttpGet]
     [AccessTokenGuard(RoleEnum.Admin, RoleEnum.BrandManager, RoleEnum.ShopManager)]
     public async Task<ActionResult<PaginationResult<ShopDto>>> GetCurrentShop([FromQuery] SearchShopRequest search)

@@ -7,6 +7,8 @@
         <LangVersion>preview</LangVersion>
         <UserSecretsId>00692f0f-9d19-407e-8420-a3f5e750ce1b</UserSecretsId>
         <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <NoWarm>$(NoWarm);1591</NoWarm>
     </PropertyGroup>
 
     <ItemGroup>
