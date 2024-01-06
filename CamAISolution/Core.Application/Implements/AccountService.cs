@@ -48,6 +48,8 @@ public class AccountService(IUnitOfWork unitOfWork, IJwtService jwtService, IBas
         dto.Password = Hasher.Hash(dto.Password);
         var currentUser = await GetCurrentAccount();
 
+        // TODO [Khanh, 302]: Can admin create shop manager?
+
         if (currentUser.HasRole(RoleEnum.Admin))
         {
             if (dto.RoleIds.Any(r => r == RoleEnum.BrandManager))
@@ -63,7 +65,7 @@ public class AccountService(IUnitOfWork unitOfWork, IJwtService jwtService, IBas
                 return await CreateShopManager(dto);
             if (dto.RoleIds.Any(r => r == RoleEnum.Employee))
             {
-                // TODO: Create employee
+                // TODO [Khanh]: Create employee
                 throw new NotImplementedException();
             }
             throw new BadRequestException("Brand manager can only create shop manager or employee");
