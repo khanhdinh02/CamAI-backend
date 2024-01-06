@@ -15,10 +15,10 @@ public static class ApiApplicationBuilder
             logger.Info("Applying migration");
             try
             {
-                scope.ServiceProvider.GetService<CamAIContext>()?.Database.Migrate();
+                scope.ServiceProvider.GetRequiredService<CamAIContext>().Database.Migrate();
                 logger.Info("Migration done");
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 logger.Error(ex.Message, ex);
             }

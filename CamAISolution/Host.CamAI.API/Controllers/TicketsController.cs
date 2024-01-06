@@ -12,10 +12,16 @@ namespace Host.CamAI.API.Controllers;
 [ApiController]
 public class TicketsController(ITicketService ticketService, IBaseMapping mapping) : ControllerBase
 {
+    [HttpGet("{id:guid}")]
+    [AccessTokenGuard(RoleEnum.Admin, RoleEnum.Technician)]
+    public async Task<ActionResult<TicketDto>> GetTicketById(Guid id)
+    {
+        return Ok(mapping.Map<Ticket, TicketDto>(await ticketService.GetTicketById(id)));
+    }
 
     [HttpGet]
     [AccessTokenGuard(RoleEnum.Admin, RoleEnum.Technician)]
-    public async Task<ActionResult<PaginationResult<TicketDto>>> SearchTicket(TicketSearchRequest searchReq)
+    public async Task<ActionResult<PaginationResult<TicketDto>>> SearchTicket([FromQuery] TicketSearchRequest searchReq)
     {
         return Ok(mapping.Map<Ticket, TicketDto>(await ticketService.SearchTicket(searchReq)));
     }
@@ -32,5 +38,25 @@ public class TicketsController(ITicketService ticketService, IBaseMapping mappin
     public async Task<ActionResult<TicketDto>> UpdateTicketStatus(Guid id, int ticketStatusId)
     {
         return Ok(mapping.Map<Ticket, TicketDto>(await ticketService.UpdateTicketStatus(id, ticketStatusId)));
+    }
+
+    /// <summary>
+    /// Admin update ticket information
+    /// </summary>
+    /// <param name="id"></param>
+    /// <param name="ticketDto"></param>
+    /// <returns></returns>
+    [HttpPut("{id}")]
+    [AccessTokenGuard(RoleEnum.Admin)]
+    public async Task<ActionResult<TicketDto>> UpdateTicket(Guid id, UpdateTicketDto ticketDto)
+    {
+        return Ok(mapping.Map<Ticket, TicketDto>(await ticketService.UpdateTicket(id, ticketDto)));
+    }
+
+    [HttpPut("{id}/reply")]
+    [AccessTokenGuard(RoleEnum.Technician)]
+    public async Task<ActionResult<TicketDto>> UpdateTicketReply(Guid id, UpdateTicketReplyDto ticketReplyDto)
+    {
+        return Ok(mapping.Map<Ticket, TicketDto>(await ticketService.UpdateTicketReply(id, ticketReplyDto)));
     }
 }

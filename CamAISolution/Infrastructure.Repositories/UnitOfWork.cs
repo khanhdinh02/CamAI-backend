@@ -1,6 +1,12 @@
+using Core.Application.Exceptions;
+using Core.Domain;
 using Core.Domain.Entities;
+using Core.Domain.Entities.Base;
 using Core.Domain.Repositories;
+using Core.Domain.Services;
+using Core.Domain.Utilities;
 using Infrastructure.Repositories.Data;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Infrastructure.Repositories;
@@ -51,6 +57,27 @@ public class UnitOfWork(CamAIContext context, IServiceProvider serviceProvider) 
 
     public async Task<int> CompleteAsync()
     {
+        foreach (var entry in context.ChangeTracker.Entries<BusinessEntity>())
+        {
+            switch (entry.State)
+            {
+                case EntityState.Added:
+                    entry.Entity.CreatedDate = DateTimeHelper.VNDateTime;
+                    entry.Entity.ModifiedDate = DateTimeHelper.VNDateTime;
+                    break;
+                case EntityState.Modified:
+                    entry.Entity.ModifiedDate = DateTimeHelper.VNDateTime;
+                    break;
+            }
+        }
+        foreach (var entry in context.ChangeTracker.Entries<ActivityEntity>())
+        {
+            if (entry.State == EntityState.Modified)
+            {
+                entry.Entity.ModifiedTime = DateTimeHelper.VNDateTime;
+                entry.Entity.ModifiedById = serviceProvider.GetRequiredService<IJwtService>().GetCurrentUserId();
+            }
+        }
         return await context.SaveChangesAsync();
     }
 
@@ -76,5 +103,10 @@ public class UnitOfWork(CamAIContext context, IServiceProvider serviceProvider) 
         await context.DisposeAsync();
         Dispose(false);
         GC.SuppressFinalize(this);
+    }
+
+    public IRepository<T> GetRepository<T>()
+    {
+        return serviceProvider.GetRequiredService<IRepository<T>>();
     }
 }

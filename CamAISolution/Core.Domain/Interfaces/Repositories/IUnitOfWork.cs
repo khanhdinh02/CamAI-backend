@@ -17,4 +17,6 @@ public interface IUnitOfWork : IDisposable, IAsyncDisposable
     Task RollBack();
     int Complete();
     Task<int> CompleteAsync();
+
+    IRepository<T> GetRepository<T>();
 }
