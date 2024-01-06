@@ -21,7 +21,7 @@ public class ShopsController(IShopService shopService, IBaseMapping baseMapping)
     ///     If current roles include Admin, admin can search every shops.
     /// </para>
     /// <para>
-    ///     If current roles include Brand manager, brand manager can search every search every shops in the brand.
+    ///     If current roles include Brand manager, brand manager can search every shops in the brand.
     /// </para>
     /// <para>
     ///     If current roles include shop manager, shop manager can search shop is currently being managed by current manager.
