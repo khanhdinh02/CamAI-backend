@@ -41,10 +41,6 @@ public class GlobalJwtHandler(RequestDelegate next)
                 {
                     logger.Error(ex.Message, ex);
                 }
-                finally
-                {
-                    await next(context);
-                }
             }
         }
         else
