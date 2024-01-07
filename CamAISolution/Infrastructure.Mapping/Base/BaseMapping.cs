@@ -18,6 +18,12 @@ public class BaseMapping(IMapper mapper) : IBaseMapping
 
     public PaginationResult<TDes> Map<TSource, TDes>(PaginationResult<TSource> source)
     {
-        return mapper.Map<PaginationResult<TDes>>(source);
+        return new PaginationResult<TDes>
+        {
+            Values = source.Values.Select(Map<TSource, TDes>).ToList(),
+            PageIndex = source.PageIndex,
+            PageSize = source.PageSize,
+            TotalCount = source.TotalCount
+        };
     }
 }
