@@ -1,4 +1,4 @@
-﻿using Core.Application.Exceptions;
+using Core.Application.Exceptions;
 using Core.Application.Specifications.Repositories;
 using Core.Domain;
 using Core.Domain.DTO;
@@ -43,7 +43,7 @@ public class ShopService(
 
     public async Task<PaginationResult<Shop>> GetShops(SearchShopRequest searchRequest)
     {
-        var shops = await unitOfWork.Shops.GetAsync(new ShopSearchSpec(searchRequest));
+        var shops = await unitOfWork.Shops.GetAsync(new SearchShopSpec(searchRequest));
         return shops;
     }
 
