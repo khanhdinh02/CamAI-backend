@@ -43,7 +43,7 @@ public class ShopService(
 
     public async Task<PaginationResult<Shop>> GetShops(SearchShopRequest searchRequest)
     {
-        var shops = await unitOfWork.Shops.GetAsync(new SearchShopSpec(searchRequest));
+        var shops = await unitOfWork.Shops.GetAsync(new ShopSearchSpec(searchRequest));
         return shops;
     }
 

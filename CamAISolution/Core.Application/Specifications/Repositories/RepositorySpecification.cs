@@ -10,8 +10,7 @@ namespace Core.Application.Specifications.Repositories;
 /// </summary>
 /// <typeparam name="T"></typeparam>
 /// <param name="criteria"></param>
-public abstract class RepositorySpec<T>(Expression<Func<T, bool>>? criteria = null)
-    : IRepositorySpecification<T>
+public abstract class RepositorySpec<T>(Expression<Func<T, bool>>? criteria = null) : IRepositorySpecification<T>
 {
     [JsonIgnore]
     public Expression<Func<T, bool>>? Criteria => criteria;
@@ -43,6 +42,11 @@ public abstract class RepositorySpec<T>(Expression<Func<T, bool>>? criteria = nu
     protected virtual void AddIncludes(Expression<Func<T, object>> include)
     {
         Includes?.Add(include);
+    }
+
+    protected virtual void AddIncludes(params Expression<Func<T, object>>[] include)
+    {
+        Includes?.AddRange(include);
     }
 
     protected virtual void AddIncludes(string include)

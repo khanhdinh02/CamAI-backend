@@ -4,6 +4,7 @@ using Infrastructure.Repositories.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Repositories.Migrations
 {
     [DbContext(typeof(CamAIContext))]
-    partial class CamAIContextModelSnapshot : ModelSnapshot
+    [Migration("20240106043137_EdgeBoxVersion")]
+    partial class EdgeBoxVersion
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1185,7 +1188,7 @@ namespace Infrastructure.Repositories.Migrations
                         new
                         {
                             Id = 1,
-                            Name = "New"
+                            Name = "Open"
                         },
                         new
                         {
@@ -1201,11 +1204,6 @@ namespace Infrastructure.Repositories.Migrations
                         {
                             Id = 4,
                             Name = "Failed"
-                        },
-                        new
-                        {
-                            Id = 5,
-                            Name = "Active"
                         });
                 });
 
