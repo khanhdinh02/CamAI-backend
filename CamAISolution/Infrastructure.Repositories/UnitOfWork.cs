@@ -19,6 +19,7 @@ public class UnitOfWork(CamAIContext context, IServiceProvider serviceProvider) 
     public IRepository<ShopStatus> ShopStatuses => serviceProvider.GetRequiredService<IRepository<ShopStatus>>();
 
     public IRepository<Account> Accounts => serviceProvider.GetRequiredService<IRepository<Account>>();
+    public IRepository<EdgeBox> EdgeBoxes => serviceProvider.GetRequiredService<IRepository<EdgeBox>>();
 
     public Task BeginTransaction()
     {

@@ -8,5 +8,5 @@ public class BrandDto : BaseDto
     public Uri? LogoUri { get; set; }
     public Uri? BannerUri { get; set; }
     public Guid? BrandManagerId { get; set; }
-    public BrandStatusDto BrandStatus { get; set; } = null!;
+    public BaseStatusDto BrandStatus { get; set; } = null!;
 }
