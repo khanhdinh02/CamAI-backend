@@ -18,8 +18,8 @@ public class AccountDto : BaseDto
     public int AccountStatusId { get; set; }
     public WardDto? Ward { get; set; }
     public ShopDto? WorkingShop { get; set; }
-    public AccountStatusDto AccountStatus { get; set; } = null!;
+    public BaseStatusDto AccountStatus { get; set; } = null!;
     public BrandDto? Brand { get; set; }
     public ShopDto? ManagingShop { get; set; }
-    public ICollection<RoleDto> Roles { get; set; } = new HashSet<RoleDto>();
+    public ICollection<BaseStatusDto> Roles { get; set; } = new HashSet<BaseStatusDto>();
 }
