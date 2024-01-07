@@ -111,14 +111,14 @@ public class ShopService(
         {
             var foundAccounts = await unitOfWork.Accounts.GetAsync(
                 expression: a => a.Id == shopDto.ShopManagerId.Value && a.AccountStatusId == AccountStatusEnum.Active,
-                includeProperties: [nameof(Account.Roles)]
+                includeProperties: [nameof(Account.Roles), nameof(Account.ManagingShop)]
             );
-            if (!foundAccounts.IsValuesEmpty)
+            if (foundAccounts.Values.Count == 0)
                 throw new NotFoundException(typeof(Account), shopDto.ShopManagerId.Value);
             var account = foundAccounts.Values[0];
             if (!account.HasRole(RoleEnum.ShopManager))
                 throw new BadRequestException("Account is not a shop manager");
-            if (account.WorkingShopId.HasValue)
+            if (account.ManagingShop != null)
                 throw new BadRequestException("Account is a manager of another shop");
         }
     }
