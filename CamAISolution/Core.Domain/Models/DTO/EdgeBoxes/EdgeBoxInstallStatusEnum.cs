@@ -1,4 +1,4 @@
-namespace Core.Domain.DTO.EdgeBoxes;
+namespace Core.Domain.DTO;
 
 public static class EdgeBoxInstallStatusEnum
 {
