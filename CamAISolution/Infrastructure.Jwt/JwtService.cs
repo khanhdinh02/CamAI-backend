@@ -4,9 +4,9 @@ using System.Text;
 using System.Text.Json;
 using Core.Application.Exceptions;
 using Core.Domain;
+using Core.Domain.DTO;
 using Core.Domain.Entities;
 using Core.Domain.Models.Configurations;
-using Core.Domain.DTO;
 using Core.Domain.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -40,7 +40,8 @@ public class JwtService(
         {
             jwtSecret = jwtConfiguration.AccessToken.Secret;
             tokenDurationInMinute = jwtConfiguration.AccessToken.Duration;
-            claims.Add(new Claim("status", JsonSerializer.Serialize(new { status!.Id, status.Name })));
+            if (status != null)
+                claims.Add(new Claim("status", JsonSerializer.Serialize(new { status.Id, status.Name })));
         }
         else
         {
@@ -123,7 +124,7 @@ public class JwtService(
         var userRoleString = tokenClaims.FirstOrDefault(c => c.Type == "roles")?.Value;
         if (string.IsNullOrEmpty(userRoleString))
             throw new BadRequestException("Cannot get user role from jwt");
-        var userRoles = (JsonSerializer.Deserialize<Role[]>(userRoleString) ?? [ ]).Select(r => r.Id).ToArray();
+        var userRoles = (JsonSerializer.Deserialize<Role[]>(userRoleString) ?? []).Select(r => r.Id).ToArray();
 
         if (acceptableRoles is { Length: > 0 } && !acceptableRoles.Intersect(userRoles).Any())
             throw new ForbiddenException("Unauthorized");
