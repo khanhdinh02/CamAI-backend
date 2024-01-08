@@ -31,11 +31,9 @@ public class ShopService(
 
     public async Task DeleteShop(Guid id)
     {
-        var account = await accountService.GetAccountById(id);
-        account.AccountStatusId = AccountStatusEnum.Inactive;
-        unitOfWork.Accounts.Update(account);
+        var shop = unitOfWork.Shops.Delete(new Shop { Id = id });
         await unitOfWork.CompleteAsync();
-        logger.Info($"{account.Email} has been Inactivated");
+        logger.Info($"Shop{shop.Id} has been Inactivated");
     }
 
     public async Task<Shop> GetShopById(Guid id)
@@ -75,7 +73,7 @@ public class ShopService(
         return await GetShopById(id);
     }
 
-    public async Task<Shop> UpdateStatus(Guid shopId, int shopStatusId)
+    public async Task<Shop> UpdateShopStatus(Guid shopId, int shopStatusId)
     {
         var foundShop = await unitOfWork.Shops.GetByIdAsync(shopId);
         if (foundShop == null)

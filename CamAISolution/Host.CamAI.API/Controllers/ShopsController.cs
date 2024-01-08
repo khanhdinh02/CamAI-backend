@@ -62,7 +62,7 @@ public class ShopsController(IShopService shopService, IBaseMapping baseMapping)
     [AccessTokenGuard(RoleEnum.BrandManager)]
     public async Task<ActionResult<ShopDto>> UpdateShopStatus(Guid id, int shopStatusId)
     {
-        var updatedShop = await shopService.UpdateStatus(id, shopStatusId);
+        var updatedShop = await shopService.UpdateShopStatus(id, shopStatusId);
         if (updatedShop.ShopStatusId == ShopStatusEnum.Inactive)
             return Ok();
         return Ok(baseMapping.Map<Shop, ShopDto>(updatedShop));
@@ -72,7 +72,7 @@ public class ShopsController(IShopService shopService, IBaseMapping baseMapping)
     [AccessTokenGuard(RoleEnum.Admin)]
     public async Task<IActionResult> DeleteShop(Guid id)
     {
-        await shopService.DeleteShop(id);
+        await shopService.UpdateShopStatus(id, ShopStatusEnum.Inactive);
         return Accepted();
     }
 }

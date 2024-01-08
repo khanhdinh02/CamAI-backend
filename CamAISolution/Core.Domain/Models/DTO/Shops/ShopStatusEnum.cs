@@ -4,5 +4,4 @@ public static class ShopStatusEnum
 {
     public const int Active = 1;
     public const int Inactive = 2;
-    public const int Pending = 3;
 }

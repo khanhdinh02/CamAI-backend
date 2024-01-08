@@ -9,7 +9,7 @@ namespace Host.CamAI.API.Controllers;
 //TODO [Dat] : Map to DTO and cast type for ActionResult
 public class LocationsController(ILocationService locationService) : ControllerBase
 {
-    [HttpGet(nameof(Province))]
+    [HttpGet($"{nameof(Province)}s")]
     public async Task<ActionResult> GetAllProvinces()
     {
         return Ok(await locationService.GetAllProvinces());
@@ -20,7 +20,7 @@ public class LocationsController(ILocationService locationService) : ControllerB
     /// </summary>
     /// <param name="id"></param>
     /// <returns></returns>
-    [HttpGet($"{nameof(Province)}/{{id}}/{nameof(District)}")]
+    [HttpGet($"{nameof(Province)}s/{{id}}/{nameof(District)}s")]
     public async Task<ActionResult> GetAllDistrictsByProvinceId(Guid id)
     {
         var districts = await locationService.GetAllDistrictsByProvinceId(id);
@@ -38,7 +38,7 @@ public class LocationsController(ILocationService locationService) : ControllerB
     /// </summary>
     /// <param name="id"></param>
     /// <returns></returns>
-    [HttpGet($"{nameof(District)}/{{id}}/{nameof(Ward)}")]
+    [HttpGet($"{nameof(District)}s/{{id}}/{nameof(Ward)}s")]
     public async Task<ActionResult> GetAllWardsByDistrictId(Guid id)
     {
         var wards = await locationService.GetAllWardsByDistrictId(id);
