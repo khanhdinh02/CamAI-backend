@@ -29,6 +29,7 @@ public class ShopService(
         return shop;
     }
 
+    //TODO [Dat]: update shop status if there is EdgeBoxInstall
     public async Task DeleteShop(Guid id)
     {
         var shop = unitOfWork.Shops.Delete(new Shop { Id = id });
@@ -66,7 +67,7 @@ public class ShopService(
             throw new NotFoundException(typeof(Shop), id);
         var foundShop = foundShops.Values[0];
         if (foundShop.ShopStatusId != ShopStatusEnum.Active && !await AreRequiredRolesMatched(RoleEnum.Admin))
-            throw new BadRequestException($"Cannot modified {ShopStatusEnum.Inactive} shop");
+            throw new BadRequestException($"Cannot modified inactive shop");
         await IsValidShopDto(shopDto);
         mapping.Map(shopDto, foundShop);
         await unitOfWork.CompleteAsync();
@@ -88,7 +89,7 @@ public class ShopService(
             throw new ForbiddenException("Current user not allowed to do this action.");
 
         if (foundShop.ShopStatusId != ShopStatusEnum.Active && !await AreRequiredRolesMatched(RoleEnum.Admin))
-            throw new BadRequestException($"Cannot update {nameof(ShopStatusEnum.Inactive)} shop");
+            throw new BadRequestException($"Cannot update inactive shop");
         foundShop.ShopStatusId = shopStatusId;
         await unitOfWork.CompleteAsync();
         return await GetShopById(shopId);
