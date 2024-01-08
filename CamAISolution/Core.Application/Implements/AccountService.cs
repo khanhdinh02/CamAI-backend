@@ -36,7 +36,7 @@ public class AccountService(IUnitOfWork unitOfWork, IJwtService jwtService, IBas
 
     public Task<Account> GetCurrentAccount()
     {
-        return GetAccountById(jwtService.GetCurrentUserId());
+        return Task.FromResult(jwtService.GetCurrentUser());
     }
 
     public async Task<Account> CreateAccount(CreateAccountDto dto)

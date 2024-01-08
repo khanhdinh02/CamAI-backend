@@ -12,16 +12,15 @@ builder.Services.AddControllers();
 string AllowPolicy = "AllowAll";
 
 builder
-    .Services
-    .AddCors(opts => opts.AddPolicy(
-            name: AllowPolicy,
-            builder => builder
-            .AllowAnyOrigin()
-            .AllowAnyHeader()
-            .AllowAnyHeader()
-             //TODO[Dat]: Enable allow credential when have specific origin
-             //.AllowCredentials()
-    ))
+    .Services.AddCors(
+        opts =>
+            opts.AddPolicy(
+                name: AllowPolicy,
+                builder => builder.AllowAnyOrigin().AllowAnyHeader().AllowAnyHeader()
+            //TODO[Dat]: Enable allow credential when have specific origin
+            //.AllowCredentials()
+            )
+    )
     .AddRepository(builder.Configuration.GetConnectionString("Default"))
     .AddJwtService(builder.Configuration)
     .AddLoggingDependencyInjection()

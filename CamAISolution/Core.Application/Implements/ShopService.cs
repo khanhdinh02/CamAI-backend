@@ -23,24 +23,36 @@ public class ShopService(
     {
         await IsValidShopDto(shopDto);
         var shop = mapping.Map<CreateOrUpdateShopDto, Shop>(shopDto);
-        shop.ShopStatusId = ShopStatusEnum.Pending;
+        shop.ShopStatusId = ShopStatusEnum.Active;
         shop = await unitOfWork.Shops.AddAsync(shop);
         await unitOfWork.CompleteAsync();
         return shop;
     }
 
-    public Task DeleteShop(Guid id)
+    public async Task DeleteShop(Guid id)
     {
-        logger.Info($"{nameof(DeleteShop)} was not Implemented");
-        throw new ServiceUnavailableException("");
+        var account = await accountService.GetAccountById(id);
+        account.AccountStatusId = AccountStatusEnum.Inactive;
+        unitOfWork.Accounts.Update(account);
+        await unitOfWork.CompleteAsync();
+        logger.Info($"{account.Email} has been Inactivated");
     }
 
     public async Task<Shop> GetShopById(Guid id)
     {
         var foundShop = await unitOfWork.Shops.GetAsync(new ShopByIdRepoSpec(id));
+        var notFoundException = new NotFoundException(typeof(Shop), id);
         if (foundShop.Values.Count == 0)
-            throw new NotFoundException(typeof(Shop), id);
-        return foundShop.Values[0];
+            throw notFoundException;
+        var account = await accountService.GetCurrentAccount();
+        var shop = foundShop.Values[0];
+        if (account.HasRole(RoleEnum.Admin))
+            return shop;
+        if (account.HasRole(RoleEnum.BrandManager))
+            return account.Brand != null && shop.BrandId == account.Brand.Id ? shop : throw notFoundException;
+        if (account.HasRole(RoleEnum.ShopManager) && shop.ShopManagerId == account.Id)
+            return shop;
+        throw notFoundException;
     }
 
     public async Task<PaginationResult<Shop>> GetShops(SearchShopRequest searchRequest)

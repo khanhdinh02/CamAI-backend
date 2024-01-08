@@ -97,19 +97,13 @@ public class JwtService(
         }
     }
 
-    public Guid GetCurrentUserId()
+    public Account GetCurrentUser()
     {
         using var scope = serviceProvider.CreateScope();
-        var httpContextAccessor = scope.ServiceProvider.GetService<IHttpContextAccessor>();
-
-        var claimsIdentity = httpContextAccessor?.HttpContext?.User;
-        if (
-            claimsIdentity != null
-            && claimsIdentity.Claims.Any()
-            && Guid.TryParse(claimsIdentity.Claims.First(c => c.Type == "id").Value, out var userId)
-        )
-            return userId;
-        return Guid.Empty;
+        var httpContext =
+            scope.ServiceProvider.GetRequiredService<IHttpContextAccessor>().HttpContext
+            ?? throw new ServiceUnavailableException("Service Unavailable");
+        return (httpContext.Items[nameof(Account)] as Account) ?? throw new UnauthorizedException("");
     }
 
     //TODO: CHECK USER STATUS FROM STORAGE

@@ -51,15 +51,15 @@ public class ShopsController(IShopService shopService, IBaseMapping baseMapping)
     }
 
     [HttpPut("{id:guid}")]
-    [AccessTokenGuard(RoleEnum.Admin, RoleEnum.BrandManager)]
+    [AccessTokenGuard(RoleEnum.BrandManager)]
     public async Task<ActionResult<ShopDto>> UpdateShop(Guid id, [FromBody] CreateOrUpdateShopDto shopDto)
     {
         var updatedShop = await shopService.UpdateShop(id, shopDto);
         return Ok(baseMapping.Map<Shop, ShopDto>(updatedShop));
     }
 
-    [HttpPatch("{id:guid}/status")]
-    [AccessTokenGuard(RoleEnum.Admin, RoleEnum.BrandManager)]
+    [HttpPatch("{id:guid}/status/{shopStatusId:int}")]
+    [AccessTokenGuard(RoleEnum.BrandManager)]
     public async Task<ActionResult<ShopDto>> UpdateShopStatus(Guid id, int shopStatusId)
     {
         var updatedShop = await shopService.UpdateStatus(id, shopStatusId);
