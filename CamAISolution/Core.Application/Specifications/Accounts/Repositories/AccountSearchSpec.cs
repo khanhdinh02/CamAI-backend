@@ -1,37 +1,47 @@
 using System.Linq.Expressions;
+using Core.Domain.DTO;
 using Core.Domain.Entities;
 
 namespace Core.Application.Specifications.Repositories;
 
 public class AccountSearchSpec : RepositorySpec<Account>
 {
-    // Use static method to get Expression from ISpecification<Account> object for passing to the RepositorySpecification<Account> when creating object
-    private static Expression<Func<Account, bool>> GetExpression(Guid? guid, DateTime? from, DateTime? to)
+    private static Expression<Func<Account, bool>> GetExpression(SearchAccountRequest req)
     {
         var baseSpec = new Specification<Account>();
-        if (guid != null)
-            baseSpec.And(new AccountByIdSpec(guid.Value));
-        if (from != null && to != null)
-            baseSpec.And(new AccountCreatedFromToSpec(from.Value, to.Value));
+        if (!string.IsNullOrWhiteSpace(req.Search))
+        {
+            req.Search = req.Search.Trim();
+            baseSpec.And(new AccountByEmailSpec(req.Search));
+            baseSpec.Or(new AccountByNameSpec(req.Search));
+            baseSpec.Or(new AccountByPhoneSpec(req.Search));
+        }
+
+        if (req.AccountStatusId.HasValue)
+            baseSpec.And(new AccountByStatusSpec(req.AccountStatusId.Value));
+
+        if (req.RoleId.HasValue)
+            baseSpec.And(new AccountByRoleSpec(req.RoleId.Value));
+
+        if (req.BrandId.HasValue)
+            baseSpec.And(new AccountByBrandSpec(req.BrandId.Value));
+
+        if (req.ShopId.HasValue)
+            baseSpec.And(new AccountByShopSpec(req.ShopId.Value));
+
         return baseSpec.GetExpression();
     }
 
-    //TODO: change parameters of constructor to object like: AccountSearchSpecification(AccoutSearch search) : base(GetExpression(search.id, search.From, search.To))
-    public AccountSearchSpec(
-        Guid? guid = null,
-        DateTime? from = null,
-        DateTime? to = null,
-        int pageSize = 1,
-        int pageNumber = 0
-    )
-        : base(GetExpression(guid, from, to))
+    public AccountSearchSpec(SearchAccountRequest req)
+        : base(GetExpression(req))
     {
-        base.ApplyingPaging(pageSize, (pageNumber - 1) * pageSize);
-        base.DisableTracking();
+        base.ApplyingPaging(req);
         base.ApplyOrderByDescending(a => a.CreatedDate);
-        //base.ApplyOrderBy(a => a.CreatedDate);
-        //base.AddIncludes("Shops");
-        //base.AddIncludes("Roles");
-        //base.AddIncludes(a => a.Roles);
+        AddIncludes(a => a.Roles);
+        AddIncludes(a => a.AccountStatus);
+        AddIncludes(nameof(Account.Brand));
+        AddIncludes(a => a.Ward!.District.Province);
+        AddIncludes(a => a.ManagingShop!);
+        AddIncludes(a => a.WorkingShop!);
     }
 }

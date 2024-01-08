@@ -12,18 +12,21 @@ namespace Core.Application.Implements;
 
 public class AccountService(IUnitOfWork unitOfWork, IJwtService jwtService, IBaseMapping mapper) : IAccountService
 {
-    public Task<PaginationResult<Account>> GetAccount(
-        Guid? guid = null,
-        DateTime? from = null,
-        DateTime? to = null,
-        int pageSize = 1,
-        int pageIndex = 0
-    )
+    public async Task<PaginationResult<Account>> GetAccounts(SearchAccountRequest req)
     {
-        /* var specification = new AccountSearchSpecification(guid, from, to, pageSize, pageIndex);
-         return accountRepo.GetAsync(specification);*/
-        throw new NotImplementedException();
-        //return accountRepo.GetAsync(specification);
+        var user = await GetCurrentAccount();
+        if (!user.HasRole(RoleEnum.Admin))
+        {
+            if (user.HasRole(RoleEnum.BrandManager))
+                req.BrandId = user.Brand?.Id;
+            else if (user.HasRole(RoleEnum.ShopManager))
+                req.ShopId = user.ManagingShop?.Id;
+        }
+        var accounts = await unitOfWork.Accounts.GetAsync(new AccountSearchSpec(req));
+        // Do not include brand manager if current user is shop manager
+        if (user.HasRole(RoleEnum.ShopManager))
+            accounts.Values = accounts.Values.Where(a => !a.HasRole(RoleEnum.BrandManager)).ToList();
+        return accounts;
     }
 
     public async Task<Account> GetAccountById(Guid id)

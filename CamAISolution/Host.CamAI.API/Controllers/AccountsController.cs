@@ -12,18 +12,12 @@ namespace Host.CamAI.API.Controllers;
 [ApiController]
 public class AccountsController(IAccountService accountService, IBaseMapping mapper) : ControllerBase
 {
-    // TODO [Dat]: account search DTO
     [HttpGet]
-    public async Task<ActionResult<PaginationResult<Account>>> SampleGetAccounts(
-        Guid? guid = null,
-        DateTime? from = null,
-        DateTime? to = null,
-        int pageSize = 1,
-        int pageIndex = 0
-    )
+    [AccessTokenGuard(RoleEnum.Admin, RoleEnum.BrandManager, RoleEnum.ShopManager)]
+    public async Task<ActionResult<PaginationResult<AccountDto>>> GetAccounts([FromQuery] SearchAccountRequest req)
     {
-        // TODO: account DTO
-        return Ok(await accountService.GetAccount(guid, from, to, pageSize, pageIndex));
+        var accounts = await accountService.GetAccounts(req);
+        return mapper.Map<Account, AccountDto>(accounts);
     }
 
     [HttpGet("{id}")]
