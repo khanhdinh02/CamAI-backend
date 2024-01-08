@@ -6,7 +6,7 @@ namespace Core.Application.Specifications.Repositories;
 
 public class SearchShopSpec : RepositorySpec<Shop>
 {
-    private static Expression<Func<Shop, bool>> GetExpression(SearchShopRequest search)
+    private static Expression<Func<Shop, bool>> GetExpression(ShopSearchRequest search)
     {
         var baseSpec = new Specification<Shop>();
         if (!string.IsNullOrEmpty(search.Name))
@@ -24,7 +24,7 @@ public class SearchShopSpec : RepositorySpec<Shop>
         return baseSpec.GetExpression();
     }
 
-    public SearchShopSpec(SearchShopRequest search)
+    public SearchShopSpec(ShopSearchRequest search)
         : base(GetExpression(search))
     {
         AddIncludes(s => s.ShopStatus);

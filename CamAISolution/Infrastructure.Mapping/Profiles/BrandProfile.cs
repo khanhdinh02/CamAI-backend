@@ -11,6 +11,6 @@ public class BrandProfile : Profile
         CreateMap<Brand, BrandDto>();
         CreateMap<CreateBrandDto, Brand>();
         CreateMap<UpdateBrandDto, Brand>();
-        CreateMap<BrandStatus, BaseStatusDto>();
+        CreateMap<BrandStatus, LookupDto>();
     }
 }

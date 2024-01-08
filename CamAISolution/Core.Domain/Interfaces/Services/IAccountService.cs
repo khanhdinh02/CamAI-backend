@@ -2,7 +2,7 @@ using Core.Domain.DTO;
 using Core.Domain.Entities;
 using Core.Domain.Models;
 
-namespace Core.Domain.Services;
+namespace Core.Domain.Interfaces.Services;
 
 public interface IAccountService
 {

@@ -8,6 +8,6 @@ public class TicketDto : BaseDto
 
     public string? Reply { get; set; }
     public ShopDto? Shop { get; set; }
-    public TicketTypeDto TicketType { get; set; } = null!;
-    public TicketStatusDto TicketStatus { get; set; } = null!;
+    public LookupDto TicketType { get; set; } = null!;
+    public LookupDto TicketStatus { get; set; } = null!;
 }

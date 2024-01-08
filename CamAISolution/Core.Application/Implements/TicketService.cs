@@ -7,7 +7,6 @@ using Core.Domain.Interfaces.Mappings;
 using Core.Domain.Interfaces.Services;
 using Core.Domain.Models;
 using Core.Domain.Repositories;
-using Core.Domain.Services;
 using Core.Domain.Utilities;
 
 namespace Core.Application.Implements;
@@ -24,20 +23,43 @@ public class TicketService(
         return await unitOfWork.Tickets.GetAsync(new TicketSearchSpec(searchRequest));
     }
 
+    private async Task CheckTechnician(Guid technicianId)
+    {
+        var account = await accountService.GetAccountById(technicianId);
+        if (!account.HasRole(RoleEnum.Technician))
+            throw new BadRequestException($"Account with {technicianId} is not technician");
+        if (account.AccountStatusId == AccountStatusEnum.Inactive)
+            throw new BadRequestException($"Account with {technicianId} is {nameof(AccountStatusEnum.Inactive)}");
+    }
+
+    private async Task CheckShop(Guid shopId)
+    {
+        var foundShop = await unitOfWork.GetRepository<Shop>().GetAsync(new ShopByIdRepoSpec(shopId));
+        if (foundShop.IsValuesEmpty)
+            throw new NotFoundException(typeof(Shop), shopId);
+        if (foundShop.Values[0].ShopStatusId == ShopStatusEnum.Inactive)
+            throw new BadRequestException($"{nameof(Shop)} was {nameof(ShopStatusEnum.Inactive)}");
+    }
+
+    private async Task CheckTicketType(int ticketTypeId)
+    {
+        if (!await unitOfWork.TicketTypes.IsExisted(ticketTypeId))
+            throw new NotFoundException(typeof(TicketType), ticketTypeId);
+    }
+
+    private async Task CheckTicketStatus(int ticketStatusId)
+    {
+        if (!await unitOfWork.TicketStatuses.IsExisted(ticketStatusId))
+            throw new NotFoundException(typeof(TicketStatus), ticketStatusId);
+    }
+
     public async Task<Ticket> CreateTicket(CreateTicketDto ticketDto)
     {
         if (ticketDto.AssignedToId.HasValue)
-        {
-            var account = await accountService.GetAccountById(ticketDto.AssignedToId.Value);
-            if (!account.HasRole(RoleEnum.Technician))
-                throw new BadRequestException($"Account with {account.Id} is not technician");
-            if (account.AccountStatusId == AccountStatusEnum.Inactive)
-                throw new BadRequestException($"Account with {account.Id} is {nameof(AccountStatusEnum.Inactive)}");
-        }
-        if (ticketDto.ShopId.HasValue && !await unitOfWork.Shops.IsExisted(ticketDto.ShopId.Value))
-            throw new NotFoundException(typeof(Shop), ticketDto.ShopId.Value);
-        if (!await unitOfWork.TicketTypes.IsExisted(ticketDto.TicketTypeId))
-            throw new NotFoundException(typeof(TicketType), ticketDto.TicketTypeId);
+            await CheckTechnician(ticketDto.AssignedToId.Value);
+        if (ticketDto.ShopId.HasValue)
+            await CheckShop(ticketDto.ShopId.Value);
+        await CheckTicketType(ticketDto.TicketTypeId);
         var ticket = mapping.Map<CreateTicketDto, Ticket>(ticketDto);
         ticket.TicketStatusId = TicketStatusEnum.New;
         ticket = await unitOfWork.Tickets.AddAsync(ticket);
@@ -48,12 +70,8 @@ public class TicketService(
 
     public async Task<Ticket> UpdateTicketStatus(Guid id, int statusId)
     {
-        var ticket = await unitOfWork.Tickets.GetByIdAsync(id);
-        if (ticket == null)
-            throw new NotFoundException(typeof(Ticket), statusId);
-        var IsStatusExisted = await unitOfWork.TicketStatuses.IsExisted(statusId);
-        if (!IsStatusExisted)
-            throw new NotFoundException(typeof(TicketStatus), statusId);
+        var ticket = await unitOfWork.Tickets.GetByIdAsync(id) ?? throw new NotFoundException(typeof(Ticket), statusId);
+        await CheckTicketStatus(statusId);
         ticket.TicketStatusId = statusId;
         ticket = unitOfWork.Tickets.Update(ticket);
         await unitOfWork.CompleteAsync();
@@ -71,18 +89,11 @@ public class TicketService(
     public async Task<Ticket> UpdateTicket(Guid id, UpdateTicketDto ticketDto)
     {
         var ticket = await GetTicketById(id);
-        if (!await unitOfWork.TicketTypes.IsExisted(ticketDto.TicketTypeId))
-            throw new NotFoundException(typeof(TicketType), ticketDto.TicketTypeId);
+        await CheckTicketType(ticketDto.TicketTypeId);
         if (ticketDto.AssignedToId.HasValue)
-        {
-            var account = await accountService.GetAccountById(ticketDto.AssignedToId.Value);
-            if (!account.HasRole(RoleEnum.Technician))
-                throw new BadRequestException($"Account with {account.Id} is not technician");
-            if (account.AccountStatusId == AccountStatusEnum.Inactive)
-                throw new BadRequestException($"Account with {account.Id} is {nameof(AccountStatusEnum.Inactive)}");
-        }
-        if (ticketDto.ShopId.HasValue && !await unitOfWork.Shops.IsExisted(ticketDto.ShopId.Value))
-            throw new NotFoundException(typeof(Shop), ticketDto.ShopId.Value);
+            await CheckTechnician(ticketDto.AssignedToId.Value);
+        if (ticketDto.ShopId.HasValue)
+            await CheckShop(ticketDto.ShopId.Value);
         ticket = unitOfWork.Tickets.Update(mapping.Map(ticketDto, ticket));
         await unitOfWork.CompleteAsync();
         return ticket;

@@ -12,7 +12,7 @@ public class TicketProfile : Profile
         CreateMap<CreateTicketDto, Ticket>();
         CreateMap<UpdateTicketDto, Ticket>();
         CreateMap<UpdateTicketReplyDto, Ticket>();
-        CreateMap<TicketType, TicketTypeDto>();
-        CreateMap<TicketStatus, TicketStatusDto>();
+        CreateMap<TicketType, LookupDto>();
+        CreateMap<TicketStatus, LookupDto>();
     }
 }

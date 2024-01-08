@@ -1,8 +1,8 @@
-﻿namespace Core.Domain.DTO;
+namespace Core.Domain.DTO;
 
-public abstract class LookupDto : UpdatableDto<int>
+public class LookupDto
 {
-    public override int Id { get; set; }
-    public virtual string Name { get; set; } = null!;
-    public virtual string? Description { get; set; }
+    public int Id { get; set; }
+    public string Name { get; set; } = null!;
+    public string? Description { get; set; }
 }
