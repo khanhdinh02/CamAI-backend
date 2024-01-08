@@ -42,7 +42,7 @@ public class ShopService(
         var notFoundException = new NotFoundException(typeof(Shop), id);
         if (foundShop.Values.Count == 0)
             throw notFoundException;
-        var account = await accountService.GetCurrentAccount();
+        var account = accountService.GetCurrentAccount();
         var shop = foundShop.Values[0];
         if (account.HasRole(RoleEnum.Admin))
             return shop;
@@ -80,7 +80,7 @@ public class ShopService(
             throw new NotFoundException(typeof(Shop), shopId);
 
         //Check if current user is not a shop manager or a brand manager of this shop and alse not an admin, then reject the action.
-        var currentAccount = await accountService.GetCurrentAccount();
+        var currentAccount = accountService.GetCurrentAccount();
         var isCurrentShopManager = foundShop.ShopManagerId == currentAccount.Id;
         var isCurrentBrandManager = currentAccount.Brand != null && foundShop.BrandId == currentAccount.Brand.Id;
         var isAdmin = await AreRequiredRolesMatched(RoleEnum.Admin);
@@ -103,7 +103,7 @@ public class ShopService(
     /// <returns></returns>
     private async Task<bool> AreRequiredRolesMatched(params int[] roles)
     {
-        var account = await accountService.GetCurrentAccount();
+        var account = accountService.GetCurrentAccount();
         return account.Roles.Select(r => r.Id).Intersect(roles).Any();
     }
 
@@ -143,7 +143,7 @@ public class ShopService(
         if (await AreRequiredRolesMatched(RoleEnum.Admin))
             return await GetShops(searchRequest);
 
-        var currentAccount = await accountService.GetCurrentAccount();
+        var currentAccount = accountService.GetCurrentAccount();
         if (await AreRequiredRolesMatched(RoleEnum.BrandManager))
         {
             if (currentAccount.Brand == null)

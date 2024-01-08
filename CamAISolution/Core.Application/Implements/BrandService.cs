@@ -22,7 +22,7 @@ public class BrandService(
 {
     public async Task<PaginationResult<Brand>> GetBrands(SearchBrandRequest searchRequest)
     {
-        var currentAccount = await accountService.GetCurrentAccount();
+        var currentAccount = accountService.GetCurrentAccount();
         if (currentAccount.HasRole(RoleEnum.Admin))
             return await unitOfWork.Brands.GetAsync(new BrandSearchSpec(searchRequest));
 
@@ -40,7 +40,7 @@ public class BrandService(
         var brand = await GetBrandById(brandId);
         return new PaginationResult<Brand>
         {
-            Values =  [ brand ],
+            Values = [brand],
             PageIndex = 0,
             PageSize = 1,
             TotalCount = 1
@@ -49,7 +49,7 @@ public class BrandService(
 
     public async Task<Brand> GetBrandById(Guid id)
     {
-        var currentAccount = await accountService.GetCurrentAccount();
+        var currentAccount = accountService.GetCurrentAccount();
         var brand =
             (await unitOfWork.Brands.GetAsync(new BrandByIdRepoSpec(id))).Values.FirstOrDefault()
             ?? throw new NotFoundException(typeof(Brand), id);
@@ -76,7 +76,7 @@ public class BrandService(
         if (brand is null)
             throw new NotFoundException(typeof(Brand), id);
 
-        var currentAccount = await accountService.GetCurrentAccount();
+        var currentAccount = accountService.GetCurrentAccount();
         if (!IsAccountOwnBrand(currentAccount, brand))
             throw new ForbiddenException(currentAccount, brand);
         if (brand.BrandStatusId == BrandStatusEnum.Inactive)

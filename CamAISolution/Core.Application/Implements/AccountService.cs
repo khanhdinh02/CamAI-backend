@@ -34,9 +34,9 @@ public class AccountService(IUnitOfWork unitOfWork, IJwtService jwtService, IBas
         return foundAccounts.Values[0];
     }
 
-    public Task<Account> GetCurrentAccount()
+    public Account GetCurrentAccount()
     {
-        return Task.FromResult(jwtService.GetCurrentUser());
+        return jwtService.GetCurrentUser();
     }
 
     public async Task<Account> CreateAccount(CreateAccountDto dto)
@@ -46,7 +46,7 @@ public class AccountService(IUnitOfWork unitOfWork, IJwtService jwtService, IBas
         if (dto.WardId != null && !await unitOfWork.Wards.IsExisted(dto.WardId))
             throw new NotFoundException(typeof(Ward), dto.WardId);
         dto.Password = Hasher.Hash(dto.Password);
-        var currentUser = await GetCurrentAccount();
+        var currentUser = GetCurrentAccount();
 
         // TODO [Khanh, 302]: Can admin create shop manager?
 
@@ -125,7 +125,7 @@ public class AccountService(IUnitOfWork unitOfWork, IJwtService jwtService, IBas
             ?? throw new NotFoundException(typeof(Shop), dto.WorkingShopId.Value);
 
         // If shop exist, check if shop is in brand of current user
-        var currentUser = await GetCurrentAccount();
+        var currentUser = GetCurrentAccount();
         if (!currentUser.HasRole(RoleEnum.BrandManager) || currentUser.Brand?.Id != shop.BrandId)
             throw new BadRequestException("Shop is not in brand of current user");
 
