@@ -1,4 +1,3 @@
-using Core.Application.Specifications.Repositories;
 using Core.Domain.Entities;
 
 namespace Core.Application.Specifications.Repositories;
@@ -14,7 +13,9 @@ public class AccountByIdRepoSpec : EntityByIdSpec<Account, Guid>
     {
         AddIncludes(a => a.Roles);
         AddIncludes(a => a.AccountStatus);
-        AddIncludes($"{nameof(Account.Brand)}");
-        ApplyOrderBy(a => a.CreatedDate);
+        AddIncludes(nameof(Account.Brand));
+        AddIncludes(a => a.Ward!.District.Province);
+        AddIncludes(a => a.ManagingShop!);
+        AddIncludes(a => a.WorkingShop!);
     }
 }

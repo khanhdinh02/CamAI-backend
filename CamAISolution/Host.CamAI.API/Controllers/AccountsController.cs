@@ -27,10 +27,10 @@ public class AccountsController(IAccountService accountService, IBaseMapping map
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<Account>> GetAccountById(Guid id)
+    public async Task<ActionResult<AccountDto>> GetAccountById(Guid id)
     {
-        // TODO: account DTO
-        return Ok(await accountService.GetAccountById(id));
+        var account = await accountService.GetAccountById(id);
+        return mapper.Map<Account, AccountDto>(account);
     }
 
     [HttpPost]
