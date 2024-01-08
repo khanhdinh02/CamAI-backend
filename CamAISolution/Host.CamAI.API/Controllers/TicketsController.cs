@@ -33,7 +33,7 @@ public class TicketsController(ITicketService ticketService, IBaseMapping mappin
         return Ok(mapping.Map<Ticket, TicketDto>(await ticketService.CreateTicket(ticketDto)));
     }
 
-    [HttpPatch("{id}/status")]
+    [HttpPatch("{id}/status/{ticketStatusId}")]
     [AccessTokenGuard(RoleEnum.Admin, RoleEnum.Technician)]
     public async Task<ActionResult<TicketDto>> UpdateTicketStatus(Guid id, int ticketStatusId)
     {
