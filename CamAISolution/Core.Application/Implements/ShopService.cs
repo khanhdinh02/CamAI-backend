@@ -44,7 +44,7 @@ public class ShopService(
 
     public async Task<PaginationResult<Shop>> GetShops(ShopSearchRequest searchRequest)
     {
-        var shops = await unitOfWork.Shops.GetAsync(new SearchShopSpec(searchRequest));
+        var shops = await unitOfWork.Shops.GetAsync(new ShopSearchSpec(searchRequest));
         return shops;
     }
 
