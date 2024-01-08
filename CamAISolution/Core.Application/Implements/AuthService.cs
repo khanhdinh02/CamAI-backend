@@ -1,6 +1,6 @@
 using Core.Application.Exceptions;
-using Core.Domain.Entities;
 using Core.Domain.DTO;
+using Core.Domain.Entities;
 using Core.Domain.Repositories;
 using Core.Domain.Services;
 using Core.Domain.Utilities;
@@ -12,15 +12,13 @@ public class AuthService(IJwtService jwtService, IAccountService accountService,
 {
     public async Task<TokenResponseDto> GetTokensByUsernameAndPassword(string email, string password)
     {
-        var foundAccount = await unitOfWork
-            .Accounts
-            .GetAsync(
-                expression: a =>
-                    a.Email == email
-                    && (a.AccountStatusId == AccountStatusEnum.Active || a.AccountStatusId == AccountStatusEnum.New),
-                orderBy: e => e.OrderBy(a => a.Id),
-                includeProperties: [ nameof(Account.Roles), nameof(Account.AccountStatus) ]
-            );
+        var foundAccount = await unitOfWork.Accounts.GetAsync(
+            expression: a =>
+                a.Email == email
+                && (a.AccountStatusId == AccountStatusEnum.Active || a.AccountStatusId == AccountStatusEnum.New),
+            orderBy: e => e.OrderBy(a => a.Id),
+            includeProperties: [nameof(Account.Roles), nameof(Account.AccountStatus)]
+        );
         if (foundAccount.Values.Count == 0)
             throw new UnauthorizedException("Wrong email or password");
 
@@ -52,7 +50,7 @@ public class AuthService(IJwtService jwtService, IAccountService accountService,
             throw new UnauthorizedException("Invalid Tokens");
 
         var account = await accountService.GetAccountById(accessTokenDetail.UserId);
-        return jwtService.GenerateToken(account.Id, account.Roles, TokenType.AccessToken);
+        return jwtService.GenerateToken(account.Id, account.Roles, account.AccountStatus, TokenType.AccessToken);
     }
 
     public async Task ChangePassword(ChangePasswordDto changePasswordDto)

@@ -1,3 +1,4 @@
+using System.Reflection;
 using Core.Application.Implements;
 using Core.Domain.Interfaces.Services;
 using Core.Domain.Services;
@@ -49,6 +50,9 @@ public static class ApiDependencyInjection
                     }
                 }
             );
+            var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+            var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+            option.IncludeXmlComments(xmlPath);
         });
         return services;
     }
