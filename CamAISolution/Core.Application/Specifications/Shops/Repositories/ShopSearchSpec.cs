@@ -1,10 +1,11 @@
 using System.Linq.Expressions;
 using Core.Application.Specifications.Repositories;
+using Core.Domain.DTO;
 using Core.Domain.Entities;
 
 namespace Core.Application.Specifications.Shops.Repositories;
 
-public class SearchShopSpec : RepositorySpec<Shop>
+public class ShopSearchSpec : RepositorySpec<Shop>
 {
     private static Expression<Func<Shop, bool>> GetExpression(ShopSearchRequest search)
     {
