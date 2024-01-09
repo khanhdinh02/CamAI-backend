@@ -10,6 +10,7 @@ using Core.Domain.Utilities;
 
 namespace Core.Application.Implements;
 
+// TODO [Khanh]: What authority does shop manager have over employees?
 public class AccountService(IUnitOfWork unitOfWork, IJwtService jwtService, IBaseMapping mapper) : IAccountService
 {
     public async Task<PaginationResult<Account>> GetAccounts(SearchAccountRequest req)
@@ -22,10 +23,7 @@ public class AccountService(IUnitOfWork unitOfWork, IJwtService jwtService, IBas
             else if (user.HasRole(RoleEnum.ShopManager))
                 req.ShopId = user.ManagingShop?.Id;
         }
-        var accounts = await unitOfWork.Accounts.GetAsync(new AccountSearchSpec(req));
-        // Do not include brand manager if current user is shop manager
-        if (user.HasRole(RoleEnum.ShopManager))
-            accounts.Values = accounts.Values.Where(a => !a.HasRole(RoleEnum.BrandManager)).ToList();
+        var accounts = await unitOfWork.Accounts.GetAsync(new AccountSearchSpec(req, user));
         return accounts;
     }
 

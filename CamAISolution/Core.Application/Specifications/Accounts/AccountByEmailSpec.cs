@@ -5,13 +5,13 @@ namespace Core.Application.Specifications;
 
 public class AccountByEmailSpec : Specification<Account>
 {
-    private readonly string _email;
+    private readonly string email;
 
     public AccountByEmailSpec(string email)
     {
-        _email = email;
+        this.email = email;
         Expr = GetExpression();
     }
 
-    public override Expression<Func<Account, bool>> GetExpression() => a => a.Email.Contains(_email);
+    public override Expression<Func<Account, bool>> GetExpression() => a => a.Email.Contains(email);
 }

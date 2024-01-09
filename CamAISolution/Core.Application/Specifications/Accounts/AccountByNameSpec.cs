@@ -5,13 +5,13 @@ namespace Core.Application.Specifications;
 
 public class AccountByNameSpec : Specification<Account>
 {
-    private readonly string _name;
+    private readonly string name;
 
     public AccountByNameSpec(string name)
     {
-        _name = name;
+        this.name = name;
         Expr = GetExpression();
     }
 
-    public override Expression<Func<Account, bool>> GetExpression() => a => a.Name.Contains(_name);
+    public override Expression<Func<Account, bool>> GetExpression() => a => a.Name.Contains(name);
 }

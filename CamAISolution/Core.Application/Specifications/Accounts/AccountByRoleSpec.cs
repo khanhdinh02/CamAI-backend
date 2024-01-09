@@ -5,13 +5,13 @@ namespace Core.Application.Specifications;
 
 public class AccountByRoleSpec : Specification<Account>
 {
-    private readonly int _roleId;
+    private readonly int roleId;
 
     public AccountByRoleSpec(int roleId)
     {
-        _roleId = roleId;
+        this.roleId = roleId;
         Expr = GetExpression();
     }
 
-    public override Expression<Func<Account, bool>> GetExpression() => a => a.Roles.Contains(new Role { Id = _roleId });
+    public override Expression<Func<Account, bool>> GetExpression() => a => a.Roles.Contains(new Role { Id = roleId });
 }
