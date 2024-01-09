@@ -16,7 +16,7 @@ public static class ApiDependencyInjection
         services.AddScoped<IShopService, ShopService>();
         services.AddScoped<IEdgeBoxService, EdgeBoxService>();
         services.AddScoped<ITicketService, TicketService>();
-
+        services.AddScoped<ILocationService, LocationService>();
         return services;
     }
 

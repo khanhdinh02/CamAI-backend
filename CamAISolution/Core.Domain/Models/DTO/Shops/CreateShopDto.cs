@@ -11,5 +11,6 @@ public class CreateOrUpdateShopDto
     public string? Phone { get; set; }
     public Guid WardId { get; set; }
     public Guid BrandId { get; set; }
+    public Guid? ShopManagerId { get; set; }
     public string? AddressLine { get; set; }
 }

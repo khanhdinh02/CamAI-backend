@@ -61,7 +61,7 @@ public class AuthService(IJwtService jwtService, IAccountService accountService,
         if (changePasswordDto.OldPassword == changePasswordDto.NewPassword)
             throw new BadRequestException("New password cannot be the same as old password");
 
-        var currentAccount = await accountService.GetCurrentAccount();
+        var currentAccount = accountService.GetCurrentAccount();
         if (!Hasher.Verify(changePasswordDto.OldPassword, currentAccount.Password))
             throw new UnauthorizedException("Wrong password");
 

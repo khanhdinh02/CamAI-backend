@@ -49,7 +49,7 @@ public class EdgeBoxService(
         if (foundEdgeBoxes.Values.Count == 0)
             throw new NotFoundException(typeof(EdgeBox), id);
         var foundEdgeBox = foundEdgeBoxes.Values[0];
-        var currentAccount = await accountService.GetCurrentAccount();
+        var currentAccount = accountService.GetCurrentAccount();
         if (foundEdgeBox.EdgeBoxStatusId == EdgeBoxStatusEnum.Inactive && !currentAccount.HasRole(RoleEnum.Admin))
             throw new BadRequestException("Cannot modified inactive edgeBox");
 

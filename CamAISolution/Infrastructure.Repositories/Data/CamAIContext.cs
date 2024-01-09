@@ -47,14 +47,6 @@ public class CamAIContext : DbContext
 
         var adminRole = new Role { Id = RoleEnum.Admin, Name = "Admin" };
         var accountStatusActive = new AccountStatus { Id = AccountStatusEnum.Active, Name = "Active" };
-        var adminAccount = new Account
-        {
-            Email = "admin@camai.com",
-            Password = "9eb622419ace52f259e858a7f2a10743d35e36fe0d22fc2d224c320cbc68d3af",
-            Name = "Admin",
-            AccountStatusId = accountStatusActive.Id
-        };
-
         // AccountStatus=New when account is created and its password have not been changed.
         modelBuilder
             .Entity<AccountStatus>()
@@ -93,18 +85,13 @@ public class CamAIContext : DbContext
             const string accountId = "AccountId";
 
             builder.Property(e => e.Gender).HasConversion<string>();
-            builder.HasData(adminAccount);
             builder
                 .HasMany(e => e.Roles)
                 .WithMany(e => e.Accounts)
                 .UsingEntity(
                     r => r.HasOne(typeof(Role)).WithMany().HasForeignKey(roleId),
                     l => l.HasOne(typeof(Account)).WithMany().HasForeignKey(accountId),
-                    je =>
-                    {
-                        je.HasKey(roleId, accountId);
-                        je.HasData(new { AccountId = adminAccount.Id, RoleId = adminRole.Id });
-                    }
+                    je => je.HasKey(roleId, accountId)
                 );
         });
 

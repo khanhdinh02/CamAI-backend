@@ -77,7 +77,7 @@ public class UnitOfWork(CamAIContext context, IServiceProvider serviceProvider) 
             if (entry.State == EntityState.Modified)
             {
                 entry.Entity.ModifiedTime = DateTimeHelper.VNDateTime;
-                entry.Entity.ModifiedById = serviceProvider.GetRequiredService<IJwtService>().GetCurrentUserId();
+                entry.Entity.ModifiedById = serviceProvider.GetRequiredService<IJwtService>().GetCurrentUser().Id;
             }
         }
         return await context.SaveChangesAsync();

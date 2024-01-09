@@ -15,5 +15,5 @@ public interface IAccountService
         int pageIndex = 0
     );
     Task<Account> GetAccountById(Guid id);
-    Task<Account> GetCurrentAccount();
+    Account GetCurrentAccount();
 }
