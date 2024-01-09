@@ -10,8 +10,8 @@ public class EdgeBoxProfile : Profile
     public EdgeBoxProfile()
     {
         CreateMap<EdgeBox, EdgeBoxDto>();
-        CreateMap<EdgeBoxStatus, BaseStatusDto>();
-        CreateMap<EdgeBoxLocation, BaseStatusDto>();
+        CreateMap<EdgeBoxStatus, LookupDto>();
+        CreateMap<EdgeBoxLocation, LookupDto>();
         CreateMap<CreateEdgeBoxDto, EdgeBox>();
         CreateMap<UpdateEdgeBoxDto, EdgeBox>();
     }

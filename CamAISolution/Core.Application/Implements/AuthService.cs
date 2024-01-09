@@ -4,6 +4,7 @@ using Core.Domain.Entities;
 using Core.Domain.Repositories;
 using Core.Domain.Services;
 using Core.Domain.Utilities;
+using Core.Domain.Interfaces.Services;
 
 namespace Core.Application.Implements;
 

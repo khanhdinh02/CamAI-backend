@@ -23,7 +23,7 @@ public class AuthController(IAuthService authService) : ControllerBase
     }
 
     [HttpPost("password")]
-    [AccessTokenGuard(true, [ ])]
+    [AccessTokenGuard(true, [])]
     public async Task<ActionResult> ChangePassword([FromBody] ChangePasswordDto changePasswordDto)
     {
         await authService.ChangePassword(changePasswordDto);

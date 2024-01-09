@@ -1,9 +1,10 @@
-﻿using Core.Application.Exceptions;
+using Core.Application.Exceptions;
 using Core.Application.Specifications.Repositories;
 using Core.Domain;
 using Core.Domain.DTO;
 using Core.Domain.Entities;
 using Core.Domain.Interfaces.Mappings;
+using Core.Domain.Interfaces.Services;
 using Core.Domain.Models;
 using Core.Domain.Repositories;
 using Core.Domain.Services;
@@ -41,7 +42,7 @@ public class ShopService(
         return foundShop.Values[0];
     }
 
-    public async Task<PaginationResult<Shop>> GetShops(SearchShopRequest searchRequest)
+    public async Task<PaginationResult<Shop>> GetShops(ShopSearchRequest searchRequest)
     {
         var shops = await unitOfWork.Shops.GetAsync(new ShopSearchSpec(searchRequest));
         return shops;
@@ -113,7 +114,7 @@ public class ShopService(
     /// </summary>
     /// <param name="searchShopDto">Filtering</param>
     /// <returns><see cref="PaginationResult{Shop}"/> </returns>
-    public async Task<PaginationResult<Shop>> GetCurrentAccountShops(SearchShopRequest searchRequest)
+    public async Task<PaginationResult<Shop>> GetCurrentAccountShops(ShopSearchRequest searchRequest)
     {
         if (await AreRequiredRolesMatched(RoleEnum.Admin))
             return await GetShops(searchRequest);

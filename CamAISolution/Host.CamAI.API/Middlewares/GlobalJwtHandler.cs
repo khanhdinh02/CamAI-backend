@@ -2,6 +2,7 @@ using Core.Application.Exceptions;
 using Core.Domain;
 using Core.Domain.DTO;
 using Core.Domain.Entities;
+using Core.Domain.Interfaces.Services;
 using Core.Domain.Services;
 
 namespace Host.CamAI.API.Middlewares;

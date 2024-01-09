@@ -10,10 +10,15 @@ public interface IUnitOfWork : IDisposable, IAsyncDisposable
     IRepository<Ward> Wards { get; }
     IRepository<ShopStatus> ShopStatuses { get; }
     IRepository<Account> Accounts { get; }
+    IRepository<Ticket> Tickets { get; }
+    IRepository<TicketStatus> TicketStatuses { get; }
+    IRepository<TicketType> TicketTypes { get; }
     IRepository<EdgeBox> EdgeBoxes { get; }
     Task BeginTransaction();
     Task CommitTransaction();
     Task RollBack();
     int Complete();
     Task<int> CompleteAsync();
+
+    IRepository<T> GetRepository<T>();
 }
