@@ -2,6 +2,7 @@ using Core.Application.Exceptions;
 using Core.Domain;
 using Core.Domain.DTO;
 using Core.Domain.Entities;
+using Core.Domain.Interfaces.Services;
 using Core.Domain.Services;
 
 namespace Host.CamAI.API.Middlewares;
@@ -34,8 +35,11 @@ public class GlobalJwtHandler(RequestDelegate next)
                     logger.Info(
                         $"Anonymous do action {context.Connection.RemoteIpAddress} {context.Request.Method} {context.Request.Path}"
                     );
-                    // auto = true: indicate client have to refresh the token.
-                    context.Response.Headers.Append("auto", $"{true}");
+                    if (context.Request.Path.HasValue && !context.Request.Path.Value.ToLower().Contains("auth/refresh"))
+                    {
+                        // auto = true: indicate client have to refresh the token.
+                        context.Response.Headers.Append("auto", $"{true}");
+                    }
                 }
                 catch (Exception ex)
                 {

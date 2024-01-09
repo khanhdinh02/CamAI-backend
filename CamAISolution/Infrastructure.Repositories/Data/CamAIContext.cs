@@ -1,9 +1,6 @@
 using Core.Domain.DTO;
 using Core.Domain.DTO.Requests;
-using Core.Domain.DTO.Tickets;
 using Core.Domain.Entities;
-using Core.Domain.Entities.Base;
-using Core.Domain.Utilities;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Repositories.Data;
@@ -14,27 +11,6 @@ public class CamAIContext : DbContext
 
     public CamAIContext(DbContextOptions<CamAIContext> options)
         : base(options) { }
-
-    public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = new CancellationToken())
-    {
-        //TODO: Add CreatedBy and ModifiedBy in BaseEntity and implement update here.
-        foreach (var entry in ChangeTracker.Entries<BusinessEntity>())
-        {
-            switch (entry.State)
-            {
-                case EntityState.Added:
-                    entry.Entity.CreatedDate = DateTimeHelper.VNDateTime;
-                    //entry.Entity.CreatedBy = //authenticateService.GetCurrentUser();
-                    entry.Entity.ModifiedDate = DateTimeHelper.VNDateTime;
-                    break;
-                case EntityState.Modified:
-                    entry.Entity.ModifiedDate = DateTimeHelper.VNDateTime;
-                    //entry.Entity.ModifiedBy = //authenticateService.GetCurrentUser();
-                    break;
-            }
-        }
-        return base.SaveChangesAsync(cancellationToken);
-    }
 
     public virtual DbSet<Account> Accounts { get; set; } = null!;
     public virtual DbSet<Brand> Brands { get; set; } = null!;
@@ -164,10 +140,11 @@ public class CamAIContext : DbContext
         modelBuilder
             .Entity<TicketStatus>()
             .HasData(
-                new TicketStatus { Id = TicketStatusEnum.Open, Name = "Open" },
+                new TicketStatus { Id = TicketStatusEnum.New, Name = "New" },
                 new TicketStatus { Id = TicketStatusEnum.Canceled, Name = "Canceled" },
                 new TicketStatus { Id = TicketStatusEnum.Done, Name = "Done" },
-                new TicketStatus { Id = TicketStatusEnum.Failed, Name = "Failed" }
+                new TicketStatus { Id = TicketStatusEnum.Failed, Name = "Failed" },
+                new TicketStatus { Id = TicketStatusEnum.Active, Name = "Active" }
             );
 
         modelBuilder

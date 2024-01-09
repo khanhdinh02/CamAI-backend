@@ -1,6 +1,6 @@
 namespace Core.Domain.DTO;
 
-public class SearchShopRequest : BaseSearchRequest
+public class ShopSearchRequest : BaseSearchRequest
 {
     public string? Name { get; set; }
     public int? StatusId { get; set; }

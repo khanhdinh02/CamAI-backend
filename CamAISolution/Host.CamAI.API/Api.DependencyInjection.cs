@@ -1,5 +1,6 @@
 using System.Reflection;
 using Core.Application.Implements;
+using Core.Domain.Interfaces.Services;
 using Core.Domain.Services;
 using Microsoft.OpenApi.Models;
 
@@ -14,6 +15,7 @@ public static class ApiDependencyInjection
         services.AddScoped<IBrandService, BrandService>();
         services.AddScoped<IShopService, ShopService>();
         services.AddScoped<IEdgeBoxService, EdgeBoxService>();
+        services.AddScoped<ITicketService, TicketService>();
         services.AddScoped<ILocationService, LocationService>();
         return services;
     }

@@ -4,6 +4,7 @@ using Core.Domain;
 using Core.Domain.DTO;
 using Core.Domain.Entities;
 using Core.Domain.Interfaces.Mappings;
+using Core.Domain.Interfaces.Services;
 using Core.Domain.Models;
 using Core.Domain.Repositories;
 using Core.Domain.Services;

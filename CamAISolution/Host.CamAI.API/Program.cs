@@ -9,16 +9,17 @@ var builder = WebApplication.CreateBuilder(args).ConfigureSerilog();
 
 builder.Services.AddControllers();
 
-string AllowPolicy = "AllowAll";
+const string allowPolicy = "AllowAll";
 
 builder
-    .Services.AddCors(
+    .Services
+    .AddCors(
         opts =>
             opts.AddPolicy(
-                name: AllowPolicy,
+                name: allowPolicy,
                 builder => builder.AllowAnyOrigin().AllowAnyHeader().AllowAnyHeader()
-            //TODO[Dat]: Enable allow credential when have specific origin
-            //.AllowCredentials()
+            // TODO[Dat]: Enable allow credential when have specific origin
+            // .AllowCredentials()
             )
     )
     .AddRepository(builder.Configuration.GetConnectionString("Default"))
@@ -29,11 +30,19 @@ builder
     .AddServices()
     .AddMapping();
 
+builder
+    .Services
+    .Configure<RouteOptions>(opts =>
+    {
+        opts.LowercaseUrls = true;
+        opts.LowercaseQueryStrings = true;
+    });
+
 var app = builder.Build();
 
 app.UseMiddleware<GlobalExceptionHandler>();
 
-app.UseCors(AllowPolicy);
+app.UseCors(allowPolicy);
 
 app.UseMiddleware<GlobalJwtHandler>();
 

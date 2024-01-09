@@ -4,6 +4,7 @@ using Infrastructure.Repositories.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Repositories.Migrations
 {
     [DbContext(typeof(CamAIContext))]
-    partial class CamAIContextModelSnapshot : ModelSnapshot
+    [Migration("20240106201429_UpdateTicketStatus")]
+    partial class UpdateTicketStatus
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -35,6 +38,13 @@ namespace Infrastructure.Repositories.Migrations
                     b.HasIndex("AccountId");
 
                     b.ToTable("AccountRole");
+
+                    b.HasData(
+                        new
+                        {
+                            RoleId = 1,
+                            AccountId = new Guid("5cf16c9d-5f81-471a-8efa-500e671933ff")
+                        });
                 });
 
             modelBuilder.Entity("Core.Domain.Entities.Account", b =>
@@ -99,6 +109,18 @@ namespace Infrastructure.Repositories.Migrations
                     b.HasIndex("WorkingShopId");
 
                     b.ToTable("Accounts");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("5cf16c9d-5f81-471a-8efa-500e671933ff"),
+                            AccountStatusId = 2,
+                            CreatedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Email = "admin@camai.com",
+                            ModifiedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Name = "Admin",
+                            Password = "9eb622419ace52f259e858a7f2a10743d35e36fe0d22fc2d224c320cbc68d3af"
+                        });
                 });
 
             modelBuilder.Entity("Core.Domain.Entities.AccountStatus", b =>
@@ -381,9 +403,6 @@ namespace Infrastructure.Repositories.Migrations
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("EdgeBoxLocationId")
-                        .HasColumnType("int");
-
                     b.Property<int>("EdgeBoxStatusId")
                         .HasColumnType("int");
 
@@ -407,12 +426,7 @@ namespace Infrastructure.Repositories.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Version")
-                        .HasColumnType("nvarchar(max)");
-
                     b.HasKey("Id");
-
-                    b.HasIndex("EdgeBoxLocationId");
 
                     b.HasIndex("EdgeBoxStatusId");
 
@@ -545,59 +559,6 @@ namespace Infrastructure.Repositories.Migrations
                         });
                 });
 
-            modelBuilder.Entity("Core.Domain.Entities.EdgeBoxLocation", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Description")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<byte[]>("Timestamp")
-                        .IsConcurrencyToken()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("EdgeBoxLocation");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Name = "Idle"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Name = "Installing"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Name = "Occupied"
-                        },
-                        new
-                        {
-                            Id = 4,
-                            Name = "Uninstalling"
-                        },
-                        new
-                        {
-                            Id = 5,
-                            Name = "Disposed"
-                        });
-                });
-
             modelBuilder.Entity("Core.Domain.Entities.EdgeBoxStatus", b =>
                 {
                     b.Property<int>("Id")
@@ -633,11 +594,6 @@ namespace Infrastructure.Repositories.Migrations
                         {
                             Id = 2,
                             Name = "Inactive"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Name = "Broken"
                         });
                 });
 
@@ -1373,19 +1329,11 @@ namespace Infrastructure.Repositories.Migrations
 
             modelBuilder.Entity("Core.Domain.Entities.EdgeBox", b =>
                 {
-                    b.HasOne("Core.Domain.Entities.EdgeBoxLocation", "EdgeBoxLocation")
-                        .WithMany()
-                        .HasForeignKey("EdgeBoxLocationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("Core.Domain.Entities.EdgeBoxStatus", "EdgeBoxStatus")
                         .WithMany()
                         .HasForeignKey("EdgeBoxStatusId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("EdgeBoxLocation");
 
                     b.Navigation("EdgeBoxStatus");
                 });

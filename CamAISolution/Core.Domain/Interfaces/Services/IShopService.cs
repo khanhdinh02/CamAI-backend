@@ -6,7 +6,7 @@ namespace Core.Domain.Services;
 
 public interface IShopService
 {
-    Task<PaginationResult<Shop>> GetShops(SearchShopRequest searchRequest);
+    Task<PaginationResult<Shop>> GetShops(ShopSearchRequest searchRequest);
     Task<Shop> GetShopById(Guid id);
     Task<Shop> CreateShop(CreateOrUpdateShopDto shopDto);
     Task<Shop> UpdateShop(Guid id, CreateOrUpdateShopDto shopDto);

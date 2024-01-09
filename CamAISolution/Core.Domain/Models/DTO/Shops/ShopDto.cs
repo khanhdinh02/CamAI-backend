@@ -14,5 +14,5 @@ public class ShopDto : BaseDto
 
     public WardDto Ward { get; set; } = null!;
     public BrandDto Brand { get; set; } = null!;
-    public BaseStatusDto ShopStatus { get; set; } = null!;
+    public LookupDto ShopStatus { get; set; } = null!;
 }
