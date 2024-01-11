@@ -34,4 +34,12 @@ public class AccountsController(IAccountService accountService, IBaseMapping map
         var newAccount = await accountService.CreateAccount(account);
         return mapper.Map<Account, AccountDto>(newAccount);
     }
+
+    [HttpPut("{id}")]
+    [AccessTokenGuard(RoleEnum.Admin, RoleEnum.BrandManager)]
+    public async Task<ActionResult<AccountDto>> UpdateAccount(Guid id, UpdateAccountDto account)
+    {
+        var updatedAccount = await accountService.UpdateAccount(id, account);
+        return mapper.Map<Account, AccountDto>(updatedAccount);
+    }
 }

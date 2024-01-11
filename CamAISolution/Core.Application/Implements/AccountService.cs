@@ -11,6 +11,7 @@ using Core.Domain.Utilities;
 namespace Core.Application.Implements;
 
 // TODO [Khanh]: What authority does shop manager have over employees?
+// This affects the implementation of CreateAccount, UpdateAccount, DeleteAccount
 public class AccountService(IUnitOfWork unitOfWork, IJwtService jwtService, IBaseMapping mapper) : IAccountService
 {
     public async Task<PaginationResult<Account>> GetAccounts(SearchAccountRequest req)
@@ -73,6 +74,38 @@ public class AccountService(IUnitOfWork unitOfWork, IJwtService jwtService, IBas
         // Other roles that can create account
 
         return null!;
+    }
+
+    public async Task<Account> UpdateAccount(Guid id, UpdateAccountDto dto)
+    {
+        // TODO: Update role. Currently, the role can only be changed by deleting and recreating the account
+        var account =
+            (await unitOfWork.Accounts.GetAsync(new AccountByIdRepoSpec(id))).Values.FirstOrDefault()
+            ?? throw new NotFoundException(typeof(Account), id);
+        if (dto.Email != account.Email && await unitOfWork.Accounts.CountAsync(a => a.Email == dto.Email) > 0)
+            throw new BadRequestException("Email is already taken");
+        if (dto.WardId != null && !await unitOfWork.Wards.IsExisted(dto.WardId))
+            throw new NotFoundException(typeof(Ward), dto.WardId);
+
+        mapper.Map(dto, account);
+        var user = await GetCurrentAccount();
+        if (user.HasRole(RoleEnum.Admin))
+        {
+            if (account.HasRole(RoleEnum.BrandManager) || account.HasRole(RoleEnum.Technician))
+                unitOfWork.Accounts.Update(account);
+            else
+                throw new BadRequestException("Admin can only update brand manager or technician");
+        }
+        else if (user.HasRole(RoleEnum.BrandManager))
+        {
+            if (account.HasRole(RoleEnum.ShopManager) || account.HasRole(RoleEnum.Employee))
+                unitOfWork.Accounts.Update(account);
+            else
+                throw new BadRequestException("Brand manager can only update shop manager or employee");
+        }
+
+        await unitOfWork.CompleteAsync();
+        return account;
     }
 
     private async Task<Account> CreateBrandManager(CreateAccountDto dto)

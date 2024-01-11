@@ -10,4 +10,5 @@ public interface IAccountService
     Task<PaginationResult<Account>> GetAccounts(SearchAccountRequest req);
     Task<Account> GetAccountById(Guid id);
     Task<Account> GetCurrentAccount();
+    Task<Account> UpdateAccount(Guid id, UpdateAccountDto dto);
 }

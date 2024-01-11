@@ -4,11 +4,10 @@ using Core.Domain.Entities;
 
 namespace Core.Domain.DTO;
 
-public class CreateAccountDto
+public class UpdateAccountDto
 {
     [EmailAddress]
     public string Email { get; set; } = null!;
-    public string Password { get; set; } = null!;
 
     [StringLength(50)]
     public string Name { get; set; } = null!;
@@ -21,7 +20,5 @@ public class CreateAccountDto
     public DateOnly Birthday { get; set; }
     public Guid? WardId { get; set; }
     public string? AddressLine { get; set; } = null!;
-    public Guid? BrandId { get; set; }
-    public Guid? WorkingShopId { get; set; }
-    public ICollection<int> RoleIds { get; set; } = new HashSet<int>();
+    public virtual byte[]? Timestamp { get; set; }
 }
