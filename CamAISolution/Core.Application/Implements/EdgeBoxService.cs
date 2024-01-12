@@ -4,6 +4,7 @@ using Core.Domain;
 using Core.Domain.DTO;
 using Core.Domain.Entities;
 using Core.Domain.Interfaces.Mappings;
+using Core.Domain.Interfaces.Services;
 using Core.Domain.Models;
 using Core.Domain.Repositories;
 using Core.Domain.Services;
@@ -48,7 +49,7 @@ public class EdgeBoxService(
         if (foundEdgeBoxes.Values.Count == 0)
             throw new NotFoundException(typeof(EdgeBox), id);
         var foundEdgeBox = foundEdgeBoxes.Values[0];
-        var currentAccount = await accountService.GetCurrentAccount();
+        var currentAccount = accountService.GetCurrentAccount();
         if (foundEdgeBox.EdgeBoxStatusId == EdgeBoxStatusEnum.Inactive && !currentAccount.HasRole(RoleEnum.Admin))
             throw new BadRequestException("Cannot modified inactive edgeBox");
 

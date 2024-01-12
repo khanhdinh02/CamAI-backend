@@ -3,6 +3,7 @@ using Core.Application.Specifications.Repositories;
 using Core.Domain.DTO;
 using Core.Domain.Entities;
 using Core.Domain.Interfaces.Mappings;
+using Core.Domain.Interfaces.Services;
 using Core.Domain.Models;
 using Core.Domain.Repositories;
 using Core.Domain.Services;
@@ -16,7 +17,7 @@ public class AccountService(IUnitOfWork unitOfWork, IJwtService jwtService, IBas
 {
     public async Task<PaginationResult<Account>> GetAccounts(SearchAccountRequest req)
     {
-        var user = await GetCurrentAccount();
+        var user = GetCurrentAccount();
         if (!user.HasRole(RoleEnum.Admin))
         {
             if (user.HasRole(RoleEnum.BrandManager))
@@ -36,15 +37,15 @@ public class AccountService(IUnitOfWork unitOfWork, IJwtService jwtService, IBas
         return foundAccounts.Values[0];
     }
 
-    public Task<Account> GetCurrentAccount()
+    public Account GetCurrentAccount()
     {
-        return GetAccountById(jwtService.GetCurrentUserId());
+        return jwtService.GetCurrentUser();
     }
 
     public async Task<Account> CreateAccount(CreateAccountDto dto)
     {
         // Allow to create account with the same email if the account was deleted (inactive)
-        // This will override the old account, but the id and old records (violation, request…) will be kept
+        // This will override the old account, but the id and old records (violation, request�) will be kept
         Account newAccount;
         var newEntity = true;
         var accountThatHasTheSameMail = (
@@ -53,8 +54,7 @@ public class AccountService(IUnitOfWork unitOfWork, IJwtService jwtService, IBas
                 .GetAsync(
                     a => a.Email == dto.Email,
                     includeProperties: [nameof(Account.ManagingShop), nameof(Account.Roles)],
-                    disableTracking: false,
-                    orderBy: o => o.OrderBy(a => a.Id) // TODO: Remove this line after the bug is fixed
+                    disableTracking: false
                 )
         )
             .Values
@@ -76,7 +76,7 @@ public class AccountService(IUnitOfWork unitOfWork, IJwtService jwtService, IBas
         if (dto.WardId != null && !await unitOfWork.Wards.IsExisted(dto.WardId))
             throw new NotFoundException(typeof(Ward), dto.WardId);
         newAccount.Password = Hasher.Hash(dto.Password);
-        var currentUser = await GetCurrentAccount();
+        var currentUser = GetCurrentAccount();
 
         if (currentUser.HasRole(RoleEnum.Admin))
         {
@@ -125,7 +125,7 @@ public class AccountService(IUnitOfWork unitOfWork, IJwtService jwtService, IBas
             throw new NotFoundException(typeof(Ward), dto.WardId);
 
         mapper.Map(dto, account);
-        var user = await GetCurrentAccount();
+        var user = GetCurrentAccount();
         if (user.HasRole(RoleEnum.Admin))
         {
             if (account.HasRole(RoleEnum.BrandManager) || account.HasRole(RoleEnum.Technician))
@@ -147,7 +147,7 @@ public class AccountService(IUnitOfWork unitOfWork, IJwtService jwtService, IBas
 
     public async Task DeleteAccount(Guid id)
     {
-        var user = await GetCurrentAccount();
+        var user = GetCurrentAccount();
         var account = await GetAccountById(id);
         if (user.HasRole(RoleEnum.Admin))
         {

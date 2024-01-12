@@ -1,7 +1,7 @@
 using System.Linq.Expressions;
 using Core.Domain.Entities;
 
-namespace Core.Application.Specifications.Brands;
+namespace Core.Application.Specifications;
 
 public class BrandByStatusSpec : Specification<Brand>
 {

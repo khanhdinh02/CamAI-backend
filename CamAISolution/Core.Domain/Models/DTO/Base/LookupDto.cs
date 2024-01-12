@@ -1,6 +1,6 @@
 namespace Core.Domain.DTO;
 
-public class BaseStatusDto
+public class LookupDto
 {
     public int Id { get; set; }
     public string Name { get; set; } = null!;

@@ -31,9 +31,9 @@ public class Specification<T> : ISpecification<T>
         return spec;
     }
 
-    public ISpecification<T> Not(ISpecification<T> specification)
+    public ISpecification<T> Not()
     {
-        var spec = new NotSpecification<T>(specification);
+        var spec = new NotSpecification<T>(this);
         Expr = spec.GetExpression();
         return spec;
     }

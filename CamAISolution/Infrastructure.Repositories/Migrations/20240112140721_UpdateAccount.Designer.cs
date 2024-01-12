@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Repositories.Migrations
 {
     [DbContext(typeof(CamAIContext))]
-    [Migration("20240111173244_UpdateAccountBrand")]
-    partial class UpdateAccountBrand
+    [Migration("20240112140721_UpdateAccount")]
+    partial class UpdateAccount
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -38,13 +38,6 @@ namespace Infrastructure.Repositories.Migrations
                     b.HasIndex("AccountId");
 
                     b.ToTable("AccountRole");
-
-                    b.HasData(
-                        new
-                        {
-                            RoleId = 1,
-                            AccountId = new Guid("2d609e0c-1d7a-484d-9e69-ac5a18557524")
-                        });
                 });
 
             modelBuilder.Entity("Core.Domain.Entities.Account", b =>
@@ -114,18 +107,6 @@ namespace Infrastructure.Repositories.Migrations
                     b.HasIndex("WorkingShopId");
 
                     b.ToTable("Accounts");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("2d609e0c-1d7a-484d-9e69-ac5a18557524"),
-                            AccountStatusId = 2,
-                            CreatedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Email = "admin@camai.com",
-                            ModifiedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Name = "Admin",
-                            Password = "9eb622419ace52f259e858a7f2a10743d35e36fe0d22fc2d224c320cbc68d3af"
-                        });
                 });
 
             modelBuilder.Entity("Core.Domain.Entities.AccountStatus", b =>
@@ -1186,7 +1167,7 @@ namespace Infrastructure.Repositories.Migrations
                         new
                         {
                             Id = 1,
-                            Name = "Open"
+                            Name = "New"
                         },
                         new
                         {
@@ -1202,6 +1183,11 @@ namespace Infrastructure.Repositories.Migrations
                         {
                             Id = 4,
                             Name = "Failed"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Name = "Active"
                         });
                 });
 

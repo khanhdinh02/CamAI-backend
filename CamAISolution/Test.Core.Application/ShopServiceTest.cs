@@ -17,14 +17,19 @@ public class ShopServiceTest : BaseSetUp
     [SetUp]
     public void ShopServiceTestSetUp()
     {
-        shopService = new ShopService(unitOfWork, logging, new Mock<IBaseMapping>().Object, new Mock<IJwtService>().Object);
+        shopService = new ShopService(
+            unitOfWork,
+            logging,
+            new Mock<IBaseMapping>().Object,
+            new Mock<IJwtService>().Object
+        );
     }
 
     [Test]
     public async Task Return_true_when_given_valid_input()
     {
         var data = await shopService.GetShops(
-            new SearchShopRequest()
+            new ShopSearchRequest()
             {
                 Name = "Test",
                 StatusId = ShopStatusEnum.Active,

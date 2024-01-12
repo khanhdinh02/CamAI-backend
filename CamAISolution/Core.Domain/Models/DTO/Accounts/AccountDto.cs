@@ -18,10 +18,8 @@ public class AccountDto : BaseDto
     public int AccountStatusId { get; set; }
     public WardDto? Ward { get; set; }
     public ShopDto? WorkingShop { get; set; }
-
-    // TODO [Khanh]: BaseStatusDto -> LookupDto
-    public BaseStatusDto AccountStatus { get; set; } = null!;
+    public LookupDto AccountStatus { get; set; } = null!;
     public BrandDto? Brand { get; set; }
     public ShopDto? ManagingShop { get; set; }
-    public ICollection<BaseStatusDto> Roles { get; set; } = new HashSet<BaseStatusDto>();
+    public ICollection<LookupDto> Roles { get; set; } = new HashSet<LookupDto>();
 }

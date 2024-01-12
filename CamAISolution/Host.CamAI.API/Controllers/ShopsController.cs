@@ -30,7 +30,7 @@ public class ShopsController(IShopService shopService, IBaseMapping baseMapping)
     /// <returns></returns>
     [HttpGet]
     [AccessTokenGuard(RoleEnum.Admin, RoleEnum.BrandManager, RoleEnum.ShopManager)]
-    public async Task<ActionResult<PaginationResult<ShopDto>>> GetCurrentShop([FromQuery] SearchShopRequest search)
+    public async Task<ActionResult<PaginationResult<ShopDto>>> GetCurrentShop([FromQuery] ShopSearchRequest search)
     {
         var shops = await shopService.GetCurrentAccountShops(search);
         return Ok(baseMapping.Map<Shop, ShopDto>(shops));
@@ -44,25 +44,25 @@ public class ShopsController(IShopService shopService, IBaseMapping baseMapping)
     }
 
     [HttpPost]
-    [AccessTokenGuard(RoleEnum.Admin)]
+    [AccessTokenGuard(RoleEnum.BrandManager)]
     public async Task<ActionResult<ShopDto>> CreateShop(CreateOrUpdateShopDto shopDto)
     {
         return Ok(baseMapping.Map<Shop, ShopDto>(await shopService.CreateShop(shopDto)));
     }
 
     [HttpPut("{id:guid}")]
-    [AccessTokenGuard(RoleEnum.ShopManager, RoleEnum.Admin, RoleEnum.BrandManager)]
+    [AccessTokenGuard(RoleEnum.BrandManager)]
     public async Task<ActionResult<ShopDto>> UpdateShop(Guid id, [FromBody] CreateOrUpdateShopDto shopDto)
     {
         var updatedShop = await shopService.UpdateShop(id, shopDto);
         return Ok(baseMapping.Map<Shop, ShopDto>(updatedShop));
     }
 
-    [HttpPatch("{id:guid}/status")]
-    [AccessTokenGuard(RoleEnum.ShopManager, RoleEnum.Admin, RoleEnum.BrandManager)]
+    [HttpPatch("{id:guid}/status/{shopStatusId:int}")]
+    [AccessTokenGuard(RoleEnum.BrandManager)]
     public async Task<ActionResult<ShopDto>> UpdateShopStatus(Guid id, int shopStatusId)
     {
-        var updatedShop = await shopService.UpdateStatus(id, shopStatusId);
+        var updatedShop = await shopService.UpdateShopStatus(id, shopStatusId);
         if (updatedShop.ShopStatusId == ShopStatusEnum.Inactive)
             return Ok();
         return Ok(baseMapping.Map<Shop, ShopDto>(updatedShop));
@@ -72,7 +72,7 @@ public class ShopsController(IShopService shopService, IBaseMapping baseMapping)
     [AccessTokenGuard(RoleEnum.Admin)]
     public async Task<IActionResult> DeleteShop(Guid id)
     {
-        await shopService.DeleteShop(id);
+        await shopService.UpdateShopStatus(id, ShopStatusEnum.Inactive);
         return Accepted();
     }
 }

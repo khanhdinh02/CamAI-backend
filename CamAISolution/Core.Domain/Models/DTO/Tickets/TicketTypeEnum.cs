@@ -1,4 +1,4 @@
-namespace Core.Domain.DTO.Tickets;
+namespace Core.Domain.DTO;
 
 public static class TicketTypeEnum
 {

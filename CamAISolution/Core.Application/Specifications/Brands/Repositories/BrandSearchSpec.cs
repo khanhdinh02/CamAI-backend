@@ -1,6 +1,4 @@
 using System.Linq.Expressions;
-using Core.Application.Specifications.Brands;
-using Core.Application.Specifications.Repositories;
 using Core.Domain.DTO;
 using Core.Domain.Entities;
 
@@ -12,6 +10,7 @@ public class BrandSearchSpec : RepositorySpec<Brand>
         : base(GetExpression(searchRequest))
     {
         ApplyingPaging(searchRequest.Size, searchRequest.PageIndex * searchRequest.Size);
+        AddIncludes(b => b.BrandStatus);
     }
 
     private static Expression<Func<Brand, bool>> GetExpression(SearchBrandRequest searchRequest)
