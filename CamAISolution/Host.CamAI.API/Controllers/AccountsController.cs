@@ -42,4 +42,12 @@ public class AccountsController(IAccountService accountService, IBaseMapping map
         var updatedAccount = await accountService.UpdateAccount(id, account);
         return mapper.Map<Account, AccountDto>(updatedAccount);
     }
+
+    [HttpDelete("{id}")]
+    [AccessTokenGuard(RoleEnum.Admin, RoleEnum.BrandManager)]
+    public async Task<ActionResult> DeleteAccount(Guid id)
+    {
+        await accountService.DeleteAccount(id);
+        return Accepted();
+    }
 }

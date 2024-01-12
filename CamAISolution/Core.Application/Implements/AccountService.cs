@@ -145,6 +145,26 @@ public class AccountService(IUnitOfWork unitOfWork, IJwtService jwtService, IBas
         return account;
     }
 
+    public async Task DeleteAccount(Guid id)
+    {
+        var user = await GetCurrentAccount();
+        var account = await GetAccountById(id);
+        if (user.HasRole(RoleEnum.Admin))
+        {
+            if (!account.HasRole(RoleEnum.BrandManager) && !account.HasRole(RoleEnum.Technician))
+                throw new BadRequestException("Admin can only delete brand manager or technician");
+        }
+        else if (user.HasRole(RoleEnum.BrandManager))
+        {
+            if (!account.HasRole(RoleEnum.ShopManager) && !account.HasRole(RoleEnum.Employee))
+                throw new BadRequestException("Brand manager can only delete shop manager or employee");
+        }
+
+        account.AccountStatusId = AccountStatusEnum.Inactive;
+        unitOfWork.Accounts.Update(account);
+        await unitOfWork.CompleteAsync();
+    }
+
     private async Task<Account> CreateBrandManager(Account newAccount)
     {
         if (newAccount.BrandId == null)

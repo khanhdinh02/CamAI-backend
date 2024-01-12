@@ -11,4 +11,5 @@ public interface IAccountService
     Task<Account> GetAccountById(Guid id);
     Task<Account> GetCurrentAccount();
     Task<Account> UpdateAccount(Guid id, UpdateAccountDto dto);
+    Task DeleteAccount(Guid id);
 }
