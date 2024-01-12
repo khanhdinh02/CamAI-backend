@@ -10,6 +10,7 @@ public class BrandSearchSpec : RepositorySpec<Brand>
         : base(GetExpression(searchRequest))
     {
         ApplyingPaging(searchRequest.Size, searchRequest.PageIndex * searchRequest.Size);
+        AddIncludes(b => b.BrandStatus);
     }
 
     private static Expression<Func<Brand, bool>> GetExpression(SearchBrandRequest searchRequest)
