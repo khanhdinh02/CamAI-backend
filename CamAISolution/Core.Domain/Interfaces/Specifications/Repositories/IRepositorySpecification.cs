@@ -18,4 +18,5 @@ public interface IRepositorySpecification<T>
     int Skip { get; }
     bool IsPagingEnabled { get; }
     bool IsDisableTracking { get; }
+    bool IsOrderBySet { get; }
 }
