@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Repositories.Migrations
 {
     [DbContext(typeof(CamAIContext))]
-    [Migration("20240112140721_UpdateAccount")]
+    [Migration("20240112141815_UpdateAccount")]
     partial class UpdateAccount
     {
         /// <inheritdoc />

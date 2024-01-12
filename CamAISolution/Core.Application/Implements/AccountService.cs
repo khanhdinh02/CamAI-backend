@@ -23,7 +23,7 @@ public class AccountService(IUnitOfWork unitOfWork, IJwtService jwtService, IBas
             if (user.HasRole(RoleEnum.BrandManager))
                 req.BrandId = user.Brand?.Id;
             else if (user.HasRole(RoleEnum.ShopManager))
-                req.ShopId = user.ManagingShop?.Id;
+                req.ShopId = user.ManagingShop?.Id ?? throw new BadRequestException("User is not managing any shop");
         }
         var accounts = await unitOfWork.Accounts.GetAsync(new AccountSearchSpec(req, user));
         return accounts;
@@ -91,7 +91,7 @@ public class AccountService(IUnitOfWork unitOfWork, IJwtService jwtService, IBas
         {
             if (dto.RoleIds.Any(r => r == RoleEnum.ShopManager))
             {
-                dto.BrandId = currentUser.Brand?.Id;
+                newAccount.BrandId = currentUser.Brand?.Id;
                 newAccount = await CreateShopManager(newAccount);
             }
             else if (dto.RoleIds.Any(r => r == RoleEnum.Employee))
