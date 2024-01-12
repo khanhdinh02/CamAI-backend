@@ -4,6 +4,7 @@ using Core.Domain.DTO;
 using Core.Domain.Entities;
 using Core.Domain.Interfaces.Services;
 using Core.Domain.Services;
+using Host.CamAI.API.Models;
 
 namespace Host.CamAI.API.Middlewares;
 
@@ -38,7 +39,7 @@ public class GlobalJwtHandler(RequestDelegate next)
                     if (context.Request.Path.HasValue && !context.Request.Path.Value.ToLower().Contains("auth/refresh"))
                     {
                         // auto = true: indicate client have to refresh the token.
-                        context.Response.Headers.Append("auto", $"{true}");
+                        context.Response.Headers.Append(HeaderNameConstant.Auto, $"{true}");
                     }
                 }
                 catch (Exception ex)

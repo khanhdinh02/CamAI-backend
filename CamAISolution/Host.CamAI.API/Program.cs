@@ -1,5 +1,6 @@
 using Host.CamAI.API;
 using Host.CamAI.API.Middlewares;
+using Host.CamAI.API.Models;
 using Infrastructure.Jwt;
 using Infrastructure.Logging;
 using Infrastructure.Mapping;
@@ -12,12 +13,16 @@ builder.Services.AddControllers();
 const string allowPolicy = "AllowAll";
 
 builder
-    .Services
-    .AddCors(
+    .Services.AddCors(
         opts =>
             opts.AddPolicy(
                 name: allowPolicy,
-                builder => builder.AllowAnyOrigin().AllowAnyHeader().AllowAnyHeader()
+                builder =>
+                    builder
+                        .AllowAnyOrigin()
+                        .AllowAnyHeader()
+                        .AllowAnyHeader()
+                        .WithExposedHeaders(HeaderNameConstant.Auto)
             // TODO[Dat]: Enable allow credential when have specific origin
             // .AllowCredentials()
             )
@@ -30,13 +35,11 @@ builder
     .AddServices()
     .AddMapping();
 
-builder
-    .Services
-    .Configure<RouteOptions>(opts =>
-    {
-        opts.LowercaseUrls = true;
-        opts.LowercaseQueryStrings = true;
-    });
+builder.Services.Configure<RouteOptions>(opts =>
+{
+    opts.LowercaseUrls = true;
+    opts.LowercaseQueryStrings = true;
+});
 
 var app = builder.Build();
 
