@@ -16,7 +16,7 @@ public class ShopSearchSpec : RepositorySpec<Shop>
         if (search.StatusId.HasValue)
             baseSpec.And(new ShopByStatusSpec(search.StatusId.Value));
         else
-            baseSpec.And(new ShopByStatusSpec(ShopStatusEnum.Active));
+            baseSpec.And(new ShopByStatusSpec(ShopStatusEnum.Inactive).Not());
 
         if (search.BrandId.HasValue)
             baseSpec.And(new ShopByBrandIdSpec(search.BrandId.Value));

@@ -67,7 +67,12 @@ public class Repository<T>(CamAIContext context, IRepositorySpecificationEvaluat
         {
             paginationResult.PageIndex = pageIndex;
             if (orderBy == null)
-                paginationResult.Values = await query.Skip(pageSize * pageIndex).Take(pageSize).ToListAsync();
+                // Order by the primary key of enity
+                paginationResult.Values = await query
+                    .OrderBy(e => e)
+                    .Skip(pageSize * pageIndex)
+                    .Take(pageSize)
+                    .ToListAsync();
             else
                 paginationResult.Values = await orderBy(query).Skip(pageIndex * pageSize).Take(pageSize).ToListAsync();
         }
@@ -81,6 +86,9 @@ public class Repository<T>(CamAIContext context, IRepositorySpecificationEvaluat
         if (specification == null)
             return new PaginationResult<T>();
         var query = specificationEvaluator.GetQuery(context.Set<T>(), specification);
+        if (!specification.IsOrderBySet)
+            // Order by the primary key of enity
+            query = query.OrderBy(e => e);
         var count = await CountAsync(specification.Criteria);
         var data = await query.ToListAsync();
         return new PaginationResult<T>
