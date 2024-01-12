@@ -40,7 +40,7 @@ namespace Infrastructure.Repositories.Migrations
                         new
                         {
                             RoleId = 1,
-                            AccountId = new Guid("327b814e-7542-4a2b-8e0d-21ba0c703ad5")
+                            AccountId = new Guid("2d609e0c-1d7a-484d-9e69-ac5a18557524")
                         });
                 });
 
@@ -58,6 +58,9 @@ namespace Infrastructure.Repositories.Migrations
 
                     b.Property<DateOnly?>("Birthday")
                         .HasColumnType("date");
+
+                    b.Property<Guid?>("BrandId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
@@ -101,6 +104,8 @@ namespace Infrastructure.Repositories.Migrations
 
                     b.HasIndex("AccountStatusId");
 
+                    b.HasIndex("BrandId");
+
                     b.HasIndex("WardId");
 
                     b.HasIndex("WorkingShopId");
@@ -110,7 +115,7 @@ namespace Infrastructure.Repositories.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("327b814e-7542-4a2b-8e0d-21ba0c703ad5"),
+                            Id = new Guid("2d609e0c-1d7a-484d-9e69-ac5a18557524"),
                             AccountStatusId = 2,
                             CreatedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Email = "admin@camai.com",
@@ -238,9 +243,6 @@ namespace Infrastructure.Repositories.Migrations
                     b.Property<string>("BannerUri")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid?>("BrandManagerId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<int>("BrandStatusId")
                         .HasColumnType("int");
 
@@ -271,10 +273,6 @@ namespace Infrastructure.Repositories.Migrations
                         .HasColumnType("rowversion");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("BrandManagerId")
-                        .IsUnique()
-                        .HasFilter("[BrandManagerId] IS NOT NULL");
 
                     b.HasIndex("BrandStatusId");
 
@@ -1302,6 +1300,10 @@ namespace Infrastructure.Repositories.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Core.Domain.Entities.Brand", "Brand")
+                        .WithMany("Accounts")
+                        .HasForeignKey("BrandId");
+
                     b.HasOne("Core.Domain.Entities.Ward", "Ward")
                         .WithMany()
                         .HasForeignKey("WardId");
@@ -1311,6 +1313,8 @@ namespace Infrastructure.Repositories.Migrations
                         .HasForeignKey("WorkingShopId");
 
                     b.Navigation("AccountStatus");
+
+                    b.Navigation("Brand");
 
                     b.Navigation("Ward");
 
@@ -1342,17 +1346,11 @@ namespace Infrastructure.Repositories.Migrations
 
             modelBuilder.Entity("Core.Domain.Entities.Brand", b =>
                 {
-                    b.HasOne("Core.Domain.Entities.Account", "BrandManager")
-                        .WithOne("Brand")
-                        .HasForeignKey("Core.Domain.Entities.Brand", "BrandManagerId");
-
                     b.HasOne("Core.Domain.Entities.BrandStatus", "BrandStatus")
                         .WithMany()
                         .HasForeignKey("BrandStatusId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("BrandManager");
 
                     b.Navigation("BrandStatus");
                 });
@@ -1645,8 +1643,6 @@ namespace Infrastructure.Repositories.Migrations
 
             modelBuilder.Entity("Core.Domain.Entities.Account", b =>
                 {
-                    b.Navigation("Brand");
-
                     b.Navigation("ManagingShop");
                 });
 
@@ -1657,6 +1653,8 @@ namespace Infrastructure.Repositories.Migrations
 
             modelBuilder.Entity("Core.Domain.Entities.Brand", b =>
                 {
+                    b.Navigation("Accounts");
+
                     b.Navigation("Shops");
                 });
 

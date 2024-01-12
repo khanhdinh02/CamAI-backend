@@ -22,6 +22,5 @@ public class CreateAccountDto
     public Guid? WardId { get; set; }
     public string? AddressLine { get; set; } = null!;
     public Guid? BrandId { get; set; }
-    public Guid? WorkingShopId { get; set; }
     public ICollection<int> RoleIds { get; set; } = new HashSet<int>();
 }

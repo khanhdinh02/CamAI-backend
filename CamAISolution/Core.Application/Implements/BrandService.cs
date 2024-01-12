@@ -40,7 +40,7 @@ public class BrandService(
         var brand = await GetBrandById(brandId);
         return new PaginationResult<Brand>
         {
-            Values =  [ brand ],
+            Values = [brand],
             PageIndex = 0,
             PageSize = 1,
             TotalCount = 1
@@ -122,7 +122,7 @@ public class BrandService(
         if (brand == null)
             return;
 
-        if (HasRelatedEntities(brand))
+        if (!HasRelatedEntities(brand))
             unitOfWork.Brands.Delete(brand);
         else
         {
@@ -135,7 +135,8 @@ public class BrandService(
 
     private bool HasRelatedEntities(Brand brand)
     {
-        return brand.BrandManagerId != null;
+        // return brand.BrandManagerId != null;
+        return true;
     }
 
     private async Task<bool> HasAccessToBrand(Account account, Brand brand)

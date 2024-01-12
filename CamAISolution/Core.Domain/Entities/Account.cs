@@ -20,6 +20,7 @@ public class Account : BusinessEntity
     public DateOnly? Birthday { get; set; }
     public Guid? WardId { get; set; }
     public string? AddressLine { get; set; }
+    public Guid? BrandId { get; set; }
     public Guid? WorkingShopId { get; set; }
     public int AccountStatusId { get; set; }
 

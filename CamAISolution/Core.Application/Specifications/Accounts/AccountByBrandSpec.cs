@@ -13,6 +13,5 @@ public class AccountByBrandSpec : Specification<Account>
         Expr = GetExpression();
     }
 
-    public override Expression<Func<Account, bool>> GetExpression() =>
-        a => a.Brand!.Id == brandId || a.ManagingShop!.BrandId == brandId || a.WorkingShop!.BrandId == brandId;
+    public override Expression<Func<Account, bool>> GetExpression() => a => a.Brand!.Id == brandId;
 }
