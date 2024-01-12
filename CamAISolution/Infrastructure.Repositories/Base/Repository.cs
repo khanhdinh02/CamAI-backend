@@ -1,4 +1,5 @@
 using System.Linq.Expressions;
+using Core.Domain.Entities.Base;
 using Core.Domain.Models;
 using Core.Domain.Repositories;
 using Core.Domain.Specifications.Repositories;
@@ -61,18 +62,16 @@ public class Repository<T>(CamAIContext context, IRepositorySpecificationEvaluat
             if (orderBy != null)
                 paginationResult.Values = await orderBy(query).ToListAsync();
             else
-                paginationResult.Values = await query.ToListAsync();
+                paginationResult.Values = await SetDefaultOrderBy(query).ToListAsync();
         }
         else
         {
             paginationResult.PageIndex = pageIndex;
             if (orderBy == null)
-                // Order by the primary key of entity
-                paginationResult.Values = await query
-                    .OrderBy(e => e)
-                    .Skip(pageSize * pageIndex)
-                    .Take(pageSize)
-                    .ToListAsync();
+            {
+                query = SetDefaultOrderBy(query);
+                paginationResult.Values = await query.Skip(pageSize * pageIndex).Take(pageSize).ToListAsync();
+            }
             else
                 paginationResult.Values = await orderBy(query).Skip(pageIndex * pageSize).Take(pageSize).ToListAsync();
         }
@@ -87,8 +86,7 @@ public class Repository<T>(CamAIContext context, IRepositorySpecificationEvaluat
             return new PaginationResult<T>();
         var query = specificationEvaluator.GetQuery(context.Set<T>(), specification);
         if (!specification.IsOrderBySet)
-            // Order by the primary key of entity
-            query = query.OrderBy(e => e);
+            query = SetDefaultOrderBy(query);
         var count = await CountAsync(specification.Criteria);
         var data = await query.ToListAsync();
         return new PaginationResult<T>
@@ -119,5 +117,13 @@ public class Repository<T>(CamAIContext context, IRepositorySpecificationEvaluat
             Context.Entry(entity).State = EntityState.Modified;
         }
         return entity;
+    }
+
+    private IOrderedQueryable<T> SetDefaultOrderBy(IQueryable<T> query)
+    {
+        if (typeof(BusinessEntity).IsAssignableFrom(typeof(T)))
+            return query.OrderByDescending(e => (e as BusinessEntity)!.CreatedDate);
+        // Order by the primary key of entity
+        return query.OrderBy(e => e);
     }
 }
