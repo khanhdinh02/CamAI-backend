@@ -10,6 +10,12 @@ pool:
   vmImage: ubuntu-latest
 
 steps:
+- task: Docker@2
+  inputs:
+    containerRegistry: 'dat-hub'
+    repository: 'ryuuji2232/test-camai-hub'
+    command: 'buildAndPush'
+    Dockerfile: '**/Dockerfile'
 - task: SSH@0
   displayName: "test"
   inputs:
