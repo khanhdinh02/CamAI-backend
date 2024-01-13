@@ -29,11 +29,18 @@ steps:
 #     runOptions: 'inline'
 #     readyTimeout: '20000'
 #     inline: ls
+- script: |
+    echo "MS_SQL_PASS=$(docker.compose.MS_SQL_CONN) > .env"
+    echo "MS_SQL_CONN=$(docker.compose.MS_SQL_PASS) >> .env"
+    echo "STAGE=$(docker.compose.MS_SQL_PASS) >> .env"
+  displayName: 'Write .env'
 - task: CopyFilesOverSSH@0
   displayName: 'Copy compose file'
   inputs:
     sshEndpoint: 'ssh-server'
-    contents: 'docker-compose.yml'
+    contents: |
+      docker-compose.yml
+      .env
     targetFolder: 'backend'
     readyTimeout: '20000'
 # - task: SSH@0
