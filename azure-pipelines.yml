@@ -9,6 +9,9 @@ trigger:
 pool:
   vmImage: ubuntu-latest
 
+variables:
+- group: docker
+
 steps:
 - task: Docker@2
   displayName: 'Docker build and publish'
