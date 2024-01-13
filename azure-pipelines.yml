@@ -4,7 +4,7 @@
 # https://aka.ms/yaml
 
 trigger:
-- deploy/ssh-server
+- azure-pipelines
 
 pool:
   vmImage: ubuntu-latest
