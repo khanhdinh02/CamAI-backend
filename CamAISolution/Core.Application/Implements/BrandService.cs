@@ -136,6 +136,7 @@ public class BrandService(
 
     private bool HasRelatedEntities(Brand brand)
     {
+        // TODO [Duy]: implement this
         // return brand.BrandManagerId != null;
         return true;
     }

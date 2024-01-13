@@ -16,6 +16,10 @@ public class Brand : BusinessEntity
     public int BrandStatusId { get; set; }
 
     public virtual BrandStatus BrandStatus { get; set; } = null!;
+
+    /// <summary>
+    /// All people working for this brand, including brand managers, shop managers, employees
+    /// </summary>
     public virtual ICollection<Account> Accounts { get; set; } = new HashSet<Account>();
     public virtual ICollection<Shop> Shops { get; set; } = new HashSet<Shop>();
 }

@@ -27,6 +27,10 @@ public class Account : BusinessEntity
     public virtual Ward? Ward { get; set; }
     public virtual Shop? WorkingShop { get; set; }
     public virtual AccountStatus AccountStatus { get; set; } = null!;
+
+    /// <summary>
+    /// The brand that this account (Brand Manager, Shop manager, Employee) is working for
+    /// </summary>
     public virtual Brand? Brand { get; set; }
 
     [InverseProperty(nameof(Shop.ShopManager))]

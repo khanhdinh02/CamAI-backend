@@ -44,8 +44,9 @@ public class AccountService(IUnitOfWork unitOfWork, IJwtService jwtService, IBas
 
     public async Task<Account> CreateAccount(CreateAccountDto dto)
     {
+        // TODO: Reconsider the logic below in the future
         // Allow to create account with the same email if the account was deleted (inactive)
-        // This will override the old account, but the id and old records (violation, request�) will be kept
+        // This will override the old account, but the id and old records (violation, request...) will be kept
         Account newAccount;
         var newEntity = true;
         var accountThatHasTheSameMail = (
@@ -85,7 +86,7 @@ public class AccountService(IUnitOfWork unitOfWork, IJwtService jwtService, IBas
             else if (dto.RoleIds.Any(r => r == RoleEnum.Technician))
                 newAccount = await CreateTechnician(newAccount);
             else
-                throw new BadRequestException("Admin can only create brand manager or technician");
+                throw new ForbiddenException(currentUser, typeof(Account));
         }
         else if (currentUser.HasRole(RoleEnum.BrandManager))
         {
@@ -100,7 +101,7 @@ public class AccountService(IUnitOfWork unitOfWork, IJwtService jwtService, IBas
                 throw new NotImplementedException();
             }
             else
-                throw new BadRequestException("Brand manager can only create shop manager or employee");
+                throw new ForbiddenException(currentUser, typeof(Account));
         }
 
         // Other roles that can create account
@@ -131,14 +132,14 @@ public class AccountService(IUnitOfWork unitOfWork, IJwtService jwtService, IBas
             if (account.HasRole(RoleEnum.BrandManager) || account.HasRole(RoleEnum.Technician))
                 unitOfWork.Accounts.Update(account);
             else
-                throw new BadRequestException("Admin can only update brand manager or technician");
+                throw new ForbiddenException(user, account);
         }
         else if (user.HasRole(RoleEnum.BrandManager))
         {
             if (account.HasRole(RoleEnum.ShopManager) || account.HasRole(RoleEnum.Employee))
                 unitOfWork.Accounts.Update(account);
             else
-                throw new BadRequestException("Brand manager can only update shop manager or employee");
+                throw new ForbiddenException(user, account);
         }
 
         await unitOfWork.CompleteAsync();
@@ -152,12 +153,12 @@ public class AccountService(IUnitOfWork unitOfWork, IJwtService jwtService, IBas
         if (user.HasRole(RoleEnum.Admin))
         {
             if (!account.HasRole(RoleEnum.BrandManager) && !account.HasRole(RoleEnum.Technician))
-                throw new BadRequestException("Admin can only delete brand manager or technician");
+                throw new ForbiddenException(user, account);
         }
         else if (user.HasRole(RoleEnum.BrandManager))
         {
             if (!account.HasRole(RoleEnum.ShopManager) && !account.HasRole(RoleEnum.Employee))
-                throw new BadRequestException("Brand manager can only delete shop manager or employee");
+                throw new ForbiddenException(user, account);
         }
 
         account.AccountStatusId = AccountStatusEnum.Inactive;
