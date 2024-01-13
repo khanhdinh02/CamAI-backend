@@ -13,16 +13,48 @@ steps:
 - task: Docker@2
   displayName: 'Docker build and publish'
   inputs:
-    containerRegistry: 'dat-hub'
-    repository: 'ryuuji2232/test-camai-hub'
+    containerRegistry: 'camai-hub'
+    repository: 'milease/camai-backend'
     command: 'buildAndPush'
     Dockerfile: '**/Dockerfile'
     buildContext: './CamAISolution'
-    tags: camai-web-api
+    tags: 'camai-web-api'
+# - task: SSH@0
+#   displayName: 'Test connect to ssh-server'
+#   inputs:
+#     sshEndpoint: 'ssh-server'
+#     runOptions: 'inline'
+#     readyTimeout: '20000'
+#     inline: ls
+- task: CopyFilesOverSSH@0
+  displayName: 'Copy compose file'
+  inputs:
+    sshEndpoint: 'ssh-server'
+    sourceFolder: 'docker-compose.yml'
+    contents: '**'
+    targetFolder: 'backend'
+    readyTimeout: '20000'
+# - task: SSH@0
+#   displayName: 'Pull and run image'
+#   inputs:
+#     sshEndpoint: 'ssh-server'
+#     runOptions: 'inline'
+#     inline: |
+#       docker login -u $(docker.username) -p $(docker.password) $(docker.registry) 
+#       cd backend
+#       docker compose pull
+#       docker compose stop
+#       docker compose rm -f
+#       docker compose up -d
+#     readyTimeout: '20000'
 - task: SSH@0
-  displayName: "connecting to ssh-server"
+  displayName: 'Pull and run image'
   inputs:
     sshEndpoint: 'ssh-server'
     runOptions: 'inline'
+    inline: |
+      docker login -u $(docker.username) -p $(docker.password) $(docker.registry) 
+      cd backend
+      docker compose pull
+      ls
     readyTimeout: '20000'
-    inline: ls
