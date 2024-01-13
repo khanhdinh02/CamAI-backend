@@ -27,8 +27,8 @@ steps:
     echo "MS_SQL_PASS=$(docker.compose.MS_SQL_CONN) > .env"
     echo "MS_SQL_CONN=$(docker.compose.MS_SQL_PASS) >> .env"
     echo "STAGE=$(docker.compose.MS_SQL_PASS) >> .env"
+    ls -a
   displayName: 'Write .env'
-  workingDirectory: $(System.DefaultWorkingDirectory)
 - task: CopyFilesOverSSH@0
   displayName: 'Copy compose file'
   inputs:
