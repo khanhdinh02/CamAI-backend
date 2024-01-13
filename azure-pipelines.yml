@@ -13,16 +13,17 @@ variables:
 - group: docker
 
 steps:
-- task: Docker@2
-  displayName: 'Docker build and publish'
-  inputs:
-    containerRegistry: 'camai-hub'
-    repository: 'milease/camai-backend'
-    command: 'buildAndPush'
-    Dockerfile: '**/Dockerfile'
-    buildContext: './CamAISolution'
-    tags: 'camai-web-api'
+# - task: Docker@2
+#   displayName: 'Docker build and publish'
+#   inputs:
+#     containerRegistry: 'camai-hub'
+#     repository: 'milease/camai-backend'
+#     command: 'buildAndPush'
+#     Dockerfile: '**/Dockerfile'
+#     buildContext: './CamAISolution'
+#     tags: 'camai-web-api'
 - script: |
+    pwd
     echo "MS_SQL_PASS=$(docker.compose.MS_SQL_CONN) > .env"
     echo "MS_SQL_CONN=$(docker.compose.MS_SQL_PASS) >> .env"
     echo "STAGE=$(docker.compose.MS_SQL_PASS) >> .env"
@@ -33,8 +34,8 @@ steps:
   inputs:
     sshEndpoint: 'ssh-server'
     contents: |
-      docker-compose.yml
       .env
+      docker-compose.yml
     targetFolder: 'backend'
     readyTimeout: '20000'
 # - task: SSH@0
