@@ -42,7 +42,7 @@ steps:
 #     sshEndpoint: 'ssh-server'
 #     runOptions: 'inline'
 #     inline: |
-#       docker login -u $(docker.username) -p $(docker.password) $(docker.registry) 
+#       docker login -u $(docker.username) -p $(docker.password)
 #       cd backend
 #       docker compose pull
 #       docker compose stop
@@ -55,7 +55,7 @@ steps:
     sshEndpoint: 'ssh-server'
     runOptions: 'inline'
     inline: |
-      docker login -u $(docker.username) -p $(docker.password) $(docker.registry) 
+      docker login -u $(docker.username) -p $(docker.password)
       cd backend
       docker compose pull
       ls
