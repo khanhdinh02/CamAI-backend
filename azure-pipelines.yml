@@ -17,7 +17,8 @@ steps:
     repository: 'ryuuji2232/test-camai-hub'
     command: 'buildAndPush'
     Dockerfile: '**/Dockerfile'
-    buildContext: '../CamAISolution'
+    buildContext: './CamAISolution'
+    tags: camai-web-api
 - task: SSH@0
   displayName: "connecting to ssh-server"
   inputs:
