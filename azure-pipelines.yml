@@ -19,9 +19,8 @@ steps:
       MS_SQL_PASS=C@maimssqlser2022
       MS_SQL_CONN='server=mssqldb;uid=sa;password=C@maimssqlser2022;database=CamAIDatabase;TrustServerCertificate=true'
       STAGE=Development
-      MIGRATION=''
-    action: 'Run a Docker Compose command'
-    dockerComposeCommand: 'docker compose push'
+      MIGRATION='--run-migration'
+    action: 'Push services'
 
 - task: SSH@0
   displayName: "connecting to ssh-server"
