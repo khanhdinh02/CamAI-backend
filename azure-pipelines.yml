@@ -23,14 +23,12 @@ steps:
 #     buildContext: './CamAISolution'
 #     tags: 'camai-web-api'
 - script: |
-    pwd
-    echo "MS_SQL_PASS=$(docker.compose.MS_SQL_CONN) > .env"
-    echo "MS_SQL_CONN=$(docker.compose.MS_SQL_PASS) >> .env"
-    echo "STAGE=$(docker.compose.MS_SQL_PASS) >> .env"
-    ls -a
+    echo "MS_SQL_PASS=$(docker.compose.MS_SQL_CONN)" > .env
+    echo "MS_SQL_CONN=$(docker.compose.MS_SQL_PASS)" >> .env
+    echo "STAGE=$(docker.compose.MS_SQL_PASS)" >> .env
   displayName: 'Write .env'
 - task: CopyFilesOverSSH@0
-  displayName: 'Copy compose file'
+  displayName: 'Copy files'
   inputs:
     sshEndpoint: 'ssh-server'
     contents: |
