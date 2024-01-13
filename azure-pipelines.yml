@@ -13,7 +13,7 @@ steps:
 - task: SSH@0
   displayName: "test"
   inputs:
-    sshEndpoint: 'ssh-service'
+    sshEndpoint: 'ssh-server'
     runOptions: 'inline'
     readyTimeout: '20000'
     inline: ls
