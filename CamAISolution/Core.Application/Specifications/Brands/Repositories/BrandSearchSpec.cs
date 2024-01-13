@@ -20,6 +20,8 @@ public class BrandSearchSpec : RepositorySpec<Brand>
             baseSpec.And(new BrandByNameSpec(searchRequest.Name));
         if (searchRequest.StatusId.HasValue)
             baseSpec.And(new BrandByStatusSpec(searchRequest.StatusId.Value));
+        if (searchRequest.BrandId.HasValue)
+            baseSpec.And(new BrandByIdSpec(searchRequest.BrandId.Value));
         return baseSpec.GetExpression();
     }
 }
