@@ -30,8 +30,7 @@ steps:
   displayName: 'Copy compose file'
   inputs:
     sshEndpoint: 'ssh-server'
-    sourceFolder: 'docker-compose.yml'
-    contents: '**'
+    contents: 'docker-compose.yml'
     targetFolder: 'backend'
     readyTimeout: '20000'
 # - task: SSH@0
