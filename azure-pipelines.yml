@@ -11,13 +11,14 @@ pool:
 
 steps:
 - task: Docker@2
+  displayName: 'Docker build and publish'
   inputs:
     containerRegistry: 'dat-hub'
     repository: 'ryuuji2232/test-camai-hub'
     command: 'buildAndPush'
     Dockerfile: '**/Dockerfile'
 - task: SSH@0
-  displayName: "test"
+  displayName: "connecting to ssh-server"
   inputs:
     sshEndpoint: 'ssh-server'
     runOptions: 'inline'
