@@ -11,16 +11,17 @@ pool:
 
 steps:
 - task: DockerCompose@0
-      inputs:
-        containerregistrytype: 'Container Registry'
-        dockerRegistryEndpoint: 'dat-hub'
-        dockerComposeFile: '**/docker-compose.yml'
-        dockerComposeFileArgs: |
-          MS_SQL_PASS=C@maimssqlser2022
-          MS_SQL_CONN='server=mssqldb;uid=sa;password=C@maimssqlser2022;database=CamAIDatabase;TrustServerCertificate=true'
-          STAGE=Development
-        action: 'Run a Docker Compose command'
-        dockerComposeCommand: 'docker compose push'
+  inputs:
+    containerregistrytype: 'Container Registry'
+    dockerRegistryEndpoint: 'dat-hub'
+    dockerComposeFile: '**/docker-compose.yml'
+    dockerComposeFileArgs: |
+      MS_SQL_PASS=C@maimssqlser2022
+      MS_SQL_CONN='server=mssqldb;uid=sa;password=C@maimssqlser2022;database=CamAIDatabase;TrustServerCertificate=true'
+      STAGE=Development
+    action: 'Run a Docker Compose command'
+    dockerComposeCommand: 'docker compose push'
+    
 - task: SSH@0
   displayName: "connecting to ssh-server"
   inputs:
