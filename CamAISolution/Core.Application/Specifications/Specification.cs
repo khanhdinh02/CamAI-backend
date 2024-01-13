@@ -7,6 +7,13 @@ public class Specification<T> : ISpecification<T>
 {
     protected Expression<Func<T, bool>> Expr = _ => true;
 
+    public Specification() { }
+
+    public Specification(Expression<Func<T, bool>> expr)
+    {
+        Expr = expr;
+    }
+
     public bool IsSatisfied(T entity)
     {
         return GetExpression().Compile().Invoke(entity);

@@ -123,7 +123,7 @@ public class BrandService(
         if (brand == null)
             return;
 
-        if (HasRelatedEntities(brand))
+        if (!HasRelatedEntities(brand))
             unitOfWork.Brands.Delete(brand);
         else
         {
@@ -136,7 +136,9 @@ public class BrandService(
 
     private bool HasRelatedEntities(Brand brand)
     {
-        return brand.BrandManagerId != null;
+        // TODO [Duy]: implement this
+        // return brand.BrandManagerId != null;
+        return true;
     }
 
     private async Task<bool> HasAccessToBrand(Account account, Brand brand)

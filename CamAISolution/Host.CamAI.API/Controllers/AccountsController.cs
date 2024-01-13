@@ -3,7 +3,6 @@ using Core.Domain.Entities;
 using Core.Domain.Interfaces.Mappings;
 using Core.Domain.Interfaces.Services;
 using Core.Domain.Models;
-using Core.Domain.Services;
 using Infrastructure.Jwt.Attribute;
 using Microsoft.AspNetCore.Mvc;
 
@@ -13,32 +12,89 @@ namespace Host.CamAI.API.Controllers;
 [ApiController]
 public class AccountsController(IAccountService accountService, IBaseMapping mapper) : ControllerBase
 {
-    // TODO [Dat]: account search DTO
+    /// <summary>
+    /// Search accounts
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Admin can get all accounts<br/>
+    /// Brand manager can get all accounts working for their brand (the BrandId field is ignored)<br/>
+    /// Shop manager can get all accounts working for their shop (the ShopId field is ignored)
+    /// </para>
+    /// <para><c>Search</c> can be Email, Name or Phone</para>
+    /// </remarks>
+    /// <param name="req"></param>
+    /// <returns></returns>
     [HttpGet]
-    public async Task<ActionResult<PaginationResult<Account>>> SampleGetAccounts(
-        Guid? guid = null,
-        DateTime? from = null,
-        DateTime? to = null,
-        int pageSize = 1,
-        int pageIndex = 0
-    )
+    [AccessTokenGuard(RoleEnum.Admin, RoleEnum.BrandManager, RoleEnum.ShopManager)]
+    public async Task<ActionResult<PaginationResult<AccountDto>>> GetAccounts([FromQuery] SearchAccountRequest req)
     {
-        // TODO: account DTO
-        return Ok(await accountService.GetAccount(guid, from, to, pageSize, pageIndex));
+        var accounts = await accountService.GetAccounts(req);
+        return mapper.Map<Account, AccountDto>(accounts);
     }
 
+    /// <summary>
+    /// Get an account by id
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
     [HttpGet("{id}")]
-    public async Task<ActionResult<Account>> GetAccountById(Guid id)
+    public async Task<ActionResult<AccountDto>> GetAccountById(Guid id)
     {
-        // TODO: account DTO
-        return Ok(await accountService.GetAccountById(id));
+        var account = await accountService.GetAccountById(id);
+        return mapper.Map<Account, AccountDto>(account);
     }
 
+    /// <summary>
+    /// Create new account
+    /// </summary>
+    /// <remarks>
+    /// Admin can create Brand Manager and Technician<br/>
+    /// Brand Manager can create Shop Manager<br/>
+    /// Creation for Employee is not yet supported
+    /// </remarks>
+    /// <param name="account"></param>
+    /// <returns>The created account</returns>
     [HttpPost]
     [AccessTokenGuard(RoleEnum.Admin, RoleEnum.BrandManager)]
     public async Task<ActionResult<AccountDto>> CreateAccount(CreateAccountDto account)
     {
         var newAccount = await accountService.CreateAccount(account);
         return mapper.Map<Account, AccountDto>(newAccount);
+    }
+
+    /// <summary>
+    /// Update account
+    /// </summary>
+    /// <remarks>
+    /// Admin can update Brand Manager and Technician<br/>
+    /// Brand Manager can update Shop Manager
+    /// </remarks>
+    /// <param name="id"></param>
+    /// <param name="account"></param>
+    /// <returns>The updated account</returns>
+    [HttpPut("{id}")]
+    [AccessTokenGuard(RoleEnum.Admin, RoleEnum.BrandManager)]
+    public async Task<ActionResult<AccountDto>> UpdateAccount(Guid id, UpdateAccountDto account)
+    {
+        var updatedAccount = await accountService.UpdateAccount(id, account);
+        return mapper.Map<Account, AccountDto>(updatedAccount);
+    }
+
+    /// <summary>
+    /// Delete account
+    /// </summary>
+    /// <remarks>
+    /// Admin can delete Brand Manager and Technician<br/>
+    /// Brand Manager can delete Shop Manager
+    /// </remarks>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    [HttpDelete("{id}")]
+    [AccessTokenGuard(RoleEnum.Admin, RoleEnum.BrandManager)]
+    public async Task<ActionResult> DeleteAccount(Guid id)
+    {
+        await accountService.DeleteAccount(id);
+        return Accepted();
     }
 }

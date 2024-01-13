@@ -9,7 +9,9 @@ public class AccountProfile : Profile
     public AccountProfile()
     {
         CreateMap<CreateAccountDto, Account>();
+        CreateMap<UpdateAccountDto, Account>();
         CreateMap<Account, AccountDto>();
-        CreateMap<AccountStatus, AccountStatusDto>();
+        CreateMap<AccountStatus, LookupDto>();
+        CreateMap<Role, LookupDto>();
     }
 }
