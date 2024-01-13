@@ -22,18 +22,12 @@ steps:
     Dockerfile: '**/Dockerfile'
     buildContext: './CamAISolution'
     tags: 'camai-web-api'
-# - task: SSH@0
-#   displayName: 'Test connect to ssh-server'
-#   inputs:
-#     sshEndpoint: 'ssh-server'
-#     runOptions: 'inline'
-#     readyTimeout: '20000'
-#     inline: ls
 - script: |
     echo "MS_SQL_PASS=$(docker.compose.MS_SQL_CONN) > .env"
     echo "MS_SQL_CONN=$(docker.compose.MS_SQL_PASS) >> .env"
     echo "STAGE=$(docker.compose.MS_SQL_PASS) >> .env"
   displayName: 'Write .env'
+  workingDirectory: $(System.DefaultWorkingDirectory)
 - task: CopyFilesOverSSH@0
   displayName: 'Copy compose file'
   inputs:
