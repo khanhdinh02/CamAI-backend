@@ -23,7 +23,7 @@ steps:
     buildContext: './CamAISolution'
     tags: 'camai-web-api'
 - script: |
-    echo "MS_SQL_PASS=$(docker.compose.MS_SQL_CONN)" > .env
+    echo "MS_SQL_PASS=$(docker.compose.MS_SQL_CONN)" >> .env
     echo "MS_SQL_CONN=$(docker.compose.MS_SQL_PASS)" >> .env
     echo "STAGE=$(docker.compose.STAGE)" >> .env
   displayName: 'Write .env'
@@ -33,6 +33,7 @@ steps:
     sshEndpoint: 'ssh-server'
     contents: |
       .env
+      ./Deploy/docker-compose.yml
     targetFolder: 'backend'
     readyTimeout: '20000'
 
@@ -44,7 +45,7 @@ steps:
     inline: |
       docker login -u $(docker.username) --password-stdin $(docker.password)
       cd backend
-      docker compose down
       docker compose pull web-api
+      docker compose down
       docker compose up -d
     readyTimeout: '20000'
