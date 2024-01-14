@@ -24,28 +24,17 @@ public class BrandService(
     public async Task<PaginationResult<Brand>> GetBrands(SearchBrandRequest searchRequest)
     {
         var currentAccount = accountService.GetCurrentAccount();
-        if (currentAccount.HasRole(RoleEnum.Admin))
-            return await unitOfWork.Brands.GetAsync(new BrandSearchSpec(searchRequest));
-
-        Guid brandId;
         if (currentAccount.HasRole(RoleEnum.BrandManager))
-            brandId = currentAccount.Brand!.Id;
+            searchRequest.BrandId = currentAccount.Brand!.Id;
         else if (currentAccount.HasRole(RoleEnum.ShopManager))
         {
             var shop = await shopService.GetShopById(currentAccount.ManagingShop!.Id);
-            brandId = shop.BrandId;
+            searchRequest.BrandId = shop.BrandId;
         }
-        else
+        else if (!currentAccount.HasRole(RoleEnum.Admin))
             throw new ForbiddenException(currentAccount, typeof(Brand));
 
-        var brand = await GetBrandById(brandId);
-        return new PaginationResult<Brand>
-        {
-            Values = [brand],
-            PageIndex = 0,
-            PageSize = 1,
-            TotalCount = 1
-        };
+        return await unitOfWork.Brands.GetAsync(new BrandSearchSpec(searchRequest));
     }
 
     public async Task<Brand> GetBrandById(Guid id)
