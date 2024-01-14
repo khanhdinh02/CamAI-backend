@@ -4,7 +4,7 @@
 # https://aka.ms/yaml
 
 trigger:
-- azure-pipelines
+- main
 
 pool:
   vmImage: ubuntu-latest
@@ -50,12 +50,8 @@ steps:
       rmdir Deploy
       echo Login into Docker...
       docker login -u $(docker.username) --password-stdin $(docker.password)
-      echo Stopping service web-api...
       docker compose down web-api
-      echo Removing old image...
       docker rmi milease/camai-backend:camai-web-api
-      echo Pulling new image...
       docker compose pull web-api
-      echo Starting service...
       docker compose up -d
     readyTimeout: '20000'
