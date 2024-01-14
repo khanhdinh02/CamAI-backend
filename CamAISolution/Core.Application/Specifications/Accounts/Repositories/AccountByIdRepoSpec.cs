@@ -13,7 +13,9 @@ public class AccountByIdRepoSpec : EntityByIdSpec<Account, Guid>
     {
         AddIncludes(a => a.Roles);
         AddIncludes(a => a.AccountStatus);
-        AddIncludes($"{nameof(Account.Brand)}");
-        ApplyOrderBy(a => a.CreatedDate);
+        AddIncludes(a => a.Brand!);
+        AddIncludes(a => a.Ward!.District.Province);
+        AddIncludes(a => a.ManagingShop!);
+        AddIncludes(a => a.WorkingShop!);
     }
 }

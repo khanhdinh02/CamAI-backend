@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Repositories.Migrations
 {
     [DbContext(typeof(CamAIContext))]
-    [Migration("20240106232722_AddPendingStatusForShopStatus")]
-    partial class AddPendingStatusForShopStatus
+    [Migration("20240112141815_UpdateAccount")]
+    partial class UpdateAccount
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -38,13 +38,6 @@ namespace Infrastructure.Repositories.Migrations
                     b.HasIndex("AccountId");
 
                     b.ToTable("AccountRole");
-
-                    b.HasData(
-                        new
-                        {
-                            RoleId = 1,
-                            AccountId = new Guid("c3fcbdf0-f0b8-4bb4-b494-5022937f2c6d")
-                        });
                 });
 
             modelBuilder.Entity("Core.Domain.Entities.Account", b =>
@@ -61,6 +54,9 @@ namespace Infrastructure.Repositories.Migrations
 
                     b.Property<DateOnly?>("Birthday")
                         .HasColumnType("date");
+
+                    b.Property<Guid?>("BrandId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
@@ -104,23 +100,13 @@ namespace Infrastructure.Repositories.Migrations
 
                     b.HasIndex("AccountStatusId");
 
+                    b.HasIndex("BrandId");
+
                     b.HasIndex("WardId");
 
                     b.HasIndex("WorkingShopId");
 
                     b.ToTable("Accounts");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("c3fcbdf0-f0b8-4bb4-b494-5022937f2c6d"),
-                            AccountStatusId = 2,
-                            CreatedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Email = "admin@camai.com",
-                            ModifiedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Name = "Admin",
-                            Password = "9eb622419ace52f259e858a7f2a10743d35e36fe0d22fc2d224c320cbc68d3af"
-                        });
                 });
 
             modelBuilder.Entity("Core.Domain.Entities.AccountStatus", b =>
@@ -241,9 +227,6 @@ namespace Infrastructure.Repositories.Migrations
                     b.Property<string>("BannerUri")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid?>("BrandManagerId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<int>("BrandStatusId")
                         .HasColumnType("int");
 
@@ -274,10 +257,6 @@ namespace Infrastructure.Repositories.Migrations
                         .HasColumnType("rowversion");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("BrandManagerId")
-                        .IsUnique()
-                        .HasFilter("[BrandManagerId] IS NOT NULL");
 
                     b.HasIndex("BrandStatusId");
 
@@ -403,6 +382,9 @@ namespace Infrastructure.Repositories.Migrations
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<int>("EdgeBoxLocationId")
+                        .HasColumnType("int");
+
                     b.Property<int>("EdgeBoxStatusId")
                         .HasColumnType("int");
 
@@ -426,7 +408,12 @@ namespace Infrastructure.Repositories.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Version")
+                        .HasColumnType("nvarchar(max)");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("EdgeBoxLocationId");
 
                     b.HasIndex("EdgeBoxStatusId");
 
@@ -559,6 +546,59 @@ namespace Infrastructure.Repositories.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Core.Domain.Entities.EdgeBoxLocation", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<byte[]>("Timestamp")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("EdgeBoxLocation");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Name = "Idle"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Name = "Installing"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Name = "Occupied"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Name = "Uninstalling"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Name = "Disposed"
+                        });
+                });
+
             modelBuilder.Entity("Core.Domain.Entities.EdgeBoxStatus", b =>
                 {
                     b.Property<int>("Id")
@@ -594,6 +634,11 @@ namespace Infrastructure.Repositories.Migrations
                         {
                             Id = 2,
                             Name = "Inactive"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Name = "Broken"
                         });
                 });
 
@@ -1005,11 +1050,6 @@ namespace Infrastructure.Repositories.Migrations
                         {
                             Id = 2,
                             Name = "Inactive"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Name = "Pending"
                         });
                 });
 
@@ -1127,7 +1167,7 @@ namespace Infrastructure.Repositories.Migrations
                         new
                         {
                             Id = 1,
-                            Name = "Open"
+                            Name = "New"
                         },
                         new
                         {
@@ -1143,6 +1183,11 @@ namespace Infrastructure.Repositories.Migrations
                         {
                             Id = 4,
                             Name = "Failed"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Name = "Active"
                         });
                 });
 
@@ -1244,6 +1289,10 @@ namespace Infrastructure.Repositories.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Core.Domain.Entities.Brand", "Brand")
+                        .WithMany("Accounts")
+                        .HasForeignKey("BrandId");
+
                     b.HasOne("Core.Domain.Entities.Ward", "Ward")
                         .WithMany()
                         .HasForeignKey("WardId");
@@ -1253,6 +1302,8 @@ namespace Infrastructure.Repositories.Migrations
                         .HasForeignKey("WorkingShopId");
 
                     b.Navigation("AccountStatus");
+
+                    b.Navigation("Brand");
 
                     b.Navigation("Ward");
 
@@ -1284,17 +1335,11 @@ namespace Infrastructure.Repositories.Migrations
 
             modelBuilder.Entity("Core.Domain.Entities.Brand", b =>
                 {
-                    b.HasOne("Core.Domain.Entities.Account", "BrandManager")
-                        .WithOne("Brand")
-                        .HasForeignKey("Core.Domain.Entities.Brand", "BrandManagerId");
-
                     b.HasOne("Core.Domain.Entities.BrandStatus", "BrandStatus")
                         .WithMany()
                         .HasForeignKey("BrandStatusId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("BrandManager");
 
                     b.Navigation("BrandStatus");
                 });
@@ -1329,11 +1374,19 @@ namespace Infrastructure.Repositories.Migrations
 
             modelBuilder.Entity("Core.Domain.Entities.EdgeBox", b =>
                 {
+                    b.HasOne("Core.Domain.Entities.EdgeBoxLocation", "EdgeBoxLocation")
+                        .WithMany()
+                        .HasForeignKey("EdgeBoxLocationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("Core.Domain.Entities.EdgeBoxStatus", "EdgeBoxStatus")
                         .WithMany()
                         .HasForeignKey("EdgeBoxStatusId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("EdgeBoxLocation");
 
                     b.Navigation("EdgeBoxStatus");
                 });
@@ -1579,8 +1632,6 @@ namespace Infrastructure.Repositories.Migrations
 
             modelBuilder.Entity("Core.Domain.Entities.Account", b =>
                 {
-                    b.Navigation("Brand");
-
                     b.Navigation("ManagingShop");
                 });
 
@@ -1591,6 +1642,8 @@ namespace Infrastructure.Repositories.Migrations
 
             modelBuilder.Entity("Core.Domain.Entities.Brand", b =>
                 {
+                    b.Navigation("Accounts");
+
                     b.Navigation("Shops");
                 });
 

@@ -7,13 +7,9 @@ namespace Core.Domain.Interfaces.Services;
 public interface IAccountService
 {
     Task<Account> CreateAccount(CreateAccountDto dto);
-    Task<PaginationResult<Account>> GetAccount(
-        Guid? guid = null,
-        DateTime? from = null,
-        DateTime? to = null,
-        int pageSize = 1,
-        int pageIndex = 0
-    );
+    Task<PaginationResult<Account>> GetAccounts(SearchAccountRequest req);
     Task<Account> GetAccountById(Guid id);
+    Task<Account> UpdateAccount(Guid id, UpdateAccountDto dto);
+    Task DeleteAccount(Guid id);
     Account GetCurrentAccount();
 }

@@ -13,11 +13,13 @@ public class Brand : BusinessEntity
     public string? Phone { get; set; }
     public Uri? LogoUri { get; set; }
     public Uri? BannerUri { get; set; }
-
-    public Guid? BrandManagerId { get; set; }
     public int BrandStatusId { get; set; }
 
-    public virtual Account? BrandManager { get; set; }
     public virtual BrandStatus BrandStatus { get; set; } = null!;
+
+    /// <summary>
+    /// All people working for this brand, including brand managers, shop managers, employees
+    /// </summary>
+    public virtual ICollection<Account> Accounts { get; set; } = new HashSet<Account>();
     public virtual ICollection<Shop> Shops { get; set; } = new HashSet<Shop>();
 }
