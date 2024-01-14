@@ -42,7 +42,7 @@ steps:
     sshEndpoint: 'ssh-server'
     runOptions: 'inline'
     inline: |
-      docker login -u $(docker.username) -p $(docker.password)
+      docker login -u $(docker.username) --password-stdin $(docker.password)
       cd backend
       docker compose down
       docker compose pull web-api
