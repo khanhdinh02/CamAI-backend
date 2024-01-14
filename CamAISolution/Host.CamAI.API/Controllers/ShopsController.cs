@@ -32,7 +32,7 @@ public class ShopsController(IShopService shopService, IBaseMapping baseMapping)
     [AccessTokenGuard(RoleEnum.Admin, RoleEnum.BrandManager, RoleEnum.ShopManager)]
     public async Task<ActionResult<PaginationResult<ShopDto>>> GetCurrentShop([FromQuery] ShopSearchRequest search)
     {
-        var shops = await shopService.GetCurrentAccountShops(search);
+        var shops = await shopService.GetShops(search);
         return Ok(baseMapping.Map<Shop, ShopDto>(shops));
     }
 

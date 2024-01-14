@@ -9,7 +9,7 @@ public class BrandSearchSpec : RepositorySpec<Brand>
     public BrandSearchSpec(SearchBrandRequest searchRequest)
         : base(GetExpression(searchRequest))
     {
-        ApplyingPaging(searchRequest.Size, searchRequest.PageIndex * searchRequest.Size);
+        ApplyingPaging(searchRequest);
         AddIncludes(b => b.BrandStatus);
     }
 
