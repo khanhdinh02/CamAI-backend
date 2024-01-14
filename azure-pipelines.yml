@@ -13,19 +13,19 @@ variables:
 - group: docker
 
 steps:
-# - task: Docker@2
-#   displayName: 'Docker build and publish'
-#   inputs:
-#     containerRegistry: 'camai-hub'
-#     repository: 'milease/camai-backend'
-#     command: 'buildAndPush'
-#     Dockerfile: '**/Dockerfile'
-#     buildContext: './CamAISolution'
-#     tags: 'camai-web-api'
+- task: Docker@2
+  displayName: 'Docker build and publish'
+  inputs:
+    containerRegistry: 'camai-hub'
+    repository: 'milease/camai-backend'
+    command: 'buildAndPush'
+    Dockerfile: '**/Dockerfile'
+    buildContext: './CamAISolution'
+    tags: 'camai-web-api'
 - script: |
     echo "MS_SQL_PASS=$(docker.compose.MS_SQL_CONN)" > .env
     echo "MS_SQL_CONN=$(docker.compose.MS_SQL_PASS)" >> .env
-    echo "STAGE=$(docker.compose.MS_SQL_PASS)" >> .env
+    echo "STAGE=$(docker.compose.STAGE)" >> .env
   displayName: 'Write .env'
 - task: CopyFilesOverSSH@0
   displayName: 'Copy files'
@@ -33,22 +33,9 @@ steps:
     sshEndpoint: 'ssh-server'
     contents: |
       .env
-      docker-compose.yml
     targetFolder: 'backend'
     readyTimeout: '20000'
-# - task: SSH@0
-#   displayName: 'Pull and run image'
-#   inputs:
-#     sshEndpoint: 'ssh-server'
-#     runOptions: 'inline'
-#     inline: |
-#       docker login -u $(docker.username) -p $(docker.password)
-#       cd backend
-#       docker compose pull
-#       docker compose stop
-#       docker compose rm -f
-#       docker compose up -d
-#     readyTimeout: '20000'
+
 - task: SSH@0
   displayName: 'Pull and run image'
   inputs:
@@ -57,6 +44,7 @@ steps:
     inline: |
       docker login -u $(docker.username) -p $(docker.password)
       cd backend
+      docker compose down
       docker compose pull
-      ls
+      docker compose up
     readyTimeout: '20000'
