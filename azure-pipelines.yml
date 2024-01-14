@@ -48,8 +48,8 @@ steps:
       mv Deploy/*yml .
       rmdir Deploy
       docker login -u $(docker.username) -p $(docker.password)
-      docker rmi milease/camai-backend:camai-web-api
       docker compose pull web-api
       docker compose down web-api
+      docker rmi milease/camai-backend:camai-web-api
       docker compose up -d
     readyTimeout: '20000'
