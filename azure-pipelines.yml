@@ -1,0 +1,53 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+- azure-pipelines
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+- group: docker
+
+steps:
+- task: Docker@2
+  displayName: 'Docker build and publish'
+  inputs:
+    containerRegistry: 'camai-hub'
+    repository: 'milease/camai-backend'
+    command: 'buildAndPush'
+    Dockerfile: '**/Dockerfile'
+    buildContext: './CamAISolution'
+    tags: 'camai-web-api'
+- script: |
+    echo "MS_SQL_PASS=$(docker.compose.MS_SQL_CONN)" > .env
+    echo "MS_SQL_CONN=$(docker.compose.MS_SQL_PASS)" >> .env
+    echo "STAGE=$(docker.compose.STAGE)" >> .env
+  displayName: 'Write .env'
+  
+- task: CopyFilesOverSSH@0
+  displayName: 'Copy files'
+  inputs:
+    sshEndpoint: 'ssh-server'
+    contents: |
+      .env
+      ./Deploy/docker-compose.yml
+    targetFolder: 'backend'
+    readyTimeout: '20000'
+
+- task: SSH@0
+  displayName: 'Pull and run image'
+  inputs:
+    sshEndpoint: 'ssh-server'
+    runOptions: 'inline'
+    inline: |
+      docker login -u $(docker.username) -p $(docker.password)
+      cd backend
+      mv Deploy/*yml .
+      docker compose pull web-api
+      docker compose down
+      docker compose up -d
+    readyTimeout: '20000'
