@@ -144,7 +144,10 @@ public class ShopService(
                 .Accounts
                 .GetAsync(
                     expression: a =>
-                        a.Id == shopDto.ShopManagerId.Value && a.AccountStatusId == AccountStatusEnum.Active,
+                        a.Id == shopDto.ShopManagerId.Value
+                        && (
+                            a.AccountStatusId == AccountStatusEnum.Active || a.AccountStatusId == AccountStatusEnum.New
+                        ),
                     includeProperties: [ nameof(Account.Roles), nameof(Account.ManagingShop) ]
                 );
             if (foundAccounts.Values.Count == 0)
