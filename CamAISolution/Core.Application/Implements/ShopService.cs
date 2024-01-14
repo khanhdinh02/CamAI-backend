@@ -63,14 +63,18 @@ public class ShopService(
     public async Task<PaginationResult<Shop>> GetShops(ShopSearchRequest searchRequest)
     {
         var account = accountService.GetCurrentAccount();
-        if (account.HasRole(RoleEnum.ShopManager))
+        if (account.HasRole(RoleEnum.Admin))
+        {
+            // this if will ensure that admin role has highest priority
+        }
+        else if (account.HasRole(RoleEnum.BrandManager))
+            searchRequest.BrandId = account.BrandId;
+        else if (account.HasRole(RoleEnum.ShopManager))
         {
             searchRequest.ShopManagerId = account.Id;
             // TODO [Duy]: is there a way to specify not condition like != Status.Inactive
             searchRequest.StatusId = ShopStatusEnum.Active;
         }
-        else if (account.HasRole(RoleEnum.BrandManager))
-            searchRequest.BrandId = account.BrandId;
 
         var shops = await unitOfWork.Shops.GetAsync(new ShopSearchSpec(searchRequest));
         return shops;
