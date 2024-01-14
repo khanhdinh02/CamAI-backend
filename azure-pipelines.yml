@@ -45,6 +45,7 @@ steps:
     inline: |
       docker login -u $(docker.username) --password-stdin $(docker.password)
       cd backend
+      mv Deploy/*yml .
       docker compose pull web-api
       docker compose down
       docker compose up -d
