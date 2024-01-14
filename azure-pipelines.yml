@@ -1,8 +1,3 @@
-# Starter pipeline
-# Start with a minimal pipeline that you can customize to build and deploy your code.
-# Add steps that build, run tests, deploy, and more:
-# https://aka.ms/yaml
-
 trigger:
 - main
 
@@ -23,8 +18,8 @@ steps:
     buildContext: './CamAISolution'
     tags: 'camai-web-api'
 - script: |
-    echo "MS_SQL_PASS=$(docker.compose.MS_SQL_CONN)" > .env
-    echo "MS_SQL_CONN=$(docker.compose.MS_SQL_PASS)" >> .env
+    echo "MS_SQL_PASS=$(docker.compose.MS_SQL_PASS)" > .env
+    echo "MS_SQL_CONN=$(docker.compose.MS_SQL_CONN)" >> .env
     echo "STAGE=$(docker.compose.STAGE)" >> .env
   displayName: 'Write .env'
   
