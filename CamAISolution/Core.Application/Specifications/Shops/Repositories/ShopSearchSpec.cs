@@ -12,14 +12,18 @@ public class ShopSearchSpec : RepositorySpec<Shop>
         var baseSpec = new Specification<Shop>();
         if (!string.IsNullOrEmpty(search.Name))
             baseSpec.And(new ShopByNameSpec(search.Name));
+        if (!string.IsNullOrEmpty(search.Phone))
+            baseSpec.And(new ShopByPhoneSpec(search.Phone));
 
         if (search.StatusId.HasValue)
             baseSpec.And(new ShopByStatusSpec(search.StatusId.Value));
-        else
-            baseSpec.And(new ShopByStatusSpec(ShopStatusEnum.Inactive).Not());
 
         if (search.BrandId.HasValue)
             baseSpec.And(new ShopByBrandIdSpec(search.BrandId.Value));
+
+        if (search.WardId.HasValue)
+            baseSpec.And(new ShopByWardSpec(search.WardId.Value));
+
         if (search.ShopManagerId.HasValue)
             baseSpec.And(new ShopByManagerSpec(search.ShopManagerId.Value));
         return baseSpec.GetExpression();

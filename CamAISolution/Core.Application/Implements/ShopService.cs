@@ -55,8 +55,23 @@ public class ShopService(
         throw notFoundException;
     }
 
+    /// <summary>
+    /// Get Shops base on current user's roles.
+    /// </summary>
+    /// <param name="searchRequest">Filtering</param>
+    /// <returns><see cref="PaginationResult{Shop}"/> </returns>
     public async Task<PaginationResult<Shop>> GetShops(ShopSearchRequest searchRequest)
     {
+        var account = accountService.GetCurrentAccount();
+        if (account.HasRole(RoleEnum.ShopManager))
+        {
+            searchRequest.ShopManagerId = account.Id;
+            // TODO [Duy]: is there a way to specify not condition like != Status.Inactive
+            searchRequest.StatusId = ShopStatusEnum.Active;
+        }
+        else if (account.HasRole(RoleEnum.BrandManager))
+            searchRequest.BrandId = account.BrandId;
+
         var shops = await unitOfWork.Shops.GetAsync(new ShopSearchSpec(searchRequest));
         return shops;
     }
@@ -67,7 +82,7 @@ public class ShopService(
         if (foundShops.Values.Count == 0)
             throw new NotFoundException(typeof(Shop), id);
         var foundShop = foundShops.Values[0];
-        if (foundShop.ShopStatusId != ShopStatusEnum.Active && !await AreRequiredRolesMatched(RoleEnum.Admin))
+        if (foundShop.ShopStatusId != ShopStatusEnum.Active && !AreRequiredRolesMatched(RoleEnum.Admin))
             throw new BadRequestException($"Cannot modified inactive shop");
         await IsValidShopDto(shopDto);
         mapping.Map(shopDto, foundShop);
@@ -81,16 +96,16 @@ public class ShopService(
         if (foundShop == null)
             throw new NotFoundException(typeof(Shop), shopId);
 
-        //Check if current user is not a shop manager or a brand manager of this shop and alse not an admin, then reject the action.
+        //Check if current user is not a shop manager or a brand manager of this shop and else not an admin, then reject the action.
         var currentAccount = accountService.GetCurrentAccount();
-        var isCurrentShopManager = foundShop.ShopManagerId == currentAccount.Id;
-        var isCurrentBrandManager = currentAccount.Brand != null && foundShop.BrandId == currentAccount.Brand.Id;
-        var isAdmin = await AreRequiredRolesMatched(RoleEnum.Admin);
-        if ((isCurrentShopManager || isCurrentBrandManager) && !isAdmin)
+        var isShopManager = foundShop.ShopManagerId == currentAccount.Id;
+        var isBrandManager = currentAccount.Brand != null && foundShop.BrandId == currentAccount.Brand.Id;
+        var isAdmin = AreRequiredRolesMatched(RoleEnum.Admin);
+        if ((isShopManager || isBrandManager) && !isAdmin)
             throw new ForbiddenException("Current user not allowed to do this action.");
 
-        if (foundShop.ShopStatusId != ShopStatusEnum.Active && !await AreRequiredRolesMatched(RoleEnum.Admin))
-            throw new BadRequestException($"Cannot update inactive shop");
+        if (foundShop.ShopStatusId != ShopStatusEnum.Active && !isAdmin)
+            throw new BadRequestException("Cannot update inactive shop");
         foundShop.ShopStatusId = shopStatusId;
         await unitOfWork.CompleteAsync();
         return await GetShopById(shopId);
@@ -103,7 +118,7 @@ public class ShopService(
     /// </summary>
     /// <param name="roles">List of role IDs. Use RoleEnum.cs to get the constant role id</param>
     /// <returns></returns>
-    private async Task<bool> AreRequiredRolesMatched(params int[] roles)
+    private bool AreRequiredRolesMatched(params int[] roles)
     {
         var account = accountService.GetCurrentAccount();
         return account.Roles.Select(r => r.Id).Intersect(roles).Any();
@@ -114,17 +129,20 @@ public class ShopService(
         if (!await unitOfWork.Wards.IsExisted(shopDto.WardId))
             throw new NotFoundException(typeof(Ward), shopDto.WardId);
         var foundBrand = await unitOfWork.Brands.GetByIdAsync(shopDto.BrandId);
-        if (foundBrand is { BrandStatusId: BrandStatusEnum.Inactive })
+        if (foundBrand is null or { BrandStatusId: BrandStatusEnum.Inactive })
         {
             logger.Error($"Found Brand is {nameof(BrandStatusEnum.Inactive)}. Cannot updated");
             throw new NotFoundException(typeof(Brand), shopDto.BrandId);
         }
         if (shopDto.ShopManagerId.HasValue)
         {
-            var foundAccounts = await unitOfWork.Accounts.GetAsync(
-                expression: a => a.Id == shopDto.ShopManagerId.Value && a.AccountStatusId == AccountStatusEnum.Active,
-                includeProperties: [nameof(Account.Roles), nameof(Account.ManagingShop)]
-            );
+            var foundAccounts = await unitOfWork
+                .Accounts
+                .GetAsync(
+                    expression: a =>
+                        a.Id == shopDto.ShopManagerId.Value && a.AccountStatusId == AccountStatusEnum.Active,
+                    includeProperties: [ nameof(Account.Roles), nameof(Account.ManagingShop) ]
+                );
             if (foundAccounts.Values.Count == 0)
                 throw new NotFoundException(typeof(Account), shopDto.ShopManagerId.Value);
             var account = foundAccounts.Values[0];
@@ -133,35 +151,5 @@ public class ShopService(
             if (account.ManagingShop != null)
                 throw new BadRequestException("Account is a manager of another shop");
         }
-    }
-
-    /// <summary>
-    /// Get Shops base on current user's roles.
-    /// </summary>
-    /// <param name="searchShopDto">Filtering</param>
-    /// <returns><see cref="PaginationResult{Shop}"/> </returns>
-    public async Task<PaginationResult<Shop>> GetCurrentAccountShops(ShopSearchRequest searchRequest)
-    {
-        if (await AreRequiredRolesMatched(RoleEnum.Admin))
-            return await GetShops(searchRequest);
-
-        var currentAccount = accountService.GetCurrentAccount();
-        if (await AreRequiredRolesMatched(RoleEnum.BrandManager))
-        {
-            if (currentAccount.Brand == null)
-                return new PaginationResult<Shop>();
-            else
-            {
-                searchRequest.BrandId = currentAccount.Brand.Id;
-                return await GetShops(searchRequest);
-            }
-        }
-
-        if (await AreRequiredRolesMatched(RoleEnum.ShopManager))
-        {
-            searchRequest.ShopManagerId = currentAccount.Id;
-            return await GetShops(searchRequest);
-        }
-        return new PaginationResult<Shop>();
     }
 }
