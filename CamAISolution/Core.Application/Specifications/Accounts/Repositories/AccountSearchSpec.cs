@@ -7,9 +7,13 @@ namespace Core.Application.Specifications.Repositories;
 
 public class AccountSearchSpec : RepositorySpec<Account>
 {
-    private static Expression<Func<Account, bool>> GetExpression(SearchAccountRequest req, Account creatingAccount)
+    private static Expression<Func<Account, bool>> GetExpression(SearchAccountRequest req, Account reqAccount)
     {
         var baseSpec = new Specification<Account>();
+
+        // Exclude the requesting account
+        baseSpec.And(new AccountByIdSpec(reqAccount.Id).Not());
+
         if (!string.IsNullOrWhiteSpace(req.Search))
         {
             req.Search = req.Search.Trim();
@@ -30,11 +34,9 @@ public class AccountSearchSpec : RepositorySpec<Account>
         if (req.ShopId.HasValue)
         {
             baseSpec.And(new AccountByShopSpec(req.ShopId.Value));
-            // If the highest role of the current user is shop manager, they can only see themself and employees of their shop
-            if (!creatingAccount.HasRole(RoleEnum.Admin) && !creatingAccount.HasRole(RoleEnum.BrandManager))
-                baseSpec.And(
-                    new Specification<Account>(a => !a.Roles.Contains(new Role { Id = RoleEnum.BrandManager }))
-                );
+            // If the highest role of the current user is shop manager, they can only see employees of their shop
+            if (!reqAccount.HasRole(RoleEnum.Admin) && !reqAccount.HasRole(RoleEnum.BrandManager))
+                baseSpec.And(new AccountByRoleSpec(RoleEnum.BrandManager).Not());
         }
 
         return baseSpec.GetExpression();
