@@ -23,9 +23,9 @@ public class BrandService(
 {
     public async Task<PaginationResult<Brand>> GetBrands(SearchBrandRequest searchRequest)
     {
-        var currentAccount = accountService.GetCurrentAccount();
+        var currentAccount = await accountService.GetAccountById(accountService.GetCurrentAccount().Id);
         if (currentAccount.HasRole(RoleEnum.BrandManager))
-            searchRequest.BrandId = currentAccount.Brand!.Id;
+            searchRequest.BrandId = currentAccount.BrandId;
         else if (currentAccount.HasRole(RoleEnum.ShopManager))
         {
             var shop = await shopService.GetShopById(currentAccount.ManagingShop!.Id);
