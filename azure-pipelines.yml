@@ -1,0 +1,52 @@
+trigger:
+- main
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+- group: docker
+
+steps:
+- task: Docker@2
+  displayName: 'Docker build and publish'
+  inputs:
+    containerRegistry: 'camai-hub'
+    repository: 'milease/camai-backend'
+    command: 'buildAndPush'
+    Dockerfile: '**/Dockerfile'
+    buildContext: './CamAISolution'
+    tags: 'camai-web-api'
+- script: |
+    echo "MS_SQL_PASS=$(docker.compose.MS_SQL_PASS)" > .env
+    echo "MS_SQL_CONN=$(docker.compose.MS_SQL_CONN)" >> .env
+    echo "STAGE=$(docker.compose.STAGE)" >> .env
+  displayName: 'Write .env'
+  
+- task: CopyFilesOverSSH@0
+  displayName: 'Copy files'
+  inputs:
+    sshEndpoint: 'ssh-server'
+    contents: |
+      .env
+      ./Deploy/docker-compose.yml
+    targetFolder: 'backend'
+    readyTimeout: '20000'
+
+- task: SSH@0
+  displayName: 'Pull and run image'
+  inputs:
+    sshEndpoint: 'ssh-server'
+    runOptions: 'inline'
+    inline: |
+      echo Starting pull and run image:
+      cd backend
+      mv Deploy/*yml .
+      rmdir Deploy
+      echo Login into Docker...
+      docker login -u $(docker.username) --password-stdin $(docker.password)
+      docker compose down web-api
+      docker rmi milease/camai-backend:camai-web-api
+      docker compose pull web-api
+      docker compose up -d
+    readyTimeout: '20000'
