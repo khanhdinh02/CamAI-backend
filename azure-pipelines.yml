@@ -1,8 +1,8 @@
 trigger:
-- main
+- update/VPS_SeftHostAgent
 
 pool:
-  vmImage: ubuntu-latest
+  name: 'Camai-Agent'
 
 variables:
 - group: docker
