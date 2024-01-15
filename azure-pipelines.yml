@@ -1,5 +1,5 @@
 trigger:
-- main
+- fix/VPS_Pipeline
 
 pool:
   vmImage: ubuntu-latest
@@ -33,20 +33,26 @@ steps:
     targetFolder: 'backend'
     readyTimeout: '20000'
 
+- task: PowerShell@2
+  displayName: 'Convert STDERR to STDOUT for docker compose command'
+  inputs:
+    targetType: 'inline'
+    script: |
+      echo $(docker.password) | docker login -u $(docker.username) --password-stdin 2>&1
+      docker compose down web-api 2>&1
+      docker rmi milease/camai-backend:camai-web-api 2>&1
+      docker compose up -d --quiet-pull 2>&1
 - task: SSH@0
   displayName: 'Pull and run image'
   inputs:
     sshEndpoint: 'ssh-server'
     runOptions: 'inline'
     inline: |
-      echo Starting pull and run image:
       cd backend
       mv Deploy/*yml .
       rmdir Deploy
-      echo Login into Docker...
       echo $(docker.password) | docker login -u $(docker.username) --password-stdin
       docker compose down web-api
       docker rmi milease/camai-backend:camai-web-api
-      docker compose pull web-api
       docker compose up -d
     readyTimeout: '20000'
