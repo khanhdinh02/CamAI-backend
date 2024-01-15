@@ -14,5 +14,5 @@ public class BrandByNameSpec : Specification<Brand>
     }
 
     public override Expression<Func<Brand, bool>> GetExpression() =>
-        x => name.Trim().ToLower() == x.Name.Trim().ToLower();
+        x => x.Name.Trim().ToLower().Contains(name.Trim().ToLower());
 }
