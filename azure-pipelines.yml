@@ -1,5 +1,5 @@
 trigger:
-- update/VPS_SeftHostAgent
+- main
 
 pool:
   name: 'Camai-Agent'
