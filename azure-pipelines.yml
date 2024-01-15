@@ -1,5 +1,5 @@
 trigger:
-- fix/VPS_Pipeline
+- main
 
 pool:
   vmImage: ubuntu-latest
@@ -45,5 +45,5 @@ steps:
       echo $(docker.password) | docker login -u $(docker.username) --password-stdin 2>&1
       docker compose down web-api 2>&1
       docker rmi milease/camai-backend:camai-web-api 2>&1
-      docker compose up -d 2>&1
+      docker compose up -d --quiet-pull 2>&1
     readyTimeout: '20000'
