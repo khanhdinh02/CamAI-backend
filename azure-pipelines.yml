@@ -44,7 +44,7 @@ steps:
       mv Deploy/*yml .
       rmdir Deploy
       echo Login into Docker...
-      docker login -u $(docker.username) --password-stdin $(docker.password)
+      echo $(docker.password) | docker login -u $(docker.username) --password-stdin
       docker compose down web-api
       docker rmi milease/camai-backend:camai-web-api
       docker compose pull web-api
