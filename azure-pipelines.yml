@@ -39,14 +39,11 @@ steps:
     sshEndpoint: 'ssh-server'
     runOptions: 'inline'
     inline: |
-      echo Starting pull and run image:
       cd backend
       mv Deploy/*yml .
       rmdir Deploy
-      echo Login into Docker...
-      echo $(docker.password) | docker login -u $(docker.username) --password-stdin
-      docker compose down web-api
-      docker rmi milease/camai-backend:camai-web-api
-      docker compose pull web-api
-      docker compose up -d
+      echo $(docker.password) | docker login -u $(docker.username) --password-stdin 2>&1
+      docker compose down web-api 2>&1
+      docker rmi milease/camai-backend:camai-web-api 2>&1
+      docker compose up -d --quiet-pull 2>&1
     readyTimeout: '20000'
