@@ -2,6 +2,7 @@ using System.Reflection;
 using Core.Application.Implements;
 using Core.Domain.Interfaces.Services;
 using Core.Domain.Services;
+using Host.CamAI.API.Workers;
 using Microsoft.OpenApi.Models;
 
 namespace Host.CamAI.API;
@@ -17,6 +18,12 @@ public static class ApiDependencyInjection
         services.AddScoped<IEdgeBoxService, EdgeBoxService>();
         services.AddScoped<ITicketService, TicketService>();
         services.AddScoped<ILocationService, LocationService>();
+        return services;
+    }
+
+    public static IServiceCollection AddApplicationHostedServices(this IServiceCollection services)
+    {
+        services.AddHostedService<DemoMessageConsumerService>();
         return services;
     }
 

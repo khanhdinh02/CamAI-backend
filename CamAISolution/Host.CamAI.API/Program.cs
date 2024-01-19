@@ -5,11 +5,11 @@ using Infrastructure.Jwt;
 using Infrastructure.Logging;
 using Infrastructure.Mapping;
 using Infrastructure.Repositories;
+using Infrastructure.MessageQueue;
 
 var builder = WebApplication.CreateBuilder(args).ConfigureSerilog();
 
 builder.Services.AddControllers();
-
 const string allowPolicy = "AllowAll";
 
 builder
@@ -20,7 +20,6 @@ builder
                 builder =>
                     builder
                         .AllowAnyOrigin()
-                        .AllowAnyHeader()
                         .AllowAnyHeader()
                         .WithExposedHeaders(HeaderNameConstant.Auto)
             // TODO[Dat]: Enable allow credential when have specific origin
@@ -33,7 +32,9 @@ builder
     .AddHttpContextAccessor()
     .AddSwagger()
     .AddServices()
-    .AddMapping();
+    .AddMapping()
+    .AddApplicationHostedServices()
+    .AddMessageQueue(builder.Configuration);
 
 builder.Services.Configure<RouteOptions>(opts =>
 {
