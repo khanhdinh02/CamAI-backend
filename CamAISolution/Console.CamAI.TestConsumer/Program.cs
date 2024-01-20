@@ -7,7 +7,7 @@ using RabbitMQ.Client.Exceptions;
 
 namespace Console.CamAI.TestConsumer;
 
-internal static class Program
+public static class Program
 {
     private static Task Main(string[] args)
     {
@@ -20,7 +20,11 @@ internal static class Program
             try
             {
                 var configuration = new ConfigurationBuilder()
-                    .AddJsonFile($@"{Directory.GetParent(Directory.GetCurrentDirectory())}\Host.CamAI.API\{appsettingName}", true, true)
+                    .AddJsonFile(
+                        $@"{Directory.GetParent(Directory.GetCurrentDirectory())}\Host.CamAI.API\{appsettingName}",
+                        true,
+                        true
+                    )
                     .Build();
                 var rabbitMQConfig = configuration.GetSection("RabbitMQ").Get<RabbitMQConfiguration>()!;
                 var factory = new ConnectionFactory
