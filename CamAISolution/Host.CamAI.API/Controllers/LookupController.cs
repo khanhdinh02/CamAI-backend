@@ -1,6 +1,7 @@
 ﻿using System.Reflection;
 using Core.Application.Implements;
 using Core.Domain.DTO;
+using Core.Domain.Entities;
 using Host.CamAI.API.Attributes;
 using Microsoft.AspNetCore.Mvc;
 
@@ -17,6 +18,7 @@ public class LookupController : ControllerBase
     [LookupHttpGet("edgeBox-status", typeof(EdgeBoxStatusEnum))]
     [LookupHttpGet("edgeBox-install-status", typeof(EdgeBoxInstallStatusEnum))]
     [LookupHttpGet("role", typeof(RoleEnum))]
+    [LookupHttpGet("gender", typeof(Gender))]
     public ActionResult<Dictionary<int, string>> GetLookup()
     {
         var path = HttpContext.Request.Path;
