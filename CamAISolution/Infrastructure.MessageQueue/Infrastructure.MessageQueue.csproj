@@ -7,10 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-      <PackageReference Include="EasyNetQ" />
-      <PackageReference Include="MassTransit.RabbitMQ" />
       <PackageReference Include="Microsoft.Extensions.Configuration" />
-      <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" />
       <PackageReference Include="Microsoft.Extensions.Configuration.Binder" />
       <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
       <PackageReference Include="RabbitMQ.Client" />

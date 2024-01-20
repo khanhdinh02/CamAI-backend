@@ -33,7 +33,6 @@ builder
     .AddSwagger()
     .AddServices()
     .AddMapping()
-    .AddApplicationHostedServices()
     .AddMessageQueue(builder.Configuration);
 
 builder.Services.Configure<RouteOptions>(opts =>

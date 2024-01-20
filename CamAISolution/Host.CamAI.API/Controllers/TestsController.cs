@@ -17,7 +17,7 @@ public class TestsController : ControllerBase
     public async Task<IActionResult> SayHyToMQ()
     {
         var mqService = HttpContext.RequestServices.GetRequiredService<IMessageQueueService>();
-        await mqService.SendMessage("This message must consume some where", "demo", "camai-exchange");
+        await mqService.SendMessage("This message must be consumed some where", "demo", "camai-exchange");
         return Ok();
     }
 }
