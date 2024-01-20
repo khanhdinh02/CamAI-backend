@@ -84,7 +84,7 @@ public class BrandService(
         var brand = await unitOfWork.Brands.GetByIdAsync(id);
         if (brand == null)
             throw new NotFoundException(typeof(Brand), id);
-        if (brand.BrandStatusId != BrandStatusEnum.Active)
+        if (brand.BrandStatusId == BrandStatusEnum.Active)
             throw new BadRequestException("Brand is already active");
 
         brand.BrandStatusId = BrandStatusEnum.Active;
