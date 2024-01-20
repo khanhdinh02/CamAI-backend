@@ -50,8 +50,9 @@ public class BrandService(
         return brand;
     }
 
-    public async Task<Brand> CreateBrand(Brand brand)
+    public async Task<Brand> CreateBrand(CreateBrandDto brandDto)
     {
+        var brand = mapping.Map<CreateBrandDto, Brand>(brandDto);
         // TODO [Duy]: create brand with logo and banner
         brand.BrandStatusId = BrandStatusEnum.Active;
         await unitOfWork.Brands.AddAsync(brand);

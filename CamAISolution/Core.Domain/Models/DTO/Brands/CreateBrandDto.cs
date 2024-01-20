@@ -8,10 +8,10 @@ public class CreateBrandDto
     [StringLength(50)]
     public string Name { get; set; } = null!;
 
-    // TODO: email validation
+    [EmailAddress]
     public string? Email { get; set; }
 
-    // TODO: phone digit and length validation
     [StringLength(50)]
+    [Phone]
     public string? Phone { get; set; }
 }
