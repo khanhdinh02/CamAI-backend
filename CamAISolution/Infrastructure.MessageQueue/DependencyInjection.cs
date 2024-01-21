@@ -1,5 +1,7 @@
+using System.Net;
 using Core.Application.Exceptions;
 using Core.Domain.Interfaces.Services;
+using Infrastructure.MessageQueue.Consumers;
 using Infrastructure.MessageQueue.Models;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,8 +15,9 @@ public static class DependencyInjection
         var rabbitmqConfig =
             configuration.GetRequiredSection("RabbitMQ").Get<RabbitMQConfiguration>()
             ?? throw new ServiceUnavailableException("Service is not ready");
-        services.AddScoped(_ => rabbitmqConfig);
+        services.AddSingleton(_ => rabbitmqConfig);
         services.AddScoped<IMessageQueueService, MessageQueueService>();
+        Task.Run(() => TestConsumer.Run(rabbitmqConfig, "camai-exchange", "demo"));
         return services;
     }
 }

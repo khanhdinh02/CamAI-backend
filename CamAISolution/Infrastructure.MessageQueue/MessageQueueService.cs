@@ -1,9 +1,7 @@
-using System.ComponentModel.DataAnnotations;
 using System.Text;
 using Core.Domain.Interfaces.Services;
 using Infrastructure.MessageQueue.Models;
 using RabbitMQ.Client;
-using RabbitMQ.Client.Events;
 
 namespace Infrastructure.MessageQueue;
 
