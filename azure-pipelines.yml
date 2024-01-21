@@ -13,7 +13,7 @@ steps:
   inputs:
     containerregistrytype: "Container Registry"
     dockerRegistryEndpoint: "dat-hub"
-    dockerComposeFile: "$(Build.SourcesDirectory)/docker-compose.yml"
+    dockerComposeFile: "**/docker-compose.yml"
     action: "Run a Docker Compose command"
     buildImages: true
     dockerComposeCommand: "Build web-api"
