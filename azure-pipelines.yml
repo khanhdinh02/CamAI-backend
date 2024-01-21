@@ -14,8 +14,8 @@ steps:
     containerregistrytype: "Container Registry"
     dockerRegistryEndpoint: "dat-hub"
     dockerComposeFile: "./docker-compose.yml"
+    dockerComposePath: "./"
     action: "Run a Docker Compose command"
-    workingDirectory: "./"
     includeLatestTag: true
     includeSourceTags: true
     dockerComposeCommand: "docker-compose build web-api"
