@@ -8,15 +8,14 @@ variables:
 - group: docker
 
 steps:
-- script: pwd && ls && cat docker-compose.yml
+- script: chmod 777 docker-compose.yml
 
 - task: DockerCompose@0
   displayName: "Building images"
   inputs:
     containerregistrytype: "Container Registry"
     dockerRegistryEndpoint: "dat-hub"
-    dockerComposeFile: docker-compose.yml
-    dockerComposePath: docker-compose.yml
+    dockerComposeFile: ./docker-compose.yml
     action: "Run a Docker Compose command"
     buildImages: true
     dockerComposeCommand: "Build web-api"
