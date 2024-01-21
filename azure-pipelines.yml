@@ -9,16 +9,14 @@ variables:
 
 steps:
 - task: DockerCompose@0
-  displayName: "Docker compose build"
+  displayName: "Building images"
   inputs:
     containerregistrytype: "Container Registry"
     dockerRegistryEndpoint: "dat-hub"
-    dockerComposeFile: "./docker-compose.yml"
-    dockerComposePath: "./"
+    dockerComposeFile: "$(Build.SourcesDirectory)/docker-compose.yml"
     action: "Run a Docker Compose command"
-    includeLatestTag: true
-    includeSourceTags: true
-    dockerComposeCommand: "docker-compose build web-api"
+    buildImages: true
+    dockerComposeCommand: "Build web-api"
 
 # - task: Docker@2
 #   displayName: 'Docker build and publish'
