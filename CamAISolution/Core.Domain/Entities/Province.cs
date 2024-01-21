@@ -3,7 +3,7 @@ using Core.Domain.Entities.Base;
 
 namespace Core.Domain.Entities;
 
-public class Province : BusinessEntity
+public class Province : BaseEntity<int>
 {
     [StringLength(50)]
     public string Name { get; set; } = null!;

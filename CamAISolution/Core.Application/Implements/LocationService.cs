@@ -1,4 +1,4 @@
-﻿using Core.Application.Exceptions;
+using Core.Application.Exceptions;
 using Core.Domain.Entities;
 using Core.Domain.Repositories;
 using Core.Domain.Services;
@@ -7,7 +7,7 @@ namespace Core.Application.Implements;
 
 public class LocationService(IRepository<Province> provinces, IRepository<District> districts) : ILocationService
 {
-    public async Task<IEnumerable<District>> GetAllDistrictsByProvinceId(Guid provinceId)
+    public async Task<IEnumerable<District>> GetAllDistrictsByProvinceId(int provinceId)
     {
         var foundProvince = await provinces.GetAsync(
             expression: p => p.Id == provinceId,
@@ -26,7 +26,7 @@ public class LocationService(IRepository<Province> provinces, IRepository<Distri
         return allProvinces.Values;
     }
 
-    public async Task<IEnumerable<Ward>> GetAllWardsByDistrictId(Guid districtId)
+    public async Task<IEnumerable<Ward>> GetAllWardsByDistrictId(int districtId)
     {
         var foundDistrict = await districts.GetAsync(
             expression: d => d.Id == districtId,
