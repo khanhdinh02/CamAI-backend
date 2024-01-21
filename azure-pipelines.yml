@@ -1,5 +1,5 @@
 trigger:
-- main
+- feature/setup_RabbitMqAndReddis
 
 pool:
   name: 'Camai-Agent'
@@ -8,42 +8,54 @@ variables:
 - group: docker
 
 steps:
-- task: Docker@2
-  displayName: 'Docker build and publish'
+- task: DockerCompose@0
+  displayName: "Docker compose build"
   inputs:
-    containerRegistry: 'camai-hub'
-    repository: 'milease/camai-backend'
-    command: 'buildAndPush'
-    Dockerfile: '**/Dockerfile'
-    buildContext: './CamAISolution'
-    tags: 'camai-web-api'
-- script: |
-    echo "MS_SQL_PASS=$(docker.compose.MS_SQL_PASS)" > .env
-    echo "MS_SQL_CONN=$(docker.compose.MS_SQL_CONN)" >> .env
-    echo "STAGE=$(docker.compose.STAGE)" >> .env
-  displayName: 'Write .env'
-  
-- task: CopyFilesOverSSH@0
-  displayName: 'Copy files'
-  inputs:
-    sshEndpoint: 'ssh-server'
-    contents: |
-      .env
-      ./Deploy/docker-compose.yml
-    targetFolder: 'backend'
-    readyTimeout: '20000'
+    containerregistrytype: "Container Registry"
+    dockerRegistryEndpoint: "dat-hub"
+    dockerComposeFile: ./docker-compose.yml
+    action: "Run a Docker Compose command"
+    workingDirectory: "./"
+    includeLatestTag: true
+    includeSourceTags: true
+    dockerComposeCommand: "docker-compose build web-api"
 
-- task: SSH@0
-  displayName: 'Pull and run image'
-  inputs:
-    sshEndpoint: 'ssh-server'
-    runOptions: 'inline'
-    inline: |
-      cd backend
-      mv Deploy/*yml .
-      rmdir Deploy
-      echo $(docker.password) | docker login -u $(docker.username) --password-stdin 2>&1
-      docker compose down web-api 2>&1
-      docker rmi milease/camai-backend:camai-web-api 2>&1
-      docker compose up -d --quiet-pull 2>&1
-    readyTimeout: '20000'
+# - task: Docker@2
+#   displayName: 'Docker build and publish'
+#   inputs:
+#     containerRegistry: 'camai-hub'
+#     repository: 'milease/camai-backend'
+#     command: 'buildAndPush'
+#     Dockerfile: '**/Dockerfile'
+#     buildContext: './CamAISolution'
+#     tags: 'camai-web-api'
+# - script: |
+#     echo "MS_SQL_PASS=$(docker.compose.MS_SQL_PASS)" > .env
+#     echo "MS_SQL_CONN=$(docker.compose.MS_SQL_CONN)" >> .env
+#     echo "STAGE=$(docker.compose.STAGE)" >> .env
+#   displayName: 'Write .env'
+  
+# - task: CopyFilesOverSSH@0
+#   displayName: 'Copy files'
+#   inputs:
+#     sshEndpoint: 'ssh-server'
+#     contents: |
+#       .env
+#       ./Deploy/docker-compose.yml
+#     targetFolder: 'backend'
+#     readyTimeout: '20000'
+
+# - task: SSH@0
+#   displayName: 'Pull and run image'
+#   inputs:
+#     sshEndpoint: 'ssh-server'
+#     runOptions: 'inline'
+#     inline: |
+#       cd backend
+#       mv Deploy/*yml .
+#       rmdir Deploy
+#       echo $(docker.password) | docker login -u $(docker.username) --password-stdin 2>&1
+#       docker compose down web-api 2>&1
+#       docker rmi milease/camai-backend:camai-web-api 2>&1
+#       docker compose up -d --quiet-pull 2>&1
+#     readyTimeout: '20000'
