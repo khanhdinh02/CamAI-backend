@@ -8,6 +8,8 @@ variables:
 - group: docker
 
 steps:
+- script: pwd && ls
+
 - task: DockerCompose@0
   displayName: "Building images"
   inputs:
