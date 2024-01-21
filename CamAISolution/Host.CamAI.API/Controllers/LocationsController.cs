@@ -1,18 +1,19 @@
+using Core.Domain.DTO;
 using Core.Domain.Entities;
-using Core.Domain.Services;
+using Core.Domain.Interfaces.Mappings;
+using Core.Domain.Interfaces.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Host.CamAI.API.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-//TODO [Dat] : Map to DTO and cast type for ActionResult
-public class LocationsController(ILocationService locationService) : ControllerBase
+public class LocationsController(ILocationService locationService, IBaseMapping mapper) : ControllerBase
 {
     [HttpGet($"{nameof(Province)}s")]
-    public async Task<ActionResult> GetAllProvinces()
+    public async Task<IEnumerable<ProvinceDto>> GetAllProvinces()
     {
-        return Ok(await locationService.GetAllProvinces());
+        return mapper.Map<IEnumerable<Province>, IEnumerable<ProvinceDto>>(await locationService.GetAllProvinces());
     }
 
     /// <summary>
@@ -21,15 +22,10 @@ public class LocationsController(ILocationService locationService) : ControllerB
     /// <param name="id"></param>
     /// <returns></returns>
     [HttpGet($"{nameof(Province)}s/{{id}}/{nameof(District)}s")]
-    public async Task<ActionResult> GetAllDistrictsByProvinceId(int id)
+    public async Task<IEnumerable<DistrictDto>> GetAllDistrictsByProvinceId(int id)
     {
-        var districts = await locationService.GetAllDistrictsByProvinceId(id);
-        return Ok(
-            districts.Select(d =>
-            {
-                d.Province = null;
-                return d;
-            })
+        return mapper.Map<IEnumerable<District>, IEnumerable<DistrictDto>>(
+            await locationService.GetAllDistrictsByProvinceId(id)
         );
     }
 
@@ -39,15 +35,8 @@ public class LocationsController(ILocationService locationService) : ControllerB
     /// <param name="id"></param>
     /// <returns></returns>
     [HttpGet($"{nameof(District)}s/{{id}}/{nameof(Ward)}s")]
-    public async Task<ActionResult> GetAllWardsByDistrictId(int id)
+    public async Task<IEnumerable<WardDto>> GetAllWardsByDistrictId(int id)
     {
-        var wards = await locationService.GetAllWardsByDistrictId(id);
-        return Ok(
-            wards.Select(w =>
-            {
-                w.District = null;
-                return w;
-            })
-        );
+        return mapper.Map<IEnumerable<Ward>, IEnumerable<WardDto>>(await locationService.GetAllWardsByDistrictId(id));
     }
 }

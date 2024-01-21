@@ -1,6 +1,6 @@
 using Core.Domain.Entities;
 
-namespace Core.Domain.Services;
+namespace Core.Domain.Interfaces.Services;
 
 public interface ILocationService
 {
