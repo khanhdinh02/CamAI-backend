@@ -20,6 +20,10 @@ services:
       - "8091:8081"
     environment:
       - ConnectionStrings__Default=${MS_SQL_CONN}
+      - RabbitMQ__RabbitMQHost=${RABBITMQ_HOST}
+      - RabbitMQ__RabbitMQUser=${RABBITMQ_USER}
+      - RabbitMQ__RabbitMQPassword=${RABBITMQ_PASS}
+      - RabbitMQ__RabbitMQPort=${RABBITMQ_PORT}
       - ASPNETCORE_ENVIRONMENT=${STAGE}
     depends_on:
       - mssqldb
