@@ -1,7 +1,5 @@
 using System.Runtime.InteropServices;
 using System.Text;
-using Core.Application.Exceptions;
-using Core.Domain.DTO;
 using Infrastructure.MessageQueue.Models;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
