@@ -9,7 +9,7 @@ public class ShopDto : BaseDto
 
     [MaxLength(50)]
     public string? Phone { get; set; }
-    public Guid WardId { get; set; }
+    public int WardId { get; set; }
     public string? AddressLine { get; set; }
 
     public WardDto Ward { get; set; } = null!;

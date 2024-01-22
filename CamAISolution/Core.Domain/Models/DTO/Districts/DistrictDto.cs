@@ -1,9 +1,9 @@
-using Core.Domain.DTO;
+namespace Core.Domain.DTO;
 
-namespace Core.Domain.Models.DTO;
-
-public class DistrictDto : BaseDto
+public class DistrictDto
 {
+    public int Id { get; set; }
     public string Name { get; set; } = null!;
+    public int ProvinceId { get; set; }
     public ProvinceDto Province { get; set; } = null!;
 }
