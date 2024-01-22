@@ -160,6 +160,22 @@ public class CamAIContext : DbContext
             builder.Property(x => x.LogoUri).HasConversion<string>();
             builder.Property(x => x.BannerUri).HasConversion<string>();
         });
+        modelBuilder
+            .Entity<Account>()
+            .HasMany(a => a.SentNotifications)
+            .WithOne(n => n.SentBy)
+            .OnDelete(DeleteBehavior.NoAction);
+
+        modelBuilder
+            .Entity<NotificationStatus>()
+            .HasData(
+                new NotificationStatus
+                {
+                    Id = NotificationStatusEnum.Unread,
+                    Name = nameof(NotificationStatusEnum.Unread)
+                },
+                new NotificationStatus { Id = NotificationStatusEnum.Read, Name = nameof(NotificationStatusEnum.Read) }
+            );
 
         modelBuilder.Entity<Evidence>().Property(p => p.Uri).HasConversion<string>();
     }

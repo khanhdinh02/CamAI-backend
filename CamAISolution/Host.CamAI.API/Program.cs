@@ -4,6 +4,7 @@ using Host.CamAI.API.Models;
 using Infrastructure.Jwt;
 using Infrastructure.Logging;
 using Infrastructure.Mapping;
+using Infrastructure.Notification;
 using Infrastructure.Repositories;
 
 var builder = WebApplication.CreateBuilder(args).ConfigureSerilog();
@@ -13,14 +14,19 @@ builder.Services.AddControllers();
 const string allowPolicy = "AllowAll";
 
 builder
-    .Services.AddCors(opts =>
-        opts.AddPolicy(
-            name: allowPolicy,
-            builder =>
-                builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader().WithExposedHeaders(HeaderNameConstant.Auto)
-        // TODO[Dat]: Enable allow credential when have specific origin
-        // .AllowCredentials()
-        )
+    .Services.AddCors(
+        opts =>
+            opts.AddPolicy(
+                name: allowPolicy,
+                builder =>
+                    builder
+                        .AllowAnyOrigin()
+                        .AllowAnyMethod()
+                        .AllowAnyHeader()
+                        .WithExposedHeaders(HeaderNameConstant.Auto)
+            // TODO[Dat]: Enable allow credential when have specific origin
+            // .AllowCredentials()
+            )
     )
     .AddRepository(builder.Configuration.GetConnectionString("Default"))
     .AddJwtService(builder.Configuration)
@@ -28,7 +34,8 @@ builder
     .AddHttpContextAccessor()
     .AddSwagger()
     .AddServices()
-    .AddMapping();
+    .AddMapping()
+    .AddNotification();
 
 builder.Services.Configure<RouteOptions>(opts =>
 {
