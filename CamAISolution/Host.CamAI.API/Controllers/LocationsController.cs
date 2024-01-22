@@ -13,7 +13,7 @@ public class LocationsController(ILocationService locationService, IBaseMapping 
     [HttpGet($"{nameof(Province)}s")]
     public async Task<IEnumerable<ProvinceDto>> GetAllProvinces()
     {
-        return mapper.Map<IEnumerable<Province>, IEnumerable<ProvinceDto>>(await locationService.GetAllProvinces());
+        return (await locationService.GetAllProvinces()).Select(mapper.Map<Province, ProvinceDto>);
     }
 
     /// <summary>
@@ -24,9 +24,7 @@ public class LocationsController(ILocationService locationService, IBaseMapping 
     [HttpGet($"{nameof(Province)}s/{{id}}/{nameof(District)}s")]
     public async Task<IEnumerable<DistrictDto>> GetAllDistrictsByProvinceId(int id)
     {
-        return mapper.Map<IEnumerable<District>, IEnumerable<DistrictDto>>(
-            await locationService.GetAllDistrictsByProvinceId(id)
-        );
+        return (await locationService.GetAllDistrictsByProvinceId(id)).Select(mapper.Map<District, DistrictDto>);
     }
 
     /// <summary>
@@ -37,6 +35,6 @@ public class LocationsController(ILocationService locationService, IBaseMapping 
     [HttpGet($"{nameof(District)}s/{{id}}/{nameof(Ward)}s")]
     public async Task<IEnumerable<WardDto>> GetAllWardsByDistrictId(int id)
     {
-        return mapper.Map<IEnumerable<Ward>, IEnumerable<WardDto>>(await locationService.GetAllWardsByDistrictId(id));
+        return (await locationService.GetAllWardsByDistrictId(id)).Select(mapper.Map<Ward, WardDto>);
     }
 }
