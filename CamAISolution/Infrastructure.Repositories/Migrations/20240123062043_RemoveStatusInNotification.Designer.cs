@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Repositories.Migrations
 {
     [DbContext(typeof(CamAIContext))]
-    [Migration("20240122092427_CreateNotificationTable")]
-    partial class CreateNotificationTable
+    [Migration("20240123062043_RemoveStatusInNotification")]
+    partial class RemoveStatusInNotification
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,21 +24,6 @@ namespace Infrastructure.Repositories.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
-
-            modelBuilder.Entity("AccountNotification", b =>
-                {
-                    b.Property<Guid>("ReceivedNotificationsId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("SentToId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("ReceivedNotificationsId", "SentToId");
-
-                    b.HasIndex("SentToId");
-
-                    b.ToTable("AccountNotification");
-                });
 
             modelBuilder.Entity("AccountRole", b =>
                 {
@@ -80,6 +65,9 @@ namespace Infrastructure.Repositories.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("FCMToken")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Gender")
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
@@ -105,8 +93,8 @@ namespace Infrastructure.Repositories.Migrations
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("rowversion");
 
-                    b.Property<Guid?>("WardId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<int?>("WardId")
+                        .HasColumnType("int");
 
                     b.Property<Guid?>("WorkingShopId")
                         .HasColumnType("uniqueidentifier");
@@ -122,6 +110,26 @@ namespace Infrastructure.Repositories.Migrations
                     b.HasIndex("WorkingShopId");
 
                     b.ToTable("Accounts");
+                });
+
+            modelBuilder.Entity("Core.Domain.Entities.AccountNotification", b =>
+                {
+                    b.Property<Guid>("AccountId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("NotificationId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("StatusId")
+                        .HasColumnType("int");
+
+                    b.HasKey("AccountId", "NotificationId");
+
+                    b.HasIndex("NotificationId");
+
+                    b.HasIndex("StatusId");
+
+                    b.ToTable("AccountNotifications");
                 });
 
             modelBuilder.Entity("Core.Domain.Entities.AccountStatus", b =>
@@ -358,28 +366,19 @@ namespace Infrastructure.Repositories.Migrations
 
             modelBuilder.Entity("Core.Domain.Entities.District", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("int");
 
-                    b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("ModifiedDate")
-                        .HasColumnType("datetime2");
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<Guid>("ProvinceId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<byte[]>("Timestamp")
-                        .IsConcurrencyToken()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
+                    b.Property<int>("ProvinceId")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -737,9 +736,6 @@ namespace Infrastructure.Repositories.Migrations
                     b.Property<Guid>("SentById")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("StatusId")
-                        .HasColumnType("int");
-
                     b.Property<byte[]>("Timestamp")
                         .IsConcurrencyToken()
                         .ValueGeneratedOnAddOrUpdate()
@@ -753,9 +749,7 @@ namespace Infrastructure.Repositories.Migrations
 
                     b.HasIndex("SentById");
 
-                    b.HasIndex("StatusId");
-
-                    b.ToTable("Notification");
+                    b.ToTable("Notifications");
                 });
 
             modelBuilder.Entity("Core.Domain.Entities.NotificationStatus", b =>
@@ -781,7 +775,7 @@ namespace Infrastructure.Repositories.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("NotificationStatus");
+                    b.ToTable("NotificationStatuses");
 
                     b.HasData(
                         new
@@ -798,25 +792,16 @@ namespace Infrastructure.Repositories.Migrations
 
             modelBuilder.Entity("Core.Domain.Entities.Province", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("int");
 
-                    b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("ModifiedDate")
-                        .HasColumnType("datetime2");
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
-
-                    b.Property<byte[]>("Timestamp")
-                        .IsConcurrencyToken()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
 
                     b.HasKey("Id");
 
@@ -1090,8 +1075,8 @@ namespace Infrastructure.Repositories.Migrations
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("rowversion");
 
-                    b.Property<Guid>("WardId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<int>("WardId")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -1329,49 +1314,25 @@ namespace Infrastructure.Repositories.Migrations
 
             modelBuilder.Entity("Core.Domain.Entities.Ward", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("int");
 
-                    b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("datetime2");
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<Guid>("DistrictId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("ModifiedDate")
-                        .HasColumnType("datetime2");
+                    b.Property<int>("DistrictId")
+                        .HasColumnType("int");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<byte[]>("Timestamp")
-                        .IsConcurrencyToken()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
-
                     b.HasKey("Id");
 
                     b.HasIndex("DistrictId");
 
                     b.ToTable("Wards");
-                });
-
-            modelBuilder.Entity("AccountNotification", b =>
-                {
-                    b.HasOne("Core.Domain.Entities.Notification", null)
-                        .WithMany()
-                        .HasForeignKey("ReceivedNotificationsId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Core.Domain.Entities.Account", null)
-                        .WithMany()
-                        .HasForeignKey("SentToId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
                 });
 
             modelBuilder.Entity("AccountRole", b =>
@@ -1416,6 +1377,33 @@ namespace Infrastructure.Repositories.Migrations
                     b.Navigation("Ward");
 
                     b.Navigation("WorkingShop");
+                });
+
+            modelBuilder.Entity("Core.Domain.Entities.AccountNotification", b =>
+                {
+                    b.HasOne("Core.Domain.Entities.Account", "Account")
+                        .WithMany("ReceivedNotifications")
+                        .HasForeignKey("AccountId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Core.Domain.Entities.Notification", "Notification")
+                        .WithMany("SentTo")
+                        .HasForeignKey("NotificationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Core.Domain.Entities.NotificationStatus", "Status")
+                        .WithMany()
+                        .HasForeignKey("StatusId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Account");
+
+                    b.Navigation("Notification");
+
+                    b.Navigation("Status");
                 });
 
             modelBuilder.Entity("Core.Domain.Entities.Behavior", b =>
@@ -1580,15 +1568,7 @@ namespace Infrastructure.Repositories.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
-                    b.HasOne("Core.Domain.Entities.NotificationStatus", "Status")
-                        .WithMany()
-                        .HasForeignKey("StatusId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.Navigation("SentBy");
-
-                    b.Navigation("Status");
                 });
 
             modelBuilder.Entity("Core.Domain.Entities.Request", b =>
@@ -1761,6 +1741,8 @@ namespace Infrastructure.Repositories.Migrations
                 {
                     b.Navigation("ManagingShop");
 
+                    b.Navigation("ReceivedNotifications");
+
                     b.Navigation("SentNotifications");
                 });
 
@@ -1789,6 +1771,11 @@ namespace Infrastructure.Repositories.Migrations
             modelBuilder.Entity("Core.Domain.Entities.EdgeBoxInstall", b =>
                 {
                     b.Navigation("Cameras");
+                });
+
+            modelBuilder.Entity("Core.Domain.Entities.Notification", b =>
+                {
+                    b.Navigation("SentTo");
                 });
 
             modelBuilder.Entity("Core.Domain.Entities.Province", b =>

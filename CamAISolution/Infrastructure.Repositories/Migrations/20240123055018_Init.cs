@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Infrastructure.Repositories.Migrations
 {
     /// <inheritdoc />
-    public partial class FixProince : Migration
+    public partial class Init : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -116,6 +116,21 @@ namespace Infrastructure.Repositories.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_EvidenceTypes", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "NotificationStatuses",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Timestamp = table.Column<byte[]>(type: "rowversion", rowVersion: true, nullable: true),
+                    Name = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_NotificationStatuses", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -320,6 +335,25 @@ namespace Infrastructure.Repositories.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "AccountNotifications",
+                columns: table => new
+                {
+                    AccountId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    NotificationId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    StatusId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AccountNotifications", x => new { x.AccountId, x.NotificationId });
+                    table.ForeignKey(
+                        name: "FK_AccountNotifications_NotificationStatuses_StatusId",
+                        column: x => x.StatusId,
+                        principalTable: "NotificationStatuses",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "AccountRole",
                 columns: table => new
                 {
@@ -353,6 +387,7 @@ namespace Infrastructure.Repositories.Migrations
                     BrandId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     WorkingShopId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     AccountStatusId = table.Column<int>(type: "int", nullable: false),
+                    FCMToken = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Timestamp = table.Column<byte[]>(type: "rowversion", rowVersion: true, nullable: true),
                     CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     ModifiedDate = table.Column<DateTime>(type: "datetime2", nullable: false)
@@ -415,6 +450,29 @@ namespace Infrastructure.Repositories.Migrations
                         principalTable: "EdgeBoxes",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Notifications",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Title = table.Column<string>(type: "NVARCHAR(200)", nullable: false),
+                    Content = table.Column<string>(type: "NVARCHAR(MAX)", nullable: false),
+                    SentById = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    StatusId = table.Column<int>(type: "int", nullable: false),
+                    Timestamp = table.Column<byte[]>(type: "rowversion", rowVersion: true, nullable: true),
+                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ModifiedDate = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Notifications", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Notifications_Accounts_SentById",
+                        column: x => x.SentById,
+                        principalTable: "Accounts",
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -803,6 +861,15 @@ namespace Infrastructure.Repositories.Migrations
                 });
 
             migrationBuilder.InsertData(
+                table: "NotificationStatuses",
+                columns: new[] { "Id", "Description", "Name" },
+                values: new object[,]
+                {
+                    { 1, null, "Unread" },
+                    { 2, null, "Read" }
+                });
+
+            migrationBuilder.InsertData(
                 table: "RequestStatuses",
                 columns: new[] { "Id", "Description", "Name" },
                 values: new object[,]
@@ -865,6 +932,16 @@ namespace Infrastructure.Repositories.Migrations
                     { 3, null, "Repair" },
                     { 4, null, "Remove" }
                 });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AccountNotifications_NotificationId",
+                table: "AccountNotifications",
+                column: "NotificationId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AccountNotifications_StatusId",
+                table: "AccountNotifications",
+                column: "StatusId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_AccountRole_AccountId",
@@ -982,6 +1059,11 @@ namespace Infrastructure.Repositories.Migrations
                 column: "EvidenceTypeId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Notifications_SentById",
+                table: "Notifications",
+                column: "SentById");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_RequestActivities_ModifiedById",
                 table: "RequestActivities",
                 column: "ModifiedById");
@@ -1089,6 +1171,22 @@ namespace Infrastructure.Repositories.Migrations
                 column: "DistrictId");
 
             migrationBuilder.AddForeignKey(
+                name: "FK_AccountNotifications_Accounts_AccountId",
+                table: "AccountNotifications",
+                column: "AccountId",
+                principalTable: "Accounts",
+                principalColumn: "Id",
+                onDelete: ReferentialAction.Cascade);
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_AccountNotifications_Notifications_NotificationId",
+                table: "AccountNotifications",
+                column: "NotificationId",
+                principalTable: "Notifications",
+                principalColumn: "Id",
+                onDelete: ReferentialAction.Cascade);
+
+            migrationBuilder.AddForeignKey(
                 name: "FK_AccountRole_Accounts_AccountId",
                 table: "AccountRole",
                 column: "AccountId",
@@ -1112,6 +1210,9 @@ namespace Infrastructure.Repositories.Migrations
                 table: "Shops");
 
             migrationBuilder.DropTable(
+                name: "AccountNotifications");
+
+            migrationBuilder.DropTable(
                 name: "AccountRole");
 
             migrationBuilder.DropTable(
@@ -1125,6 +1226,12 @@ namespace Infrastructure.Repositories.Migrations
 
             migrationBuilder.DropTable(
                 name: "TicketActivities");
+
+            migrationBuilder.DropTable(
+                name: "NotificationStatuses");
+
+            migrationBuilder.DropTable(
+                name: "Notifications");
 
             migrationBuilder.DropTable(
                 name: "Roles");

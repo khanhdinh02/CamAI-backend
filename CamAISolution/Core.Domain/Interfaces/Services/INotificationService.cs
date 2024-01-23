@@ -1,5 +1,5 @@
 using Core.Domain.Entities;
-using Core.Domain.Models.DTO.Notifications;
+using Core.Domain.Models.DTO;
 
 namespace Core.Domain.Interfaces.Services;
 
@@ -13,4 +13,5 @@ public interface INotificationService
     /// <returns></returns>
     Task<Notification> CreateNotification(CreateNotificationDto dto, bool isSend);
     Task<IEnumerable<Notification>> GetNotifications();
+    Task UpdateNotificationStatus(Guid notificationId, int notificationStatus);
 }

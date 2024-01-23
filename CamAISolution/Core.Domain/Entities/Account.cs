@@ -1,6 +1,5 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Text.Json.Serialization;
 using Core.Domain.Entities.Base;
 
 namespace Core.Domain.Entities;
@@ -10,7 +9,8 @@ public class Account : BusinessEntity
     public Account()
     {
         SentNotifications = new HashSet<Notification>();
-        ReceivedNotifications = new HashSet<Notification>();
+        Roles = new HashSet<Role>();
+        ReceivedNotifications = new HashSet<AccountNotification>();
     }
 
     public string Email { get; set; } = null!;
@@ -31,6 +31,11 @@ public class Account : BusinessEntity
     public Guid? WorkingShopId { get; set; }
     public int AccountStatusId { get; set; }
 
+    /// <summary>
+    /// Token which registered in Firebase Cloud Messaging is used for receiving notification
+    /// </summary>
+    public string? FCMToken { get; set; }
+
     public virtual Ward? Ward { get; set; }
     public virtual Shop? WorkingShop { get; set; }
     public virtual AccountStatus AccountStatus { get; set; } = null!;
@@ -39,12 +44,7 @@ public class Account : BusinessEntity
     /// Notifications that sent by this account
     /// </summary>
     [InverseProperty(nameof(Notification.SentBy))]
-    [JsonIgnore]
     public virtual ICollection<Notification> SentNotifications { get; set; }
-
-    [InverseProperty(nameof(Notification.SentTo))]
-    [JsonIgnore]
-    public virtual ICollection<Notification> ReceivedNotifications { get; set; }
 
     /// <summary>
     /// The brand that this account (Brand Manager, Shop manager, Employee) is working for
@@ -53,7 +53,6 @@ public class Account : BusinessEntity
 
     [InverseProperty(nameof(Shop.ShopManager))]
     public virtual Shop? ManagingShop { get; set; }
-
-    [JsonIgnore]
-    public virtual ICollection<Role> Roles { get; set; } = new HashSet<Role>();
+    public virtual ICollection<Role> Roles { get; set; }
+    public virtual ICollection<AccountNotification> ReceivedNotifications { get; set; }
 }

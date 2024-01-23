@@ -22,4 +22,5 @@ public class AccountDto : BaseDto
     public BrandDto? Brand { get; set; }
     public ShopDto? ManagingShop { get; set; }
     public ICollection<LookupDto> Roles { get; set; } = new HashSet<LookupDto>();
+    public ICollection<NotificationDto> SentNotifications { get; set; } = new HashSet<NotificationDto>();
 }

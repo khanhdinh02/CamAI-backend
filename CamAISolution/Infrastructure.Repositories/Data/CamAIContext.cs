@@ -40,6 +40,9 @@ public class CamAIContext : DbContext
     public virtual DbSet<BehaviorType> BehaviorTypes { get; set; } = null!;
     public virtual DbSet<Evidence> Evidences { get; set; } = null!;
     public virtual DbSet<EvidenceType> EvidenceTypes { get; set; } = null!;
+    public virtual DbSet<Notification> Notifications { get; set; } = null!;
+    public virtual DbSet<NotificationStatus> NotificationStatuses { get; set; } = null!;
+    public virtual DbSet<AccountNotification> AccountNotifications { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -160,11 +163,6 @@ public class CamAIContext : DbContext
             builder.Property(x => x.LogoUri).HasConversion<string>();
             builder.Property(x => x.BannerUri).HasConversion<string>();
         });
-        modelBuilder
-            .Entity<Account>()
-            .HasMany(a => a.SentNotifications)
-            .WithOne(n => n.SentBy)
-            .OnDelete(DeleteBehavior.NoAction);
 
         modelBuilder
             .Entity<NotificationStatus>()
@@ -176,6 +174,12 @@ public class CamAIContext : DbContext
                 },
                 new NotificationStatus { Id = NotificationStatusEnum.Read, Name = nameof(NotificationStatusEnum.Read) }
             );
+        modelBuilder.Entity<AccountNotification>().HasKey(an => new { an.AccountId, an.NotificationId });
+        modelBuilder
+            .Entity<Notification>()
+            .HasOne(n => n.SentBy)
+            .WithMany(a => a.SentNotifications)
+            .OnDelete(DeleteBehavior.NoAction);
 
         modelBuilder.Entity<Evidence>().Property(p => p.Uri).HasConversion<string>();
     }

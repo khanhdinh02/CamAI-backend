@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
-using System.Text.Json.Serialization;
 using Core.Domain.Entities.Base;
 
 namespace Core.Domain.Entities;
@@ -8,7 +7,7 @@ public class Notification : BusinessEntity
 {
     public Notification()
     {
-        SentTo = new HashSet<Account>();
+        SentTo = new HashSet<AccountNotification>();
     }
 
     [Column(TypeName = "NVARCHAR(200)")]
@@ -17,9 +16,6 @@ public class Notification : BusinessEntity
     [Column(TypeName = "NVARCHAR(MAX)")]
     public string Content { get; set; } = null!;
     public Guid SentById { get; set; }
-    public int StatusId { get; set; }
-    public virtual NotificationStatus Status { get; set; } = null!;
     public virtual Account SentBy { get; set; } = null!;
-
-    public virtual ICollection<Account> SentTo { get; set; }
+    public virtual ICollection<AccountNotification> SentTo { get; set; }
 }

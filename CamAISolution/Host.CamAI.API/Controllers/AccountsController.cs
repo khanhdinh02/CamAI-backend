@@ -64,6 +64,19 @@ public class AccountsController(IAccountService accountService, IBaseMapping map
     }
 
     /// <summary>
+    /// Update FCM token for receiving messaging (notification)
+    /// </summary>
+    /// <param name="token"></param>
+    /// <returns></returns>
+    /// <exception cref="NotImplementedException"></exception>
+    [HttpPatch("notifications/firebase/{token}")]
+    [AccessTokenGuard]
+    public Task<IActionResult> UpdateFCMToken(string token)
+    {
+        throw new NotImplementedException();
+    }
+
+    /// <summary>
     /// Update account
     /// </summary>
     /// <remarks>

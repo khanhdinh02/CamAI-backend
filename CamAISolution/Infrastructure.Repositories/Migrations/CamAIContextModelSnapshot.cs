@@ -22,21 +22,6 @@ namespace Infrastructure.Repositories.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("AccountNotification", b =>
-                {
-                    b.Property<Guid>("ReceivedNotificationsId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("SentToId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("ReceivedNotificationsId", "SentToId");
-
-                    b.HasIndex("SentToId");
-
-                    b.ToTable("AccountNotification");
-                });
-
             modelBuilder.Entity("AccountRole", b =>
                 {
                     b.Property<int>("RoleId")
@@ -75,6 +60,9 @@ namespace Infrastructure.Repositories.Migrations
 
                     b.Property<string>("Email")
                         .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FCMToken")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Gender")
@@ -119,6 +107,26 @@ namespace Infrastructure.Repositories.Migrations
                     b.HasIndex("WorkingShopId");
 
                     b.ToTable("Accounts");
+                });
+
+            modelBuilder.Entity("Core.Domain.Entities.AccountNotification", b =>
+                {
+                    b.Property<Guid>("AccountId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("NotificationId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("StatusId")
+                        .HasColumnType("int");
+
+                    b.HasKey("AccountId", "NotificationId");
+
+                    b.HasIndex("NotificationId");
+
+                    b.HasIndex("StatusId");
+
+                    b.ToTable("AccountNotifications");
                 });
 
             modelBuilder.Entity("Core.Domain.Entities.AccountStatus", b =>
@@ -725,9 +733,6 @@ namespace Infrastructure.Repositories.Migrations
                     b.Property<Guid>("SentById")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("StatusId")
-                        .HasColumnType("int");
-
                     b.Property<byte[]>("Timestamp")
                         .IsConcurrencyToken()
                         .ValueGeneratedOnAddOrUpdate()
@@ -741,9 +746,7 @@ namespace Infrastructure.Repositories.Migrations
 
                     b.HasIndex("SentById");
 
-                    b.HasIndex("StatusId");
-
-                    b.ToTable("Notification");
+                    b.ToTable("Notifications");
                 });
 
             modelBuilder.Entity("Core.Domain.Entities.NotificationStatus", b =>
@@ -769,7 +772,7 @@ namespace Infrastructure.Repositories.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("NotificationStatus");
+                    b.ToTable("NotificationStatuses");
 
                     b.HasData(
                         new
@@ -1329,21 +1332,6 @@ namespace Infrastructure.Repositories.Migrations
                     b.ToTable("Wards");
                 });
 
-            modelBuilder.Entity("AccountNotification", b =>
-                {
-                    b.HasOne("Core.Domain.Entities.Notification", null)
-                        .WithMany()
-                        .HasForeignKey("ReceivedNotificationsId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Core.Domain.Entities.Account", null)
-                        .WithMany()
-                        .HasForeignKey("SentToId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("AccountRole", b =>
                 {
                     b.HasOne("Core.Domain.Entities.Account", null)
@@ -1386,6 +1374,33 @@ namespace Infrastructure.Repositories.Migrations
                     b.Navigation("Ward");
 
                     b.Navigation("WorkingShop");
+                });
+
+            modelBuilder.Entity("Core.Domain.Entities.AccountNotification", b =>
+                {
+                    b.HasOne("Core.Domain.Entities.Account", "Account")
+                        .WithMany("ReceivedNotifications")
+                        .HasForeignKey("AccountId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Core.Domain.Entities.Notification", "Notification")
+                        .WithMany("SentTo")
+                        .HasForeignKey("NotificationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Core.Domain.Entities.NotificationStatus", "Status")
+                        .WithMany()
+                        .HasForeignKey("StatusId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Account");
+
+                    b.Navigation("Notification");
+
+                    b.Navigation("Status");
                 });
 
             modelBuilder.Entity("Core.Domain.Entities.Behavior", b =>
@@ -1550,15 +1565,7 @@ namespace Infrastructure.Repositories.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
-                    b.HasOne("Core.Domain.Entities.NotificationStatus", "Status")
-                        .WithMany()
-                        .HasForeignKey("StatusId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.Navigation("SentBy");
-
-                    b.Navigation("Status");
                 });
 
             modelBuilder.Entity("Core.Domain.Entities.Request", b =>
@@ -1731,6 +1738,8 @@ namespace Infrastructure.Repositories.Migrations
                 {
                     b.Navigation("ManagingShop");
 
+                    b.Navigation("ReceivedNotifications");
+
                     b.Navigation("SentNotifications");
                 });
 
@@ -1759,6 +1768,11 @@ namespace Infrastructure.Repositories.Migrations
             modelBuilder.Entity("Core.Domain.Entities.EdgeBoxInstall", b =>
                 {
                     b.Navigation("Cameras");
+                });
+
+            modelBuilder.Entity("Core.Domain.Entities.Notification", b =>
+                {
+                    b.Navigation("SentTo");
                 });
 
             modelBuilder.Entity("Core.Domain.Entities.Province", b =>
