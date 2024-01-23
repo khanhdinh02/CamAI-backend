@@ -51,12 +51,16 @@ public class AccountService(IUnitOfWork unitOfWork, IJwtService jwtService, IBas
         Account newAccount;
         var newEntity = true;
         var accountThatHasTheSameMail = (
-            await unitOfWork.Accounts.GetAsync(
-                a => a.Email == dto.Email,
-                includeProperties: [nameof(Account.ManagingShop), nameof(Account.Roles)],
-                disableTracking: false
-            )
-        ).Values.FirstOrDefault();
+            await unitOfWork
+                .Accounts
+                .GetAsync(
+                    a => a.Email == dto.Email,
+                    includeProperties: [nameof(Account.ManagingShop), nameof(Account.Roles)],
+                    disableTracking: false
+                )
+        )
+            .Values
+            .FirstOrDefault();
         if (accountThatHasTheSameMail == null)
             newAccount = mapper.Map<CreateAccountDto, Account>(dto);
         else
@@ -173,13 +177,16 @@ public class AccountService(IUnitOfWork unitOfWork, IJwtService jwtService, IBas
             ?? throw new NotFoundException(typeof(Brand), newAccount.BrandId.Value);
 
         if (
-            await unitOfWork.Accounts.CountAsync(
-                a => a.Roles.Contains(new Role { Id = RoleEnum.BrandManager }) && a.BrandId == newAccount.BrandId
-            ) > 0
+            await unitOfWork
+                .Accounts
+                .CountAsync(
+                    a => a.Roles.Contains(new Role { Id = RoleEnum.BrandManager }) && a.BrandId == newAccount.BrandId
+                ) > 0
         )
-            throw new BadRequestException("Brand manager already exists");
+            throw new BadRequestException("Brand manager already exists for this brand");
 
         newAccount.Brand = brand;
+        newAccount.ManagingBrand = brand;
         newAccount.Roles = [await unitOfWork.Roles.GetByIdAsync(RoleEnum.BrandManager)];
         newAccount.AccountStatusId = AccountStatusEnum.New;
         return newAccount;
