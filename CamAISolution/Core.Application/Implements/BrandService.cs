@@ -25,7 +25,8 @@ public class BrandService(
     {
         var currentAccount = await accountService.GetAccountById(accountService.GetCurrentAccount().Id);
         if (currentAccount.HasRole(RoleEnum.BrandManager))
-            searchRequest.BrandId = currentAccount.BrandId;
+            searchRequest.BrandId =
+                currentAccount.BrandId ?? throw new BadRequestException("Brand manager does not have brand yet");
         else if (currentAccount.HasRole(RoleEnum.ShopManager))
         {
             var shop = await shopService.GetShopById(currentAccount.ManagingShop!.Id);
@@ -50,8 +51,9 @@ public class BrandService(
         return brand;
     }
 
-    public async Task<Brand> CreateBrand(Brand brand)
+    public async Task<Brand> CreateBrand(CreateBrandDto brandDto)
     {
+        var brand = mapping.Map<CreateBrandDto, Brand>(brandDto);
         // TODO [Duy]: create brand with logo and banner
         brand.BrandStatusId = BrandStatusEnum.Active;
         await unitOfWork.Brands.AddAsync(brand);
