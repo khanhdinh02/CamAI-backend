@@ -140,16 +140,12 @@ public class ShopService(
         }
         if (shopDto.ShopManagerId.HasValue)
         {
-            var foundAccounts = await unitOfWork
-                .Accounts
-                .GetAsync(
-                    expression: a =>
-                        a.Id == shopDto.ShopManagerId.Value
-                        && (
-                            a.AccountStatusId == AccountStatusEnum.Active || a.AccountStatusId == AccountStatusEnum.New
-                        ),
-                    includeProperties: [ nameof(Account.Roles), nameof(Account.ManagingShop) ]
-                );
+            var foundAccounts = await unitOfWork.Accounts.GetAsync(
+                expression: a =>
+                    a.Id == shopDto.ShopManagerId.Value
+                    && (a.AccountStatusId == AccountStatusEnum.Active || a.AccountStatusId == AccountStatusEnum.New),
+                includeProperties: [nameof(Account.Roles), nameof(Account.ManagingShop)]
+            );
             if (foundAccounts.Values.Count == 0)
                 throw new NotFoundException(typeof(Account), shopDto.ShopManagerId.Value);
             var account = foundAccounts.Values[0];
@@ -157,6 +153,12 @@ public class ShopService(
                 throw new BadRequestException("Account is not a shop manager");
             if (account.ManagingShop != null)
                 throw new BadRequestException("Account is a manager of another shop");
+
+            var brandManager = accountService.GetCurrentAccount();
+            if (account.BrandId != brandManager.BrandId)
+                throw new BadRequestException(
+                    $"Account is not in the same brand as brand manager. Id {brandManager.BrandId}"
+                );
         }
     }
 }

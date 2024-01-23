@@ -18,7 +18,7 @@ public class Account : BusinessEntity
     [StringLength(50)]
     public string? Phone { get; set; }
     public DateOnly? Birthday { get; set; }
-    public Guid? WardId { get; set; }
+    public int? WardId { get; set; }
     public string? AddressLine { get; set; }
     public Guid? BrandId { get; set; }
     public Guid? WorkingShopId { get; set; }

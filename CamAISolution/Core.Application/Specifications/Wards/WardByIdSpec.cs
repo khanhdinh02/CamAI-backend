@@ -1,13 +1,13 @@
-﻿using System.Linq.Expressions;
+using System.Linq.Expressions;
 using Core.Domain.Entities;
 
 namespace Core.Application.Specifications;
 
 public class WardByIdSpec : Specification<Ward>
 {
-    private readonly Guid id;
+    private readonly int id;
 
-    public WardByIdSpec(Guid id)
+    public WardByIdSpec(int id)
     {
         this.id = id;
         Expr = GetExpression();
