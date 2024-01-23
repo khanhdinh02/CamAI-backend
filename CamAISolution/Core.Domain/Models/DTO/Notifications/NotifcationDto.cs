@@ -11,5 +11,6 @@ public class NotificationDto : BaseDto
     public string Content { get; set; } = null!;
 
     public AccountDto SentBy { get; set; } = null!;
+    public LookupDto Status { get; set; } = null!;
     public ICollection<AccountDto> SentTo { get; set; }
 }

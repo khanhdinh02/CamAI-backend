@@ -1,9 +1,11 @@
+using Core.Application;
 using Core.Application.Exceptions;
 using Core.Domain;
 using Core.Domain.DTO;
 using Core.Domain.Entities;
 using Core.Domain.Interfaces.Mappings;
 using Core.Domain.Interfaces.Services;
+using Core.Domain.Models;
 using Core.Domain.Models.DTO;
 using Core.Domain.Repositories;
 using Core.Domain.Services;
@@ -19,15 +21,6 @@ public class NotificationService(
     FirebaseService firebaseService
 ) : INotificationService
 {
-    public async Task<IEnumerable<Core.Domain.Entities.Notification>> GetNotifications()
-    {
-        return (
-            await unitOfWork
-                .GetRepository<Core.Domain.Entities.Notification>()
-                .GetAsync(takeAll: true, includeProperties: [nameof(Core.Domain.Entities.Notification.SentBy)])
-        ).Values;
-    }
-
     public async Task<Core.Domain.Entities.Notification> CreateNotification(CreateNotificationDto dto, bool isSend)
     {
         var notification = mapping.Map<CreateNotificationDto, Core.Domain.Entities.Notification>(dto);
@@ -70,20 +63,6 @@ public class NotificationService(
         throw new ServiceUnavailableException("Cannot do action");
     }
 
-    public async Task UpdateNotificationStatus(Guid notificationId, int notificationStatus)
-    {
-        var currentUserId = jwtService.GetCurrentUser().Id;
-        var accountNotification =
-            (
-                await unitOfWork
-                    .GetRepository<AccountNotification>()
-                    .GetAsync(expression: n => n.NotificationId == notificationId && n.AccountId == currentUserId)
-            ).Values[0] ?? throw new NotFoundException(typeof(Core.Domain.Entities.Notification), notificationId);
-        accountNotification.StatusId = notificationStatus;
-        unitOfWork.GetRepository<AccountNotification>().Update(accountNotification);
-        await unitOfWork.CompleteAsync();
-    }
-
     private Message CreateMessage(
         string title,
         string body,
@@ -102,5 +81,27 @@ public class NotificationService(
         if (!string.IsNullOrEmpty(token))
             message.Token = token;
         return message;
+    }
+
+    public async Task<PaginationResult<AccountNotification>> SearchNotification(SearchNotificationRequest req)
+    {
+        req.AccountId = jwtService.GetCurrentUser().Id;
+        return await unitOfWork.GetRepository<AccountNotification>().GetAsync(new AccountNotificationSearchSpec(req));
+    }
+
+    public async Task<AccountNotification> UpdateStatus(Guid notificationId, int statusId)
+    {
+        var accountNotification = await unitOfWork
+            .GetRepository<AccountNotification>()
+            .GetByIdAsync(jwtService.GetCurrentUser().Id, notificationId);
+        if (accountNotification == null)
+            throw new NotFoundException(
+                typeof(Core.Domain.Entities.Notification),
+                new { jwtService.GetCurrentUser().Id, notificationId }
+            );
+        accountNotification.StatusId = statusId;
+        accountNotification = unitOfWork.GetRepository<AccountNotification>().Update(accountNotification);
+        await unitOfWork.CompleteAsync();
+        return accountNotification;
     }
 }

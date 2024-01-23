@@ -19,6 +19,7 @@ public class LookupController : ControllerBase
     [LookupHttpGet("edgeBox-install-status", typeof(EdgeBoxInstallStatusEnum))]
     [LookupHttpGet("role", typeof(RoleEnum))]
     [LookupHttpGet("gender", typeof(Gender))]
+    [LookupHttpGet("notification-status", typeof(NotificationStatusEnum))]
     public ActionResult<Dictionary<int, string>> GetLookup()
     {
         var path = HttpContext.Request.Path;
