@@ -11,7 +11,7 @@ public class Shop : BusinessEntity
 
     [StringLength(50)]
     public string? Phone { get; set; }
-    public Guid WardId { get; set; }
+    public int WardId { get; set; }
     public string? AddressLine { get; set; }
     public Guid? ShopManagerId { get; set; }
     public Guid BrandId { get; set; }

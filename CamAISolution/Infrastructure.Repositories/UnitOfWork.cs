@@ -21,6 +21,8 @@ public class UnitOfWork(CamAIContext context, IServiceProvider serviceProvider) 
 
     public IRepository<Shop> Shops => serviceProvider.GetRequiredService<IRepository<Shop>>();
 
+    public IRepository<Province> Provinces => serviceProvider.GetRequiredService<IRepository<Province>>();
+    public IRepository<District> Districts => serviceProvider.GetRequiredService<IRepository<District>>();
     public IRepository<Ward> Wards => serviceProvider.GetRequiredService<IRepository<Ward>>();
 
     public IRepository<ShopStatus> ShopStatuses => serviceProvider.GetRequiredService<IRepository<ShopStatus>>();

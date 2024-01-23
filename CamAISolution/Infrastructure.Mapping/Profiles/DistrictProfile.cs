@@ -1,6 +1,6 @@
 using AutoMapper;
 using Core.Domain.Entities;
-using Core.Domain.Models.DTO;
+using Core.Domain.DTO;
 
 namespace Infrastructure.Mapping.Profiles;
 

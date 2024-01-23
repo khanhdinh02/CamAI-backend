@@ -5,9 +5,9 @@ namespace Core.Application.Specifications;
 
 public class ShopByWardSpec : Specification<Shop>
 {
-    private readonly Guid wardId;
+    private readonly int wardId;
 
-    public ShopByWardSpec(Guid wardId)
+    public ShopByWardSpec(int wardId)
     {
         this.wardId = wardId;
         Expr = GetExpression();
