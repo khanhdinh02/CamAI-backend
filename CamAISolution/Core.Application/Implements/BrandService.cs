@@ -25,7 +25,8 @@ public class BrandService(
     {
         var currentAccount = await accountService.GetAccountById(accountService.GetCurrentAccount().Id);
         if (currentAccount.HasRole(RoleEnum.BrandManager))
-            searchRequest.BrandId = currentAccount.BrandId;
+            searchRequest.BrandId =
+                currentAccount.BrandId ?? throw new BadRequestException("Brand manager does not have brand yet");
         else if (currentAccount.HasRole(RoleEnum.ShopManager))
         {
             var shop = await shopService.GetShopById(currentAccount.ManagingShop!.Id);
