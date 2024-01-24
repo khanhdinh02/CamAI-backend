@@ -11,6 +11,7 @@ public class BrandSearchSpec : RepositorySpec<Brand>
     {
         ApplyingPaging(searchRequest);
         AddIncludes(b => b.BrandStatus);
+        AddIncludes(b => b.BrandManager!);
     }
 
     private static Expression<Func<Brand, bool>> GetExpression(SearchBrandRequest searchRequest)
@@ -22,6 +23,8 @@ public class BrandSearchSpec : RepositorySpec<Brand>
             baseSpec.And(new BrandByStatusSpec(searchRequest.StatusId.Value));
         if (searchRequest.BrandId.HasValue)
             baseSpec.And(new BrandByIdSpec(searchRequest.BrandId.Value));
+        if (searchRequest.HasManager.HasValue)
+            baseSpec.And(new Specification<Brand>(b => searchRequest.HasManager.Value == (b.BrandManagerId != null)));
         return baseSpec.GetExpression();
     }
 }

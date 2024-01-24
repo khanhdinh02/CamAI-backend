@@ -1,3 +1,4 @@
+using System.Linq;
 using Core.Domain.DTO;
 using Core.Domain.Entities;
 using Core.Domain.Interfaces.Mappings;
@@ -33,20 +34,11 @@ public class BrandsController(IBrandService brandService, IBaseMapping mapping) 
     public async Task<ActionResult<PaginationResult<BrandDto>>> GetBrands([FromQuery] SearchBrandRequest searchRequest)
     {
         var brands = await brandService.GetBrands(searchRequest);
+        foreach (var brand in brands.Values.Where(brand => brand.BrandManager != null))
+        {
+            brand.BrandManager!.Brand = null;
+        }
         return Ok(mapping.Map<Brand, BrandDto>(brands));
-    }
-
-    /// <summary>
-    /// Get all brands that can be assigned a manager.
-    /// In other words, get all brands that is active and have <c>null</c> manager
-    /// </summary>
-    /// <returns></returns>
-    [HttpGet("/available")]
-    [AccessTokenGuard(RoleEnum.Admin)]
-    public async Task<ActionResult<PaginationResult<BrandDto>>> GetAvailableBrands()
-    {
-        var brands = await brandService.GetAvailableBrands();
-        return mapping.Map<Brand, BrandDto>(brands);
     }
 
     /// <summary>
