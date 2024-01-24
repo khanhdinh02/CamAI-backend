@@ -38,6 +38,11 @@ public class BrandService(
         return await unitOfWork.Brands.GetAsync(new BrandSearchSpec(searchRequest));
     }
 
+    public Task<PaginationResult<Brand>> GetAvailableBrands()
+    {
+        return unitOfWork.Brands.GetAsync(b => b.BrandStatusId == BrandStatusEnum.Active && b.BrandManagerId == null);
+    }
+
     public async Task<Brand> GetBrandById(Guid id)
     {
         var currentAccount = accountService.GetCurrentAccount();
