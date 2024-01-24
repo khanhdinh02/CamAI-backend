@@ -4,6 +4,7 @@ using Infrastructure.Repositories.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Repositories.Migrations
 {
     [DbContext(typeof(CamAIContext))]
-    partial class CamAIContextModelSnapshot : ModelSnapshot
+    [Migration("20240123063915_AddBrandManagerField")]
+    partial class AddBrandManagerField
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -62,9 +65,6 @@ namespace Infrastructure.Repositories.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("FCMToken")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("Gender")
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
@@ -107,26 +107,6 @@ namespace Infrastructure.Repositories.Migrations
                     b.HasIndex("WorkingShopId");
 
                     b.ToTable("Accounts");
-                });
-
-            modelBuilder.Entity("Core.Domain.Entities.AccountNotification", b =>
-                {
-                    b.Property<Guid>("AccountId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("NotificationId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<int>("StatusId")
-                        .HasColumnType("int");
-
-                    b.HasKey("AccountId", "NotificationId");
-
-                    b.HasIndex("NotificationId");
-
-                    b.HasIndex("StatusId");
-
-                    b.ToTable("AccountNotifications");
                 });
 
             modelBuilder.Entity("Core.Domain.Entities.AccountStatus", b =>
@@ -721,79 +701,6 @@ namespace Infrastructure.Repositories.Migrations
                     b.ToTable("EvidenceTypes");
                 });
 
-            modelBuilder.Entity("Core.Domain.Entities.Notification", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Content")
-                        .IsRequired()
-                        .HasColumnType("NVARCHAR(MAX)");
-
-                    b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("ModifiedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid>("SentById")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<byte[]>("Timestamp")
-                        .IsConcurrencyToken()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasColumnType("NVARCHAR(200)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("SentById");
-
-                    b.ToTable("Notifications");
-                });
-
-            modelBuilder.Entity("Core.Domain.Entities.NotificationStatus", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Description")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<byte[]>("Timestamp")
-                        .IsConcurrencyToken()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("NotificationStatuses");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Name = "Unread"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Name = "Read"
-                        });
-                });
-
             modelBuilder.Entity("Core.Domain.Entities.Province", b =>
                 {
                     b.Property<int>("Id")
@@ -1383,33 +1290,6 @@ namespace Infrastructure.Repositories.Migrations
                     b.Navigation("WorkingShop");
                 });
 
-            modelBuilder.Entity("Core.Domain.Entities.AccountNotification", b =>
-                {
-                    b.HasOne("Core.Domain.Entities.Account", "Account")
-                        .WithMany("ReceivedNotifications")
-                        .HasForeignKey("AccountId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Core.Domain.Entities.Notification", "Notification")
-                        .WithMany("SentTo")
-                        .HasForeignKey("NotificationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Core.Domain.Entities.NotificationStatus", "Status")
-                        .WithMany()
-                        .HasForeignKey("StatusId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Account");
-
-                    b.Navigation("Notification");
-
-                    b.Navigation("Status");
-                });
-
             modelBuilder.Entity("Core.Domain.Entities.Behavior", b =>
                 {
                     b.HasOne("Core.Domain.Entities.Account", "Account")
@@ -1568,17 +1448,6 @@ namespace Infrastructure.Repositories.Migrations
                         .IsRequired();
 
                     b.Navigation("EvidenceType");
-                });
-
-            modelBuilder.Entity("Core.Domain.Entities.Notification", b =>
-                {
-                    b.HasOne("Core.Domain.Entities.Account", "SentBy")
-                        .WithMany("SentNotifications")
-                        .HasForeignKey("SentById")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.Navigation("SentBy");
                 });
 
             modelBuilder.Entity("Core.Domain.Entities.Request", b =>
@@ -1752,10 +1621,6 @@ namespace Infrastructure.Repositories.Migrations
                     b.Navigation("ManagingBrand");
 
                     b.Navigation("ManagingShop");
-
-                    b.Navigation("ReceivedNotifications");
-
-                    b.Navigation("SentNotifications");
                 });
 
             modelBuilder.Entity("Core.Domain.Entities.Behavior", b =>
@@ -1783,11 +1648,6 @@ namespace Infrastructure.Repositories.Migrations
             modelBuilder.Entity("Core.Domain.Entities.EdgeBoxInstall", b =>
                 {
                     b.Navigation("Cameras");
-                });
-
-            modelBuilder.Entity("Core.Domain.Entities.Notification", b =>
-                {
-                    b.Navigation("SentTo");
                 });
 
             modelBuilder.Entity("Core.Domain.Entities.Province", b =>

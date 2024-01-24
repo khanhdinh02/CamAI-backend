@@ -51,6 +51,9 @@ public class Account : BusinessEntity
     /// </summary>
     public virtual Brand? Brand { get; set; }
 
+    [InverseProperty(nameof(Brand.BrandManager))]
+    public virtual Brand? ManagingBrand { get; set; }
+
     [InverseProperty(nameof(Shop.ShopManager))]
     public virtual Shop? ManagingShop { get; set; }
     public virtual ICollection<Role> Roles { get; set; }
