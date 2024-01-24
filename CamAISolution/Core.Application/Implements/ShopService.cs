@@ -25,6 +25,12 @@ public class ShopService(
         await IsValidShopDto(shopDto);
         var shop = mapping.Map<CreateOrUpdateShopDto, Shop>(shopDto);
         shop.ShopStatusId = ShopStatusEnum.Active;
+        var account = accountService.GetCurrentAccount();
+        if (!account.BrandId.HasValue)
+            throw new BadRequestException(
+                $"Cannot create shop because current account doesn't have any registered Brand"
+            );
+        shop.BrandId = account.BrandId.Value;
         shop = await unitOfWork.Shops.AddAsync(shop);
         await unitOfWork.CompleteAsync();
         return shop;
@@ -55,11 +61,6 @@ public class ShopService(
         throw notFoundException;
     }
 
-    /// <summary>
-    /// Get Shops base on current user's roles.
-    /// </summary>
-    /// <param name="searchRequest">Filtering</param>
-    /// <returns><see cref="PaginationResult{Shop}"/> </returns>
     public async Task<PaginationResult<Shop>> GetShops(ShopSearchRequest searchRequest)
     {
         var account = accountService.GetCurrentAccount();
@@ -83,12 +84,15 @@ public class ShopService(
     public async Task<Shop> UpdateShop(Guid id, CreateOrUpdateShopDto shopDto)
     {
         var foundShops = await unitOfWork.Shops.GetAsync(new ShopByIdRepoSpec(id, false));
-        if (foundShops.Values.Count == 0)
+        if (foundShops.IsValuesEmpty)
             throw new NotFoundException(typeof(Shop), id);
         var foundShop = foundShops.Values[0];
-        if (foundShop.ShopStatusId != ShopStatusEnum.Active && !AreRequiredRolesMatched(RoleEnum.Admin))
+        var currentAccount = accountService.GetCurrentAccount();
+        if (!(currentAccount.BrandId.HasValue && foundShop.BrandId == currentAccount.BrandId.Value))
+            throw new ForbiddenException("Current user not allowed to do this action.");
+        if (foundShop.ShopStatusId != ShopStatusEnum.Active)
             throw new BadRequestException($"Cannot modified inactive shop");
-        await IsValidShopDto(shopDto);
+        await IsValidShopDto(shopDto, id);
         mapping.Map(shopDto, foundShop);
         await unitOfWork.CompleteAsync();
         return await GetShopById(id);
@@ -103,7 +107,7 @@ public class ShopService(
         //Check if current user is not a shop manager or a brand manager of this shop and else not an admin, then reject the action.
         var currentAccount = accountService.GetCurrentAccount();
         var isShopManager = foundShop.ShopManagerId == currentAccount.Id;
-        var isBrandManager = currentAccount.Brand != null && foundShop.BrandId == currentAccount.Brand.Id;
+        var isBrandManager = currentAccount.BrandId.HasValue && foundShop.BrandId == currentAccount.BrandId.Value;
         var isAdmin = AreRequiredRolesMatched(RoleEnum.Admin);
         if ((isShopManager || isBrandManager) && !isAdmin)
             throw new ForbiddenException("Current user not allowed to do this action.");
@@ -128,16 +132,10 @@ public class ShopService(
         return account.Roles.Select(r => r.Id).Intersect(roles).Any();
     }
 
-    private async Task IsValidShopDto(CreateOrUpdateShopDto shopDto)
+    private async Task IsValidShopDto(CreateOrUpdateShopDto shopDto, Guid? shopId = null)
     {
         if (!await unitOfWork.Wards.IsExisted(shopDto.WardId))
             throw new NotFoundException(typeof(Ward), shopDto.WardId);
-        var foundBrand = await unitOfWork.Brands.GetByIdAsync(shopDto.BrandId);
-        if (foundBrand is null or { BrandStatusId: BrandStatusEnum.Inactive })
-        {
-            logger.Error($"Found Brand is {nameof(BrandStatusEnum.Inactive)}. Cannot updated");
-            throw new NotFoundException(typeof(Brand), shopDto.BrandId);
-        }
         if (shopDto.ShopManagerId.HasValue)
         {
             var foundAccounts = await unitOfWork.Accounts.GetAsync(
@@ -151,10 +149,11 @@ public class ShopService(
             var account = foundAccounts.Values[0];
             if (!account.HasRole(RoleEnum.ShopManager))
                 throw new BadRequestException("Account is not a shop manager");
-            if (account.ManagingShop != null)
+            var brandManager = accountService.GetCurrentAccount();
+
+            if (account.ManagingShop?.Id != shopId)
                 throw new BadRequestException("Account is a manager of another shop");
 
-            var brandManager = accountService.GetCurrentAccount();
             if (account.BrandId != brandManager.BrandId)
                 throw new BadRequestException(
                     $"Account is not in the same brand as brand manager. Id {brandManager.BrandId}"
