@@ -3,7 +3,7 @@ using Core.Domain.Entities;
 
 namespace Core.Domain.DTO;
 
-public class AccountDto : BaseDto
+public class AccountDtoWithoutBrand : BaseDto
 {
     public string Email { get; set; } = null!;
     public string Name { get; set; } = null!;
@@ -19,7 +19,11 @@ public class AccountDto : BaseDto
     public WardDto? Ward { get; set; }
     public ShopDto? WorkingShop { get; set; }
     public LookupDto AccountStatus { get; set; } = null!;
-    public BrandDto? Brand { get; set; }
     public ShopDto? ManagingShop { get; set; }
     public ICollection<LookupDto> Roles { get; set; } = new HashSet<LookupDto>();
+}
+
+public class AccountDto : AccountDtoWithoutBrand
+{
+    public BrandDtoWithoutBrandManager? Brand { get; set; }
 }
