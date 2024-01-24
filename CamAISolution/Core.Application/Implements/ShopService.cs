@@ -151,7 +151,7 @@ public class ShopService(
                 throw new BadRequestException("Account is not a shop manager");
             var brandManager = accountService.GetCurrentAccount();
 
-            if (account.ManagingShop != null && shopId != null && account.ManagingShop.Id != shopId)
+            if (account.ManagingShop?.Id != shopId)
                 throw new BadRequestException("Account is a manager of another shop");
 
             if (account.BrandId != brandManager.BrandId)
