@@ -9,7 +9,6 @@ using Infrastructure.Repositories;
 var builder = WebApplication.CreateBuilder(args).ConfigureSerilog();
 
 builder.Services.AddControllers();
-
 const string allowPolicy = "AllowAll";
 
 builder
@@ -29,6 +28,8 @@ builder
     .AddSwagger()
     .AddServices()
     .AddMapping();
+
+builder.ConfigureMassTransit();
 
 builder.Services.Configure<RouteOptions>(opts =>
 {

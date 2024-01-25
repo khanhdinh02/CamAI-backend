@@ -25,5 +25,19 @@ services:
       - ASPNETCORE_ENVIRONMENT=${STAGE}
     depends_on:
       - mssqldb
+  camai-rabbitmq:
+    image: rabbitmq:3.12.12-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASS}
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_USER}
+    volumes:
+      - camai-rabbitmq-lib:/var/camai/lib/rabbitmq/
+      - camai-rabbitmq-log:/var/camai/log/rabbitmq/
+
 volumes:
   data:
+  camai-rabbitmq-lib:
+  camai-rabbitmq-log:
