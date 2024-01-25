@@ -1,4 +1,3 @@
-using Core.Domain.Interfaces.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Host.CamAI.API.Controllers;
@@ -11,13 +10,5 @@ public class TestsController : ControllerBase
     public ActionResult<string> TestEndpoint()
     {
         return Ok(new { data = $"Hello From {nameof(TestsController)}" });
-    }
-
-    [HttpGet("mq")]
-    public async Task<IActionResult> SayHyToMQ()
-    {
-        var mqService = HttpContext.RequestServices.GetRequiredService<IMessageQueueService>();
-        await mqService.SendMessage("This message must be consumed some where", "demo", "camai-exchange");
-        return Ok();
     }
 }
