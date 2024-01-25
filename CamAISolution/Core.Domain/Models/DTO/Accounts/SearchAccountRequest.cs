@@ -13,9 +13,4 @@ public class SearchAccountRequest : BaseSearchRequest
     /// The result includes Brand manager, Shop managers, and Employees
     /// </summary>
     public Guid? BrandId { get; set; }
-
-    /// <summary>
-    /// The result includes Brand manager, Shop managers, and Employees
-    /// </summary>
-    public Guid? ShopId { get; set; }
 }
