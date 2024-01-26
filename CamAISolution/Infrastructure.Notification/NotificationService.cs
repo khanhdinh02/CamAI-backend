@@ -21,7 +21,7 @@ public class NotificationService(
     FirebaseService firebaseService
 ) : INotificationService
 {
-    public async Task<Core.Domain.Entities.Notification> CreateNotification(CreateNotificationDto dto, bool isSend)
+    public async Task<Core.Domain.Entities.Notification> CreateNotification(CreateNotificationDto dto, bool willSend)
     {
         var notification = mapping.Map<CreateNotificationDto, Core.Domain.Entities.Notification>(dto);
         notification.SentById = jwtService.GetCurrentUser().Id;
@@ -48,7 +48,7 @@ public class NotificationService(
             }
             await unitOfWork.CompleteAsync();
             await unitOfWork.CommitTransaction();
-            if (isSend)
+            if (willSend)
                 foreach (var acc in sentToAccounts.Where(a => !string.IsNullOrEmpty(a.FCMToken)))
                     await firebaseService.Messaging.SendAsync(
                         CreateMessage(notification.Title, notification.Content, token: acc.FCMToken)

@@ -11,9 +11,9 @@ public interface INotificationService
     /// Create notification
     /// </summary>
     /// <param name="dto"></param>
-    /// <param name="isSend">Whether Created Notification send to user (Push notification to FCM)</param>
+    /// <param name="willSend">Whether Created Notification send to user (Push notification to FCM)</param>
     /// <returns></returns>
-    Task<Notification> CreateNotification(CreateNotificationDto dto, bool isSend);
+    Task<Notification> CreateNotification(CreateNotificationDto dto, bool willSend);
     Task<PaginationResult<AccountNotification>> SearchNotification(SearchNotificationRequest req);
     Task<AccountNotification> UpdateStatus(Guid notificationId, int statusId);
 }
