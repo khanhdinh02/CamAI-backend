@@ -43,6 +43,7 @@ public class CamAIContext : DbContext
     public virtual DbSet<Notification> Notifications { get; set; } = null!;
     public virtual DbSet<NotificationStatus> NotificationStatuses { get; set; } = null!;
     public virtual DbSet<AccountNotification> AccountNotifications { get; set; } = null!;
+    public virtual DbSet<NotificationType> NotificationTypes { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -182,5 +183,12 @@ public class CamAIContext : DbContext
             .OnDelete(DeleteBehavior.NoAction);
 
         modelBuilder.Entity<Evidence>().Property(p => p.Uri).HasConversion<string>();
+        modelBuilder
+            .Entity<NotificationType>()
+            .HasData(
+                new NotificationType { Id = NotificationTypeEnum.Normal, Name = nameof(NotificationTypeEnum.Normal) },
+                new NotificationType { Id = NotificationTypeEnum.Warnning, Name = nameof(NotificationTypeEnum.Warnning) },
+                new NotificationType { Id = NotificationTypeEnum.Urgence, Name = nameof(NotificationTypeEnum.Urgence) }
+            );
     }
 }

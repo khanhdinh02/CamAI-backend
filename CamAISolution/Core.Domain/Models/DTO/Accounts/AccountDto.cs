@@ -21,7 +21,6 @@ public class AccountDtoWithoutBrand : BaseDto
     public LookupDto AccountStatus { get; set; } = null!;
     public ShopDto? ManagingShop { get; set; }
     public ICollection<LookupDto> Roles { get; set; } = new HashSet<LookupDto>();
-    public ICollection<NotificationDto> SentNotifications { get; set; } = new HashSet<NotificationDto>();
 }
 
 public class AccountDto : AccountDtoWithoutBrand

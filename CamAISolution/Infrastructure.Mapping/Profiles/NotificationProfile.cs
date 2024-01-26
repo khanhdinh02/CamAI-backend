@@ -13,8 +13,7 @@ public class NotificationProfile : Profile
     public NotificationProfile()
     {
         CreateMap<Notification, NotificationDto>()
-            .ForMember(des => des.SentTo, member => member.MapFrom(src => src.SentTo.Select(an => an.Account)))
-            .AfterMap((src, des) => des.SentBy.SentNotifications.Clear());
+            .ForMember(des => des.SentTo, member => member.MapFrom(src => src.SentTo.Select(an => an.Account)));
         CreateMap<LookupEntity, LookupDto>();
         CreateMap<AccountNotification, NotificationDto>()
             .ForMember(des => des.Status, member => member.Ignore())

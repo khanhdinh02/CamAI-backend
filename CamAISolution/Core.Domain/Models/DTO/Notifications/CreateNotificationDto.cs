@@ -9,5 +9,7 @@ public class CreateNotificationDto
 
     [Required]
     public string Content { get; set; } = null!;
+
+    public int NotificationTypeId { get; set; }
     public IEnumerable<Guid> SentToId { get; set; } = new HashSet<Guid>();
 }

@@ -20,6 +20,7 @@ public class LookupController : ControllerBase
     [LookupHttpGet("role", typeof(RoleEnum))]
     [LookupHttpGet("gender", typeof(Gender))]
     [LookupHttpGet("notification-status", typeof(NotificationStatusEnum))]
+    [LookupHttpGet("notification-type", typeof(NotificationTypeEnum))]
     public ActionResult<Dictionary<int, string>> GetLookup()
     {
         var path = HttpContext.Request.Path;
