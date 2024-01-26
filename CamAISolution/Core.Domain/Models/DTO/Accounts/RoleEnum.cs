@@ -1,5 +1,8 @@
+using Core.Domain.Models.Attributes;
+
 namespace Core.Domain.DTO;
 
+[Lookup]
 public static class RoleEnum
 {
     public const int Admin = 1;
