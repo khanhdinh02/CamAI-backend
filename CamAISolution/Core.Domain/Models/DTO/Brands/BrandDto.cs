@@ -1,6 +1,6 @@
-﻿namespace Core.Domain.DTO;
+namespace Core.Domain.DTO;
 
-public class BrandDto : BaseDto
+public class BrandDtoWithoutBrandManager : BaseDto
 {
     public string Name { get; set; } = null!;
     public string? Email { get; set; }
@@ -9,4 +9,9 @@ public class BrandDto : BaseDto
     public Uri? BannerUri { get; set; }
     public Guid? BrandManagerId { get; set; }
     public LookupDto BrandStatus { get; set; } = null!;
+}
+
+public class BrandDto : BrandDtoWithoutBrandManager
+{
+    public AccountDtoWithoutBrand? BrandManager { get; set; }
 }

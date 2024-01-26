@@ -21,6 +21,10 @@ steps:
     echo "MS_SQL_PASS=$(docker.compose.MS_SQL_PASS)" > .env
     echo "MS_SQL_CONN=$(docker.compose.MS_SQL_CONN)" >> .env
     echo "STAGE=$(docker.compose.STAGE)" >> .env
+    echo "RABBITMQ_USER=$(docker.compose.RABBITMQ_USER)" >> .env
+    echo "RABBITMQ_PASS=$(docker.compose.RABBITMQ_PASS)" >> .env
+    echo "RABBITMQ_HOST=$(docker.compose.RABBITMQ_HOST)" >> .env
+    echo "RABBITMQ_PORT=$(docker.compose.RABBITMQ_PORT)" >> .env
   displayName: 'Write .env'
   
 - task: CopyFilesOverSSH@0
