@@ -13,6 +13,7 @@ public class CamAIContext : DbContext
         : base(options) { }
 
     public virtual DbSet<Account> Accounts { get; set; } = null!;
+    public virtual DbSet<Employee> Employees { get; set; } = null!;
     public virtual DbSet<Brand> Brands { get; set; } = null!;
     public virtual DbSet<Shop> Shops { get; set; } = null!;
     public virtual DbSet<Role> Roles { get; set; } = null!;
@@ -54,6 +55,12 @@ public class CamAIContext : DbContext
                 new AccountStatus { Id = AccountStatusEnum.New, Name = "New" },
                 accountStatusActive,
                 new AccountStatus { Id = AccountStatusEnum.Inactive, Name = "Inactive" }
+            );
+        modelBuilder
+            .Entity<EmployeeStatus>()
+            .HasData(
+                new EmployeeStatus { Id = EmployeeStatusEnum.Active, Name = "Active" },
+                new EmployeeStatus { Id = EmployeeStatusEnum.Inactive, Name = "Inactive" }
             );
         modelBuilder
             .Entity<BrandStatus>()
@@ -154,6 +161,12 @@ public class CamAIContext : DbContext
                 new TicketType { Id = TicketTypeEnum.Repair, Name = "Repair" },
                 new TicketType { Id = TicketTypeEnum.Remove, Name = "Remove" }
             );
+
+        modelBuilder.Entity<Employee>(builder =>
+        {
+            builder.Property(e => e.Image).HasConversion<string>();
+            builder.Property(e => e.Gender).HasConversion<string>();
+        });
 
         modelBuilder.Entity<Brand>(builder =>
         {

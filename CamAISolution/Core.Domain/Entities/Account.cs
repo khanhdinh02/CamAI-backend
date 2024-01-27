@@ -21,11 +21,9 @@ public class Account : BusinessEntity
     public int? WardId { get; set; }
     public string? AddressLine { get; set; }
     public Guid? BrandId { get; set; }
-    public Guid? WorkingShopId { get; set; }
     public int AccountStatusId { get; set; }
 
     public virtual Ward? Ward { get; set; }
-    public virtual Shop? WorkingShop { get; set; }
     public virtual AccountStatus AccountStatus { get; set; } = null!;
 
     /// <summary>
@@ -36,7 +34,6 @@ public class Account : BusinessEntity
     [InverseProperty(nameof(Brand.BrandManager))]
     public virtual Brand? ManagingBrand { get; set; }
 
-    [InverseProperty(nameof(Shop.ShopManager))]
     public virtual Shop? ManagingShop { get; set; }
     public virtual ICollection<Role> Roles { get; set; } = new HashSet<Role>();
 }

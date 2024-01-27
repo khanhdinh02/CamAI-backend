@@ -11,8 +11,6 @@ using Core.Domain.Utilities;
 
 namespace Core.Application.Implements;
 
-// TODO [Khanh]: What authority does shop manager have over employees?
-// This affects the implementation of CreateAccount, UpdateAccount, DeleteAccount
 public class AccountService(IUnitOfWork unitOfWork, IJwtService jwtService, IBaseMapping mapper) : IAccountService
 {
     public async Task<PaginationResult<Account>> GetAccounts(SearchAccountRequest req)
@@ -22,8 +20,6 @@ public class AccountService(IUnitOfWork unitOfWork, IJwtService jwtService, IBas
         {
             if (user.HasRole(RoleEnum.BrandManager))
                 req.BrandId = user.Brand?.Id;
-            else if (user.HasRole(RoleEnum.ShopManager))
-                req.ShopId = user.ManagingShop?.Id ?? throw new BadRequestException("User is not managing any shop");
         }
         var accounts = await unitOfWork.Accounts.GetAsync(new AccountSearchSpec(req, user));
         return accounts;
@@ -69,7 +65,6 @@ public class AccountService(IUnitOfWork unitOfWork, IJwtService jwtService, IBas
             if (accountThatHasTheSameMail.AccountStatusId != AccountStatusEnum.Inactive)
                 throw new BadRequestException("Email is already taken");
             accountThatHasTheSameMail.BrandId = null;
-            accountThatHasTheSameMail.WorkingShopId = null;
             accountThatHasTheSameMail.ManagingShop = null;
 
             newAccount = mapper.Map(dto, accountThatHasTheSameMail);
@@ -95,11 +90,6 @@ public class AccountService(IUnitOfWork unitOfWork, IJwtService jwtService, IBas
             {
                 newAccount.BrandId = currentUser.Brand?.Id;
                 newAccount = await CreateShopManager(newAccount);
-            }
-            else if (dto.RoleIds.Any(r => r == RoleEnum.Employee))
-            {
-                // TODO [Khanh]: Create employee
-                throw new NotImplementedException();
             }
             else
                 throw new ForbiddenException(currentUser, typeof(Account));
