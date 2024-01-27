@@ -12,14 +12,19 @@ builder.Services.AddControllers();
 const string allowPolicy = "AllowAll";
 
 builder
-    .Services.AddCors(opts =>
-        opts.AddPolicy(
-            name: allowPolicy,
-            builder =>
-                builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader().WithExposedHeaders(HeaderNameConstant.Auto)
-        // TODO[Dat]: Enable allow credential when have specific origin
-        // .AllowCredentials()
-        )
+    .Services.AddCors(
+        opts =>
+            opts.AddPolicy(
+                name: allowPolicy,
+                builder =>
+                    builder
+                        .AllowAnyOrigin()
+                        .AllowAnyMethod()
+                        .AllowAnyHeader()
+                        .WithExposedHeaders(HeaderNameConstant.Auto)
+            // TODO[Dat]: Enable allow credential when have specific origin
+            // .AllowCredentials()
+            )
     )
     .AddRepository(builder.Configuration.GetConnectionString("Default"))
     .AddJwtService(builder.Configuration)
@@ -44,6 +49,8 @@ app.UseMiddleware<GlobalExceptionHandler>();
 app.UseCors(allowPolicy);
 
 app.UseMiddleware<GlobalJwtHandler>();
+
+//app.UseStaticFiles();
 
 app.Migration(args);
 

@@ -12,8 +12,6 @@ public class Brand : BusinessEntity
 
     [StringLength(50)]
     public string? Phone { get; set; }
-    public Uri? LogoUri { get; set; }
-    public Uri? BannerUri { get; set; }
 
     [ForeignKey(nameof(BrandManager))]
     public Guid? BrandManagerId { get; set; }
@@ -28,4 +26,5 @@ public class Brand : BusinessEntity
     [InverseProperty(nameof(Account.Brand))]
     public virtual ICollection<Account> Accounts { get; set; } = new HashSet<Account>();
     public virtual ICollection<Shop> Shops { get; set; } = new HashSet<Shop>();
+    public virtual ICollection<Image> Images { get; set; } = new HashSet<Image>();
 }

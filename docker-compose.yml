@@ -36,6 +36,13 @@ services:
     volumes:
       - camai-rabbitmq-lib:/var/camai/lib/rabbitmq/
       - camai-rabbitmq-log:/var/camai/log/rabbitmq/
+  camai-imgproxy:
+    image: darthsim/imgproxy:v3
+    container_name: camai-imgproxy
+    expose:
+      - 8100
+    ports:
+      - 8100:8100
 
 volumes:
   data:
