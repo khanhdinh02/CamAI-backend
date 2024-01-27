@@ -162,7 +162,11 @@ public class CamAIContext : DbContext
                 new TicketType { Id = TicketTypeEnum.Remove, Name = "Remove" }
             );
 
-        modelBuilder.Entity<Employee>().Property(e => e.Image).HasConversion<string>();
+        modelBuilder.Entity<Employee>(builder =>
+        {
+            builder.Property(e => e.Image).HasConversion<string>();
+            builder.Property(e => e.Gender).HasConversion<string>();
+        });
 
         modelBuilder.Entity<Brand>(builder =>
         {
