@@ -11,6 +11,7 @@ public static class ApiDependencyInjection
     public static IServiceCollection AddServices(this IServiceCollection services)
     {
         services.AddScoped<IAccountService, AccountService>();
+        services.AddScoped<IEmployeeService, EmployeeService>();
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IBrandService, BrandService>();
         services.AddScoped<IShopService, ShopService>();
