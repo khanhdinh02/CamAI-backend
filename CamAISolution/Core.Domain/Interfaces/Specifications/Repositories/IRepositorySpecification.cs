@@ -14,6 +14,11 @@ public interface IRepositorySpecification<T>
     List<string>? IncludeStrings { get; }
     Expression<Func<T, object>>? OrderBy { get; }
     Expression<Func<T, object>>? OrderByDescending { get; }
+
+    /// <summary>
+    /// Use for select desired properties
+    /// </summary>
+    Expression<Func<T, T>>? SelectedProperties { get; }
     int Take { get; }
     int Skip { get; }
     bool IsPagingEnabled { get; }

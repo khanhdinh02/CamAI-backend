@@ -23,6 +23,11 @@ public abstract class RepositorySpec<T>(Expression<Func<T, bool>>? criteria = nu
     public bool IsDisableTracking { get; private set; } = false;
     public bool IsOrderBySet { get; private set; } = false;
 
+    public Expression<Func<T, T>>? SelectedProperties { get; private set; }
+
+    public virtual void AddSelectProperties(Expression<Func<T, T>> selectedProperties) =>
+        SelectedProperties = selectedProperties;
+
     protected virtual void AddIncludes(Expression<Func<T, object>> include)
     {
         Includes?.Add(include);

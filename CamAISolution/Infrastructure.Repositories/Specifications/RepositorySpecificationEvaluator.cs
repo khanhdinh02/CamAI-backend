@@ -21,6 +21,8 @@ public class RepositorySpecificationEvaluator<T> : IRepositorySpecificationEvalu
         var query = inputQuery.AsQueryable();
         if (specification.Criteria != null)
             query = query.Where(specification.Criteria);
+        if (specification.SelectedProperties != null)
+            query = query.Select(specification.SelectedProperties);
         if (specification.IsDisableTracking)
             query = query.AsNoTracking();
         if (specification.Includes != null)
