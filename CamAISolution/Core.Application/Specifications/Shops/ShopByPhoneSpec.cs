@@ -15,6 +15,6 @@ public class ShopByPhoneSpec : Specification<Shop>
 
     public override Expression<Func<Shop, bool>> GetExpression()
     {
-        return s => s.Phone!.Trim().ToLower().Contains(phone.Trim().ToLower());
+        return s => s.Phone!.Trim().Contains(phone.Trim());
     }
 }
