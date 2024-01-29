@@ -17,6 +17,11 @@ public class Brand : BusinessEntity
     public Guid? BrandManagerId { get; set; }
     public int BrandStatusId { get; set; }
 
+    public Guid? LogoId { get; set; }
+    public Guid? BannerId { get; set; }
+
+    public virtual Image? Logo { get; set; }
+    public virtual Image? Banner { get; set; }
     public virtual Account? BrandManager { get; set; }
     public virtual BrandStatus BrandStatus { get; set; } = null!;
 
@@ -26,5 +31,4 @@ public class Brand : BusinessEntity
     [InverseProperty(nameof(Account.Brand))]
     public virtual ICollection<Account> Accounts { get; set; } = new HashSet<Account>();
     public virtual ICollection<Shop> Shops { get; set; } = new HashSet<Shop>();
-    public virtual ICollection<Image> Images { get; set; } = new HashSet<Image>();
 }

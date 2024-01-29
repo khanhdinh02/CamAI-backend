@@ -32,6 +32,7 @@ builder
     .AddHttpContextAccessor()
     .AddSwagger()
     .AddServices()
+    .AddServices(builder.Configuration)
     .AddMapping();
 
 builder.ConfigureMassTransit();

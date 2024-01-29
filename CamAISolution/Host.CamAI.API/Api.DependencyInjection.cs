@@ -1,6 +1,8 @@
 using System.Reflection;
+using Core.Application.Exceptions;
 using Core.Application.Implements;
 using Core.Domain.Interfaces.Services;
+using Core.Domain.Models.Configurations;
 using Core.Domain.Services;
 using Microsoft.OpenApi.Models;
 
@@ -18,6 +20,16 @@ public static class ApiDependencyInjection
         services.AddScoped<IEdgeBoxService, EdgeBoxService>();
         services.AddScoped<ITicketService, TicketService>();
         services.AddScoped<ILocationService, LocationService>();
+        return services;
+    }
+
+    public static IServiceCollection AddServices(this IServiceCollection services, IConfiguration configuration)
+    {
+        var config =
+            configuration.GetRequiredSection("ImageConfiguration").Get<ImageConfiguration>()
+            ?? throw new ServiceUnavailableException("Cannot get image configuration");
+        services.AddScoped(_ => config);
+        services.AddScoped<IBlobService, BlobService>();
         return services;
     }
 

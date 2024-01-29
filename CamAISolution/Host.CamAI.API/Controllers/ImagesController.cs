@@ -1,39 +1,31 @@
-﻿using Core.Domain.DTO;
+﻿using System.ComponentModel.DataAnnotations;
+using Core.Domain.Services;
 using Host.CamAI.API.Models.Images;
+using Host.CamAI.API.Utils;
 using Microsoft.AspNetCore.Mvc;
+using SkiaSharp;
 
 namespace Host.CamAI.API.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class ImagesController : ControllerBase
+public class ImagesController(IBlobService blobService) : ControllerBase
 {
     [HttpPost]
     public async Task<IActionResult> ConsumeImage(ControllerCreateImageDto dto)
     {
-        var parent = Directory.GetCurrentDirectory();
-        var des = parent.Substring(0, parent.LastIndexOf('\\'));
-        var folder = Path.Combine(des, "Images");
-        if (!Directory.Exists(folder))
-            Directory.CreateDirectory(folder);
-        var path = Path.Combine(
-            folder,
-            $"{Guid.NewGuid()}.{dto.File.FileName.Substring(dto.File.FileName.LastIndexOf('.') + 1)}"
-        );
-        using (var stream = System.IO.File.Create(path))
-        {
-            await dto.File.CopyToAsync(stream);
-        }
-        return Ok();
+        return Ok(await blobService.UploadImage(await dto.ToCreateImageDto(), "test"));
     }
 
     [HttpGet("{id}")]
-    public Task<FileContentResult> GetImage(Guid id)
+    public async Task<FileStreamResult> GetImage(
+        Guid id,
+        int? width = null,
+        int? height = null,
+        [Range(0, 2)] float scaleFactor = 1
+    )
     {
-        var parent = Directory.GetCurrentDirectory();
-        var des = parent.Substring(0, parent.LastIndexOf('\\'));
-        var folder = Path.Combine(des, "Images");
-        var fileName = Directory.GetFiles(folder, $"{id}*", SearchOption.TopDirectoryOnly).First();
-        return Task.FromResult(File(System.IO.File.ReadAllBytes(fileName), "image/jpeg"));
+        var img = await blobService.GetImageById(id);
+        return File(ImageHelper.Resize(img.PhysicalPath, width, height, scaleFactor), img.ContentType);
     }
 }

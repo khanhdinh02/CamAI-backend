@@ -70,7 +70,7 @@ public class BrandsController(IBrandService brandService, IBaseMapping mapping) 
     /// <returns></returns>
     [HttpPost]
     [AccessTokenGuard(RoleEnum.Admin)]
-    public async Task<ActionResult<BrandDto>> CreateBrand([FromBody] CreateBrandDto brandDto)
+    public async Task<ActionResult<BrandDto>> CreateBrand([FromForm] CreateBrandDto brandDto)
     {
         var createdBrand = await brandService.CreateBrand(brandDto);
         return Ok(mapping.Map<Brand, BrandDto>(createdBrand));

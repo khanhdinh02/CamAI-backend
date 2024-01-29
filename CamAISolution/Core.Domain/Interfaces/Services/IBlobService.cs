@@ -5,7 +5,7 @@ namespace Core.Domain.Services;
 
 public interface IBlobService
 {
-    Task<Image> UploadImage(CreateImageDto dto);
+    Task<Image> UploadImage(CreateImageDto dto, params string[] paths);
 
     /// <summary>
     /// Store image to file system
@@ -24,4 +24,6 @@ public interface IBlobService
     /// <param name="path"></param>
     /// <returns></returns>
     Task<byte[]> GetImage(string path);
+
+    Task<Image> GetImageById(Guid id);
 }

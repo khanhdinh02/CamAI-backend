@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Infrastructure.Repositories.Migrations
 {
     /// <inheritdoc />
-    public partial class FixProince : Migration
+    public partial class Initital : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -104,6 +104,21 @@ namespace Infrastructure.Repositories.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "EmployeeStatus",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Timestamp = table.Column<byte[]>(type: "rowversion", rowVersion: true, nullable: true),
+                    Name = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_EmployeeStatus", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "EvidenceTypes",
                 columns: table => new
                 {
@@ -116,6 +131,20 @@ namespace Infrastructure.Repositories.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_EvidenceTypes", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Image",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    HostingUri = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    PhysicalPath = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ContentType = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Image", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -222,32 +251,6 @@ namespace Infrastructure.Repositories.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Brands",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    Email = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Phone = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
-                    LogoUri = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    BannerUri = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    BrandStatusId = table.Column<int>(type: "int", nullable: false),
-                    Timestamp = table.Column<byte[]>(type: "rowversion", rowVersion: true, nullable: true),
-                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    ModifiedDate = table.Column<DateTime>(type: "datetime2", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Brands", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Brands_BrandStatuses_BrandStatusId",
-                        column: x => x.BrandStatusId,
-                        principalTable: "BrandStatuses",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "EdgeBoxes",
                 columns: table => new
                 {
@@ -351,7 +354,6 @@ namespace Infrastructure.Repositories.Migrations
                     WardId = table.Column<int>(type: "int", nullable: true),
                     AddressLine = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     BrandId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    WorkingShopId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     AccountStatusId = table.Column<int>(type: "int", nullable: false),
                     Timestamp = table.Column<byte[]>(type: "rowversion", rowVersion: true, nullable: true),
                     CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
@@ -367,14 +369,51 @@ namespace Infrastructure.Repositories.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_Accounts_Brands_BrandId",
-                        column: x => x.BrandId,
-                        principalTable: "Brands",
-                        principalColumn: "Id");
-                    table.ForeignKey(
                         name: "FK_Accounts_Wards_WardId",
                         column: x => x.WardId,
                         principalTable: "Wards",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Brands",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    Email = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Phone = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    BrandManagerId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    BrandStatusId = table.Column<int>(type: "int", nullable: false),
+                    LogoId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    BannerId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    Timestamp = table.Column<byte[]>(type: "rowversion", rowVersion: true, nullable: true),
+                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ModifiedDate = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Brands", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Brands_Accounts_BrandManagerId",
+                        column: x => x.BrandManagerId,
+                        principalTable: "Accounts",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_Brands_BrandStatuses_BrandStatusId",
+                        column: x => x.BrandStatusId,
+                        principalTable: "BrandStatuses",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Brands_Image_BannerId",
+                        column: x => x.BannerId,
+                        principalTable: "Image",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_Brands_Image_LogoId",
+                        column: x => x.LogoId,
+                        principalTable: "Image",
                         principalColumn: "Id");
                 });
 
@@ -498,6 +537,46 @@ namespace Infrastructure.Repositories.Migrations
                         principalTable: "Shops",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Employees",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    Email = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Gender = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    Phone = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    Image = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Birthday = table.Column<DateOnly>(type: "date", nullable: true),
+                    AddressLine = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    WardId = table.Column<int>(type: "int", nullable: true),
+                    ShopId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    EmployeeStatusId = table.Column<int>(type: "int", nullable: false),
+                    Timestamp = table.Column<byte[]>(type: "rowversion", rowVersion: true, nullable: true),
+                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ModifiedDate = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Employees", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Employees_EmployeeStatus_EmployeeStatusId",
+                        column: x => x.EmployeeStatusId,
+                        principalTable: "EmployeeStatus",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Employees_Shops_ShopId",
+                        column: x => x.ShopId,
+                        principalTable: "Shops",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_Employees_Wards_WardId",
+                        column: x => x.WardId,
+                        principalTable: "Wards",
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -696,7 +775,7 @@ namespace Infrastructure.Repositories.Migrations
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     BehaviorTypeId = table.Column<int>(type: "int", nullable: false),
-                    AccountId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    EmployeeId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     CameraId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     Time = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Timestamp = table.Column<byte[]>(type: "rowversion", rowVersion: true, nullable: true),
@@ -707,11 +786,6 @@ namespace Infrastructure.Repositories.Migrations
                 {
                     table.PrimaryKey("PK_Behaviors", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Behaviors_Accounts_AccountId",
-                        column: x => x.AccountId,
-                        principalTable: "Accounts",
-                        principalColumn: "Id");
-                    table.ForeignKey(
                         name: "FK_Behaviors_BehaviorTypes_BehaviorTypeId",
                         column: x => x.BehaviorTypeId,
                         principalTable: "BehaviorTypes",
@@ -721,6 +795,11 @@ namespace Infrastructure.Repositories.Migrations
                         name: "FK_Behaviors_Cameras_CameraId",
                         column: x => x.CameraId,
                         principalTable: "Cameras",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_Behaviors_Employees_EmployeeId",
+                        column: x => x.EmployeeId,
+                        principalTable: "Employees",
                         principalColumn: "Id");
                 });
 
@@ -803,6 +882,15 @@ namespace Infrastructure.Repositories.Migrations
                 });
 
             migrationBuilder.InsertData(
+                table: "EmployeeStatus",
+                columns: new[] { "Id", "Description", "Name" },
+                values: new object[,]
+                {
+                    { 1, null, "Active" },
+                    { 2, null, "Inactive" }
+                });
+
+            migrationBuilder.InsertData(
                 table: "RequestStatuses",
                 columns: new[] { "Id", "Description", "Name" },
                 values: new object[,]
@@ -856,16 +944,6 @@ namespace Infrastructure.Repositories.Migrations
                     { 5, null, "Active" }
                 });
 
-            migrationBuilder.InsertData(
-                table: "TicketTypes",
-                columns: new[] { "Id", "Description", "Name" },
-                values: new object[,]
-                {
-                    { 1, null, "Install" },
-                    { 3, null, "Repair" },
-                    { 4, null, "Remove" }
-                });
-
             migrationBuilder.CreateIndex(
                 name: "IX_AccountRole_AccountId",
                 table: "AccountRole",
@@ -887,16 +965,6 @@ namespace Infrastructure.Repositories.Migrations
                 column: "WardId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Accounts_WorkingShopId",
-                table: "Accounts",
-                column: "WorkingShopId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Behaviors_AccountId",
-                table: "Behaviors",
-                column: "AccountId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Behaviors_BehaviorTypeId",
                 table: "Behaviors",
                 column: "BehaviorTypeId");
@@ -907,9 +975,31 @@ namespace Infrastructure.Repositories.Migrations
                 column: "CameraId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Behaviors_EmployeeId",
+                table: "Behaviors",
+                column: "EmployeeId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Brands_BannerId",
+                table: "Brands",
+                column: "BannerId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Brands_BrandManagerId",
+                table: "Brands",
+                column: "BrandManagerId",
+                unique: true,
+                filter: "[BrandManagerId] IS NOT NULL");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Brands_BrandStatusId",
                 table: "Brands",
                 column: "BrandStatusId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Brands_LogoId",
+                table: "Brands",
+                column: "LogoId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Cameras_EdgeBoxInstallId",
@@ -970,6 +1060,21 @@ namespace Infrastructure.Repositories.Migrations
                 name: "IX_EdgeBoxInstalls_ShopId",
                 table: "EdgeBoxInstalls",
                 column: "ShopId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Employees_EmployeeStatusId",
+                table: "Employees",
+                column: "EmployeeStatusId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Employees_ShopId",
+                table: "Employees",
+                column: "ShopId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Employees_WardId",
+                table: "Employees",
+                column: "WardId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Evidences_BehaviorId",
@@ -1097,10 +1202,10 @@ namespace Infrastructure.Repositories.Migrations
                 onDelete: ReferentialAction.Cascade);
 
             migrationBuilder.AddForeignKey(
-                name: "FK_Accounts_Shops_WorkingShopId",
+                name: "FK_Accounts_Brands_BrandId",
                 table: "Accounts",
-                column: "WorkingShopId",
-                principalTable: "Shops",
+                column: "BrandId",
+                principalTable: "Brands",
                 principalColumn: "Id");
         }
 
@@ -1108,8 +1213,8 @@ namespace Infrastructure.Repositories.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropForeignKey(
-                name: "FK_Shops_Accounts_ShopManagerId",
-                table: "Shops");
+                name: "FK_Brands_Accounts_BrandManagerId",
+                table: "Brands");
 
             migrationBuilder.DropTable(
                 name: "AccountRole");
@@ -1148,6 +1253,9 @@ namespace Infrastructure.Repositories.Migrations
                 name: "Cameras");
 
             migrationBuilder.DropTable(
+                name: "Employees");
+
+            migrationBuilder.DropTable(
                 name: "RequestStatuses");
 
             migrationBuilder.DropTable(
@@ -1163,10 +1271,16 @@ namespace Infrastructure.Repositories.Migrations
                 name: "EdgeBoxInstalls");
 
             migrationBuilder.DropTable(
+                name: "EmployeeStatus");
+
+            migrationBuilder.DropTable(
                 name: "EdgeBoxInstallStatuses");
 
             migrationBuilder.DropTable(
                 name: "EdgeBoxes");
+
+            migrationBuilder.DropTable(
+                name: "Shops");
 
             migrationBuilder.DropTable(
                 name: "EdgeBoxLocation");
@@ -1175,25 +1289,25 @@ namespace Infrastructure.Repositories.Migrations
                 name: "EdgeBoxStatuses");
 
             migrationBuilder.DropTable(
+                name: "ShopStatuses");
+
+            migrationBuilder.DropTable(
                 name: "Accounts");
 
             migrationBuilder.DropTable(
                 name: "AccountStatuses");
 
             migrationBuilder.DropTable(
-                name: "Shops");
-
-            migrationBuilder.DropTable(
                 name: "Brands");
-
-            migrationBuilder.DropTable(
-                name: "ShopStatuses");
 
             migrationBuilder.DropTable(
                 name: "Wards");
 
             migrationBuilder.DropTable(
                 name: "BrandStatuses");
+
+            migrationBuilder.DropTable(
+                name: "Image");
 
             migrationBuilder.DropTable(
                 name: "Districts");
