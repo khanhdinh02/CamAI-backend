@@ -24,10 +24,6 @@ stages:
               projects: '**/*.sln'
               verbosityRestore: Normal
 
-          - script: 'ls -R -v'
-            displayName: Validate workspace
-            workingDirectory: $(workingDirectory)
-
           - task: DotNetCoreCLI@2
             displayName: Build all
             inputs:
