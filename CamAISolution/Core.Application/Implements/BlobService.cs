@@ -12,18 +12,6 @@ public class BlobService(IUnitOfWork unitOfWork, ImageConfiguration imgConfig) :
     private readonly IRepository<Image> imageRepo = unitOfWork.GetRepository<Image>();
 
     //TODO [Dat]: return some default image instead of throw exception
-    public async Task<byte[]> GetImage(string path)
-    {
-        if (File.Exists(path))
-        {
-            using var ms = new MemoryStream();
-            using var file = File.OpenRead(path);
-            await file.CopyToAsync(ms);
-            return ms.ToArray();
-        }
-        else
-            throw new NotFoundException("Image not found");
-    }
 
     public async Task<Image> GetImageById(Guid id)
     {
@@ -60,5 +48,12 @@ public class BlobService(IUnitOfWork unitOfWork, ImageConfiguration imgConfig) :
         await imageRepo.AddAsync(imageEntity);
         await unitOfWork.CompleteAsync();
         return imageEntity;
+    }
+
+    public async Task DeleteImageInFilesystem(Guid id)
+    {
+        var img = await imageRepo.GetByIdAsync(id);
+        if (File.Exists(img!.PhysicalPath))
+            File.Delete(img!.PhysicalPath);
     }
 }

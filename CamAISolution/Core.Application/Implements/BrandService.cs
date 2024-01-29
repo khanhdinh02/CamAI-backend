@@ -18,7 +18,8 @@ public class BrandService(
     IShopService shopService,
     IUnitOfWork unitOfWork,
     IAppLogging<BrandService> logger,
-    IBaseMapping mapping
+    IBaseMapping mapping,
+    IBlobService blobService
 ) : IBrandService
 {
     public async Task<PaginationResult<Brand>> GetBrands(SearchBrandRequest searchRequest)
@@ -54,7 +55,10 @@ public class BrandService(
     public async Task<Brand> CreateBrand(CreateBrandDto brandDto)
     {
         var brand = mapping.Map<CreateBrandDto, Brand>(brandDto);
-        // TODO [Duy]: create brand with logo and banner
+        if (brandDto.Banner != null)
+            brand.BannerId = (await blobService.UploadImage(brandDto.Banner, nameof(Brand), nameof(Brand.Banner))).Id;
+        if (brandDto.Logo != null)
+            brand.LogoId = (await blobService.UploadImage(brandDto.Logo, nameof(Brand), nameof(Brand.Logo))).Id;
         brand.BrandStatusId = BrandStatusEnum.Active;
         await unitOfWork.Brands.AddAsync(brand);
         await unitOfWork.CompleteAsync();

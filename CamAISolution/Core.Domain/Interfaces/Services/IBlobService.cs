@@ -17,13 +17,7 @@ public interface IBlobService
     /// Destination of stored image.
     /// </returns>
     Task<string> StoreImageToFileSystem(string filename, byte[] imageBytes, params string[] paths);
-
-    /// <summary>
-    /// Get Image in file system
-    /// </summary>
-    /// <param name="path"></param>
-    /// <returns></returns>
-    Task<byte[]> GetImage(string path);
-
     Task<Image> GetImageById(Guid id);
+
+    Task DeleteImageInFilesystem(Guid id);
 }

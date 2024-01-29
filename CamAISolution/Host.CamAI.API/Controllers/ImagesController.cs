@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Core.Domain.DTO;
 using Core.Domain.Services;
 using Host.CamAI.API.Models.Images;
 using Host.CamAI.API.Utils;
@@ -11,11 +12,11 @@ namespace Host.CamAI.API.Controllers;
 [ApiController]
 public class ImagesController(IBlobService blobService) : ControllerBase
 {
-    [HttpPost]
-    public async Task<IActionResult> ConsumeImage(ControllerCreateImageDto dto)
-    {
-        return Ok(await blobService.UploadImage(await dto.ToCreateImageDto(), "test"));
-    }
+    // [HttpPost]
+    // public async Task<IActionResult> ConsumeImage(ControllerCreateImageDto dto)
+    // {
+    //     return Ok(await blobService.UploadImage(await dto.ToCreateImageDto(), "test"));
+    // }
 
     [HttpGet("{id}")]
     public async Task<FileStreamResult> GetImage(

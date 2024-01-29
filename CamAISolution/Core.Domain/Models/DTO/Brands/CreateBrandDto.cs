@@ -14,4 +14,7 @@ public class CreateBrandDto
     [StringLength(50)]
     [Phone]
     public string? Phone { get; set; }
+
+    public CreateImageDto? Logo { get; set; }
+    public CreateImageDto? Banner { get; set; }
 }

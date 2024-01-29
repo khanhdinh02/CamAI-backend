@@ -4,6 +4,7 @@ using Core.Domain.Entities;
 using Core.Domain.Interfaces.Mappings;
 using Core.Domain.Models;
 using Core.Domain.Services;
+using Host.CamAI.API.Models.Images;
 using Infrastructure.Jwt.Attribute;
 using Microsoft.AspNetCore.Mvc;
 
@@ -70,9 +71,15 @@ public class BrandsController(IBrandService brandService, IBaseMapping mapping) 
     /// <returns></returns>
     [HttpPost]
     [AccessTokenGuard(RoleEnum.Admin)]
-    public async Task<ActionResult<BrandDto>> CreateBrand([FromForm] CreateBrandDto brandDto)
+    public async Task<ActionResult<BrandDto>> CreateBrand(
+        [FromForm] Tuple<CreateBrandDto, ControllerCreateImageDto?, ControllerCreateImageDto?> brandDto
+    )
     {
-        var createdBrand = await brandService.CreateBrand(brandDto);
+        if (brandDto.Item2 != null)
+            brandDto.Item1.Logo = await brandDto.Item2.ToCreateImageDto();
+        if (brandDto.Item3 != null)
+            brandDto.Item1.Banner = await brandDto.Item3.ToCreateImageDto();
+        var createdBrand = await brandService.CreateBrand(brandDto.Item1);
         return Ok(mapping.Map<Brand, BrandDto>(createdBrand));
     }
 
