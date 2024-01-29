@@ -14,6 +14,7 @@ public class CamAIContext : DbContext
 
     public virtual DbSet<Account> Accounts { get; set; } = null!;
     public virtual DbSet<Employee> Employees { get; set; } = null!;
+    public virtual DbSet<EmployeeStatus> EmployeeStatuses { get; set; } = null!;
     public virtual DbSet<Brand> Brands { get; set; } = null!;
     public virtual DbSet<Shop> Shops { get; set; } = null!;
     public virtual DbSet<Role> Roles { get; set; } = null!;
@@ -41,6 +42,8 @@ public class CamAIContext : DbContext
     public virtual DbSet<BehaviorType> BehaviorTypes { get; set; } = null!;
     public virtual DbSet<Evidence> Evidences { get; set; } = null!;
     public virtual DbSet<EvidenceType> EvidenceTypes { get; set; } = null!;
+    public virtual DbSet<EmployeeShift> EmployeeShift { get; set; } = null!;
+    public virtual DbSet<Shift> Shifts { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -175,5 +178,11 @@ public class CamAIContext : DbContext
         });
 
         modelBuilder.Entity<Evidence>().Property(p => p.Uri).HasConversion<string>();
+
+        modelBuilder.Entity<EmployeeShift>(builder =>
+        {
+            builder.HasKey(es => new { es.EmployeeId, es.ShiftId });
+            builder.Property(es => es.DayOfWeek).HasConversion<string>();
+        });
     }
 }
