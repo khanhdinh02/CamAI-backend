@@ -187,8 +187,12 @@ public class CamAIContext : DbContext
             .Entity<NotificationType>()
             .HasData(
                 new NotificationType { Id = NotificationTypeEnum.Normal, Name = nameof(NotificationTypeEnum.Normal) },
-                new NotificationType { Id = NotificationTypeEnum.Warnning, Name = nameof(NotificationTypeEnum.Warnning) },
-                new NotificationType { Id = NotificationTypeEnum.Urgence, Name = nameof(NotificationTypeEnum.Urgence) }
+                new NotificationType
+                {
+                    Id = NotificationTypeEnum.Warnning,
+                    Name = nameof(NotificationTypeEnum.Warnning)
+                },
+                new NotificationType { Id = NotificationTypeEnum.Urgent, Name = nameof(NotificationTypeEnum.Urgent) }
             );
     }
 }

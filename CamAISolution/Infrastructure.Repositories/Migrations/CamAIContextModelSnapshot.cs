@@ -838,7 +838,7 @@ namespace Infrastructure.Repositories.Migrations
                         new
                         {
                             Id = 3,
-                            Name = "Urgence"
+                            Name = "Urgent"
                         });
                 });
 

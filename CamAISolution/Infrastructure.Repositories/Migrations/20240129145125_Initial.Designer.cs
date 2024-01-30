@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Repositories.Migrations
 {
     [DbContext(typeof(CamAIContext))]
-    [Migration("20240126074232_AddNotificationType")]
-    partial class AddNotificationType
+    [Migration("20240129145125_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -841,7 +841,7 @@ namespace Infrastructure.Repositories.Migrations
                         new
                         {
                             Id = 3,
-                            Name = "Urgence"
+                            Name = "Urgent"
                         });
                 });
 
