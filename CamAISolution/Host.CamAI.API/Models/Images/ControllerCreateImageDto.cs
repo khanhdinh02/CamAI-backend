@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using Core.Domain.DTO;
 
-namespace Host.CamAI.API.Models.Images;
+namespace Host.CamAI.API.Models;
 
 public class ControllerCreateImageDto
 {

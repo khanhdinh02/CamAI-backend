@@ -1,7 +1,9 @@
+using Core.Domain.DTO;
+
 namespace Core.Domain.Models.DTO;
 
-public class ImageDto
+public class ImageDto : BaseDto
 {
-    public Uri Uri { get; set; } = null!;
-    public string ContentType { get; set; } = "image/jpeg";
+    public Uri HostingUri { get; set; } = null!;
+    public string ContentType { get; set; } = string.Empty;
 }

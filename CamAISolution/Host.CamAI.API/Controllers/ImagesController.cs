@@ -1,10 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using Core.Domain.DTO;
 using Core.Domain.Services;
-using Host.CamAI.API.Models.Images;
 using Host.CamAI.API.Utils;
 using Microsoft.AspNetCore.Mvc;
-using SkiaSharp;
 
 namespace Host.CamAI.API.Controllers;
 

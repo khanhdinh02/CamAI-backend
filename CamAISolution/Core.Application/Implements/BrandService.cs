@@ -52,16 +52,28 @@ public class BrandService(
         return brand;
     }
 
-    public async Task<Brand> CreateBrand(CreateBrandDto brandDto)
+    public async Task<Brand> CreateBrand(CreateBrandDto brandDto, CreateImageDto? banner, CreateImageDto? logo)
     {
         var brand = mapping.Map<CreateBrandDto, Brand>(brandDto);
-        if (brandDto.Banner != null)
-            brand.BannerId = (await blobService.UploadImage(brandDto.Banner, nameof(Brand), nameof(Brand.Banner))).Id;
-        if (brandDto.Logo != null)
-            brand.LogoId = (await blobService.UploadImage(brandDto.Logo, nameof(Brand), nameof(Brand.Logo))).Id;
+        if (banner != null)
+            brand.BannerId = (await blobService.UploadImage(banner, nameof(Brand), nameof(Brand.Banner))).Id;
+        if (logo != null)
+            brand.LogoId = (await blobService.UploadImage(logo, nameof(Brand), nameof(Brand.Logo))).Id;
         brand.BrandStatusId = BrandStatusEnum.Active;
-        await unitOfWork.Brands.AddAsync(brand);
-        await unitOfWork.CompleteAsync();
+        try
+        {
+            await unitOfWork.Brands.AddAsync(brand);
+            await unitOfWork.CompleteAsync();
+        }
+        catch (Exception ex)
+        {
+            logger.Error(ex.Message, ex);
+            if (brand.LogoId.HasValue)
+                await blobService.DeleteImageInFilesystem(brand.LogoId.Value);
+            if (brand.BannerId.HasValue)
+                await blobService.DeleteImageInFilesystem(brand.BannerId.Value);
+            throw new ServiceUnavailableException("Error occurred");
+        }
         logger.Info($"Create new brand: {JsonSerializer.Serialize(brand)}");
         return brand;
     }
@@ -99,18 +111,19 @@ public class BrandService(
         return brand;
     }
 
-    public async Task UpdateLogo()
+    public Task UpdateLogo()
     {
         // TODO [Duy]: create a new service to upload photo to S3
         throw new NotImplementedException();
     }
 
-    public async Task UpdateBanner()
+    public Task UpdateBanner()
     {
         // TODO [Duy] : upload photo to S3
         throw new NotImplementedException();
     }
 
+    //TODO [Dat]: If truly delete, also remove Logo, Banner in filesystem
     public async Task DeleteBrand(Guid id)
     {
         // TODO [Duy]: implement more business in here

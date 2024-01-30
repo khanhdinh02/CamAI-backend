@@ -51,8 +51,6 @@ app.UseCors(allowPolicy);
 
 app.UseMiddleware<GlobalJwtHandler>();
 
-//app.UseStaticFiles();
-
 app.Migration(args);
 
 if (app.Environment.IsDevelopment())

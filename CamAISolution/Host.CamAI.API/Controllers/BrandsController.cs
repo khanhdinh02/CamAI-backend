@@ -1,12 +1,12 @@
-using System.Linq;
 using Core.Domain.DTO;
 using Core.Domain.Entities;
 using Core.Domain.Interfaces.Mappings;
 using Core.Domain.Models;
 using Core.Domain.Services;
-using Host.CamAI.API.Models.Images;
+using Host.CamAI.API.Models;
 using Infrastructure.Jwt.Attribute;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace Host.CamAI.API.Controllers;
 
@@ -67,19 +67,15 @@ public class BrandsController(IBrandService brandService, IBaseMapping mapping) 
     /// <summary>
     /// Create brand. Only Admin can do it.
     /// </summary>
-    /// <param name="brandDto"></param>
+    /// <param name="createBrandObj"></param>
     /// <returns></returns>
     [HttpPost]
     [AccessTokenGuard(RoleEnum.Admin)]
-    public async Task<ActionResult<BrandDto>> CreateBrand(
-        [FromForm] Tuple<CreateBrandDto, ControllerCreateImageDto?, ControllerCreateImageDto?> brandDto
-    )
+    public async Task<ActionResult<BrandDto>> CreateBrand([FromForm] ControllerCreateBrandDto createBrandObj)
     {
-        if (brandDto.Item2 != null)
-            brandDto.Item1.Logo = await brandDto.Item2.ToCreateImageDto();
-        if (brandDto.Item3 != null)
-            brandDto.Item1.Banner = await brandDto.Item3.ToCreateImageDto();
-        var createdBrand = await brandService.CreateBrand(brandDto.Item1);
+        var banner = createBrandObj.Banner != null ? await createBrandObj.Banner.ToCreateImageDto() : null;
+        var logo = createBrandObj.Logo != null ? await createBrandObj.Logo.ToCreateImageDto() : null;
+        var createdBrand = await brandService.CreateBrand(createBrandObj.Brand, banner: banner, logo: logo);
         return Ok(mapping.Map<Brand, BrandDto>(createdBrand));
     }
 
