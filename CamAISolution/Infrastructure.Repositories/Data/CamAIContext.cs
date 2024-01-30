@@ -153,7 +153,7 @@ public class CamAIContext : DbContext
                 new TicketStatus { Id = TicketStatusEnum.Failed, Name = "Failed" },
                 new TicketStatus { Id = TicketStatusEnum.Active, Name = "Active" }
             );
-
+        modelBuilder.Entity<TicketType>().HasData(new TicketType { Id = TicketTypeEnum.Install, Name = "Install" });
         modelBuilder.Entity<Employee>(builder =>
         {
             builder.Property(e => e.Image).HasConversion<string>();

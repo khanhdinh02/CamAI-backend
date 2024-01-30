@@ -2,7 +2,7 @@
 
 namespace Host.CamAI.API.Models;
 
-public class ControllerCreateBrandDto
+public class CreateBrandWithImageDto
 {
     public CreateBrandDto Brand { get; set; } = null!;
 

@@ -11,8 +11,6 @@ public class BlobService(IUnitOfWork unitOfWork, ImageConfiguration imgConfig) :
 {
     private readonly IRepository<Image> imageRepo = unitOfWork.GetRepository<Image>();
 
-    //TODO [Dat]: return some default image instead of throw exception
-
     public async Task<Image> GetImageById(Guid id)
     {
         return await imageRepo.GetByIdAsync(id) ?? throw new NotFoundException(typeof(Image), id);
@@ -27,7 +25,6 @@ public class BlobService(IUnitOfWork unitOfWork, ImageConfiguration imgConfig) :
         var fullPhysicalPath = Path.Combine(storeFolder, filename);
         using var file = File.Create(fullPhysicalPath);
         await file.WriteAsync(imageBytes);
-        file.Close();
         return fullPhysicalPath;
     }
 

@@ -71,7 +71,7 @@ public class BrandsController(IBrandService brandService, IBaseMapping mapping) 
     /// <returns></returns>
     [HttpPost]
     [AccessTokenGuard(RoleEnum.Admin)]
-    public async Task<ActionResult<BrandDto>> CreateBrand([FromForm] ControllerCreateBrandDto createBrandObj)
+    public async Task<ActionResult<BrandDto>> CreateBrand([FromForm] CreateBrandWithImageDto createBrandObj)
     {
         var banner = createBrandObj.Banner != null ? await createBrandObj.Banner.ToCreateImageDto() : null;
         var logo = createBrandObj.Logo != null ? await createBrandObj.Logo.ToCreateImageDto() : null;
