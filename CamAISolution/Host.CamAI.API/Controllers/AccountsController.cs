@@ -19,14 +19,13 @@ public class AccountsController(IAccountService accountService, IBaseMapping map
     /// <para>
     /// Admin can get all accounts<br/>
     /// Brand manager can get all accounts working for their brand (the BrandId field is ignored)<br/>
-    /// Shop manager can get all accounts working for their shop (the ShopId field is ignored)
     /// </para>
     /// <para><c>Search</c> can be Email, Name or Phone</para>
     /// </remarks>
     /// <param name="req"></param>
     /// <returns></returns>
     [HttpGet]
-    [AccessTokenGuard(RoleEnum.Admin, RoleEnum.BrandManager, RoleEnum.ShopManager)]
+    [AccessTokenGuard(RoleEnum.Admin, RoleEnum.BrandManager)]
     public async Task<ActionResult<PaginationResult<AccountDto>>> GetAccounts([FromQuery] SearchAccountRequest req)
     {
         var accounts = await accountService.GetAccounts(req);

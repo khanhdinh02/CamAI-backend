@@ -1,5 +1,3 @@
-using Core.Application.Exceptions;
-using Core.Domain;
 using Core.Domain.Entities;
 using Core.Domain.Entities.Base;
 using Core.Domain.Repositories;
@@ -28,6 +26,7 @@ public class UnitOfWork(CamAIContext context, IServiceProvider serviceProvider) 
     public IRepository<ShopStatus> ShopStatuses => serviceProvider.GetRequiredService<IRepository<ShopStatus>>();
 
     public IRepository<Account> Accounts => serviceProvider.GetRequiredService<IRepository<Account>>();
+    public IRepository<Employee> Employees => serviceProvider.GetRequiredService<IRepository<Employee>>();
     public IRepository<EdgeBox> EdgeBoxes => serviceProvider.GetRequiredService<IRepository<EdgeBox>>();
 
     public IRepository<Ticket> Tickets => serviceProvider.GetRequiredService<IRepository<Ticket>>();

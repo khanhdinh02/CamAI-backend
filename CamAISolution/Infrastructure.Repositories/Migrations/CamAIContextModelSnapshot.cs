@@ -93,9 +93,6 @@ namespace Infrastructure.Repositories.Migrations
                     b.Property<int?>("WardId")
                         .HasColumnType("int");
 
-                    b.Property<Guid?>("WorkingShopId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.HasKey("Id");
 
                     b.HasIndex("AccountStatusId");
@@ -103,8 +100,6 @@ namespace Infrastructure.Repositories.Migrations
                     b.HasIndex("BrandId");
 
                     b.HasIndex("WardId");
-
-                    b.HasIndex("WorkingShopId");
 
                     b.ToTable("Accounts");
                 });
@@ -178,9 +173,6 @@ namespace Infrastructure.Repositories.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid?>("AccountId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<int>("BehaviorTypeId")
                         .HasColumnType("int");
 
@@ -189,6 +181,9 @@ namespace Infrastructure.Repositories.Migrations
 
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("EmployeeId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("ModifiedDate")
                         .HasColumnType("datetime2");
@@ -203,11 +198,11 @@ namespace Infrastructure.Repositories.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AccountId");
-
                     b.HasIndex("BehaviorTypeId");
 
                     b.HasIndex("CameraId");
+
+                    b.HasIndex("EmployeeId");
 
                     b.ToTable("Behaviors");
                 });
@@ -657,6 +652,108 @@ namespace Infrastructure.Repositories.Migrations
                         {
                             Id = 3,
                             Name = "Broken"
+                        });
+                });
+
+            modelBuilder.Entity("Core.Domain.Entities.Employee", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("AddressLine")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateOnly?>("Birthday")
+                        .HasColumnType("date");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("EmployeeStatusId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Gender")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("Image")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("ModifiedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Phone")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<Guid?>("ShopId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<byte[]>("Timestamp")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<int?>("WardId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EmployeeStatusId");
+
+                    b.HasIndex("ShopId");
+
+                    b.HasIndex("WardId");
+
+                    b.ToTable("Employees");
+                });
+
+            modelBuilder.Entity("Core.Domain.Entities.EmployeeStatus", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<byte[]>("Timestamp")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("EmployeeStatus");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Name = "Active"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Name = "Inactive"
                         });
                 });
 
@@ -1418,17 +1515,11 @@ namespace Infrastructure.Repositories.Migrations
                         .WithMany()
                         .HasForeignKey("WardId");
 
-                    b.HasOne("Core.Domain.Entities.Shop", "WorkingShop")
-                        .WithMany("Employees")
-                        .HasForeignKey("WorkingShopId");
-
                     b.Navigation("AccountStatus");
 
                     b.Navigation("Brand");
 
                     b.Navigation("Ward");
-
-                    b.Navigation("WorkingShop");
                 });
 
             modelBuilder.Entity("Core.Domain.Entities.AccountNotification", b =>
@@ -1460,10 +1551,6 @@ namespace Infrastructure.Repositories.Migrations
 
             modelBuilder.Entity("Core.Domain.Entities.Behavior", b =>
                 {
-                    b.HasOne("Core.Domain.Entities.Account", "Account")
-                        .WithMany()
-                        .HasForeignKey("AccountId");
-
                     b.HasOne("Core.Domain.Entities.BehaviorType", "BehaviorType")
                         .WithMany()
                         .HasForeignKey("BehaviorTypeId")
@@ -1474,11 +1561,15 @@ namespace Infrastructure.Repositories.Migrations
                         .WithMany()
                         .HasForeignKey("CameraId");
 
-                    b.Navigation("Account");
+                    b.HasOne("Core.Domain.Entities.Employee", "Employee")
+                        .WithMany("Behaviors")
+                        .HasForeignKey("EmployeeId");
 
                     b.Navigation("BehaviorType");
 
                     b.Navigation("Camera");
+
+                    b.Navigation("Employee");
                 });
 
             modelBuilder.Entity("Core.Domain.Entities.Brand", b =>
@@ -1601,6 +1692,29 @@ namespace Infrastructure.Repositories.Migrations
                     b.Navigation("EdgeBoxInstallStatus");
 
                     b.Navigation("Shop");
+                });
+
+            modelBuilder.Entity("Core.Domain.Entities.Employee", b =>
+                {
+                    b.HasOne("Core.Domain.Entities.EmployeeStatus", "EmployeeStatus")
+                        .WithMany()
+                        .HasForeignKey("EmployeeStatusId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Core.Domain.Entities.Shop", "Shop")
+                        .WithMany("Employees")
+                        .HasForeignKey("ShopId");
+
+                    b.HasOne("Core.Domain.Entities.Ward", "Ward")
+                        .WithMany()
+                        .HasForeignKey("WardId");
+
+                    b.Navigation("EmployeeStatus");
+
+                    b.Navigation("Shop");
+
+                    b.Navigation("Ward");
                 });
 
             modelBuilder.Entity("Core.Domain.Entities.Evidence", b =>
@@ -1839,6 +1953,11 @@ namespace Infrastructure.Repositories.Migrations
             modelBuilder.Entity("Core.Domain.Entities.EdgeBoxInstall", b =>
                 {
                     b.Navigation("Cameras");
+                });
+
+            modelBuilder.Entity("Core.Domain.Entities.Employee", b =>
+                {
+                    b.Navigation("Behaviors");
                 });
 
             modelBuilder.Entity("Core.Domain.Entities.Notification", b =>
