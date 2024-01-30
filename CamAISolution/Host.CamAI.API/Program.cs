@@ -5,6 +5,7 @@ using Infrastructure.Jwt;
 using Infrastructure.Logging;
 using Infrastructure.Mapping;
 using Infrastructure.Notification;
+using Infrastructure.Notification.Models;
 using Infrastructure.Repositories;
 
 var builder = WebApplication.CreateBuilder(args).ConfigureSerilog();
@@ -34,7 +35,7 @@ builder
     .AddSwagger()
     .AddServices()
     .AddMapping()
-    .AddNotification();
+    .AddNotification(builder.Configuration.GetRequiredSection("GoogleSecret").Get<GoogleSecret>());
 
 builder.ConfigureMassTransit();
 
