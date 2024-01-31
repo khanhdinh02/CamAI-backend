@@ -11,7 +11,7 @@ public class ShopByIdRepoSpec : EntityByIdSpec<Shop, Guid>
         {
             AddIncludes(s => s.Ward.District.Province);
             AddIncludes(s => s.ShopStatus);
-            AddIncludes(s => s.Brand);
+            AddIncludes(s => s.Brand.BrandStatus);
             AddIncludes(nameof(Shop.ShopManager));
         }
     }
