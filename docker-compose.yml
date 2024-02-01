@@ -23,9 +23,10 @@ services:
     environment:
       - ConnectionStrings__Default=${MS_SQL_CONN}
       - GoogleSecret__PrivateKey=${GOOGLE_SERVICE_PRIVATE_KEY}
+      - ImageConfiguration__BaseImageFolderPath=${BASE_IMAGE_FOLER}
+      - ImageConfiguration__MaxImageSize=${MAX_IMAGE_SIZE}
+      - ImageConfiguration__HostingUri=${HOST_URI}
       - ASPNETCORE_ENVIRONMENT=${STAGE}
-    depends_on:
-      - mssqldb
   camai-rabbitmq:
     image: rabbitmq:3.12.12-management
     ports:

@@ -18,6 +18,8 @@ public class BlobService(IUnitOfWork unitOfWork, ImageConfiguration imgConfig) :
 
     public async Task<string> StoreImageToFileSystem(string filename, byte[] imageBytes, params string[] paths)
     {
+        if (imageBytes.Length > imgConfig.MaxImageSize * 1024 * 1024)
+            throw new BadRequestException($"Image's size must less than or equal to {imgConfig.MaxImageSize} MB");
         var destinationFolder = Path.Combine(paths);
         var storeFolder = Path.Combine(imgConfig.BaseImageFolderPath, destinationFolder);
         if (!Directory.Exists(storeFolder))
@@ -29,7 +31,7 @@ public class BlobService(IUnitOfWork unitOfWork, ImageConfiguration imgConfig) :
     }
 
     //TODO [Dat]: Remove hardcode part
-    private Uri GenerateHostingUri(string name) => new Uri($"https://localhost:7113/api/images/{name}");
+    private Uri GenerateHostingUri(string name) => new Uri($"{imgConfig.HostingUri}/{name}");
 
     //TODO [Dat]: Add Mapping
     public async Task<Image> UploadImage(CreateImageDto dto, params string[] paths)

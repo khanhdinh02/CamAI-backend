@@ -4,4 +4,5 @@ public class ImageConfiguration
 {
     public string BaseImageFolderPath { get; set; } = null!;
     public int MaxImageSize { get; set; } // Maximum size of image
+    public string HostingUri { get; set; } = null!;
 }
