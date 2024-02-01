@@ -164,12 +164,6 @@ public class CamAIContext : DbContext
             builder.Property(e => e.Gender).HasConversion<string>();
         });
 
-        modelBuilder.Entity<Brand>(builder =>
-        {
-            builder.Property(x => x.LogoUri).HasConversion<string>();
-            builder.Property(x => x.BannerUri).HasConversion<string>();
-        });
-
         modelBuilder
             .Entity<NotificationStatus>()
             .HasData(
