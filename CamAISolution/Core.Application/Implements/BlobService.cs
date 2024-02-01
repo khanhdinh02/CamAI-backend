@@ -16,42 +16,50 @@ public class BlobService(IUnitOfWork unitOfWork, ImageConfiguration imgConfig) :
         return await imageRepo.GetByIdAsync(id) ?? throw new NotFoundException(typeof(Image), id);
     }
 
-    public async Task<string> StoreImageToFileSystem(string filename, byte[] imageBytes, params string[] paths)
+    public async Task StoreImageToFileSystem(string destination, byte[] imageBytes)
     {
         if (imageBytes.Length > imgConfig.MaxImageSize * 1024 * 1024)
             throw new BadRequestException($"Image's size must less than or equal to {imgConfig.MaxImageSize} MB");
+
+        using var file = File.Create(destination);
+        await file.WriteAsync(imageBytes);
+    }
+
+    private string CreatePhysicalPath(string filename, params string[] paths)
+    {
         var destinationFolder = Path.Combine(paths);
         var storeFolder = Path.Combine(imgConfig.BaseImageFolderPath, destinationFolder);
         if (!Directory.Exists(storeFolder))
             Directory.CreateDirectory(storeFolder);
-        var fullPhysicalPath = Path.Combine(storeFolder, filename);
-        using var file = File.Create(fullPhysicalPath);
-        await file.WriteAsync(imageBytes);
-        return fullPhysicalPath;
+        return Path.Combine(storeFolder, filename);
     }
 
     private Uri GenerateHostingUri(string name) => new Uri($"{imgConfig.HostingUri}/{name}");
 
-    //TODO [Dat]: Add Mapping
     public async Task<Image> UploadImage(CreateImageDto dto, params string[] paths)
     {
         var imageEntity = new Image { Id = Guid.NewGuid() };
         var extension = Domain.Utilities.FileHelper.GetExtension(dto.Filename);
         var filename = $"{imageEntity.Id}{extension}";
         var uri = GenerateHostingUri(imageEntity.Id.ToString());
-        var physicalPath = await StoreImageToFileSystem(filename, dto.ImageBytes, paths);
+        var physicalPath = CreatePhysicalPath(filename, paths);
         imageEntity.PhysicalPath = physicalPath;
         imageEntity.HostingUri = uri;
         imageEntity.ContentType = dto.ContentType;
         await imageRepo.AddAsync(imageEntity);
-        await unitOfWork.CompleteAsync();
+        if (await unitOfWork.CompleteAsync() > 0)
+            await StoreImageToFileSystem(imageEntity.PhysicalPath, dto.ImageBytes);
         return imageEntity;
     }
 
     public async Task DeleteImageInFilesystem(Guid id)
     {
         var img = await imageRepo.GetByIdAsync(id);
-        if (File.Exists(img!.PhysicalPath))
+        if (img == null)
+            return;
+        imageRepo.Delete(img);
+
+        if (await unitOfWork.CompleteAsync() > 0 && File.Exists(img!.PhysicalPath))
             File.Delete(img!.PhysicalPath);
     }
 }

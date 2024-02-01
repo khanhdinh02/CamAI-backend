@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using Core.Domain.DTO;
 using Core.Domain.Entities;
 using Core.Domain.Interfaces.Mappings;
@@ -126,6 +127,20 @@ public class BrandsController(IBrandService brandService, IBaseMapping mapping) 
         return Accepted();
     }
 
-    // TODO [Duy]: endpoint to update logo
-    // TODO [Duy]: endpoint to update banner
+    /// <summary>
+    /// Only Brand manager can update logo or banner of brand
+    /// </summary>
+    /// <param name="imageDto"></param>
+    /// <param name="target">0 for logo, 1 for banner</param>
+    /// <returns></returns>
+    [HttpPut("images/{target}")]
+    [AccessTokenGuard(RoleEnum.BrandManager)]
+    public async Task<IActionResult> UpdateImage(ControllerCreateImageDto imageDto, [Range(0, 1)] int target)
+    {
+        if (target == 0)
+            await brandService.UpdateLogo(await imageDto.ToCreateImageDto());
+        if (target == 1)
+            await brandService.UpdateBanner(await imageDto.ToCreateImageDto());
+        return Ok();
+    }
 }

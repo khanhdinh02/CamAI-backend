@@ -1,20 +1,16 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Core.Domain.Services;
 using Host.CamAI.API.Utils;
+using Infrastructure.Jwt.Attribute;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Host.CamAI.API.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
+[AccessTokenGuard]
 public class ImagesController(IBlobService blobService) : ControllerBase
 {
-    // [HttpPost]
-    // public async Task<IActionResult> ConsumeImage(ControllerCreateImageDto dto)
-    // {
-    //     return Ok(await blobService.UploadImage(await dto.ToCreateImageDto(), "test"));
-    // }
-
     [HttpGet("{id}")]
     public async Task<FileStreamResult> GetImage(
         Guid id,

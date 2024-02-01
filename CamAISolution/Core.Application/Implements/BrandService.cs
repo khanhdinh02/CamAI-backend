@@ -111,16 +111,32 @@ public class BrandService(
         return brand;
     }
 
-    public Task UpdateLogo()
+    public async Task UpdateLogo(CreateImageDto imageDto)
     {
-        // TODO [Duy]: create a new service to upload photo to S3
-        throw new NotImplementedException();
+        var currentAccount = accountService.GetCurrentAccount();
+        if (!IsAccountOwnBrand(currentAccount, currentAccount.Brand))
+            throw new BadRequestException("Account doesn't manage any brand");
+        var brand = await GetBrandById(currentAccount.BrandId!.Value);
+        var oldLogoId = brand.LogoId;
+        var newLogo = await blobService.UploadImage(imageDto, nameof(Brand), nameof(Brand.Logo));
+        brand.LogoId = newLogo.Id;
+        unitOfWork.Brands.Update(brand);
+        if (await unitOfWork.CompleteAsync() > 0 && oldLogoId.HasValue)
+            await blobService.DeleteImageInFilesystem(oldLogoId.Value);
     }
 
-    public Task UpdateBanner()
+    public async Task UpdateBanner(CreateImageDto imageDto)
     {
-        // TODO [Duy] : upload photo to S3
-        throw new NotImplementedException();
+        var currentAccount = accountService.GetCurrentAccount();
+        if (!IsAccountOwnBrand(currentAccount, currentAccount.Brand))
+            throw new BadRequestException("Account doesn't manage any brand");
+        var brand = await GetBrandById(currentAccount.BrandId!.Value);
+        var oldBannerId = brand.BannerId;
+        var newLogo = await blobService.UploadImage(imageDto, nameof(Brand), nameof(Brand.Banner));
+        brand.LogoId = newLogo.Id;
+        unitOfWork.Brands.Update(brand);
+        if (await unitOfWork.CompleteAsync() > 0 && oldBannerId.HasValue)
+            await blobService.DeleteImageInFilesystem(oldBannerId.Value);
     }
 
     //TODO [Dat]: If truly delete, also remove Logo, Banner in filesystem
@@ -146,7 +162,7 @@ public class BrandService(
     {
         // TODO [Duy]: implement this
         // return brand.BrandManagerId != null;
-        return true;
+        throw new NotImplementedException();
     }
 
     private async Task<bool> HasAccessToBrand(Account account, Brand brand)
@@ -172,9 +188,12 @@ public class BrandService(
         return false;
     }
 
-    private static bool IsAccountOwnBrand(Account account, Brand brand)
+    private static bool IsAccountOwnBrand(Account account, Brand? brand)
     {
-        return account.HasRole(RoleEnum.Admin)
-            || (account.HasRole(RoleEnum.BrandManager) && account.Brand!.Id == brand.Id);
+        return brand != null
+            && (
+                account.HasRole(RoleEnum.Admin)
+                || (account.HasRole(RoleEnum.BrandManager) && account.Brand!.Id == brand.Id)
+            );
     }
 }

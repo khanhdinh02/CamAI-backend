@@ -10,13 +10,12 @@ public interface IBlobService
     /// <summary>
     /// Store image to file system
     /// </summary>
-    /// <param name="filename">Image's filename must include extension</param>
+    /// <param name="destination">physical path to store image (e.g: /some/folder/to/store/my-image.png)</param>
     /// <param name="imageBytes">Image data as byte array</param>
-    /// <param name="paths">Segments of path in order to store image (eg: paths = [image, must, be, store, here], result will be "$base/image/must/be/store/here/")</param>
     /// <returns>
     /// Destination of stored image.
     /// </returns>
-    Task<string> StoreImageToFileSystem(string filename, byte[] imageBytes, params string[] paths);
+    Task StoreImageToFileSystem(string destination, byte[] imageBytes);
     Task<Image> GetImageById(Guid id);
 
     Task DeleteImageInFilesystem(Guid id);
