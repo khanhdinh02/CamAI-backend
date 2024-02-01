@@ -10,7 +10,7 @@ stages:
       - job: job_run_test
         displayName: CamAI smoke test backend
         pool:
-          vmImage: 'ubuntu-latest'
+          name: 'Camai-Agent'
         steps:
           - task: UseDotNet@2
             displayName: Use .NET 8 SDK
@@ -23,10 +23,6 @@ stages:
               command: restore
               projects: '**/*.sln'
               verbosityRestore: Normal
-
-          - script: 'ls -R -v'
-            displayName: Validate workspace
-            workingDirectory: $(workingDirectory)
 
           - task: DotNetCoreCLI@2
             displayName: Build all

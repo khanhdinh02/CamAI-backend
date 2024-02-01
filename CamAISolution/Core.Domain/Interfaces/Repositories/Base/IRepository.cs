@@ -7,7 +7,7 @@ namespace Core.Domain.Repositories;
 public interface IRepository<T>
 {
     public Task<bool> IsExisted(object key);
-    public Task<T?> GetByIdAsync(object key);
+    public Task<T?> GetByIdAsync(params object[] keys);
     public Task<PaginationResult<T>> GetAsync(IRepositorySpecification<T>? specification = null);
     public Task<PaginationResult<T>> GetAsync(
         Expression<Func<T, bool>>? expression = null,

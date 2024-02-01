@@ -41,6 +41,10 @@ public class CamAIContext : DbContext
     public virtual DbSet<BehaviorType> BehaviorTypes { get; set; } = null!;
     public virtual DbSet<Evidence> Evidences { get; set; } = null!;
     public virtual DbSet<EvidenceType> EvidenceTypes { get; set; } = null!;
+    public virtual DbSet<Notification> Notifications { get; set; } = null!;
+    public virtual DbSet<NotificationStatus> NotificationStatuses { get; set; } = null!;
+    public virtual DbSet<AccountNotification> AccountNotifications { get; set; } = null!;
+    public virtual DbSet<NotificationType> NotificationTypes { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -160,7 +164,41 @@ public class CamAIContext : DbContext
             builder.Property(e => e.Gender).HasConversion<string>();
         });
 
+        modelBuilder.Entity<Brand>(builder =>
+        {
+            builder.Property(x => x.LogoUri).HasConversion<string>();
+            builder.Property(x => x.BannerUri).HasConversion<string>();
+        });
+
+        modelBuilder
+            .Entity<NotificationStatus>()
+            .HasData(
+                new NotificationStatus
+                {
+                    Id = NotificationStatusEnum.Unread,
+                    Name = nameof(NotificationStatusEnum.Unread)
+                },
+                new NotificationStatus { Id = NotificationStatusEnum.Read, Name = nameof(NotificationStatusEnum.Read) }
+            );
+        modelBuilder.Entity<AccountNotification>().HasKey(an => new { an.AccountId, an.NotificationId });
+        modelBuilder
+            .Entity<Notification>()
+            .HasOne(n => n.SentBy)
+            .WithMany(a => a.SentNotifications)
+            .OnDelete(DeleteBehavior.NoAction);
+
         modelBuilder.Entity<Image>().Property(i => i.HostingUri).HasConversion<string>();
         modelBuilder.Entity<Evidence>().Property(p => p.Uri).HasConversion<string>();
+        modelBuilder
+            .Entity<NotificationType>()
+            .HasData(
+                new NotificationType { Id = NotificationTypeEnum.Normal, Name = nameof(NotificationTypeEnum.Normal) },
+                new NotificationType
+                {
+                    Id = NotificationTypeEnum.Warnning,
+                    Name = nameof(NotificationTypeEnum.Warnning)
+                },
+                new NotificationType { Id = NotificationTypeEnum.Urgent, Name = nameof(NotificationTypeEnum.Urgent) }
+            );
     }
 }
