@@ -2,7 +2,7 @@
 using Infrastructure.MessageQueue;
 using MassTransit;
 using RabbitMQ.Client;
-using static Host.CamAI.API.Consumers.ConsumerConstant;
+using static Infrastructure.MessageQueue.ConsumerConstant;
 
 namespace Host.CamAI.API.Consumers;
 

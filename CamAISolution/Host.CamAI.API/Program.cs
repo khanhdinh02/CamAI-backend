@@ -4,6 +4,7 @@ using Host.CamAI.API.Models;
 using Infrastructure.Jwt;
 using Infrastructure.Logging;
 using Infrastructure.Mapping;
+using Infrastructure.Observer;
 using Infrastructure.Repositories;
 
 var builder = WebApplication.CreateBuilder(args).ConfigureSerilog();
@@ -27,7 +28,8 @@ builder
     .AddHttpContextAccessor()
     .AddSwagger()
     .AddServices()
-    .AddMapping();
+    .AddMapping()
+    .AddObserver();
 
 builder.ConfigureMassTransit();
 
@@ -56,5 +58,8 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.MapControllers();
+
+var observer = app.Services.GetRequiredService<SyncObserver>();
+observer.RegisterEvent();
 
 app.Run();
