@@ -30,14 +30,13 @@ public class BlobService(IUnitOfWork unitOfWork, ImageConfiguration imgConfig) :
         return fullPhysicalPath;
     }
 
-    //TODO [Dat]: Remove hardcode part
     private Uri GenerateHostingUri(string name) => new Uri($"{imgConfig.HostingUri}/{name}");
 
     //TODO [Dat]: Add Mapping
     public async Task<Image> UploadImage(CreateImageDto dto, params string[] paths)
     {
-        var imageEntity = new Image();
-        var extension = dto.Filename.Substring(dto.Filename.LastIndexOf('.'));
+        var imageEntity = new Image { Id = Guid.NewGuid() };
+        var extension = Domain.Utilities.FileHelper.GetExtension(dto.Filename);
         var filename = $"{imageEntity.Id}{extension}";
         var uri = GenerateHostingUri(imageEntity.Id.ToString());
         var physicalPath = await StoreImageToFileSystem(filename, dto.ImageBytes, paths);

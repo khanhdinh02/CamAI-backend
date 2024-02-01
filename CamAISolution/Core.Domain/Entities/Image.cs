@@ -5,11 +5,6 @@ namespace Core.Domain.Entities;
 
 public class Image : BaseEntity<Guid>
 {
-    public Image()
-    {
-        Id = Guid.NewGuid();
-    }
-
     /// <summary>
     /// This Uri is used to get the image in the client
     /// </summary>

@@ -14,11 +14,6 @@ public static class ImageHelper
             { ".jpe", SKEncodedImageFormat.Jpeg }
         };
 
-    private static string GetExtension(string filename)
-    {
-        return filename.Substring(filename.LastIndexOf('.'));
-    }
-
     public static Stream Resize(string physicalPath, int? width, int? height, float scaleFactor = 1)
     {
         var imgSkia = SKImage.FromEncodedData(physicalPath);
@@ -28,7 +23,12 @@ public static class ImageHelper
         var imageInfo = new SKImageInfo((int)newWidth, (int)newHeight);
         using var resizedBitmap = bitmap.Resize(imageInfo, SKFilterQuality.Low);
         using var image = SKImage.FromBitmap(resizedBitmap);
-        if (!_skiaSharpImageFormatMapping.TryGetValue(GetExtension(physicalPath), out var format))
+        if (
+            !_skiaSharpImageFormatMapping.TryGetValue(
+                Core.Domain.Utilities.FileHelper.GetExtension(physicalPath),
+                out var format
+            )
+        )
             throw new ServiceUnavailableException("Cannot resolve format of image");
         return image.Encode(format, 50).AsStream();
     }

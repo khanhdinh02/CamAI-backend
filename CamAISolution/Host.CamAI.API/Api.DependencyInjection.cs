@@ -28,7 +28,7 @@ public static class ApiDependencyInjection
         var config =
             configuration.GetRequiredSection("ImageConfiguration").Get<ImageConfiguration>()
             ?? throw new ServiceUnavailableException("Cannot get image configuration");
-        services.AddScoped(_ => config);
+        services.AddSingleton(config);
         services.AddScoped<IBlobService, BlobService>();
         return services;
     }
