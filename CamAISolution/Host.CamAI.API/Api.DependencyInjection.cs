@@ -1,4 +1,5 @@
 using System.Reflection;
+using System.Text.Json.Serialization;
 using Core.Application.Implements;
 using Core.Domain.Interfaces.Services;
 using Core.Domain.Services;
@@ -23,6 +24,12 @@ public static class ApiDependencyInjection
 
     public static IServiceCollection AddSwagger(this IServiceCollection services)
     {
+        services
+            .AddControllers()
+            .AddJsonOptions(config =>
+            {
+                config.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+            });
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen(option =>
         {
