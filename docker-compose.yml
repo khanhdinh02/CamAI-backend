@@ -22,6 +22,7 @@ services:
       - "8081:8081"
     environment:
       - ConnectionStrings__Default=${MS_SQL_CONN}
+      - GoogleSecret__PrivateKey=${GOOGLE_SERVICE_PRIVATE_KEY}
       - ASPNETCORE_ENVIRONMENT=${STAGE}
     depends_on:
       - mssqldb
