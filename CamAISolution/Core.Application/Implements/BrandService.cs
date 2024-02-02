@@ -111,6 +111,7 @@ public class BrandService(
         return brand;
     }
 
+    // TODO [Dat]: Clean up logic in both update logo and banner
     public async Task UpdateLogo(CreateImageDto imageDto)
     {
         var currentAccount = accountService.GetCurrentAccount();
@@ -121,8 +122,22 @@ public class BrandService(
         var newLogo = await blobService.UploadImage(imageDto, nameof(Brand), nameof(Brand.Logo));
         brand.LogoId = newLogo.Id;
         unitOfWork.Brands.Update(brand);
-        if (await unitOfWork.CompleteAsync() > 0 && oldLogoId.HasValue)
-            await blobService.DeleteImageInFilesystem(oldLogoId.Value);
+        try
+        {
+            if (await unitOfWork.CompleteAsync() > 0)
+            {
+                if (oldLogoId.HasValue)
+                    await blobService.DeleteImageInFilesystem(oldLogoId.Value);
+            }
+            else
+                await blobService.DeleteImageInFilesystem(newLogo.Id);
+        }
+        catch (Exception ex)
+        {
+            logger.Error(ex.Message, ex);
+            await blobService.DeleteImageInFilesystem(newLogo.Id);
+            throw new ServiceUnavailableException("Update Logo failed");
+        }
     }
 
     public async Task UpdateBanner(CreateImageDto imageDto)
@@ -132,11 +147,25 @@ public class BrandService(
             throw new BadRequestException("Account doesn't manage any brand");
         var brand = await GetBrandById(currentAccount.BrandId!.Value);
         var oldBannerId = brand.BannerId;
-        var newLogo = await blobService.UploadImage(imageDto, nameof(Brand), nameof(Brand.Banner));
-        brand.LogoId = newLogo.Id;
+        var newBanner = await blobService.UploadImage(imageDto, nameof(Brand), nameof(Brand.Banner));
+        brand.BannerId = newBanner.Id;
         unitOfWork.Brands.Update(brand);
-        if (await unitOfWork.CompleteAsync() > 0 && oldBannerId.HasValue)
-            await blobService.DeleteImageInFilesystem(oldBannerId.Value);
+        try
+        {
+            if (await unitOfWork.CompleteAsync() > 0)
+            {
+                if (oldBannerId.HasValue)
+                    await blobService.DeleteImageInFilesystem(oldBannerId.Value);
+            }
+            else
+                await blobService.DeleteImageInFilesystem(newBanner.Id);
+        }
+        catch (Exception ex)
+        {
+            logger.Error(ex.Message, ex);
+            await blobService.DeleteImageInFilesystem(newBanner.Id);
+            throw new ServiceUnavailableException("Update Banner failed");
+        }
     }
 
     //TODO [Dat]: If truly delete, also remove Logo, Banner in filesystem
