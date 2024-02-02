@@ -1,5 +1,6 @@
 using System.Linq.Expressions;
 using System.Text.Json.Serialization;
+using Core.Application.Exceptions;
 using Core.Domain.DTO;
 using Core.Domain.Specifications.Repositories;
 
