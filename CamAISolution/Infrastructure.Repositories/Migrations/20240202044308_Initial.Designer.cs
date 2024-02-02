@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Repositories.Migrations
 {
     [DbContext(typeof(CamAIContext))]
-    [Migration("20240201004654_Initial")]
+    [Migration("20240202044308_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -1478,6 +1478,16 @@ namespace Infrastructure.Repositories.Migrations
                         {
                             Id = 1,
                             Name = "Install"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Name = "Repair"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Name = "Remove"
                         });
                 });
 

@@ -1475,6 +1475,16 @@ namespace Infrastructure.Repositories.Migrations
                         {
                             Id = 1,
                             Name = "Install"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Name = "Repair"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Name = "Remove"
                         });
                 });
 

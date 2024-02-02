@@ -1045,7 +1045,12 @@ namespace Infrastructure.Repositories.Migrations
             migrationBuilder.InsertData(
                 table: "TicketTypes",
                 columns: new[] { "Id", "Description", "Name" },
-                values: new object[] { 1, null, "Install" });
+                values: new object[,]
+                {
+                    { 1, null, "Install" },
+                    { 3, null, "Repair" },
+                    { 4, null, "Remove" }
+                });
 
             migrationBuilder.CreateIndex(
                 name: "IX_AccountNotifications_NotificationId",
