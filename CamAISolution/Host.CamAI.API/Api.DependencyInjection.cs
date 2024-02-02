@@ -1,4 +1,5 @@
 using System.Reflection;
+using System.Text.Json.Serialization;
 using Core.Application.Exceptions;
 using Core.Application.Implements;
 using Core.Domain.Interfaces.Services;

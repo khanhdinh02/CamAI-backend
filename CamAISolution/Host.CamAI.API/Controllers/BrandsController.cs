@@ -7,7 +7,6 @@ using Core.Domain.Services;
 using Host.CamAI.API.Models;
 using Infrastructure.Jwt.Attribute;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace Host.CamAI.API.Controllers;
 
@@ -131,16 +130,23 @@ public class BrandsController(IBrandService brandService, IBaseMapping mapping) 
     /// Only Brand manager can update logo or banner of brand
     /// </summary>
     /// <param name="imageDto"></param>
-    /// <param name="target">0 for logo, 1 for banner</param>
+    /// <param name="type"></param>
     /// <returns></returns>
-    [HttpPut("images/{target}")]
+    [HttpPut("images/{type}")]
     [AccessTokenGuard(RoleEnum.BrandManager)]
-    public async Task<IActionResult> UpdateImage(ControllerCreateImageDto imageDto, [Range(0, 1)] int target)
+    public async Task<IActionResult> UpdateImage(ControllerCreateImageDto imageDto, BrandImageType type)
     {
-        if (target == 0)
-            await brandService.UpdateLogo(await imageDto.ToCreateImageDto());
-        if (target == 1)
-            await brandService.UpdateBanner(await imageDto.ToCreateImageDto());
+        switch (type)
+        {
+            case BrandImageType.Logo:
+                await brandService.UpdateLogo(await imageDto.ToCreateImageDto());
+                break;
+            case BrandImageType.Banner:
+                await brandService.UpdateBanner(await imageDto.ToCreateImageDto());
+                break;
+            default:
+                return BadRequest();
+        }
         return Ok();
     }
 }
