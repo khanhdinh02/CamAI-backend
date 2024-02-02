@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+using System.Reflection;
 using Core.Application.Implements;
 using Core.Domain.DTO;
 using Core.Domain.Entities;
@@ -17,7 +17,9 @@ public class LookupController : ControllerBase
     [LookupHttpGet("edgeBox-location", typeof(EdgeBoxLocationEnum))]
     [LookupHttpGet("edgeBox-status", typeof(EdgeBoxStatusEnum))]
     [LookupHttpGet("edgeBox-install-status", typeof(EdgeBoxInstallStatusEnum))]
+    [LookupHttpGet("employee-status", typeof(EmployeeStatusEnum))]
     [LookupHttpGet("role", typeof(RoleEnum))]
+    [LookupHttpGet("short-day-of-week", typeof(ShortDayOfWeek))]
     [LookupHttpGet("gender", typeof(Gender))]
     [LookupHttpGet("notification-status", typeof(NotificationStatusEnum))]
     [LookupHttpGet("notification-type", typeof(NotificationTypeEnum))]
