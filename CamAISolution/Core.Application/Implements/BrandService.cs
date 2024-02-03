@@ -79,8 +79,8 @@ public class BrandService(
         mapping.Map(brandDto, brand);
 
         brand = unitOfWork.Brands.Update(brand);
-        unitOfWork.Complete();
-        eventManager.NotifyBrandChanged(brand);
+        if (unitOfWork.Complete() > 0)
+            eventManager.NotifyBrandChanged(brand);
         return brand;
     }
 

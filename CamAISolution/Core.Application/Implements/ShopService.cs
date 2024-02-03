@@ -96,10 +96,9 @@ public class ShopService(
             throw new BadRequestException($"Cannot modified inactive shop");
         await IsValidShopDto(shopDto, id);
         mapping.Map(shopDto, foundShop);
-        await unitOfWork.CompleteAsync();
-        var shop = await GetShopById(id);
-
-        eventManager.NotifyShopChanged(shop);
+        var shop = unitOfWork.Shops.Update(foundShop);
+        if (await unitOfWork.CompleteAsync() > 0)
+            eventManager.NotifyShopChanged(shop);
         return shop;
     }
 
