@@ -6,9 +6,9 @@ namespace Host.CamAI.API.Consumers;
 
 // TODO [Duy]: replace template with machine name
 [Consumer("{Environment.MachineName}", ConsumerConstant.HumanCount)]
-public class HumanCountCosumer : IConsumer<HumanCount>
+public class ClassifierConsumer : IConsumer<ClassifierModel>
 {
-    public async Task Consume(ConsumeContext<HumanCount> context)
+    public async Task Consume(ConsumeContext<ClassifierModel> context)
     {
         // TODO [Duy]: get data to from context
         // TODO [Duy]: save data to file
