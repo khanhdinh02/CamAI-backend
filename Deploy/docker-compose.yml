@@ -33,7 +33,7 @@ services:
     depends_on:
       - mssqldb
     volumes:
-      - camai-web-api:/app/images
+      - camai-web-api:${BASE_IMAGE_FOLER}
   camai-rabbitmq:
     image: rabbitmq:3.12.12-management
     ports:
