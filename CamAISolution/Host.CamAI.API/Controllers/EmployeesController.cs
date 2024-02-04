@@ -12,6 +12,19 @@ namespace Host.CamAI.API.Controllers;
 [ApiController]
 public class EmployeesController(IEmployeeService employeeService, IBaseMapping mapper) : ControllerBase
 {
+    /// <summary>
+    /// Search employees
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Admin can get all employees<br/>
+    /// Brand manager can get all employees working for their brand (the <c>BrandId</c> field is ignored)<br/>
+    /// Shop manager can get all employees working for their shop (the <c>BrandId</c> and <c>ShopId</c> fields are ignored)
+    /// </para>
+    /// <para><c>Search</c> can be Email, Name or Phone</para>
+    /// </remarks>
+    /// <param name="req"></param>
+    /// <returns></returns>
     [HttpGet]
     [AccessTokenGuard(RoleEnum.ShopManager, RoleEnum.BrandManager, RoleEnum.Admin)]
     public async Task<PaginationResult<EmployeeDto>> Get([FromQuery] SearchEmployeeRequest req)

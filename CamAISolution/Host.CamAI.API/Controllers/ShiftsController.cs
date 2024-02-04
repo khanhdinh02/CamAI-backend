@@ -11,6 +11,16 @@ namespace Host.CamAI.API.Controllers;
 [ApiController]
 public class ShiftsController(IShiftService shiftService, IBaseMapping mapper) : ControllerBase
 {
+    /// <summary>
+    /// Get the shifts of a shop.
+    /// </summary>
+    /// <remarks>
+    /// <c>shopId</c> is required if current user is not Shop Manager<br/>
+    /// Otherwise, it can be ignored;
+    /// this endpoint will return the shifts of the shop of the Shop Manager, regardless of the value of <c>shopId</c>.
+    /// </remarks>
+    /// <param name="shopId">ID of the shop. Will be ignored if current user is Shop Manager</param>
+    /// <returns></returns>
     [HttpGet]
     [AccessTokenGuard(RoleEnum.ShopManager, RoleEnum.BrandManager, RoleEnum.Admin)]
     public async Task<IEnumerable<ShiftDto>> Get(Guid? shopId)

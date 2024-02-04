@@ -27,9 +27,7 @@ public class ShiftService(IUnitOfWork unitOfWork, IBaseMapping mapper, IAccountS
                 throw new ForbiddenException(user, shop);
         }
         else if (user.HasRole(RoleEnum.ShopManager))
-        {
             shopId = user.ManagingShop?.Id;
-        }
 
         return (
             await unitOfWork
