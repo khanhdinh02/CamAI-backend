@@ -12,21 +12,26 @@ services:
     volumes:
       - data:/var/opt/mssql/data
   web-api:
+    user: root
     build:
       context: ./CamAISolution
       dockerfile: Host.CamAI.API/Dockerfile
-      args:
-        - MIGRATION=${MIGRATION}
     ports:
       - "8080:8080"
       - "8081:8081"
     environment:
       - ConnectionStrings__Default=${MS_SQL_CONN}
       - GoogleSecret__PrivateKey=${GOOGLE_SERVICE_PRIVATE_KEY}
+      - RabbitMq__HostName=${RABBITMQ_HOST}
+      - RabbitMq__Username=${RABBITMQ_USER}
+      - RabbitMq__Password=${RABBITMQ_PASS}
+      - RabbitMq__Port=${RABBITMQ_PORT}
+      - ASPNETCORE_ENVIRONMENT=${STAGE}
       - ImageConfiguration__BaseImageFolderPath=${BASE_IMAGE_FOLER}
       - ImageConfiguration__MaxImageSize=${MAX_IMAGE_SIZE}
       - ImageConfiguration__HostingUri=${HOST_URI}
-      - ASPNETCORE_ENVIRONMENT=${STAGE}
+    volumes:
+      - camai-web-api:${BASE_IMAGE_FOLER}
   camai-rabbitmq:
     image: rabbitmq:3.12.12-management
     ports:
@@ -43,3 +48,4 @@ volumes:
   data:
   camai-rabbitmq-lib:
   camai-rabbitmq-log:
+  camai-web-api:
