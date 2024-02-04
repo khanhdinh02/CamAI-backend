@@ -25,6 +25,7 @@ steps:
     echo "RABBITMQ_PASS=$(docker.compose.RABBITMQ_PASS)" >> .env
     echo "RABBITMQ_HOST=$(docker.compose.RABBITMQ_HOST)" >> .env
     echo "RABBITMQ_PORT=$(docker.compose.RABBITMQ_PORT)" >> .env
+    echo "GOOGLE_SERVICE_PRIVATE_KEY=$(docker.compose.GOOGLE_SERVICE_PRIVATE_KEY)" >> .env
   displayName: 'Write .env'
   
 - task: CopyFilesOverSSH@0
@@ -46,8 +47,10 @@ steps:
       cd backend
       mv Deploy/*yml .
       rmdir Deploy
+      docker logout
       echo $(docker.password) | docker login -u $(docker.username) --password-stdin 2>&1
       docker compose down web-api 2>&1
       docker rmi milease/camai-backend:camai-web-api 2>&1
       docker compose up -d --quiet-pull 2>&1
+      docker logout
     readyTimeout: '20000'

@@ -1,3 +1,4 @@
+using Core.Application.Events;
 using Core.Application.Exceptions;
 using Core.Application.Specifications.Repositories;
 using Core.Application.Specifications.Shops.Repositories;
@@ -17,7 +18,8 @@ public class ShopService(
     IUnitOfWork unitOfWork,
     IAppLogging<ShopService> logger,
     IBaseMapping mapping,
-    IAccountService accountService
+    IAccountService accountService,
+    EventManager eventManager
 ) : IShopService
 {
     public async Task<Shop> CreateShop(CreateOrUpdateShopDto shopDto)
@@ -94,8 +96,10 @@ public class ShopService(
             throw new BadRequestException($"Cannot modified inactive shop");
         await IsValidShopDto(shopDto, id);
         mapping.Map(shopDto, foundShop);
-        await unitOfWork.CompleteAsync();
-        return await GetShopById(id);
+        var shop = unitOfWork.Shops.Update(foundShop);
+        if (await unitOfWork.CompleteAsync() > 0)
+            eventManager.NotifyShopChanged(shop);
+        return shop;
     }
 
     public async Task<Shop> UpdateShopStatus(Guid shopId, int shopStatusId)

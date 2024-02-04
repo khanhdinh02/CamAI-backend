@@ -98,9 +98,9 @@ public class Repository<T>(CamAIContext context, IRepositorySpecificationEvaluat
         };
     }
 
-    public virtual async Task<T?> GetByIdAsync(object key)
+    public virtual async Task<T?> GetByIdAsync(params object[] keys)
     {
-        return await Context.Set<T>().FindAsync(key);
+        return await Context.Set<T>().FindAsync(keys);
     }
 
     public async Task<bool> IsExisted(object key)
