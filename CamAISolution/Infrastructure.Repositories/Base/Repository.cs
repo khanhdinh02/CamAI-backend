@@ -30,8 +30,8 @@ public class Repository<T>(CamAIContext context, IRepositorySpecificationEvaluat
         if (Context.Entry(entity).State == EntityState.Detached)
         {
             Context.Attach(entity);
-            Context.Entry(entity).State = EntityState.Deleted;
         }
+        Context.Entry(entity).State = EntityState.Deleted;
         return entity;
     }
 

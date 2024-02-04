@@ -1,9 +1,10 @@
-using System.Linq;
+using System.ComponentModel.DataAnnotations;
 using Core.Domain.DTO;
 using Core.Domain.Entities;
 using Core.Domain.Interfaces.Mappings;
 using Core.Domain.Models;
 using Core.Domain.Services;
+using Host.CamAI.API.Models;
 using Infrastructure.Jwt.Attribute;
 using Microsoft.AspNetCore.Mvc;
 
@@ -66,13 +67,15 @@ public class BrandsController(IBrandService brandService, IBaseMapping mapping) 
     /// <summary>
     /// Create brand. Only Admin can do it.
     /// </summary>
-    /// <param name="brandDto"></param>
+    /// <param name="createBrandObj"></param>
     /// <returns></returns>
     [HttpPost]
     [AccessTokenGuard(RoleEnum.Admin)]
-    public async Task<ActionResult<BrandDto>> CreateBrand([FromBody] CreateBrandDto brandDto)
+    public async Task<ActionResult<BrandDto>> CreateBrand([FromForm] CreateBrandWithImageDto createBrandObj)
     {
-        var createdBrand = await brandService.CreateBrand(brandDto);
+        var banner = createBrandObj.Banner != null ? await createBrandObj.Banner.ToCreateImageDto() : null;
+        var logo = createBrandObj.Logo != null ? await createBrandObj.Logo.ToCreateImageDto() : null;
+        var createdBrand = await brandService.CreateBrand(createBrandObj.Brand, banner: banner, logo: logo);
         return Ok(mapping.Map<Brand, BrandDto>(createdBrand));
     }
 
@@ -123,6 +126,27 @@ public class BrandsController(IBrandService brandService, IBaseMapping mapping) 
         return Accepted();
     }
 
-    // TODO [Duy]: endpoint to update logo
-    // TODO [Duy]: endpoint to update banner
+    /// <summary>
+    /// Only Brand manager can update logo or banner of brand
+    /// </summary>
+    /// <param name="imageDto"></param>
+    /// <param name="type"></param>
+    /// <returns></returns>
+    [HttpPut("images/{type}")]
+    [AccessTokenGuard(RoleEnum.BrandManager)]
+    public async Task<IActionResult> UpdateImage(ControllerCreateImageDto imageDto, BrandImageType type)
+    {
+        switch (type)
+        {
+            case BrandImageType.Logo:
+                await brandService.UpdateLogo(await imageDto.ToCreateImageDto());
+                break;
+            case BrandImageType.Banner:
+                await brandService.UpdateBanner(await imageDto.ToCreateImageDto());
+                break;
+            default:
+                return BadRequest();
+        }
+        return Ok();
+    }
 }

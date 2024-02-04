@@ -26,6 +26,9 @@ services:
       - RabbitMq__Password=${RABBITMQ_PASS}
       - RabbitMq__Port=${RABBITMQ_PORT}
       - ASPNETCORE_ENVIRONMENT=${STAGE}
+      - ImageConfiguration__BaseImageFolderPath=${BASE_IMAGE_FOLER}
+      - ImageConfiguration__MaxImageSize=${MAX_IMAGE_SIZE}
+      - ImageConfiguration__HostingUri=${HOST_URI}
     depends_on:
       - mssqldb
   camai-rabbitmq:

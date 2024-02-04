@@ -1,7 +1,7 @@
 ﻿using System.Reflection;
-using Host.CamAI.API.Models.Messages;
 using Infrastructure.MessageQueue;
 using MassTransit;
+using Microsoft.Extensions.FileSystemGlobbing;
 
 namespace Host.CamAI.API;
 
@@ -10,7 +10,8 @@ public static class MassTransitConfiguration
     public static void ConfigureMassTransit(this WebApplicationBuilder builder)
     {
         var settings = builder.Configuration.GetSection(RabbitMqConfiguration.Section).Get<RabbitMqConfiguration>();
-        var assemblies = new[] { typeof(Program).Assembly };
+
+        var assemblies = GetLoadedAssemblies();
 
         builder.Services.AddMassTransit(x =>
         {
@@ -27,8 +28,7 @@ public static class MassTransitConfiguration
                     {
                         cfg.SetupHost(settings);
 
-                        // TODO [Duy]: Cannot set the routing yet using reflection yet so we have to declare by hand
-                        cfg.Send<TestMessage>(configurator =>
+                        cfg.Send<RoutingKeyMessage>(configurator =>
                             configurator.UseRoutingKeyFormatter(sendContext => sendContext.Message.RoutingKey)
                         );
 
@@ -37,6 +37,15 @@ public static class MassTransitConfiguration
                     }
                 );
         });
+    }
+
+    private static Assembly[] GetLoadedAssemblies()
+    {
+        var path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!;
+        var matcher = new Matcher();
+        matcher.AddIncludePatterns(["Host.*.dll", "Infrastructure.*.dll"]);
+        var assemblies = matcher.GetResultsInFullPath(path).Select(Assembly.LoadFrom);
+        return assemblies.ToArray();
     }
 
     private static void RegisterPublisherEndpoint(Assembly[] assemblies)

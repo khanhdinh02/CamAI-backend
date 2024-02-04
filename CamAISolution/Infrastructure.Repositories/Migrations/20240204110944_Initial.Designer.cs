@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Repositories.Migrations
 {
     [DbContext(typeof(CamAIContext))]
-    [Migration("20240202043859_WorkShift")]
-    partial class WorkShift
+    [Migration("20240204110944_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -242,8 +242,8 @@ namespace Infrastructure.Repositories.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("BannerUri")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<Guid?>("BannerId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid?>("BrandManagerId")
                         .HasColumnType("uniqueidentifier");
@@ -257,8 +257,8 @@ namespace Infrastructure.Repositories.Migrations
                     b.Property<string>("Email")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("LogoUri")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<Guid?>("LogoId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("ModifiedDate")
                         .HasColumnType("datetime2");
@@ -279,11 +279,15 @@ namespace Infrastructure.Repositories.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("BannerId");
+
                     b.HasIndex("BrandManagerId")
                         .IsUnique()
                         .HasFilter("[BrandManagerId] IS NOT NULL");
 
                     b.HasIndex("BrandStatusId");
+
+                    b.HasIndex("LogoId");
 
                     b.ToTable("Brands");
                 });
@@ -839,6 +843,29 @@ namespace Infrastructure.Repositories.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("EvidenceTypes");
+                });
+
+            modelBuilder.Entity("Core.Domain.Entities.Image", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("HostingUri")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PhysicalPath")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Image");
                 });
 
             modelBuilder.Entity("Core.Domain.Entities.Notification", b =>
@@ -1630,6 +1657,10 @@ namespace Infrastructure.Repositories.Migrations
 
             modelBuilder.Entity("Core.Domain.Entities.Brand", b =>
                 {
+                    b.HasOne("Core.Domain.Entities.Image", "Banner")
+                        .WithMany()
+                        .HasForeignKey("BannerId");
+
                     b.HasOne("Core.Domain.Entities.Account", "BrandManager")
                         .WithOne("ManagingBrand")
                         .HasForeignKey("Core.Domain.Entities.Brand", "BrandManagerId");
@@ -1640,9 +1671,17 @@ namespace Infrastructure.Repositories.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Core.Domain.Entities.Image", "Logo")
+                        .WithMany()
+                        .HasForeignKey("LogoId");
+
+                    b.Navigation("Banner");
+
                     b.Navigation("BrandManager");
 
                     b.Navigation("BrandStatus");
+
+                    b.Navigation("Logo");
                 });
 
             modelBuilder.Entity("Core.Domain.Entities.Camera", b =>
