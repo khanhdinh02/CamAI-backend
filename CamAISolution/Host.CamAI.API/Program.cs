@@ -72,6 +72,7 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.MapControllers();
+app.UseWebSockets();
 
 var observer = app.Services.GetRequiredService<SyncObserver>();
 observer.RegisterEvent();

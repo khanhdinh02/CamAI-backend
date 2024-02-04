@@ -1,8 +1,7 @@
 using System.Reflection;
 using System.Text.Json.Serialization;
-using Core.Application.Exceptions;
-using System.Text.Json.Serialization;
 using Core.Application.Events;
+using Core.Application.Exceptions;
 using Core.Application.Implements;
 using Core.Domain.Interfaces.Services;
 using Core.Domain.Models.Configurations;
@@ -23,7 +22,8 @@ public static class ApiDependencyInjection
         services.AddScoped<IEdgeBoxService, EdgeBoxService>();
         services.AddScoped<ITicketService, TicketService>();
         services.AddScoped<ILocationService, LocationService>();
-        services.AddSingleton<EventManager>();
+        services.AddScoped<IReportService, ReportService>();
+        services.AddSingleton<EventManager>().AddSingleton<ClassifierSubject>();
         return services;
     }
 
