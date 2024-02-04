@@ -20,7 +20,8 @@ public class BrandService(
     IUnitOfWork unitOfWork,
     IAppLogging<BrandService> logger,
     IBaseMapping mapping,
-    EventManager eventManager
+    EventManager eventManager,
+    IBlobService blobService
 ) : IBrandService
 {
     public async Task<PaginationResult<Brand>> GetBrands(SearchBrandRequest searchRequest)
@@ -53,13 +54,28 @@ public class BrandService(
         return brand;
     }
 
-    public async Task<Brand> CreateBrand(CreateBrandDto brandDto)
+    public async Task<Brand> CreateBrand(CreateBrandDto brandDto, CreateImageDto? banner, CreateImageDto? logo)
     {
         var brand = mapping.Map<CreateBrandDto, Brand>(brandDto);
-        // TODO [Duy]: create brand with logo and banner
+        if (banner != null)
+            brand.BannerId = (await blobService.UploadImage(banner, nameof(Brand), nameof(Brand.Banner))).Id;
+        if (logo != null)
+            brand.LogoId = (await blobService.UploadImage(logo, nameof(Brand), nameof(Brand.Logo))).Id;
         brand.BrandStatusId = BrandStatusEnum.Active;
-        await unitOfWork.Brands.AddAsync(brand);
-        await unitOfWork.CompleteAsync();
+        try
+        {
+            await unitOfWork.Brands.AddAsync(brand);
+            await unitOfWork.CompleteAsync();
+        }
+        catch (Exception ex)
+        {
+            logger.Error(ex.Message, ex);
+            if (brand.LogoId.HasValue)
+                await blobService.DeleteImageInFilesystem(brand.LogoId.Value);
+            if (brand.BannerId.HasValue)
+                await blobService.DeleteImageInFilesystem(brand.BannerId.Value);
+            throw new ServiceUnavailableException("Error occurred");
+        }
         logger.Info($"Create new brand: {JsonSerializer.Serialize(brand)}");
         return brand;
     }
@@ -98,18 +114,64 @@ public class BrandService(
         return brand;
     }
 
-    public async Task UpdateLogo()
+    // TODO [Dat]: Clean up logic in both update logo and banner
+    public async Task UpdateLogo(CreateImageDto imageDto)
     {
-        // TODO [Duy]: create a new service to upload photo to S3
-        throw new NotImplementedException();
+        var currentAccount = accountService.GetCurrentAccount();
+        if (!IsAccountOwnBrand(currentAccount, currentAccount.Brand))
+            throw new BadRequestException("Account doesn't manage any brand");
+        var brand = await GetBrandById(currentAccount.BrandId!.Value);
+        var oldLogoId = brand.LogoId;
+        var newLogo = await blobService.UploadImage(imageDto, nameof(Brand), nameof(Brand.Logo));
+        brand.LogoId = newLogo.Id;
+        unitOfWork.Brands.Update(brand);
+        try
+        {
+            if (await unitOfWork.CompleteAsync() > 0)
+            {
+                if (oldLogoId.HasValue)
+                    await blobService.DeleteImageInFilesystem(oldLogoId.Value);
+            }
+            else
+                await blobService.DeleteImageInFilesystem(newLogo.Id);
+        }
+        catch (Exception ex)
+        {
+            logger.Error(ex.Message, ex);
+            await blobService.DeleteImageInFilesystem(newLogo.Id);
+            throw new ServiceUnavailableException("Update Logo failed");
+        }
     }
 
-    public async Task UpdateBanner()
+    public async Task UpdateBanner(CreateImageDto imageDto)
     {
-        // TODO [Duy] : upload photo to S3
-        throw new NotImplementedException();
+        var currentAccount = accountService.GetCurrentAccount();
+        if (!IsAccountOwnBrand(currentAccount, currentAccount.Brand))
+            throw new BadRequestException("Account doesn't manage any brand");
+        var brand = await GetBrandById(currentAccount.BrandId!.Value);
+        var oldBannerId = brand.BannerId;
+        var newBanner = await blobService.UploadImage(imageDto, nameof(Brand), nameof(Brand.Banner));
+        brand.BannerId = newBanner.Id;
+        unitOfWork.Brands.Update(brand);
+        try
+        {
+            if (await unitOfWork.CompleteAsync() > 0)
+            {
+                if (oldBannerId.HasValue)
+                    await blobService.DeleteImageInFilesystem(oldBannerId.Value);
+            }
+            else
+                await blobService.DeleteImageInFilesystem(newBanner.Id);
+        }
+        catch (Exception ex)
+        {
+            logger.Error(ex.Message, ex);
+            await blobService.DeleteImageInFilesystem(newBanner.Id);
+            throw new ServiceUnavailableException("Update Banner failed");
+        }
     }
 
+    //TODO [Dat]: If truly delete, also remove Logo, Banner in filesystem
     public async Task DeleteBrand(Guid id)
     {
         // TODO [Duy]: implement more business in here
@@ -132,7 +194,7 @@ public class BrandService(
     {
         // TODO [Duy]: implement this
         // return brand.BrandManagerId != null;
-        return true;
+        throw new NotImplementedException();
     }
 
     private async Task<bool> HasAccessToBrand(Account account, Brand brand)
@@ -158,9 +220,12 @@ public class BrandService(
         return false;
     }
 
-    private static bool IsAccountOwnBrand(Account account, Brand brand)
+    private static bool IsAccountOwnBrand(Account account, Brand? brand)
     {
-        return account.HasRole(RoleEnum.Admin)
-            || (account.HasRole(RoleEnum.BrandManager) && account.Brand!.Id == brand.Id);
+        return brand != null
+            && (
+                account.HasRole(RoleEnum.Admin)
+                || (account.HasRole(RoleEnum.BrandManager) && account.Brand!.Id == brand.Id)
+            );
     }
 }

@@ -35,6 +35,7 @@ builder
     .AddHttpContextAccessor()
     .AddSwagger()
     .AddServices()
+    .AddServices(builder.Configuration)
     .AddMapping()
     .AddObserver()
     .AddNotification(builder.Configuration.GetRequiredSection("GoogleSecret").Get<GoogleSecret>());
