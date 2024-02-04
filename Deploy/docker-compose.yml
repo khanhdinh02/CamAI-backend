@@ -31,6 +31,8 @@ services:
       - ImageConfiguration__HostingUri=${HOST_URI}
     depends_on:
       - mssqldb
+    volumes:
+      - camai-web-api:/app/images
   camai-rabbitmq:
     image: rabbitmq:3.12.12-management
     ports:
@@ -46,3 +48,4 @@ volumes:
   data:
   camai-rabbitmq-lib:
   camai-rabbitmq-log:
+  camai-web-api:
