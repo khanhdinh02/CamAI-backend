@@ -9,7 +9,8 @@ public class ConsumerAttribute(
     string exchangeType = ExchangeType.Fanout
 ) : MessageQueueEndpointAttribute(queueName)
 {
+    public override string QueueName => $"Consumer:{QName}";
     public string RoutingKey => routingKey ?? QueueName;
-    public string ExchangeName => exchangeName ?? QueueName;
+    public string ExchangeName => $"Publisher:{exchangeName ?? QueueName}";
     public string ExchangeType => exchangeType;
 }

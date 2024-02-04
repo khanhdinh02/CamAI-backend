@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Core.Application.Events;
 using Core.Application.Exceptions;
 using Core.Application.Specifications.Repositories;
 using Core.Domain;
@@ -18,7 +19,8 @@ public class BrandService(
     IShopService shopService,
     IUnitOfWork unitOfWork,
     IAppLogging<BrandService> logger,
-    IBaseMapping mapping
+    IBaseMapping mapping,
+    EventManager eventManager
 ) : IBrandService
 {
     public async Task<PaginationResult<Brand>> GetBrands(SearchBrandRequest searchRequest)
@@ -77,7 +79,8 @@ public class BrandService(
         mapping.Map(brandDto, brand);
 
         brand = unitOfWork.Brands.Update(brand);
-        unitOfWork.Complete();
+        if (unitOfWork.Complete() > 0)
+            eventManager.NotifyBrandChanged(brand);
         return brand;
     }
 
