@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Core.Application.Events;
 using Core.Application.Exceptions;
 using Core.Application.Specifications.Repositories;
 using Core.Domain;
@@ -19,6 +20,7 @@ public class BrandService(
     IUnitOfWork unitOfWork,
     IAppLogging<BrandService> logger,
     IBaseMapping mapping,
+    EventManager eventManager,
     IBlobService blobService
 ) : IBrandService
 {
@@ -93,7 +95,8 @@ public class BrandService(
         mapping.Map(brandDto, brand);
 
         brand = unitOfWork.Brands.Update(brand);
-        unitOfWork.Complete();
+        if (unitOfWork.Complete() > 0)
+            eventManager.NotifyBrandChanged(brand);
         return brand;
     }
 

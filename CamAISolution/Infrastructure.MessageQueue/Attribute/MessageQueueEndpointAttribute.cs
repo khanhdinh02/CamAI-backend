@@ -1,7 +1,8 @@
 ﻿namespace Infrastructure.MessageQueue;
 
 [AttributeUsage(AttributeTargets.Class)]
-public class MessageQueueEndpointAttribute(string queueName) : Attribute
+public abstract class MessageQueueEndpointAttribute(string queueName) : Attribute
 {
-    public string QueueName => queueName;
+    protected readonly string QName = queueName;
+    public abstract string QueueName { get; }
 }

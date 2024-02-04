@@ -4,6 +4,7 @@ using Host.CamAI.API.Models;
 using Infrastructure.Jwt;
 using Infrastructure.Logging;
 using Infrastructure.Mapping;
+using Infrastructure.Observer;
 using Infrastructure.Notification;
 using Infrastructure.Notification.Models;
 using Infrastructure.Repositories;
@@ -36,6 +37,7 @@ builder
     .AddServices()
     .AddServices(builder.Configuration)
     .AddMapping()
+    .AddObserver()
     .AddNotification(builder.Configuration.GetRequiredSection("GoogleSecret").Get<GoogleSecret>());
 
 builder.ConfigureMassTransit();
@@ -60,10 +62,18 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+    app.UseReDoc(config =>
+    {
+        config.DocumentTitle = "CamAI API Documentation";
+        config.SpecUrl = "/swagger/v1/swagger.json";
+    });
 }
 
 app.UseHttpsRedirection();
 
 app.MapControllers();
+
+var observer = app.Services.GetRequiredService<SyncObserver>();
+observer.RegisterEvent();
 
 app.Run();

@@ -4,18 +4,12 @@
         <TargetFramework>net8.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <LangVersion>preview</LangVersion>
     </PropertyGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\Core.Application\Core.Application.csproj"/>
         <ProjectReference Include="..\Core.Domain\Core.Domain.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
-        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
-        <PackageReference Include="Microsoft.IdentityModel.Tokens" />
+        <ProjectReference Include="..\Infrastructure.MessageQueue\Infrastructure.MessageQueue.csproj" />
     </ItemGroup>
 
 </Project>

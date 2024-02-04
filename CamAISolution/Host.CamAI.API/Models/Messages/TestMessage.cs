@@ -1,5 +1,5 @@
 ﻿using Infrastructure.MessageQueue;
-using static Host.CamAI.API.Consumers.ConsumerConstant;
+using static Infrastructure.MessageQueue.ConsumerConstant;
 
 namespace Host.CamAI.API.Models.Messages;
 
