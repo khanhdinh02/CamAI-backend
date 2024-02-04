@@ -134,6 +134,20 @@ namespace Infrastructure.Repositories.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Image",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    HostingUri = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    PhysicalPath = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ContentType = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Image", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "NotificationStatuses",
                 columns: table => new
                 {
@@ -419,10 +433,10 @@ namespace Infrastructure.Repositories.Migrations
                     Name = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     Email = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Phone = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
-                    LogoUri = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    BannerUri = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     BrandManagerId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     BrandStatusId = table.Column<int>(type: "int", nullable: false),
+                    LogoId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    BannerId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     Timestamp = table.Column<byte[]>(type: "rowversion", rowVersion: true, nullable: true),
                     CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     ModifiedDate = table.Column<DateTime>(type: "datetime2", nullable: false)
@@ -441,6 +455,16 @@ namespace Infrastructure.Repositories.Migrations
                         principalTable: "BrandStatuses",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Brands_Image_BannerId",
+                        column: x => x.BannerId,
+                        principalTable: "Image",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_Brands_Image_LogoId",
+                        column: x => x.LogoId,
+                        principalTable: "Image",
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -1074,6 +1098,11 @@ namespace Infrastructure.Repositories.Migrations
                 column: "EmployeeId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Brands_BannerId",
+                table: "Brands",
+                column: "BannerId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Brands_BrandManagerId",
                 table: "Brands",
                 column: "BrandManagerId",
@@ -1084,6 +1113,11 @@ namespace Infrastructure.Repositories.Migrations
                 name: "IX_Brands_BrandStatusId",
                 table: "Brands",
                 column: "BrandStatusId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Brands_LogoId",
+                table: "Brands",
+                column: "LogoId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Cameras_EdgeBoxInstallId",
@@ -1427,6 +1461,9 @@ namespace Infrastructure.Repositories.Migrations
 
             migrationBuilder.DropTable(
                 name: "BrandStatuses");
+
+            migrationBuilder.DropTable(
+                name: "Image");
 
             migrationBuilder.DropTable(
                 name: "Districts");

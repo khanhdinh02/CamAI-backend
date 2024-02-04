@@ -10,7 +10,9 @@ public class BrandProfile : Profile
     {
         CreateMap<Brand, BrandDto>();
         CreateMap<Brand, BrandDtoWithoutBrandManager>();
-        CreateMap<CreateBrandDto, Brand>();
+        CreateMap<CreateBrandDto, Brand>()
+            .ForMember(des => des.Banner, opts => opts.Ignore())
+            .ForMember(des => des.Logo, opts => opts.Ignore());
         CreateMap<UpdateBrandDto, Brand>();
         CreateMap<BrandStatus, LookupDto>();
     }

@@ -26,6 +26,9 @@ steps:
     echo "RABBITMQ_HOST=$(docker.compose.RABBITMQ_HOST)" >> .env
     echo "RABBITMQ_PORT=$(docker.compose.RABBITMQ_PORT)" >> .env
     echo "GOOGLE_SERVICE_PRIVATE_KEY=$(docker.compose.GOOGLE_SERVICE_PRIVATE_KEY)" >> .env
+    echo "BASE_IMAGE_FOLER=$(docker.compose.BASE_IMAGE_FOLER)" >> .env
+    echo "MAX_IMAGE_SIZE=$(docker.compose.MAX_IMAGE_SIZE)" >> .env
+    echo "HOST_URI=$(docker.compose.HOST_URI)" >> .env
   displayName: 'Write .env'
   
 - task: CopyFilesOverSSH@0
@@ -51,6 +54,7 @@ steps:
       echo $(docker.password) | docker login -u $(docker.username) --password-stdin 2>&1
       docker compose down web-api 2>&1
       docker rmi milease/camai-backend:camai-web-api 2>&1
+      docker rmi $(docker images | grep "none" | awk '{print $3}' )
       docker compose up -d --quiet-pull 2>&1
       docker logout
     readyTimeout: '20000'

@@ -1,8 +1,11 @@
 using System.Reflection;
 using System.Text.Json.Serialization;
+using Core.Application.Exceptions;
+using System.Text.Json.Serialization;
 using Core.Application.Events;
 using Core.Application.Implements;
 using Core.Domain.Interfaces.Services;
+using Core.Domain.Models.Configurations;
 using Core.Domain.Services;
 using Microsoft.OpenApi.Models;
 
@@ -21,6 +24,16 @@ public static class ApiDependencyInjection
         services.AddScoped<ITicketService, TicketService>();
         services.AddScoped<ILocationService, LocationService>();
         services.AddSingleton<EventManager>();
+        return services;
+    }
+
+    public static IServiceCollection AddServices(this IServiceCollection services, IConfiguration configuration)
+    {
+        var config =
+            configuration.GetRequiredSection("ImageConfiguration").Get<ImageConfiguration>()
+            ?? throw new ServiceUnavailableException("Cannot get image configuration");
+        services.AddSingleton(config);
+        services.AddScoped<IBlobService, BlobService>();
         return services;
     }
 

@@ -14,6 +14,7 @@ services:
     volumes:
       - data:/var/opt/mssql/data
   web-api:
+    user: root
     image: milease/camai-backend:camai-web-api
     ports:
       - "8090:8080"
@@ -26,8 +27,13 @@ services:
       - RabbitMq__Password=${RABBITMQ_PASS}
       - RabbitMq__Port=${RABBITMQ_PORT}
       - ASPNETCORE_ENVIRONMENT=${STAGE}
+      - ImageConfiguration__BaseImageFolderPath=${BASE_IMAGE_FOLER}
+      - ImageConfiguration__MaxImageSize=${MAX_IMAGE_SIZE}
+      - ImageConfiguration__HostingUri=${HOST_URI}
     depends_on:
       - mssqldb
+    volumes:
+      - camai-web-api:${BASE_IMAGE_FOLER}
   camai-rabbitmq:
     image: rabbitmq:3.12.12-management
     ports:
@@ -43,3 +49,4 @@ volumes:
   data:
   camai-rabbitmq-lib:
   camai-rabbitmq-log:
+  camai-web-api:

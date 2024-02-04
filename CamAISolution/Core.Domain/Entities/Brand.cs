@@ -12,13 +12,16 @@ public class Brand : BusinessEntity
 
     [StringLength(50)]
     public string? Phone { get; set; }
-    public Uri? LogoUri { get; set; }
-    public Uri? BannerUri { get; set; }
 
     [ForeignKey(nameof(BrandManager))]
     public Guid? BrandManagerId { get; set; }
     public int BrandStatusId { get; set; }
 
+    public Guid? LogoId { get; set; }
+    public Guid? BannerId { get; set; }
+
+    public virtual Image? Logo { get; set; }
+    public virtual Image? Banner { get; set; }
     public virtual Account? BrandManager { get; set; }
     public virtual BrandStatus BrandStatus { get; set; } = null!;
 
