@@ -120,7 +120,7 @@ public class EmployeeService(IUnitOfWork unitOfWork, IAccountService accountServ
         ).Values;
     }
 
-    // TODO [Khanh]: Assign shop and shifts to employee
+    // TODO [Khanh]: Assign shifts to employee
 
     private bool HasAuthority(Account user, Employee employee)
     {

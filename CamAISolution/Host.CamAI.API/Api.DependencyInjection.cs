@@ -49,6 +49,7 @@ public static class ApiDependencyInjection
         services.AddSwaggerGen(option =>
         {
             option.SwaggerDoc("v1", new OpenApiInfo { Title = "CamAI API", Version = "v1" });
+            option.SupportNonNullableReferenceTypes();
             option.AddSecurityDefinition(
                 "Bearer",
                 new OpenApiSecurityScheme
