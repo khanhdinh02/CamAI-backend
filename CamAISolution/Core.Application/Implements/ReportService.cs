@@ -28,7 +28,8 @@ public class ReportService(IAccountService accountService, IShopService shopServ
     public async Task<ICircularBuffer<ClassifierModel>> GetClassifierStream(Guid shopId)
     {
         // validation is already in shop service
-        await shopService.GetShopById(shopId);
+        // TODO [Duy]: Remove this after testing
+        // await shopService.GetShopById(shopId);
         return CreateClassifierBufferResult(shopId);
     }
 

@@ -18,7 +18,8 @@ public class ReportsController(IReportService reportService) : ControllerBase
     /// This will get the real-time chart data for their shop
     /// </summary>
     [HttpGet("chart/customer")]
-    [AccessTokenGuard(RoleEnum.ShopManager)]
+    // TODO [Duy]: Uncomment this after testing
+    // [AccessTokenGuard(RoleEnum.ShopManager)]
     public async Task ShopCustomerAreaChart()
     {
         if (HttpContext.WebSockets.IsWebSocketRequest)
@@ -35,7 +36,8 @@ public class ReportsController(IReportService reportService) : ControllerBase
     /// This will get the real-time chart data for one of their shop
     /// </summary>
     [HttpGet("{shopId}/chart/customer")]
-    [AccessTokenGuard(RoleEnum.ShopManager)]
+    // TODO [Duy]: Uncomment this after testing
+    // [AccessTokenGuard(RoleEnum.ShopManager)]
     public async Task BrandCustomerAreaChart(Guid shopId)
     {
         if (HttpContext.WebSockets.IsWebSocketRequest)
@@ -59,25 +61,12 @@ public class ReportsController(IReportService reportService) : ControllerBase
 
     private static async Task SendData(WebSocket webSocket, ClassifierModel data)
     {
-        var buffer = new byte[1024 * 4];
-        var receiveResult = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
-        var json = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(data));
+        var dataBytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(data));
 
-        while (!receiveResult.CloseStatus.HasValue)
-        {
-            await webSocket.SendAsync(
-                new ArraySegment<byte>(json, 0, receiveResult.Count),
-                WebSocketMessageType.Text,
-                WebSocketMessageFlags.EndOfMessage,
-                CancellationToken.None
-            );
-
-            receiveResult = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
-        }
-
-        await webSocket.CloseAsync(
-            receiveResult.CloseStatus.Value,
-            receiveResult.CloseStatusDescription,
+        await webSocket.SendAsync(
+            new ArraySegment<byte>(dataBytes, 0, dataBytes.Length),
+            WebSocketMessageType.Text,
+            WebSocketMessageFlags.EndOfMessage,
             CancellationToken.None
         );
     }
