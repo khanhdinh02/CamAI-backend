@@ -1,12 +1,13 @@
 using System.Reflection;
 using System.Text.Json.Serialization;
-using Core.Application.Exceptions;
 using System.Text.Json.Serialization;
 using Core.Application.Events;
+using Core.Application.Exceptions;
 using Core.Application.Implements;
 using Core.Domain.Interfaces.Services;
 using Core.Domain.Models.Configurations;
 using Core.Domain.Services;
+using Host.CamAI.API.BackgroundServices;
 using Microsoft.OpenApi.Models;
 
 namespace Host.CamAI.API;
@@ -24,6 +25,12 @@ public static class ApiDependencyInjection
         services.AddScoped<ITicketService, TicketService>();
         services.AddScoped<ILocationService, LocationService>();
         services.AddSingleton<EventManager>();
+        return services;
+    }
+
+    public static IServiceCollection AddBackgroundService(this IServiceCollection services)
+    {
+        services.AddHostedService<EdgeBoxHealthCheckService>();
         return services;
     }
 

@@ -6,9 +6,11 @@ namespace Core.Domain.Services;
 
 public interface IEdgeBoxService
 {
-    public Task<EdgeBox> GetEdgeBoxById(Guid id);
-    public Task<PaginationResult<EdgeBox>> GetEdgeBoxes(SearchEdgeBoxRequest searchRequest);
-    public Task<EdgeBox> CreateEdgeBox(CreateEdgeBoxDto edgeBoxDto);
+    Task<EdgeBox> GetEdgeBoxById(Guid id);
+    Task<IEnumerable<EdgeBox>> GetEdgeBoxes();
+    Task<PaginationResult<EdgeBox>> GetEdgeBoxes(SearchEdgeBoxRequest searchRequest);
+    Task<EdgeBox> CreateEdgeBox(CreateEdgeBoxDto edgeBoxDto);
     Task<EdgeBox> UpdateEdgeBox(Guid id, UpdateEdgeBoxDto edgeBoxDto);
     Task DeleteEdgeBox(Guid id);
+    Task UpdateStatus(Guid id, int statusId);
 }

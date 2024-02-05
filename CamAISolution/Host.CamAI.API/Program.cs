@@ -4,9 +4,9 @@ using Host.CamAI.API.Models;
 using Infrastructure.Jwt;
 using Infrastructure.Logging;
 using Infrastructure.Mapping;
-using Infrastructure.Observer;
 using Infrastructure.Notification;
 using Infrastructure.Notification.Models;
+using Infrastructure.Observer;
 using Infrastructure.Repositories;
 
 var builder = WebApplication.CreateBuilder(args).ConfigureSerilog();
@@ -38,7 +38,8 @@ builder
     .AddServices(builder.Configuration)
     .AddMapping()
     .AddObserver()
-    .AddNotification(builder.Configuration.GetRequiredSection("GoogleSecret").Get<GoogleSecret>());
+    .AddNotification(builder.Configuration.GetRequiredSection("GoogleSecret").Get<GoogleSecret>())
+    .AddBackgroundService();
 
 builder.ConfigureMassTransit();
 

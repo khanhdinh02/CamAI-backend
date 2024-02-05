@@ -1,4 +1,5 @@
-﻿using Core.Application.Exceptions;
+﻿using System.Runtime.CompilerServices;
+using Core.Application.Exceptions;
 using Core.Application.Specifications.Repositories;
 using Core.Domain;
 using Core.Domain.DTO;
@@ -69,5 +70,21 @@ public class EdgeBoxService(
 
         unitOfWork.EdgeBoxes.Delete(edgeBox);
         await unitOfWork.CompleteAsync();
+    }
+
+    public async Task UpdateStatus(Guid id, int statusId)
+    {
+        var edgeBox = await unitOfWork.EdgeBoxes.GetByIdAsync(id);
+        if (edgeBox != null)
+        {
+            edgeBox.EdgeBoxStatusId = statusId;
+            unitOfWork.EdgeBoxes.Update(edgeBox);
+            await unitOfWork.CompleteAsync();
+        }
+    }
+
+    public async Task<IEnumerable<EdgeBox>> GetEdgeBoxes()
+    {
+        return (await unitOfWork.EdgeBoxes.GetAsync(takeAll: true)).Values;
     }
 }
