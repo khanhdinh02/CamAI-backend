@@ -104,7 +104,7 @@ namespace Infrastructure.Repositories.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "EmployeeStatus",
+                name: "EmployeeStatuses",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
@@ -115,7 +115,7 @@ namespace Infrastructure.Repositories.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_EmployeeStatus", x => x.Id);
+                    table.PrimaryKey("PK_EmployeeStatuses", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -641,9 +641,9 @@ namespace Infrastructure.Repositories.Migrations
                 {
                     table.PrimaryKey("PK_Employees", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Employees_EmployeeStatus_EmployeeStatusId",
+                        name: "FK_Employees_EmployeeStatuses_EmployeeStatusId",
                         column: x => x.EmployeeStatusId,
-                        principalTable: "EmployeeStatus",
+                        principalTable: "EmployeeStatuses",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
@@ -699,6 +699,29 @@ namespace Infrastructure.Repositories.Migrations
                         column: x => x.ShopId,
                         principalTable: "Shops",
                         principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Shifts",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ShopId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    StartTime = table.Column<TimeOnly>(type: "time", nullable: false),
+                    EndTime = table.Column<TimeOnly>(type: "time", nullable: false),
+                    Timestamp = table.Column<byte[]>(type: "rowversion", rowVersion: true, nullable: true),
+                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ModifiedDate = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Shifts", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Shifts_Shops_ShopId",
+                        column: x => x.ShopId,
+                        principalTable: "Shops",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -808,6 +831,31 @@ namespace Infrastructure.Repositories.Migrations
                         column: x => x.RequestId,
                         principalTable: "Requests",
                         principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "EmployeeShift",
+                columns: table => new
+                {
+                    EmployeeId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ShiftId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    DayOfWeek = table.Column<string>(type: "nvarchar(3)", maxLength: 3, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_EmployeeShift", x => new { x.EmployeeId, x.ShiftId });
+                    table.ForeignKey(
+                        name: "FK_EmployeeShift_Employees_EmployeeId",
+                        column: x => x.EmployeeId,
+                        principalTable: "Employees",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_EmployeeShift_Shifts_ShiftId",
+                        column: x => x.ShiftId,
+                        principalTable: "Shifts",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -961,7 +1009,7 @@ namespace Infrastructure.Repositories.Migrations
                 });
 
             migrationBuilder.InsertData(
-                table: "EmployeeStatus",
+                table: "EmployeeStatuses",
                 columns: new[] { "Id", "Description", "Name" },
                 values: new object[,]
                 {
@@ -1195,6 +1243,11 @@ namespace Infrastructure.Repositories.Migrations
                 column: "WardId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_EmployeeShift_ShiftId",
+                table: "EmployeeShift",
+                column: "ShiftId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Evidences_BehaviorId",
                 table: "Evidences",
                 column: "BehaviorId");
@@ -1252,6 +1305,11 @@ namespace Infrastructure.Repositories.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_Requests_ShopId",
                 table: "Requests",
+                column: "ShopId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Shifts_ShopId",
+                table: "Shifts",
                 column: "ShopId");
 
             migrationBuilder.CreateIndex(
@@ -1370,6 +1428,9 @@ namespace Infrastructure.Repositories.Migrations
                 name: "EdgeBoxActivities");
 
             migrationBuilder.DropTable(
+                name: "EmployeeShift");
+
+            migrationBuilder.DropTable(
                 name: "Evidences");
 
             migrationBuilder.DropTable(
@@ -1386,6 +1447,9 @@ namespace Infrastructure.Repositories.Migrations
 
             migrationBuilder.DropTable(
                 name: "Roles");
+
+            migrationBuilder.DropTable(
+                name: "Shifts");
 
             migrationBuilder.DropTable(
                 name: "Behaviors");
@@ -1427,7 +1491,7 @@ namespace Infrastructure.Repositories.Migrations
                 name: "EdgeBoxInstalls");
 
             migrationBuilder.DropTable(
-                name: "EmployeeStatus");
+                name: "EmployeeStatuses");
 
             migrationBuilder.DropTable(
                 name: "EdgeBoxInstallStatuses");

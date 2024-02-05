@@ -1,8 +1,7 @@
 using System.Reflection;
 using System.Text.Json.Serialization;
-using Core.Application.Exceptions;
-using System.Text.Json.Serialization;
 using Core.Application.Events;
+using Core.Application.Exceptions;
 using Core.Application.Implements;
 using Core.Domain.Interfaces.Services;
 using Core.Domain.Models.Configurations;
@@ -23,6 +22,7 @@ public static class ApiDependencyInjection
         services.AddScoped<IEdgeBoxService, EdgeBoxService>();
         services.AddScoped<ITicketService, TicketService>();
         services.AddScoped<ILocationService, LocationService>();
+        services.AddScoped<IShiftService, ShiftService>();
         services.AddSingleton<EventManager>();
         return services;
     }
@@ -49,6 +49,7 @@ public static class ApiDependencyInjection
         services.AddSwaggerGen(option =>
         {
             option.SwaggerDoc("v1", new OpenApiInfo { Title = "CamAI API", Version = "v1" });
+            option.SupportNonNullableReferenceTypes();
             option.AddSecurityDefinition(
                 "Bearer",
                 new OpenApiSecurityScheme
