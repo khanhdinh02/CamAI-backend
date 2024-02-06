@@ -16,7 +16,6 @@ public class EdgeBox : BusinessEntity
     // TODO [Duy]: Edge box configuration
     public int EdgeBoxStatusId { get; set; }
     public int EdgeBoxLocationId { get; set; }
-    public string HostingAddress { get; set; } = null!;
 
     public virtual EdgeBoxLocation EdgeBoxLocation { get; set; } = null!;
     public virtual EdgeBoxStatus EdgeBoxStatus { get; set; } = null!;

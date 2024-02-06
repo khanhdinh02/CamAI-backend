@@ -10,7 +10,7 @@ namespace Core.Domain.Specifications.Repositories;
 public interface IRepositorySpecification<T>
 {
     Expression<Func<T, bool>>? Criteria { get; }
-    List<Expression<Func<T, object>>>? Includes { get; }
+    List<Expression<Func<T, object?>>>? Includes { get; }
     List<string>? IncludeStrings { get; }
     Expression<Func<T, object>>? OrderBy { get; }
     Expression<Func<T, object>>? OrderByDescending { get; }
@@ -19,7 +19,7 @@ public interface IRepositorySpecification<T>
     /// Use for select desired properties
     /// </summary>
     /// <remarks>
-    /// If you have set this field, please NOTICE that the <see cref="Includes"/> and <see cref="IncludeStrings"/> will be override.
+    /// If you have set this field, please NOTICE that the <see cref="Includes"/> and <see cref="IncludeStrings"/> both will be ignored.
     /// Example:
     /// Includes: [t => t.PropertyOfT]
     /// SelectedProperties: t => new T { AnotherPropertyOfT = t.AnotherPropertyOfT }

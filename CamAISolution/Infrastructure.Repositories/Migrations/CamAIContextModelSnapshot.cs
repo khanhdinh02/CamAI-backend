@@ -34,7 +34,7 @@ namespace Infrastructure.Repositories.Migrations
 
                     b.HasIndex("AccountId");
 
-                    b.ToTable("AccountRole");
+                    b.ToTable("AccountRole", (string)null);
                 });
 
             modelBuilder.Entity("Core.Domain.Entities.Account", b =>
@@ -101,7 +101,7 @@ namespace Infrastructure.Repositories.Migrations
 
                     b.HasIndex("WardId");
 
-                    b.ToTable("Accounts");
+                    b.ToTable("Accounts", (string)null);
                 });
 
             modelBuilder.Entity("Core.Domain.Entities.AccountNotification", b =>
@@ -121,7 +121,7 @@ namespace Infrastructure.Repositories.Migrations
 
                     b.HasIndex("StatusId");
 
-                    b.ToTable("AccountNotifications");
+                    b.ToTable("AccountNotifications", (string)null);
                 });
 
             modelBuilder.Entity("Core.Domain.Entities.AccountStatus", b =>
@@ -147,7 +147,7 @@ namespace Infrastructure.Repositories.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("AccountStatuses");
+                    b.ToTable("AccountStatuses", (string)null);
 
                     b.HasData(
                         new
@@ -204,7 +204,7 @@ namespace Infrastructure.Repositories.Migrations
 
                     b.HasIndex("EmployeeId");
 
-                    b.ToTable("Behaviors");
+                    b.ToTable("Behaviors", (string)null);
                 });
 
             modelBuilder.Entity("Core.Domain.Entities.BehaviorType", b =>
@@ -230,7 +230,7 @@ namespace Infrastructure.Repositories.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("BehaviorTypes");
+                    b.ToTable("BehaviorTypes", (string)null);
                 });
 
             modelBuilder.Entity("Core.Domain.Entities.Brand", b =>
@@ -286,7 +286,7 @@ namespace Infrastructure.Repositories.Migrations
 
                     b.HasIndex("LogoId");
 
-                    b.ToTable("Brands");
+                    b.ToTable("Brands", (string)null);
                 });
 
             modelBuilder.Entity("Core.Domain.Entities.BrandStatus", b =>
@@ -312,7 +312,7 @@ namespace Infrastructure.Repositories.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("BrandStatuses");
+                    b.ToTable("BrandStatuses", (string)null);
 
                     b.HasData(
                         new
@@ -364,7 +364,7 @@ namespace Infrastructure.Repositories.Migrations
 
                     b.HasIndex("ShopId");
 
-                    b.ToTable("Cameras");
+                    b.ToTable("Cameras", (string)null);
                 });
 
             modelBuilder.Entity("Core.Domain.Entities.District", b =>
@@ -387,7 +387,7 @@ namespace Infrastructure.Repositories.Migrations
 
                     b.HasIndex("ProvinceId");
 
-                    b.ToTable("Districts");
+                    b.ToTable("Districts", (string)null);
                 });
 
             modelBuilder.Entity("Core.Domain.Entities.EdgeBox", b =>
@@ -404,10 +404,6 @@ namespace Infrastructure.Repositories.Migrations
 
                     b.Property<int>("EdgeBoxStatusId")
                         .HasColumnType("int");
-
-                    b.Property<string>("HostingAddress")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Model")
                         .HasMaxLength(50)
@@ -438,7 +434,7 @@ namespace Infrastructure.Repositories.Migrations
 
                     b.HasIndex("EdgeBoxStatusId");
 
-                    b.ToTable("EdgeBoxes");
+                    b.ToTable("EdgeBoxes", (string)null);
                 });
 
             modelBuilder.Entity("Core.Domain.Entities.EdgeBoxActivity", b =>
@@ -475,7 +471,7 @@ namespace Infrastructure.Repositories.Migrations
 
                     b.HasIndex("OldStatusId");
 
-                    b.ToTable("EdgeBoxActivities");
+                    b.ToTable("EdgeBoxActivities", (string)null);
                 });
 
             modelBuilder.Entity("Core.Domain.Entities.EdgeBoxInstall", b =>
@@ -526,7 +522,7 @@ namespace Infrastructure.Repositories.Migrations
 
                     b.HasIndex("ShopId");
 
-                    b.ToTable("EdgeBoxInstalls");
+                    b.ToTable("EdgeBoxInstalls", (string)null);
                 });
 
             modelBuilder.Entity("Core.Domain.Entities.EdgeBoxInstallStatus", b =>
@@ -552,7 +548,7 @@ namespace Infrastructure.Repositories.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("EdgeBoxInstallStatuses");
+                    b.ToTable("EdgeBoxInstallStatuses", (string)null);
 
                     b.HasData(
                         new
@@ -590,7 +586,7 @@ namespace Infrastructure.Repositories.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("EdgeBoxLocation");
+                    b.ToTable("EdgeBoxLocation", (string)null);
 
                     b.HasData(
                         new
@@ -643,7 +639,7 @@ namespace Infrastructure.Repositories.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("EdgeBoxStatuses");
+                    b.ToTable("EdgeBoxStatuses", (string)null);
 
                     b.HasData(
                         new
@@ -724,7 +720,7 @@ namespace Infrastructure.Repositories.Migrations
 
                     b.HasIndex("WardId");
 
-                    b.ToTable("Employees");
+                    b.ToTable("Employees", (string)null);
                 });
 
             modelBuilder.Entity("Core.Domain.Entities.EmployeeStatus", b =>
@@ -750,7 +746,7 @@ namespace Infrastructure.Repositories.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("EmployeeStatus");
+                    b.ToTable("EmployeeStatus", (string)null);
 
                     b.HasData(
                         new
@@ -797,7 +793,7 @@ namespace Infrastructure.Repositories.Migrations
 
                     b.HasIndex("EvidenceTypeId");
 
-                    b.ToTable("Evidences");
+                    b.ToTable("Evidences", (string)null);
                 });
 
             modelBuilder.Entity("Core.Domain.Entities.EvidenceType", b =>
@@ -823,7 +819,7 @@ namespace Infrastructure.Repositories.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("EvidenceTypes");
+                    b.ToTable("EvidenceTypes", (string)null);
                 });
 
             modelBuilder.Entity("Core.Domain.Entities.Image", b =>
@@ -846,7 +842,7 @@ namespace Infrastructure.Repositories.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Image");
+                    b.ToTable("Image", (string)null);
                 });
 
             modelBuilder.Entity("Core.Domain.Entities.Notification", b =>
@@ -886,7 +882,7 @@ namespace Infrastructure.Repositories.Migrations
 
                     b.HasIndex("SentById");
 
-                    b.ToTable("Notifications");
+                    b.ToTable("Notifications", (string)null);
                 });
 
             modelBuilder.Entity("Core.Domain.Entities.NotificationStatus", b =>
@@ -912,7 +908,7 @@ namespace Infrastructure.Repositories.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("NotificationStatuses");
+                    b.ToTable("NotificationStatuses", (string)null);
 
                     b.HasData(
                         new
@@ -950,7 +946,7 @@ namespace Infrastructure.Repositories.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("NotificationTypes");
+                    b.ToTable("NotificationTypes", (string)null);
 
                     b.HasData(
                         new
@@ -985,7 +981,7 @@ namespace Infrastructure.Repositories.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Provinces");
+                    b.ToTable("Provinces", (string)null);
                 });
 
             modelBuilder.Entity("Core.Domain.Entities.Request", b =>
@@ -1033,7 +1029,7 @@ namespace Infrastructure.Repositories.Migrations
 
                     b.HasIndex("ShopId");
 
-                    b.ToTable("Requests");
+                    b.ToTable("Requests", (string)null);
                 });
 
             modelBuilder.Entity("Core.Domain.Entities.RequestActivity", b =>
@@ -1070,7 +1066,7 @@ namespace Infrastructure.Repositories.Migrations
 
                     b.HasIndex("RequestId");
 
-                    b.ToTable("RequestActivities");
+                    b.ToTable("RequestActivities", (string)null);
                 });
 
             modelBuilder.Entity("Core.Domain.Entities.RequestStatus", b =>
@@ -1096,7 +1092,7 @@ namespace Infrastructure.Repositories.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("RequestStatuses");
+                    b.ToTable("RequestStatuses", (string)null);
 
                     b.HasData(
                         new
@@ -1144,7 +1140,7 @@ namespace Infrastructure.Repositories.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("RequestTypes");
+                    b.ToTable("RequestTypes", (string)null);
 
                     b.HasData(
                         new
@@ -1187,7 +1183,7 @@ namespace Infrastructure.Repositories.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Roles");
+                    b.ToTable("Roles", (string)null);
 
                     b.HasData(
                         new
@@ -1270,7 +1266,7 @@ namespace Infrastructure.Repositories.Migrations
 
                     b.HasIndex("WardId");
 
-                    b.ToTable("Shops");
+                    b.ToTable("Shops", (string)null);
                 });
 
             modelBuilder.Entity("Core.Domain.Entities.ShopStatus", b =>
@@ -1296,7 +1292,7 @@ namespace Infrastructure.Repositories.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("ShopStatuses");
+                    b.ToTable("ShopStatuses", (string)null);
 
                     b.HasData(
                         new
@@ -1356,7 +1352,7 @@ namespace Infrastructure.Repositories.Migrations
 
                     b.HasIndex("TicketTypeId");
 
-                    b.ToTable("Tickets");
+                    b.ToTable("Tickets", (string)null);
                 });
 
             modelBuilder.Entity("Core.Domain.Entities.TicketActivity", b =>
@@ -1393,7 +1389,7 @@ namespace Infrastructure.Repositories.Migrations
 
                     b.HasIndex("TicketId");
 
-                    b.ToTable("TicketActivities");
+                    b.ToTable("TicketActivities", (string)null);
                 });
 
             modelBuilder.Entity("Core.Domain.Entities.TicketStatus", b =>
@@ -1419,7 +1415,7 @@ namespace Infrastructure.Repositories.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("TicketStatuses");
+                    b.ToTable("TicketStatuses", (string)null);
 
                     b.HasData(
                         new
@@ -1472,7 +1468,7 @@ namespace Infrastructure.Repositories.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("TicketTypes");
+                    b.ToTable("TicketTypes", (string)null);
 
                     b.HasData(
                         new
@@ -1512,7 +1508,7 @@ namespace Infrastructure.Repositories.Migrations
 
                     b.HasIndex("DistrictId");
 
-                    b.ToTable("Wards");
+                    b.ToTable("Wards", (string)null);
                 });
 
             modelBuilder.Entity("AccountRole", b =>

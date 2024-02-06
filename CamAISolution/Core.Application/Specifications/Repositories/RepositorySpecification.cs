@@ -14,7 +14,7 @@ namespace Core.Application.Specifications.Repositories;
 public abstract class RepositorySpec<T>(Expression<Func<T, bool>>? criteria = null) : IRepositorySpecification<T>
 {
     public Expression<Func<T, bool>>? Criteria => criteria;
-    public List<Expression<Func<T, object>>>? Includes { get; } = new List<Expression<Func<T, object>>>();
+    public List<Expression<Func<T, object?>>>? Includes { get; } = new List<Expression<Func<T, object?>>>();
     public List<string>? IncludeStrings { get; } = new List<string>();
     public Expression<Func<T, object>>? OrderBy { get; private set; }
     public Expression<Func<T, object>>? OrderByDescending { get; private set; }
@@ -26,15 +26,15 @@ public abstract class RepositorySpec<T>(Expression<Func<T, bool>>? criteria = nu
 
     public Expression<Func<T, T>>? SelectedProperties { get; private set; }
 
-    public virtual void AddSelectProperties(Expression<Func<T, T>> selectedProperties) =>
+    public virtual void SetSelectedProperties(Expression<Func<T, T>> selectedProperties) =>
         SelectedProperties = selectedProperties;
 
-    protected virtual void AddIncludes(Expression<Func<T, object>> include)
+    protected virtual void AddIncludes(Expression<Func<T, object?>> include)
     {
         Includes?.Add(include);
     }
 
-    protected virtual void AddIncludes(params Expression<Func<T, object>>[] include)
+    protected virtual void AddIncludes(params Expression<Func<T, object?>>[] include)
     {
         Includes?.AddRange(include);
     }
