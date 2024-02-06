@@ -1,10 +1,4 @@
-﻿using System.Net.WebSockets;
-using System.Text;
-using System.Text.Json;
-using Core.Domain.DTO;
-using Core.Domain.Interfaces.Services;
-using Core.Domain.Models.Consumers;
-using Infrastructure.Jwt.Attribute;
+﻿using Core.Domain.Interfaces.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Host.CamAI.API.Controllers;
@@ -43,31 +37,10 @@ public class ReportsController(IReportService reportService) : ControllerBase
         if (HttpContext.WebSockets.IsWebSocketRequest)
         {
             using var webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
-            var buffer = await reportService.GetClassifierStream(shopId);
-            while (true)
-            {
-                if (buffer.Count > 0)
-                {
-                    var result = buffer.Read();
-                    await SendData(webSocket, result);
-                }
-                // TODO [Duy]: check connection
-            }
-            // TODO [Duy]: handle client disconnection
+            var classifierWs = new ClassifierWebSocket(webSocket, reportService, shopId);
+            var task = classifierWs.Start();
         }
         else
             HttpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
-    }
-
-    private static async Task SendData(WebSocket webSocket, ClassifierModel data)
-    {
-        var dataBytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(data));
-
-        await webSocket.SendAsync(
-            new ArraySegment<byte>(dataBytes, 0, dataBytes.Length),
-            WebSocketMessageType.Text,
-            WebSocketMessageFlags.EndOfMessage,
-            CancellationToken.None
-        );
     }
 }
