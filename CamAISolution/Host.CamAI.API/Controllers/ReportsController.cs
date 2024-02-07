@@ -1,4 +1,6 @@
-﻿using Core.Domain.Interfaces.Services;
+﻿using Core.Domain.DTO;
+using Core.Domain.Interfaces.Services;
+using Core.Domain.Models.Consumers;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Host.CamAI.API.Controllers;
@@ -19,6 +21,9 @@ public class ReportsController(IReportService reportService) : ControllerBase
         if (HttpContext.WebSockets.IsWebSocketRequest)
         {
             using var webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
+            // TODO: get current shop id
+            // var classifierWs = new ClassifierWebSocket(webSocket, reportService, shopId);
+            // var task = classifierWs.Start();
         }
         else
             HttpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
@@ -31,7 +36,7 @@ public class ReportsController(IReportService reportService) : ControllerBase
     /// </summary>
     [HttpGet("{shopId}/chart/customer")]
     // TODO [Duy]: Uncomment this after testing
-    // [AccessTokenGuard(RoleEnum.ShopManager)]
+    // [AccessTokenGuard(RoleEnum.ShopManager, RoleEnum.BrandManager)]
     public async Task BrandCustomerAreaChart(Guid shopId)
     {
         if (HttpContext.WebSockets.IsWebSocketRequest)
@@ -42,5 +47,22 @@ public class ReportsController(IReportService reportService) : ControllerBase
         }
         else
             HttpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+    }
+
+    /// <summary>
+    /// Get past data of classifier for shop manager
+    /// </summary>
+    [HttpGet("customer")]
+    // [AccessTokenGuard(RoleEnum.ShopManager)]
+    public async Task<List<ClassifierModel>> GetClassifierData([FromQuery] DateOnly date)
+    {
+        return await reportService.GetClassifierDataForDate(date);
+    }
+
+    [HttpGet("{shopId}/customer")]
+    // [AccessTokenGuard(RoleEnum.ShopManager, RoleEnum.BrandManager)]
+    public async Task<List<ClassifierModel>> GetClassifierData([FromRoute] Guid shopId, [FromQuery] DateOnly date)
+    {
+        return await reportService.GetClassifierDataForDate(shopId, date);
     }
 }

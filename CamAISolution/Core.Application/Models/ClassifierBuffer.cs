@@ -1,4 +1,5 @@
 ﻿using Core.Application.Events;
+using Core.Domain.Interfaces.Events;
 using Core.Domain.Models.Consumers;
 
 namespace Core.Application.Models;

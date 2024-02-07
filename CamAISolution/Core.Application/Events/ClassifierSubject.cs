@@ -1,4 +1,5 @@
-﻿using Core.Domain.Models.Consumers;
+﻿using Core.Domain.Interfaces.Events;
+using Core.Domain.Models.Consumers;
 
 namespace Core.Application.Events;
 
@@ -18,7 +19,8 @@ public class ClassifierSubject
 
     public void Notify(ClassifierModel model)
     {
-        foreach (var o in observers.Where(x => x.ShopId == model.ShopId))
+        // if shopId is Guid.Empty, it will receive all events
+        foreach (var o in observers.Where(x => x.ShopId == model.ShopId || x.ShopId == Guid.Empty))
             o.ReceiveData(model);
     }
 }

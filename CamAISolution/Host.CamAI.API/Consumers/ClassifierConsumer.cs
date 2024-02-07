@@ -11,9 +11,6 @@ public class ClassifierConsumer(ClassifierSubject subject) : IConsumer<Classifie
 {
     public Task Consume(ConsumeContext<ClassifierModelContract> context)
     {
-        // TODO [Duy]: save data to file
-
-        Log.Information("Receive classifier message");
         subject.Notify(context.Message.ToClassifierModel());
         return Task.CompletedTask;
     }

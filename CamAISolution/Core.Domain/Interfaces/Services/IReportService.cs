@@ -7,4 +7,6 @@ public interface IReportService
 {
     public Task<ICircularBuffer<ClassifierModel>> GetClassifierStream();
     public Task<ICircularBuffer<ClassifierModel>> GetClassifierStream(Guid shopId);
+    public Task<List<ClassifierModel>> GetClassifierDataForDate(DateOnly date);
+    public Task<List<ClassifierModel>> GetClassifierDataForDate(Guid shopId, DateOnly date);
 }

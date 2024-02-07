@@ -1,6 +1,6 @@
 ﻿using Core.Domain.Models.Consumers;
 
-namespace Core.Application.Events;
+namespace Core.Domain.Interfaces.Events;
 
 public interface IClassifierObserver
 {
