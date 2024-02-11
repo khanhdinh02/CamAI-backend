@@ -1,4 +1,5 @@
-﻿using Core.Domain;
+﻿using System.Reflection.Metadata;
+using Core.Domain;
 using Core.Domain.DTO;
 using Core.Domain.Entities;
 using Core.Domain.Models.Configurations;
@@ -15,7 +16,6 @@ public class EdgeBoxHealthCheckService(IAppLogging<EdgeBoxHealthCheckService> lo
         while (!stoppingToken.IsCancellationRequested)
         {
             using var scope = provider.CreateScope();
-            var edgeBoxService = scope.ServiceProvider.GetRequiredService<IEdgeBoxService>();
             var uow = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
             var edgeBoxeInstallRepo = uow.GetRepository<EdgeBoxInstall>();
             var edgeBoxInstalls = (
@@ -27,30 +27,35 @@ public class EdgeBoxHealthCheckService(IAppLogging<EdgeBoxHealthCheckService> lo
                     includeProperties: [nameof(EdgeBoxActivity.EdgeBox)]
                 )
             ).Values;
+            HashSet<EdgeBoxInstall> failedEdgeBoxInstall = new();
             foreach (var edgeBoxInstall in edgeBoxInstalls)
             {
                 int? newStatusId = null;
                 try
                 {
                     var res = await SendRequest($"{edgeBoxInstall.IpAddress}/api/{edgeBoxInstall.Id}");
-                    if (res.IsSuccessStatusCode)
-                        newStatusId = EdgeBoxStatusEnum.Active;
-                    else
-                        newStatusId = EdgeBoxStatusEnum.Broken;
-                    if (newStatusId.Value != edgeBoxInstall.EdgeBox.EdgeBoxStatusId)
+                    newStatusId = res.IsSuccessStatusCode ? EdgeBoxStatusEnum.Active : EdgeBoxStatusEnum.Broken;
+                    if (res.IsSuccessStatusCode && edgeBoxInstall.EdgeBox.EdgeBoxStatusId != EdgeBoxStatusEnum.Active)
                     {
-                        edgeBoxInstall.EdgeBox.EdgeBoxStatusId = newStatusId.Value;
+                        edgeBoxInstall.EdgeBoxInstallStatusId = EdgeBoxStatusEnum.Active;
                         await uow.CompleteAsync();
                     }
+                    else
+                        failedEdgeBoxInstall.Add(edgeBoxInstall);
                 }
                 catch (Exception ex) when (ex is TimeoutException || ex is HttpRequestException)
                 {
                     logger.Error(ex.Message, ex);
-                    await edgeBoxService.UpdateStatus(edgeBoxInstall.EdgeBoxId, EdgeBoxStatusEnum.Broken);
+                    failedEdgeBoxInstall.Add(edgeBoxInstall);
                 }
                 catch (Exception ex)
                 {
+                    failedEdgeBoxInstall.Add(edgeBoxInstall);
                     logger.Error(ex.Message, ex);
+                }
+                finally
+                {
+                    await HealthCheckAllFailedEdgeBox(failedEdgeBoxInstall, stoppingToken);
                 }
             }
             await Task.Delay(
@@ -59,6 +64,63 @@ public class EdgeBoxHealthCheckService(IAppLogging<EdgeBoxHealthCheckService> lo
                 ),
                 stoppingToken
             );
+        }
+    }
+
+    private async Task HealthCheckAllFailedEdgeBox(
+        IEnumerable<EdgeBoxInstall> failedHealthCheckEdgeBoxes,
+        CancellationToken cancellation
+    )
+    {
+        var failedEdgeBoxDic = failedHealthCheckEdgeBoxes.ToDictionary(
+            s => s.Id,
+            s => new Tuple<EdgeBoxInstall, int>(s, 0)
+        );
+        // TODO [Dat]: Use HealthCheckConfiguration instead
+        var maxNumberOfTemptations = 5;
+        while (failedEdgeBoxDic.Any() && !cancellation.IsCancellationRequested)
+        {
+            var startOperationTime = new TimeSpan(DateTime.Now.Ticks);
+            foreach (var edgeBoxInstall in failedHealthCheckEdgeBoxes)
+            {
+                var currentNumberOfTemptations = failedEdgeBoxDic[edgeBoxInstall.Id].Item2;
+                using var scope = provider.CreateScope();
+                var edgeBoxService = scope.ServiceProvider.GetRequiredService<IEdgeBoxService>();
+                if (currentNumberOfTemptations > maxNumberOfTemptations)
+                {
+                    failedEdgeBoxDic.Remove(edgeBoxInstall.Id);
+                    await edgeBoxService.UpdateStatus(edgeBoxInstall.EdgeBoxId, EdgeBoxStatusEnum.Broken);
+                    continue;
+                }
+                try
+                {
+                    var res = await SendRequest($"{edgeBoxInstall.IpAddress}/api/{edgeBoxInstall.Id}");
+                    if (res.IsSuccessStatusCode)
+                    {
+                        failedEdgeBoxDic.Remove(edgeBoxInstall.Id);
+                        await edgeBoxService.UpdateStatus(edgeBoxInstall.EdgeBoxId, EdgeBoxStatusEnum.Active);
+                    }
+                    else
+                        failedEdgeBoxDic[edgeBoxInstall.Id] = new Tuple<EdgeBoxInstall, int>(
+                            edgeBoxInstall,
+                            failedEdgeBoxDic[edgeBoxInstall.Id].Item2 + 1
+                        );
+                }
+                catch (Exception ex)
+                {
+                    logger.Error(ex.Message, ex);
+                    failedEdgeBoxDic[edgeBoxInstall.Id] = new Tuple<EdgeBoxInstall, int>(
+                        edgeBoxInstall,
+                        failedEdgeBoxDic[edgeBoxInstall.Id].Item2 + 1
+                    );
+                }
+            }
+            var endOperationTime = new TimeSpan(DateTime.Now.Ticks);
+            var durration = endOperationTime.Subtract(startOperationTime);
+
+            // TODO [Dat]: Consider to use HealthCheckConfiguration to get time to delay
+            if (durration.Minutes < 5)
+                await Task.Delay(TimeSpan.FromMinutes(5 - durration.Minutes), cancellation);
         }
     }
 
