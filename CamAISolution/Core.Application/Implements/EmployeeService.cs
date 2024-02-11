@@ -106,6 +106,22 @@ public class EmployeeService(IUnitOfWork unitOfWork, IAccountService accountServ
         await unitOfWork.CompleteAsync();
     }
 
+    public async Task<IEnumerable<EmployeeShift>> GetShifts(Guid employeeId)
+    {
+        var user = accountService.GetCurrentAccount();
+        var employee = await GetEmployeeById(employeeId);
+        if (!HasAuthority(user, employee))
+            throw new ForbiddenException(user, employee);
+
+        return (
+            await unitOfWork
+                .EmployeeShifts
+                .GetAsync(es => es.EmployeeId == employeeId, includeProperties: [nameof(EmployeeShift.Shift)])
+        ).Values;
+    }
+
+    // TODO [Khanh]: Assign shifts to employee
+
     private bool HasAuthority(Account user, Employee employee)
     {
         if (user.HasRole(RoleEnum.Admin))

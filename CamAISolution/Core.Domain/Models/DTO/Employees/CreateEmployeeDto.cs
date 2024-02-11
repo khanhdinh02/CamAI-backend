@@ -6,10 +6,10 @@ namespace Core.Domain.DTO;
 
 public class CreateEmployeeDto
 {
-    [Required, StringLength(50)]
+    [StringLength(50)]
     public string Name { get; set; } = null!;
 
-    [Required, EmailAddress]
+    [EmailAddress]
     public string Email { get; set; } = null!;
 
     [JsonConverter(typeof(JsonStringEnumConverter))]
