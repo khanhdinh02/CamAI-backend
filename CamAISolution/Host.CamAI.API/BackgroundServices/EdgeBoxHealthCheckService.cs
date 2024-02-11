@@ -7,17 +7,9 @@ using Core.Domain.Services;
 
 namespace Host.CamAI.API.BackgroundServices;
 
-public class EdgeBoxHealthCheckService : BackgroundService
+public class EdgeBoxHealthCheckService(IAppLogging<EdgeBoxHealthCheckService> logger, IServiceProvider provider)
+    : BackgroundService
 {
-    private readonly IAppLogging<EdgeBoxHealthCheckService> logger;
-    private readonly IServiceProvider provider;
-
-    public EdgeBoxHealthCheckService(IAppLogging<EdgeBoxHealthCheckService> logger, IServiceProvider provider)
-    {
-        this.logger = logger;
-        this.provider = provider;
-    }
-
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         while (!stoppingToken.IsCancellationRequested)
@@ -40,21 +32,20 @@ public class EdgeBoxHealthCheckService : BackgroundService
                 int? newStatusId = null;
                 try
                 {
-                    var http = new HttpClient();
-                    http.DefaultRequestHeaders.Accept.Add(
-                        new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json")
-                    );
-                    var res = await http.GetAsync(new Uri($"{edgeBoxInstall.IpAddress}/api/{edgeBoxInstall.Id}"));
+                    var res = await SendRequest($"{edgeBoxInstall.IpAddress}/api/{edgeBoxInstall.Id}");
                     if (res.IsSuccessStatusCode)
                         newStatusId = EdgeBoxStatusEnum.Active;
                     else
                         newStatusId = EdgeBoxStatusEnum.Broken;
                     if (newStatusId.Value != edgeBoxInstall.EdgeBox.EdgeBoxStatusId)
+                    {
                         edgeBoxInstall.EdgeBox.EdgeBoxStatusId = newStatusId.Value;
-                    await uow.CompleteAsync();
+                        await uow.CompleteAsync();
+                    }
                 }
                 catch (Exception ex) when (ex is TimeoutException || ex is HttpRequestException)
                 {
+                    logger.Error(ex.Message, ex);
                     await edgeBoxService.UpdateStatus(edgeBoxInstall.EdgeBoxId, EdgeBoxStatusEnum.Broken);
                 }
                 catch (Exception ex)
@@ -69,5 +60,14 @@ public class EdgeBoxHealthCheckService : BackgroundService
                 stoppingToken
             );
         }
+    }
+
+    private Task<HttpResponseMessage> SendRequest(string uri)
+    {
+        var http = new HttpClient();
+        http.DefaultRequestHeaders.Accept.Add(
+            new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json")
+        );
+        return http.GetAsync(new Uri(uri));
     }
 }
