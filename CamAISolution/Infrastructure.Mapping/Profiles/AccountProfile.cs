@@ -14,5 +14,6 @@ public class AccountProfile : Profile
         CreateMap<Account, AccountDtoWithoutBrand>();
         CreateMap<AccountStatus, LookupDto>();
         CreateMap<Role, LookupDto>();
+        CreateMap<UpdateProfileDto, Account>();
     }
 }
