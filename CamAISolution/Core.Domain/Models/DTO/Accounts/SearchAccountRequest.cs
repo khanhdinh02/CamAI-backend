@@ -5,7 +5,8 @@ public class SearchAccountRequest : BaseSearchRequest
     /// <summary>
     /// Name, Email, or Phone
     /// </summary>
-    public string? Search { get; set; }
+    public string? Name { get; set; }
+    public string? Email { get; set; }
     public int? AccountStatusId { get; set; }
     public int? RoleId { get; set; }
 

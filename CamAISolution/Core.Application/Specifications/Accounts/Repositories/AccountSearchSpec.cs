@@ -13,13 +13,11 @@ public class AccountSearchSpec : RepositorySpec<Account>
         // Exclude the requesting account
         baseSpec.And(new AccountByIdSpec(reqAccount.Id).Not());
 
-        if (!string.IsNullOrWhiteSpace(req.Search))
-        {
-            req.Search = req.Search.Trim();
-            baseSpec.And(new AccountByEmailSpec(req.Search));
-            baseSpec.Or(new AccountByNameSpec(req.Search));
-            baseSpec.Or(new AccountByPhoneSpec(req.Search));
-        }
+        if (!string.IsNullOrWhiteSpace(req.Name))
+            baseSpec.And(new AccountByNameSpec(req.Name.Trim()));
+
+        if (!string.IsNullOrWhiteSpace(req.Email))
+            baseSpec.And(new AccountByEmailSpec(req.Email.Trim()));
 
         if (req.AccountStatusId.HasValue)
             baseSpec.And(new AccountByStatusSpec(req.AccountStatusId.Value));

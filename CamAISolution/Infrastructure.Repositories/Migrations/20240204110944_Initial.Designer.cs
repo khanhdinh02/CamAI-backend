@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Repositories.Migrations
 {
     [DbContext(typeof(CamAIContext))]
-    [Migration("20240202044308_Initial")]
+    [Migration("20240204110944_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -726,6 +726,26 @@ namespace Infrastructure.Repositories.Migrations
                     b.ToTable("Employees");
                 });
 
+            modelBuilder.Entity("Core.Domain.Entities.EmployeeShift", b =>
+                {
+                    b.Property<Guid>("EmployeeId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ShiftId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("DayOfWeek")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .HasColumnType("nvarchar(3)");
+
+                    b.HasKey("EmployeeId", "ShiftId");
+
+                    b.HasIndex("ShiftId");
+
+                    b.ToTable("EmployeeShift");
+                });
+
             modelBuilder.Entity("Core.Domain.Entities.EmployeeStatus", b =>
                 {
                     b.Property<int>("Id")
@@ -749,7 +769,7 @@ namespace Infrastructure.Repositories.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("EmployeeStatus");
+                    b.ToTable("EmployeeStatuses");
 
                     b.HasData(
                         new
@@ -1214,6 +1234,39 @@ namespace Infrastructure.Repositories.Migrations
                             Id = 5,
                             Name = "Employee"
                         });
+                });
+
+            modelBuilder.Entity("Core.Domain.Entities.Shift", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<TimeOnly>("EndTime")
+                        .HasColumnType("time");
+
+                    b.Property<DateTime>("ModifiedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("ShopId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<TimeOnly>("StartTime")
+                        .HasColumnType("time");
+
+                    b.Property<byte[]>("Timestamp")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ShopId");
+
+                    b.ToTable("Shifts");
                 });
 
             modelBuilder.Entity("Core.Domain.Entities.Shop", b =>
@@ -1759,6 +1812,25 @@ namespace Infrastructure.Repositories.Migrations
                     b.Navigation("Ward");
                 });
 
+            modelBuilder.Entity("Core.Domain.Entities.EmployeeShift", b =>
+                {
+                    b.HasOne("Core.Domain.Entities.Employee", "Employee")
+                        .WithMany("EmployeeShifts")
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Core.Domain.Entities.Shift", "Shift")
+                        .WithMany("EmployeeShifts")
+                        .HasForeignKey("ShiftId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Employee");
+
+                    b.Navigation("Shift");
+                });
+
             modelBuilder.Entity("Core.Domain.Entities.Evidence", b =>
                 {
                     b.HasOne("Core.Domain.Entities.Behavior", null)
@@ -1853,6 +1925,17 @@ namespace Infrastructure.Repositories.Migrations
                     b.Navigation("OldStatus");
 
                     b.Navigation("Request");
+                });
+
+            modelBuilder.Entity("Core.Domain.Entities.Shift", b =>
+                {
+                    b.HasOne("Core.Domain.Entities.Shop", "Shop")
+                        .WithMany()
+                        .HasForeignKey("ShopId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Shop");
                 });
 
             modelBuilder.Entity("Core.Domain.Entities.Shop", b =>
@@ -2000,6 +2083,8 @@ namespace Infrastructure.Repositories.Migrations
             modelBuilder.Entity("Core.Domain.Entities.Employee", b =>
                 {
                     b.Navigation("Behaviors");
+
+                    b.Navigation("EmployeeShifts");
                 });
 
             modelBuilder.Entity("Core.Domain.Entities.Notification", b =>
@@ -2010,6 +2095,11 @@ namespace Infrastructure.Repositories.Migrations
             modelBuilder.Entity("Core.Domain.Entities.Province", b =>
                 {
                     b.Navigation("Districts");
+                });
+
+            modelBuilder.Entity("Core.Domain.Entities.Shift", b =>
+                {
+                    b.Navigation("EmployeeShifts");
                 });
 
             modelBuilder.Entity("Core.Domain.Entities.Shop", b =>

@@ -22,6 +22,8 @@ public static class ApiDependencyInjection
         services.AddScoped<IEdgeBoxService, EdgeBoxService>();
         services.AddScoped<ITicketService, TicketService>();
         services.AddScoped<ILocationService, LocationService>();
+        services.AddScoped<IShiftService, ShiftService>();
+        services.AddSingleton<EventManager>();
         services.AddScoped<IReportService, ReportService>();
         services.AddSingleton<EventManager>().AddSingleton<ClassifierSubject>();
         return services;
@@ -49,6 +51,7 @@ public static class ApiDependencyInjection
         services.AddSwaggerGen(option =>
         {
             option.SwaggerDoc("v1", new OpenApiInfo { Title = "CamAI API", Version = "v1" });
+            option.SupportNonNullableReferenceTypes();
             option.AddSecurityDefinition(
                 "Bearer",
                 new OpenApiSecurityScheme
