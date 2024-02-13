@@ -70,11 +70,21 @@ app.UseHttpsRedirection();
 app.MapControllers();
 app.UseWebSockets();
 
-var observer = app.Services.GetRequiredService<SyncObserver>();
-observer.RegisterEvent();
-
-var classifier = app.Services.GetRequiredService<ClassifierFileSaverObserver>();
-var subject = app.Services.GetRequiredService<ClassifierSubject>();
-subject.Attach(classifier);
+RegisterSyncObserver();
+AttachClassifierFileSave();
 
 app.Run();
+return;
+
+void RegisterSyncObserver()
+{
+    var observer = app.Services.GetRequiredService<SyncObserver>();
+    observer.RegisterEvent();
+}
+
+void AttachClassifierFileSave()
+{
+    var classifier = app.Services.GetRequiredService<ClassifierFileSaverObserver>();
+    var subject = app.Services.GetRequiredService<ClassifierSubject>();
+    subject.Attach(classifier);
+}

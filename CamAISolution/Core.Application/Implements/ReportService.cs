@@ -31,20 +31,19 @@ public class ReportService(
         return Task.FromResult<ICircularBuffer<ClassifierModel>>(buffer);
     }
 
+    public async Task<ICircularBuffer<ClassifierModel>> GetClassifierStream(Guid shopId)
+    {
+        // validation is already in shop service
+        await shopService.GetShopById(shopId);
+        return CreateClassifierBufferResult(shopId);
+    }
+
     private static void CheckAuthority(Account account)
     {
         if (!account.HasRole(RoleEnum.ShopManager))
             throw new BadRequestException("Please specify a shop id");
         if (account.ManagingShop == null)
             throw new BadRequestException("Account is not ");
-    }
-
-    public async Task<ICircularBuffer<ClassifierModel>> GetClassifierStream(Guid shopId)
-    {
-        // validation is already in shop service
-        // TODO [Duy]: Remove this after testing
-        // await shopService.GetShopById(shopId);
-        return CreateClassifierBufferResult(shopId);
     }
 
     private ClassifierBuffer CreateClassifierBufferResult(Guid shopId)
@@ -65,9 +64,7 @@ public class ReportService(
     public async Task<List<ClassifierModel>> GetClassifierDataForDate(Guid shopId, DateOnly date)
     {
         // validation is already in shop service
-        // TODO [Duy]: Remove this after testing
-        // await shopService.GetShopById(shopId);
-
+        await shopService.GetShopById(shopId);
         return await GetClassifierDataForShop(date, shopId);
     }
 
@@ -75,7 +72,14 @@ public class ReportService(
     {
         // shopId -> date -> time
         var outputPath = Path.Combine(baseOutputDir, shopId.ToString("N"), date.ToPathString());
-        var lines = await File.ReadAllLinesAsync(outputPath);
-        return lines.Select(l => JsonSerializer.Deserialize<ClassifierModel>(l)!).ToList();
+        try
+        {
+            var lines = await File.ReadAllLinesAsync(outputPath);
+            return lines.Select(l => JsonSerializer.Deserialize<ClassifierModel>(l)!).ToList();
+        }
+        catch (Exception)
+        {
+            throw new NotFoundException($"Cannot find classifier data for date {date} and shop {shopId}");
+        }
     }
 }
