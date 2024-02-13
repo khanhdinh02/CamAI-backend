@@ -12,8 +12,12 @@ public static class FileHelper
 
     public static void EnsureDirectoryExisted(string path) => Directory.CreateDirectory(path);
 
-    public static string ToPathString(this DateOnly date) =>
+    public static string ToFilePath(this DateOnly date) =>
         Path.Combine(date.Year.ToString(), date.Month.ToString(), date.Day.ToString());
 
-    public static string ToPathString(this DateTime date) => ToPathString(DateOnly.FromDateTime(date));
+    public static string ToFilePath(this DateTime date) => ToFilePath(DateOnly.FromDateTime(date));
+
+    public static string ToDirPath(this DateOnly date) => Path.Combine(date.Year.ToString(), date.Month.ToString());
+
+    public static string ToDirPath(this DateTime date) => ToDirPath(DateOnly.FromDateTime(date));
 }

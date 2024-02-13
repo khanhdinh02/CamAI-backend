@@ -71,7 +71,7 @@ public class ReportService(
     private async Task<List<ClassifierModel>> GetClassifierDataForShop(DateOnly date, Guid shopId)
     {
         // shopId -> date -> time
-        var outputPath = Path.Combine(baseOutputDir, shopId.ToString("N"), date.ToPathString());
+        var outputPath = Path.Combine(baseOutputDir, shopId.ToString("N"), date.ToFilePath());
         try
         {
             var lines = await File.ReadAllLinesAsync(outputPath);

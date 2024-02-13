@@ -17,10 +17,10 @@ public class ClassifierFileSaverObserver(AiConfiguration configuration) : IClass
     {
         var date = DateOnly.FromDateTime(model.Time);
         // shopId -> date -> time
-        var shopDir = Path.Combine(baseOutputDir, model.ShopId.ToString("N"));
+        var shopDir = Path.Combine(baseOutputDir, model.ShopId.ToString("N"), date.ToDirPath());
         FileHelper.EnsureDirectoryExisted(shopDir);
         var text = JsonSerializer.Serialize(model, Options);
         // TODO: lock file
-        File.AppendAllLines(Path.Combine(shopDir, date.ToPathString()), [text]);
+        File.AppendAllLines(Path.Combine(shopDir, date.Day.ToString()), [text]);
     }
 }
