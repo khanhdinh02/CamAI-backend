@@ -13,9 +13,9 @@ public class ProfileController(IAccountService accountService, IBaseMapping mapp
 {
     [AccessTokenGuard]
     [HttpGet]
-    public async Task<AccountDto> GetProfile()
+    public AccountDto GetProfile()
     {
-        return await Task.FromResult(mapper.Map<Account, AccountDto>(accountService.GetCurrentAccount()));
+        return mapper.Map<Account, AccountDto>(accountService.GetCurrentAccount());
     }
 
     [AccessTokenGuard]
