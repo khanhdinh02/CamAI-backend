@@ -1,5 +1,4 @@
-﻿using System.Runtime.CompilerServices;
-using Core.Application.Exceptions;
+﻿using Core.Application.Exceptions;
 using Core.Application.Specifications.Repositories;
 using Core.Domain;
 using Core.Domain.DTO;

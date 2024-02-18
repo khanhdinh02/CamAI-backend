@@ -18,6 +18,7 @@ public class EdgeBoxHealthCheckService(
         while (!stoppingToken.IsCancellationRequested)
         {
             using var scope = provider.CreateScope();
+            //TODO [Dat]: Use pagination in stead of fetching all data in DB
             var edgeBoxInstalls = (
                 await uow.GetRepository<EdgeBoxInstall>()
                     .GetAsync(
