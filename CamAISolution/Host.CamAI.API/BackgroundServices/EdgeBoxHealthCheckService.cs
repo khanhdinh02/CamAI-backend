@@ -1,5 +1,4 @@
-﻿using System.Reflection.Metadata;
-using Core.Domain;
+﻿using Core.Domain;
 using Core.Domain.DTO;
 using Core.Domain.Entities;
 using Core.Domain.Models.Configurations;
@@ -8,37 +7,43 @@ using Core.Domain.Services;
 
 namespace Host.CamAI.API.BackgroundServices;
 
-public class EdgeBoxHealthCheckService(IAppLogging<EdgeBoxHealthCheckService> logger, IServiceProvider provider)
-    : BackgroundService
+public class EdgeBoxHealthCheckService(
+    IAppLogging<EdgeBoxHealthCheckService> logger,
+    IServiceProvider provider,
+    IUnitOfWork uow
+) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         while (!stoppingToken.IsCancellationRequested)
         {
             using var scope = provider.CreateScope();
-            var uow = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
-            var edgeBoxeInstallRepo = uow.GetRepository<EdgeBoxInstall>();
             var edgeBoxInstalls = (
-                await edgeBoxeInstallRepo.GetAsync(
-                    expression: e =>
-                        e.EdgeBoxInstallStatusId == EdgeBoxInstallStatusEnum.Valid
-                        && e.EdgeBox.EdgeBoxStatusId == EdgeBoxStatusEnum.Active,
-                    takeAll: true,
-                    includeProperties: [nameof(EdgeBoxActivity.EdgeBox)]
-                )
+                await uow.GetRepository<EdgeBoxInstall>()
+                    .GetAsync(
+                        expression: e =>
+                            e.EdgeBoxInstallStatusId == EdgeBoxInstallStatusEnum.Valid
+                            && e.EdgeBox.EdgeBoxStatusId == EdgeBoxStatusEnum.Active,
+                        takeAll: true,
+                        includeProperties: [nameof(EdgeBoxActivity.EdgeBox)]
+                    )
             ).Values;
             HashSet<EdgeBoxInstall> failedEdgeBoxInstall = new();
+            await uow.BeginTransaction();
             foreach (var edgeBoxInstall in edgeBoxInstalls)
             {
-                int? newStatusId = null;
+                int? newStatusId;
                 try
                 {
                     var res = await SendRequest($"{edgeBoxInstall.IpAddress}/api/{edgeBoxInstall.Id}");
                     newStatusId = res.IsSuccessStatusCode ? EdgeBoxStatusEnum.Active : EdgeBoxStatusEnum.Broken;
-                    if (res.IsSuccessStatusCode && edgeBoxInstall.EdgeBox.EdgeBoxStatusId != EdgeBoxStatusEnum.Active)
+                    if (res.IsSuccessStatusCode)
                     {
-                        edgeBoxInstall.EdgeBoxInstallStatusId = EdgeBoxStatusEnum.Active;
-                        await uow.CompleteAsync();
+                        if (edgeBoxInstall.EdgeBox.EdgeBoxStatusId != EdgeBoxStatusEnum.Active)
+                        {
+                            edgeBoxInstall.EdgeBoxInstallStatusId = EdgeBoxStatusEnum.Active;
+                            await uow.CompleteAsync();
+                        }
                     }
                     else
                         failedEdgeBoxInstall.Add(edgeBoxInstall);
@@ -50,13 +55,19 @@ public class EdgeBoxHealthCheckService(IAppLogging<EdgeBoxHealthCheckService> lo
                 }
                 catch (Exception ex)
                 {
-                    failedEdgeBoxInstall.Add(edgeBoxInstall);
                     logger.Error(ex.Message, ex);
+                    failedEdgeBoxInstall.Add(edgeBoxInstall);
                 }
-                finally
-                {
-                    await HealthCheckAllFailedEdgeBox(failedEdgeBoxInstall, stoppingToken);
-                }
+            }
+            await HealthCheckAllFailedEdgeBox(failedEdgeBoxInstall, stoppingToken);
+            try
+            {
+                await uow.CommitTransaction();
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex.Message, ex);
+                await uow.RollBack();
             }
             await Task.Delay(
                 TimeSpan.FromSeconds(
