@@ -112,7 +112,7 @@ public class ShopService(
         var currentAccount = accountService.GetCurrentAccount();
         var isShopManager = foundShop.ShopManagerId == currentAccount.Id;
         var isBrandManager = currentAccount.BrandId.HasValue && foundShop.BrandId == currentAccount.BrandId.Value;
-        var isAdmin = AreRequiredRolesMatched(RoleEnum.Admin);
+        var isAdmin = currentAccount.HasRole(RoleEnum.Admin);
         if ((isShopManager || isBrandManager) && !isAdmin)
             throw new ForbiddenException("Current user not allowed to do this action.");
 
@@ -121,19 +121,6 @@ public class ShopService(
         foundShop.ShopStatusId = shopStatusId;
         await unitOfWork.CompleteAsync();
         return await GetShopById(shopId);
-    }
-
-    //TODO [Dat]: use role service instead
-
-    /// <summary>
-    /// Check if input roles match with current user's roles
-    /// </summary>
-    /// <param name="roles">List of role IDs. Use RoleEnum.cs to get the constant role id</param>
-    /// <returns></returns>
-    private bool AreRequiredRolesMatched(params int[] roles)
-    {
-        var account = accountService.GetCurrentAccount();
-        return account.Roles.Select(r => r.Id).Intersect(roles).Any();
     }
 
     private async Task IsValidShopDto(CreateOrUpdateShopDto shopDto, Guid? shopId = null)

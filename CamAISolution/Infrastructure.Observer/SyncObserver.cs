@@ -1,5 +1,6 @@
 using Core.Application.Events;
 using Core.Domain.Entities;
+using Core.Domain.Utilities;
 using Infrastructure.Observer.Messages;
 using MassTransit;
 using Microsoft.Extensions.DependencyInjection;
@@ -29,22 +30,19 @@ public class SyncObserver(EventManager eventManager, IServiceProvider provider)
             Name = brand.Name,
             Email = brand.Email,
             Phone = brand.Phone,
-            // TODO: define the routing key
-            RoutingKey = "brand1.shop1"
+            RoutingKey = $"{brand.Id}.*"
         };
         SendMessage(updateMessage);
     }
 
     private void SyncShop(Shop shop)
     {
-        // TODO: define the routing key
         var updateMessage = new ShopUpdateMessage
         {
             Name = shop.Name,
-            // TODO: change address line to combine both province and ward
-            Address = shop.AddressLine,
+            Address = ProvinceHelper.GetFullAddress(shop.AddressLine, shop.Ward),
             Phone = shop.Phone,
-            RoutingKey = ""
+            RoutingKey = $"{shop.BrandId}.{shop.Id}"
         };
         SendMessage(updateMessage);
     }
