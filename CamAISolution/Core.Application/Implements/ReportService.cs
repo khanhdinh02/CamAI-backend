@@ -43,7 +43,7 @@ public class ReportService(
         if (!account.HasRole(RoleEnum.ShopManager))
             throw new BadRequestException("Please specify a shop id");
         if (account.ManagingShop == null)
-            throw new BadRequestException("Account is not ");
+            throw new BadRequestException("Account is not manging any shop");
     }
 
     private ClassifierBuffer CreateClassifierBufferResult(Guid shopId)
