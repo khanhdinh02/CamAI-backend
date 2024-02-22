@@ -34,10 +34,6 @@ public class CamAIContext : DbContext
     public virtual DbSet<RequestStatus> RequestStatuses { get; set; } = null!;
     public virtual DbSet<RequestType> RequestTypes { get; set; } = null!;
     public virtual DbSet<RequestActivity> RequestActivities { get; set; } = null!;
-    public virtual DbSet<Ticket> Tickets { get; set; } = null!;
-    public virtual DbSet<TicketStatus> TicketStatuses { get; set; } = null!;
-    public virtual DbSet<TicketType> TicketTypes { get; set; } = null!;
-    public virtual DbSet<TicketActivity> TicketActivities { get; set; } = null!;
     public virtual DbSet<Behavior> Behaviors { get; set; } = null!;
     public virtual DbSet<BehaviorType> BehaviorTypes { get; set; } = null!;
     public virtual DbSet<Evidence> Evidences { get; set; } = null!;
@@ -147,24 +143,6 @@ public class CamAIContext : DbContext
                 new RequestType { Id = RequestTypeEnum.Install, Name = "Install" },
                 new RequestType { Id = RequestTypeEnum.Repair, Name = "Repair" },
                 new RequestType { Id = RequestTypeEnum.Remove, Name = "Remove" }
-            );
-
-        modelBuilder
-            .Entity<TicketStatus>()
-            .HasData(
-                new TicketStatus { Id = TicketStatusEnum.New, Name = "New" },
-                new TicketStatus { Id = TicketStatusEnum.Canceled, Name = "Canceled" },
-                new TicketStatus { Id = TicketStatusEnum.Done, Name = "Done" },
-                new TicketStatus { Id = TicketStatusEnum.Failed, Name = "Failed" },
-                new TicketStatus { Id = TicketStatusEnum.Active, Name = "Active" }
-            );
-
-        modelBuilder
-            .Entity<TicketType>()
-            .HasData(
-                new TicketType { Id = TicketTypeEnum.Install, Name = "Install" },
-                new TicketType { Id = TicketTypeEnum.Repair, Name = "Repair" },
-                new TicketType { Id = TicketTypeEnum.Remove, Name = "Remove" }
             );
 
         modelBuilder.Entity<Employee>(builder =>

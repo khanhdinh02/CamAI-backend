@@ -29,12 +29,6 @@ public class UnitOfWork(CamAIContext context, IServiceProvider serviceProvider) 
     public IRepository<Employee> Employees => serviceProvider.GetRequiredService<IRepository<Employee>>();
     public IRepository<EdgeBox> EdgeBoxes => serviceProvider.GetRequiredService<IRepository<EdgeBox>>();
 
-    public IRepository<Ticket> Tickets => serviceProvider.GetRequiredService<IRepository<Ticket>>();
-
-    public IRepository<TicketStatus> TicketStatuses => serviceProvider.GetRequiredService<IRepository<TicketStatus>>();
-
-    public IRepository<TicketType> TicketTypes => serviceProvider.GetRequiredService<IRepository<TicketType>>();
-
     public Task BeginTransaction()
     {
         haveTransaction = true;
