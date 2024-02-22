@@ -17,8 +17,6 @@ public interface IUnitOfWork : IDisposable, IAsyncDisposable
     IRepository<TicketStatus> TicketStatuses { get; }
     IRepository<TicketType> TicketTypes { get; }
     IRepository<EdgeBox> EdgeBoxes { get; }
-    IRepository<Shift> Shifts { get; }
-    IRepository<EmployeeShift> EmployeeShifts { get; }
     Task BeginTransaction();
     Task CommitTransaction();
     Task RollBack();

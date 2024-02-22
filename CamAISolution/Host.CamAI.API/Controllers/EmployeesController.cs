@@ -60,11 +60,4 @@ public class EmployeesController(IEmployeeService employeeService, IBaseMapping 
         await employeeService.DeleteEmployee(id);
         return Accepted();
     }
-
-    [HttpGet("{id}/shifts")]
-    [AccessTokenGuard(RoleEnum.ShopManager, RoleEnum.BrandManager, RoleEnum.Admin)]
-    public async Task<IEnumerable<EmployeeShiftDto>> GetShifts(Guid id)
-    {
-        return (await employeeService.GetShifts(id)).Select(mapper.Map<EmployeeShift, EmployeeShiftDto>);
-    }
 }

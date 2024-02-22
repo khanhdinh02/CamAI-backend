@@ -35,10 +35,6 @@ public class UnitOfWork(CamAIContext context, IServiceProvider serviceProvider) 
 
     public IRepository<TicketType> TicketTypes => serviceProvider.GetRequiredService<IRepository<TicketType>>();
 
-    public IRepository<Shift> Shifts => serviceProvider.GetRequiredService<IRepository<Shift>>();
-    public IRepository<EmployeeShift> EmployeeShifts =>
-        serviceProvider.GetRequiredService<IRepository<EmployeeShift>>();
-
     public Task BeginTransaction()
     {
         haveTransaction = true;

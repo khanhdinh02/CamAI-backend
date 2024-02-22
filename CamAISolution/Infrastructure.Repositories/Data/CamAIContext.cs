@@ -42,8 +42,6 @@ public class CamAIContext : DbContext
     public virtual DbSet<BehaviorType> BehaviorTypes { get; set; } = null!;
     public virtual DbSet<Evidence> Evidences { get; set; } = null!;
     public virtual DbSet<EvidenceType> EvidenceTypes { get; set; } = null!;
-    public virtual DbSet<EmployeeShift> EmployeeShift { get; set; } = null!;
-    public virtual DbSet<Shift> Shifts { get; set; } = null!;
     public virtual DbSet<Notification> Notifications { get; set; } = null!;
     public virtual DbSet<NotificationStatus> NotificationStatuses { get; set; } = null!;
     public virtual DbSet<AccountNotification> AccountNotifications { get; set; } = null!;
@@ -173,12 +171,6 @@ public class CamAIContext : DbContext
         {
             builder.Property(e => e.Image).HasConversion<string>();
             builder.Property(e => e.Gender).HasConversion<string>();
-        });
-
-        modelBuilder.Entity<EmployeeShift>(builder =>
-        {
-            builder.HasKey(es => new { es.EmployeeId, es.ShiftId });
-            builder.Property(es => es.DayOfWeek).HasConversion<string>();
         });
 
         modelBuilder.Entity<Image>().Property(i => i.HostingUri).HasConversion<string>();
