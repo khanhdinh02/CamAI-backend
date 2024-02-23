@@ -1,17 +1,18 @@
 using System.Linq.Expressions;
 using Core.Domain.Entities;
+using Core.Domain.Enums;
 
 namespace Core.Application.Specifications;
 
 public class AccountByStatusSpec : Specification<Account>
 {
-    private readonly int statusId;
+    private readonly AccountStatus status;
 
-    public AccountByStatusSpec(int statusId)
+    public AccountByStatusSpec(AccountStatus status)
     {
-        this.statusId = statusId;
+        this.status = status;
         Expr = GetExpression();
     }
 
-    public override Expression<Func<Account, bool>> GetExpression() => a => a.AccountStatusId == statusId;
+    public override Expression<Func<Account, bool>> GetExpression() => a => a.AccountStatus == status;
 }

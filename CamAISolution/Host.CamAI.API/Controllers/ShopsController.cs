@@ -1,5 +1,6 @@
 using Core.Domain.DTO;
 using Core.Domain.Entities;
+using Core.Domain.Enums;
 using Core.Domain.Interfaces.Mappings;
 using Core.Domain.Models;
 using Core.Domain.Services;
@@ -29,7 +30,7 @@ public class ShopsController(IShopService shopService, IBaseMapping baseMapping)
     /// </remarks>
     /// <returns></returns>
     [HttpGet]
-    [AccessTokenGuard(RoleEnum.Admin, RoleEnum.BrandManager, RoleEnum.ShopManager)]
+    [AccessTokenGuard(Role.Admin, Role.BrandManager, Role.ShopManager)]
     public async Task<ActionResult<PaginationResult<ShopDto>>> GetCurrentShop([FromQuery] ShopSearchRequest search)
     {
         var shops = await shopService.GetShops(search);
@@ -37,42 +38,42 @@ public class ShopsController(IShopService shopService, IBaseMapping baseMapping)
     }
 
     [HttpGet("{id}")]
-    [AccessTokenGuard(RoleEnum.Admin, RoleEnum.BrandManager, RoleEnum.ShopManager)]
+    [AccessTokenGuard(Role.Admin, Role.BrandManager, Role.ShopManager)]
     public async Task<ActionResult<ShopDto>> GetShopById(Guid id)
     {
         return Ok(baseMapping.Map<Shop, ShopDto>(await shopService.GetShopById(id)));
     }
 
     [HttpPost]
-    [AccessTokenGuard(RoleEnum.BrandManager)]
+    [AccessTokenGuard(Role.BrandManager)]
     public async Task<ActionResult<ShopDto>> CreateShop(CreateOrUpdateShopDto shopDto)
     {
         return Ok(baseMapping.Map<Shop, ShopDto>(await shopService.CreateShop(shopDto)));
     }
 
     [HttpPut("{id:guid}")]
-    [AccessTokenGuard(RoleEnum.BrandManager)]
+    [AccessTokenGuard(Role.BrandManager)]
     public async Task<ActionResult<ShopDto>> UpdateShop(Guid id, [FromBody] CreateOrUpdateShopDto shopDto)
     {
         var updatedShop = await shopService.UpdateShop(id, shopDto);
         return Ok(baseMapping.Map<Shop, ShopDto>(updatedShop));
     }
 
-    [HttpPatch("{id:guid}/status/{shopStatusId:int}")]
-    [AccessTokenGuard(RoleEnum.BrandManager)]
-    public async Task<ActionResult<ShopDto>> UpdateShopStatus(Guid id, int shopStatusId)
+    [HttpPatch("{id:guid}/status/{shopStatus}")]
+    [AccessTokenGuard(Role.BrandManager)]
+    public async Task<ActionResult<ShopDto>> UpdateShopStatus(Guid id, ShopStatus shopStatus)
     {
-        var updatedShop = await shopService.UpdateShopStatus(id, shopStatusId);
-        if (updatedShop.ShopStatusId == ShopStatusEnum.Inactive)
-            return Ok();
+        var updatedShop = await shopService.UpdateShopStatus(id, shopStatus);
+        if (updatedShop.ShopStatus == Core.Domain.Enums.ShopStatus.Inactive)
+            return base.Ok();
         return Ok(baseMapping.Map<Shop, ShopDto>(updatedShop));
     }
 
     [HttpDelete("{id:guid}")]
-    [AccessTokenGuard(RoleEnum.Admin)]
+    [AccessTokenGuard(Role.Admin)]
     public async Task<IActionResult> DeleteShop(Guid id)
     {
-        await shopService.UpdateShopStatus(id, ShopStatusEnum.Inactive);
+        await shopService.UpdateShopStatus(id, ShopStatus.Inactive);
         return Accepted();
     }
 }

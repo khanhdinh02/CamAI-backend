@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using Core.Domain.DTO;
 using Core.Domain.Entities;
+using Core.Domain.Enums;
 
 namespace Core.Domain.Services;
 
@@ -12,7 +13,7 @@ public interface IJwtService
     TokenDetailDto ValidateToken(
         string token,
         TokenType tokenType,
-        int[]? acceptableRoles = null,
+        Role[]? acceptableRoles = null,
         bool isValidateTime = true
     );
 

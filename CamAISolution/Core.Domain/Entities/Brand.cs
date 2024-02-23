@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Core.Domain.Entities.Base;
+using Core.Domain.Enums;
 
 namespace Core.Domain.Entities;
 
@@ -15,7 +16,7 @@ public class Brand : BusinessEntity
 
     [ForeignKey(nameof(BrandManager))]
     public Guid? BrandManagerId { get; set; }
-    public int BrandStatusId { get; set; }
+    public BrandStatus BrandStatus { get; set; }
 
     public Guid? LogoId { get; set; }
     public Guid? BannerId { get; set; }
@@ -23,7 +24,6 @@ public class Brand : BusinessEntity
     public virtual Image? Logo { get; set; }
     public virtual Image? Banner { get; set; }
     public virtual Account? BrandManager { get; set; }
-    public virtual BrandStatus BrandStatus { get; set; } = null!;
 
     /// <summary>
     /// All people working for this brand, including brand managers, shop managers, employees

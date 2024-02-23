@@ -1,5 +1,4 @@
-﻿using System.Reflection;
-using Core.Domain.Entities;
+using System.Reflection;
 using Core.Domain.Models.Attributes;
 
 namespace Core.Application.Implements;

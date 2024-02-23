@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using Core.Domain.DTO;
 using Core.Domain.Entities;
 using Core.Domain.Models;
@@ -10,8 +10,6 @@ public class EdgeBoxProfile : Profile
     public EdgeBoxProfile()
     {
         CreateMap<EdgeBox, EdgeBoxDto>();
-        CreateMap<EdgeBoxStatus, LookupDto>();
-        CreateMap<EdgeBoxLocation, LookupDto>();
         CreateMap<CreateEdgeBoxDto, EdgeBox>();
         CreateMap<UpdateEdgeBoxDto, EdgeBox>();
     }

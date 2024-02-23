@@ -10,10 +10,10 @@ public class AccountProfile : Profile
     {
         CreateMap<CreateAccountDto, Account>();
         CreateMap<UpdateAccountDto, Account>();
-        CreateMap<Account, AccountDto>();
-        CreateMap<Account, AccountDtoWithoutBrand>();
-        CreateMap<AccountStatus, LookupDto>();
-        CreateMap<Role, LookupDto>();
+        CreateMap<Account, AccountDto>()
+            .ForMember(member => member.Roles, options => options.MapFrom(src => src.Roles.Select(ar => ar.Role)));
+        CreateMap<Account, AccountDtoWithoutBrand>()
+            .ForMember(member => member.Roles, options => options.MapFrom(src => src.Roles.Select(ar => ar.Role)));
         CreateMap<UpdateProfileDto, Account>();
     }
 }

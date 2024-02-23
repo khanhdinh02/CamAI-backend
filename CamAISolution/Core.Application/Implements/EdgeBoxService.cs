@@ -1,8 +1,9 @@
-﻿using Core.Application.Exceptions;
+using Core.Application.Exceptions;
 using Core.Application.Specifications.Repositories;
 using Core.Domain;
 using Core.Domain.DTO;
 using Core.Domain.Entities;
+using Core.Domain.Enums;
 using Core.Domain.Interfaces.Mappings;
 using Core.Domain.Interfaces.Services;
 using Core.Domain.Models;
@@ -36,8 +37,8 @@ public class EdgeBoxService(
     public async Task<EdgeBox> CreateEdgeBox(CreateEdgeBoxDto edgeBoxDto)
     {
         var edgeBox = mapping.Map<CreateEdgeBoxDto, EdgeBox>(edgeBoxDto);
-        edgeBox.EdgeBoxStatusId = EdgeBoxStatusEnum.Active;
-        edgeBox.EdgeBoxLocationId = EdgeBoxLocationEnum.Idle;
+        edgeBox.EdgeBoxStatus = EdgeBoxStatus.Active;
+        edgeBox.EdgeBoxLocation = Domain.Enums.EdgeBoxLocation.Idle;
         edgeBox = await unitOfWork.EdgeBoxes.AddAsync(edgeBox);
         await unitOfWork.CompleteAsync();
         return edgeBox;
@@ -50,7 +51,7 @@ public class EdgeBoxService(
             throw new NotFoundException(typeof(EdgeBox), id);
         var foundEdgeBox = foundEdgeBoxes.Values[0];
         var currentAccount = accountService.GetCurrentAccount();
-        if (foundEdgeBox.EdgeBoxStatusId == EdgeBoxStatusEnum.Inactive && !currentAccount.HasRole(RoleEnum.Admin))
+        if (foundEdgeBox.EdgeBoxStatus == EdgeBoxStatus.Inactive && !currentAccount.HasRole(Role.Admin))
             throw new BadRequestException("Cannot modified inactive edgeBox");
 
         mapping.Map(edgeBoxDto, foundEdgeBox);
@@ -64,7 +65,7 @@ public class EdgeBoxService(
         if (edgeBox == null)
             return;
 
-        if (edgeBox.EdgeBoxLocationId != EdgeBoxLocationEnum.Idle)
+        if (edgeBox.EdgeBoxLocation != Domain.Enums.EdgeBoxLocation.Idle)
             throw new ConflictException($"Cannot delete edge box that is not idle, id {id}");
 
         unitOfWork.EdgeBoxes.Delete(edgeBox);

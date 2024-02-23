@@ -12,11 +12,11 @@ public class EdgeBoxSearchSpec : RepositorySpec<EdgeBox>
         if (!string.IsNullOrEmpty(searchRequest.Model))
             baseSpec.And(new EdgeBoxByModelSpec(searchRequest.Model));
 
-        if (searchRequest.EdgeBoxStatusId.HasValue)
-            baseSpec.And(new EdgeBoxByStatusSpec(searchRequest.EdgeBoxStatusId.Value));
+        if (searchRequest.EdgeBoxStatus.HasValue)
+            baseSpec.And(new EdgeBoxByStatusSpec(searchRequest.EdgeBoxStatus.Value));
 
-        if (searchRequest.EdgeBoxLocationId.HasValue)
-            baseSpec.And(new EdgeBoxByLocationSpec(searchRequest.EdgeBoxLocationId.Value));
+        if (searchRequest.EdgeBoxLocation.HasValue)
+            baseSpec.And(new EdgeBoxByLocationSpec(searchRequest.EdgeBoxLocation.Value));
         return baseSpec.GetExpression();
     }
 

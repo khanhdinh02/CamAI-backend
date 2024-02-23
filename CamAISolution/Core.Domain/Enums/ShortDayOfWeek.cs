@@ -1,6 +1,6 @@
 using Core.Domain.Models.Attributes;
 
-namespace Core.Domain.DTO;
+namespace Core.Domain.Enums;
 
 [Lookup]
 public enum ShortDayOfWeek

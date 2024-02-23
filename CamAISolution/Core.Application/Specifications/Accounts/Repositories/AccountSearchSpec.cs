@@ -19,11 +19,11 @@ public class AccountSearchSpec : RepositorySpec<Account>
         if (!string.IsNullOrWhiteSpace(req.Email))
             baseSpec.And(new AccountByEmailSpec(req.Email.Trim()));
 
-        if (req.AccountStatusId.HasValue)
-            baseSpec.And(new AccountByStatusSpec(req.AccountStatusId.Value));
+        if (req.AccountStatus.HasValue)
+            baseSpec.And(new AccountByStatusSpec(req.AccountStatus.Value));
 
-        if (req.RoleId.HasValue)
-            baseSpec.And(new AccountByRoleSpec(req.RoleId.Value));
+        if (req.Role.HasValue)
+            baseSpec.And(new AccountByRoleSpec(req.Role.Value));
 
         if (req.BrandId.HasValue)
             baseSpec.And(new AccountByBrandSpec(req.BrandId.Value));
@@ -39,7 +39,6 @@ public class AccountSearchSpec : RepositorySpec<Account>
         if (includeAll)
         {
             AddIncludes(a => a.Roles);
-            AddIncludes(a => a.AccountStatus);
             AddIncludes(a => a.Brand!);
             AddIncludes(a => a.Ward!.District.Province);
             AddIncludes(a => a.ManagingShop!);

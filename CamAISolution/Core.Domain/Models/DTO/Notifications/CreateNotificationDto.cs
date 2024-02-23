@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
+using Core.Domain.Enums;
 
-namespace Core.Domain.Models.DTO;
+namespace Core.Domain.DTO;
 
 public class CreateNotificationDto
 {
@@ -9,7 +10,6 @@ public class CreateNotificationDto
 
     [Required]
     public string Content { get; set; } = null!;
-
-    public int NotificationTypeId { get; set; }
+    public NotificationType NotificationType { get; set; }
     public IEnumerable<Guid> SentToId { get; set; } = new HashSet<Guid>();
 }

@@ -1,17 +1,18 @@
 using System.Linq.Expressions;
 using Core.Domain.Entities;
+using Core.Domain.Enums;
 
 namespace Core.Application.Specifications;
 
 public class AccountByRoleSpec : Specification<Account>
 {
-    private readonly int roleId;
+    private readonly Role role;
 
-    public AccountByRoleSpec(int roleId)
+    public AccountByRoleSpec(Role role)
     {
-        this.roleId = roleId;
+        this.role = role;
         Expr = GetExpression();
     }
 
-    public override Expression<Func<Account, bool>> GetExpression() => a => a.Roles.Contains(new Role { Id = roleId });
+    public override Expression<Func<Account, bool>> GetExpression() => a => a.Roles.Any(ar => ar.Role == role);
 }

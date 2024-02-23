@@ -3,6 +3,7 @@ using Core.Application.Exceptions;
 using Core.Domain;
 using Core.Domain.DTO;
 using Core.Domain.Entities;
+using Core.Domain.Enums;
 using Core.Domain.Interfaces.Mappings;
 using Core.Domain.Interfaces.Services;
 using Core.Domain.Models;
@@ -42,7 +43,7 @@ public class NotificationService(
                         {
                             AccountId = acc.Id,
                             NotificationId = notification.Id,
-                            StatusId = NotificationStatusEnum.Unread
+                            Status = NotificationStatus.Unread
                         }
                     );
             }
@@ -50,9 +51,9 @@ public class NotificationService(
             await unitOfWork.CommitTransaction();
             if (willSend)
                 foreach (var acc in sentToAccounts.Where(a => !string.IsNullOrEmpty(a.FCMToken)))
-                    await firebaseService.Messaging.SendAsync(
-                        CreateMessage(notification.Title, notification.Content, token: acc.FCMToken)
-                    );
+                    await firebaseService
+                        .Messaging
+                        .SendAsync(CreateMessage(notification.Title, notification.Content, token: acc.FCMToken));
             return notification;
         }
         catch (Exception ex)
@@ -89,7 +90,7 @@ public class NotificationService(
         return await unitOfWork.GetRepository<AccountNotification>().GetAsync(new AccountNotificationSearchSpec(req));
     }
 
-    public async Task<AccountNotification> UpdateStatus(Guid notificationId, int statusId)
+    public async Task<AccountNotification> UpdateStatus(Guid notificationId, NotificationStatus status)
     {
         var accountNotification = await unitOfWork
             .GetRepository<AccountNotification>()
@@ -99,7 +100,7 @@ public class NotificationService(
                 typeof(Core.Domain.Entities.Notification),
                 new { jwtService.GetCurrentUser().Id, notificationId }
             );
-        accountNotification.StatusId = statusId;
+        accountNotification.Status = status;
         accountNotification = unitOfWork.GetRepository<AccountNotification>().Update(accountNotification);
         await unitOfWork.CompleteAsync();
         return accountNotification;

@@ -6,6 +6,7 @@ using Core.Application.Exceptions;
 using Core.Domain;
 using Core.Domain.DTO;
 using Core.Domain.Entities;
+using Core.Domain.Enums;
 using Core.Domain.Models.Configurations;
 using Core.Domain.Services;
 using Microsoft.AspNetCore.Http;
@@ -28,11 +29,7 @@ public class JwtService(
 
     public string GenerateToken(Guid userId, IEnumerable<Role> roles, AccountStatus? status, TokenType tokenType)
     {
-        var claims = new List<Claim>
-        {
-            new("id", userId.ToString()),
-            new("roles", JsonSerializer.Serialize(roles.Select(r => new { r.Id, r.Name }))),
-        };
+        var claims = new List<Claim> { new("id", userId.ToString()), new("roles", JsonSerializer.Serialize(roles)) };
 
         int tokenDurationInMinute;
         string jwtSecret;
@@ -41,7 +38,7 @@ public class JwtService(
             jwtSecret = jwtConfiguration.AccessToken.Secret;
             tokenDurationInMinute = jwtConfiguration.AccessToken.Duration;
             if (status != null)
-                claims.Add(new Claim("status", JsonSerializer.Serialize(new { status.Id, status.Name })));
+                claims.Add(new Claim("status", status.ToString()!));
         }
         else
         {
@@ -107,7 +104,7 @@ public class JwtService(
     }
 
     //TODO: CHECK USER STATUS FROM STORAGE
-    public TokenDetailDto ValidateToken(string token, TokenType tokenType, int[]? acceptableRoles, bool isValidateTime)
+    public TokenDetailDto ValidateToken(string token, TokenType tokenType, Role[]? acceptableRoles, bool isValidateTime)
     {
         IEnumerable<Claim> tokenClaims = GetClaims(token, tokenType, isValidateTime);
 
@@ -118,7 +115,7 @@ public class JwtService(
         var userRoleString = tokenClaims.FirstOrDefault(c => c.Type == "roles")?.Value;
         if (string.IsNullOrEmpty(userRoleString))
             throw new BadRequestException("Cannot get user role from jwt");
-        var userRoles = (JsonSerializer.Deserialize<Role[]>(userRoleString) ?? []).Select(r => r.Id).ToArray();
+        var userRoles = (JsonSerializer.Deserialize<Role[]>(userRoleString) ?? []).ToArray();
 
         if (acceptableRoles is { Length: > 0 } && !acceptableRoles.Intersect(userRoles).Any())
             throw new ForbiddenException("Unauthorized");

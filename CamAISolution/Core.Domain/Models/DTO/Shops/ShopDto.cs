@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Core.Domain.Enums;
 
 namespace Core.Domain.DTO;
 
@@ -11,8 +12,8 @@ public class ShopDto : BaseDto
     public string? Phone { get; set; }
     public int WardId { get; set; }
     public string? AddressLine { get; set; }
+    public ShopStatus ShopStatus { get; set; }
 
     public WardDto Ward { get; set; } = null!;
     public BrandDto Brand { get; set; } = null!;
-    public LookupDto ShopStatus { get; set; } = null!;
 }

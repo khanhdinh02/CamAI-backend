@@ -11,7 +11,6 @@ public class EmployeeSearchSpec : RepositorySpec<Employee>
     {
         AddIncludes(e => e.Shop);
         AddIncludes(e => e.Ward!.District.Province);
-        AddIncludes(e => e.EmployeeStatus);
         ApplyingPaging(req);
     }
 
@@ -27,8 +26,8 @@ public class EmployeeSearchSpec : RepositorySpec<Employee>
             baseSpec.Or(new EmployeeByPhoneSpec(req.Search));
         }
 
-        if (req.EmployeeStatusId.HasValue)
-            baseSpec.And(new EmployeeByStatusSpec(req.EmployeeStatusId.Value));
+        if (req.EmployeeStatus.HasValue)
+            baseSpec.And(new EmployeeByStatusSpec(req.EmployeeStatus.Value));
 
         if (req.BrandId.HasValue)
             baseSpec.And(new EmployeeByBrandSpec(req.BrandId.Value));

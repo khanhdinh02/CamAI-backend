@@ -1,17 +1,18 @@
 using System.Linq.Expressions;
 using Core.Domain.Entities;
+using Core.Domain.Enums;
 
 namespace Core.Application.Specifications;
 
 public class BrandByStatusSpec : Specification<Brand>
 {
-    private readonly int brandStatus;
+    private readonly BrandStatus brandStatus;
 
-    public BrandByStatusSpec(int brandStatus)
+    public BrandByStatusSpec(BrandStatus brandStatus)
     {
         this.brandStatus = brandStatus;
         Expr = GetExpression();
     }
 
-    public override Expression<Func<Brand, bool>> GetExpression() => x => x.BrandStatusId == brandStatus;
+    public override Expression<Func<Brand, bool>> GetExpression() => x => x.BrandStatus == brandStatus;
 }

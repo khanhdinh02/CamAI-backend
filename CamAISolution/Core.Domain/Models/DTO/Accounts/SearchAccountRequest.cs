@@ -1,3 +1,5 @@
+using Core.Domain.Enums;
+
 namespace Core.Domain.DTO;
 
 public class SearchAccountRequest : BaseSearchRequest
@@ -7,8 +9,8 @@ public class SearchAccountRequest : BaseSearchRequest
     /// </summary>
     public string? Name { get; set; }
     public string? Email { get; set; }
-    public int? AccountStatusId { get; set; }
-    public int? RoleId { get; set; }
+    public AccountStatus? AccountStatus { get; set; }
+    public Role? Role { get; set; }
 
     /// <summary>
     /// The result includes Brand manager, Shop managers, and Employees

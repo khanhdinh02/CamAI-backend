@@ -1,4 +1,5 @@
-﻿using Core.Domain.DTO;
+using Core.Domain.DTO;
+using Core.Domain.Enums;
 using Core.Domain.Interfaces.Services;
 using Core.Domain.Models.Consumers;
 using Infrastructure.Jwt.Attribute;
@@ -15,7 +16,7 @@ public class ReportsController(IReportService reportService) : ControllerBase
     /// This will get the real-time chart data for their shop
     /// </summary>
     [HttpGet("chart/customer")]
-    [AccessTokenGuard(RoleEnum.ShopManager)]
+    [AccessTokenGuard(Role.ShopManager)]
     public async Task ShopCustomerAreaChart()
     {
         if (HttpContext.WebSockets.IsWebSocketRequest)
@@ -33,7 +34,7 @@ public class ReportsController(IReportService reportService) : ControllerBase
     /// This will get the real-time chart data for one of their shop
     /// </summary>
     [HttpGet("{shopId}/chart/customer")]
-    [AccessTokenGuard(RoleEnum.ShopManager, RoleEnum.BrandManager)]
+    [AccessTokenGuard(Role.ShopManager, Role.BrandManager)]
     public async Task BrandCustomerAreaChart(Guid shopId)
     {
         if (HttpContext.WebSockets.IsWebSocketRequest)
@@ -50,14 +51,14 @@ public class ReportsController(IReportService reportService) : ControllerBase
     /// Get past data of classifier for shop manager
     /// </summary>
     [HttpGet("customer")]
-    // [AccessTokenGuard(RoleEnum.ShopManager)]
+    // [AccessTokenGuard(Role.ShopManager)]
     public async Task<List<ClassifierModel>> GetClassifierData([FromQuery] DateOnly date)
     {
         return await reportService.GetClassifierDataForDate(date);
     }
 
     [HttpGet("{shopId}/customer")]
-    // [AccessTokenGuard(RoleEnum.ShopManager, RoleEnum.BrandManager)]
+    // [AccessTokenGuard(Role.ShopManager, Role.BrandManager)]
     public async Task<List<ClassifierModel>> GetClassifierData([FromRoute] Guid shopId, [FromQuery] DateOnly date)
     {
         return await reportService.GetClassifierDataForDate(shopId, date);
