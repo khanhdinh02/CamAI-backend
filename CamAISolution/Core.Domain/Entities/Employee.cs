@@ -24,5 +24,5 @@ public class Employee : BusinessEntity
 
     public virtual Ward? Ward { get; set; }
     public virtual Shop? Shop { get; set; }
-    public virtual ICollection<Behavior> Behaviors { get; set; } = new HashSet<Behavior>();
+    public virtual ICollection<Incident> Incidents { get; set; } = new HashSet<Incident>();
 }

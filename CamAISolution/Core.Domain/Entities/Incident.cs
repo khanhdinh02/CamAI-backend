@@ -3,7 +3,7 @@ using Core.Domain.Enums;
 
 namespace Core.Domain.Entities;
 
-public class Behavior : BusinessEntity
+public class Incident : BusinessEntity
 {
     public IncidentType IncidentType { get; set; }
     public Guid? EmployeeId { get; set; }

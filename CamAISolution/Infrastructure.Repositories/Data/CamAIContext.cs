@@ -24,7 +24,7 @@ public class CamAIContext : DbContext
     public virtual DbSet<Camera> Cameras { get; set; } = null!;
     public virtual DbSet<Request> Requests { get; set; } = null!;
     public virtual DbSet<RequestActivity> RequestActivities { get; set; } = null!;
-    public virtual DbSet<Behavior> Behaviors { get; set; } = null!;
+    public virtual DbSet<Incident> Incidents { get; set; } = null!;
     public virtual DbSet<Evidence> Evidences { get; set; } = null!;
     public virtual DbSet<Notification> Notifications { get; set; } = null!;
     public virtual DbSet<AccountNotification> AccountNotifications { get; set; } = null!;
