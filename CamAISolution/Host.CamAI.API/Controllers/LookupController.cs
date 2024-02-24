@@ -12,16 +12,21 @@ public class LookupController : ControllerBase
 {
     [LookupHttpGet("account-statuses", typeof(AccountStatus))]
     [LookupHttpGet("brand-statuses", typeof(BrandStatus))]
-    [LookupHttpGet("shop-statuses", typeof(ShopStatus))]
+    [LookupHttpGet("edgeBox-install-statuses", typeof(EdgeBoxInstallStatus))]
     [LookupHttpGet("edgeBox-locations", typeof(EdgeBoxLocation))]
     [LookupHttpGet("edgeBox-statuses", typeof(EdgeBoxStatus))]
-    [LookupHttpGet("edgeBox-install-statuses", typeof(EdgeBoxInstallStatus))]
     [LookupHttpGet("employee-statuses", typeof(EmployeeStatus))]
-    [LookupHttpGet("roles", typeof(Role))]
-    [LookupHttpGet("short-days-of-week", typeof(ShortDayOfWeek))]
+    [LookupHttpGet("evidence-types", typeof(EvidenceType))]
     [LookupHttpGet("genders", typeof(Gender))]
+    [LookupHttpGet("incident-types", typeof(IncidentType))]
     [LookupHttpGet("notification-statuses", typeof(NotificationStatus))]
     [LookupHttpGet("notification-types", typeof(NotificationType))]
+    [LookupHttpGet("request-statuses", typeof(RequestStatus))]
+    [LookupHttpGet("request-types", typeof(RequestType))]
+    [LookupHttpGet("roles", typeof(Role))]
+    [LookupHttpGet("shop-statuses", typeof(ShopStatus))]
+    [LookupHttpGet("short-days-of-week", typeof(ShortDayOfWeek))]
+    [LookupHttpGet("zones", typeof(Zone))]
     public ActionResult<Dictionary<int, string>> GetLookup()
     {
         var path = HttpContext.Request.Path;

@@ -8,6 +8,8 @@ public class Shop : BusinessEntity
 {
     [StringLength(50)]
     public string Name { get; set; } = null!;
+    public TimeOnly OpenTime { get; set; }
+    public TimeOnly CloseTime { get; set; }
 
     [StringLength(50)]
     public string? Phone { get; set; }
