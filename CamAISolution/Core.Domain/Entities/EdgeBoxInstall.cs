@@ -18,5 +18,4 @@ public class EdgeBoxInstall : BusinessEntity
 
     public virtual EdgeBox EdgeBox { get; set; } = null!;
     public virtual Shop Shop { get; set; } = null!;
-    public virtual ICollection<Camera> Cameras { get; set; } = new HashSet<Camera>();
 }

@@ -35,7 +35,20 @@ public class CamAIContext : DbContext
 
         modelBuilder.Entity<AccountRole>().HasKey(ar => new { ar.AccountId, ar.Role });
 
-        modelBuilder.Entity<Employee>().Property(e => e.Image).HasConversion<string>();
+        modelBuilder.Entity<Employee>(builder =>
+        {
+            builder.Property(e => e.Image).HasConversion<string>();
+
+            var employeeId = "EmployeeId";
+            var incidentId = "IncidentId";
+            builder
+                .HasMany(e => e.Incidents)
+                .WithMany(i => i.Employees)
+                .UsingEntity(
+                    r => r.HasOne(typeof(Incident)).WithMany().HasForeignKey(incidentId),
+                    l => l.HasOne(typeof(Employee)).WithMany().HasForeignKey(employeeId)
+                );
+        });
 
         modelBuilder.Entity<Image>().Property(i => i.HostingUri).HasConversion<string>();
 
