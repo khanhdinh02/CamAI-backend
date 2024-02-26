@@ -6,5 +6,5 @@ namespace Core.Domain.Enums;
 public enum NotificationStatus
 {
     Unread = 1,
-    Read
+    Read = 2
 }

@@ -6,8 +6,8 @@ namespace Core.Domain.Enums;
 public enum Role
 {
     Admin = 1,
-    Technician,
-    BrandManager,
-    ShopManager,
-    Employee
+    Technician = 2,
+    BrandManager = 3,
+    ShopManager = 4,
+    Employee = 5
 }

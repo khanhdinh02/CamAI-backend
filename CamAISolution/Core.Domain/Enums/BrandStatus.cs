@@ -6,5 +6,5 @@ namespace Core.Domain.Enums;
 public enum BrandStatus
 {
     Active = 1,
-    Inactive
+    Inactive = 2
 }

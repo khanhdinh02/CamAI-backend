@@ -6,8 +6,8 @@ namespace Core.Domain.Enums;
 public enum EdgeBoxLocation
 {
     Idle = 1,
-    Installing,
-    Occupied,
-    Uninstalling,
-    Disposed
+    Installing = 2,
+    Occupied = 3,
+    Uninstalling = 4,
+    Disposed = 5
 }

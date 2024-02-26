@@ -6,7 +6,7 @@ namespace Core.Domain.Enums;
 public enum RequestType
 {
     Install = 1,
-    Repair,
-    Remove,
-    Other
+    Repair = 2,
+    Remove = 3,
+    Other = 4
 }

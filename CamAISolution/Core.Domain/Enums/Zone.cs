@@ -5,6 +5,6 @@ namespace Core.Domain.Enums;
 [Lookup]
 public enum Zone
 {
-    Cashier,
-    Customer
+    Cashier = 0,
+    Customer = 1
 }

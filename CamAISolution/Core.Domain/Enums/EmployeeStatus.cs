@@ -6,5 +6,5 @@ namespace Core.Domain.Enums;
 public enum EmployeeStatus
 {
     Active = 1,
-    Inactive
+    Inactive = 2
 }

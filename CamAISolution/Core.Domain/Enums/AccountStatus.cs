@@ -6,6 +6,6 @@ namespace Core.Domain.Enums;
 public enum AccountStatus
 {
     New = 1,
-    Active,
-    Inactive
+    Active = 2,
+    Inactive = 3
 }

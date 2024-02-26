@@ -6,7 +6,7 @@ namespace Core.Domain.Enums;
 public enum RequestStatus
 {
     Open = 1,
-    Canceled,
-    Done,
-    Rejected
+    Canceled = 2,
+    Done = 3,
+    Rejected = 4
 }

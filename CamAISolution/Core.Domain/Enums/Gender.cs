@@ -5,6 +5,6 @@ namespace Core.Domain.Enums;
 [Lookup]
 public enum Gender
 {
-    Male,
-    Female,
+    Male = 0,
+    Female = 1,
 }

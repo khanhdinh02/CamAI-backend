@@ -6,6 +6,6 @@ namespace Core.Domain.Enums;
 public enum EdgeBoxStatus
 {
     Active = 1,
-    Inactive,
-    Broken
+    Inactive = 2,
+    Broken = 3
 }

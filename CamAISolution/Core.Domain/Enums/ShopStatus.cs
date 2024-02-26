@@ -6,5 +6,5 @@ namespace Core.Domain.Enums;
 public enum ShopStatus
 {
     Active = 1,
-    Inactive
+    Inactive = 2
 }

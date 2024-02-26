@@ -6,6 +6,6 @@ namespace Core.Domain.Enums;
 public enum NotificationType
 {
     Normal = 1,
-    Warning,
-    Urgent
+    Warning = 2,
+    Urgent = 3
 }

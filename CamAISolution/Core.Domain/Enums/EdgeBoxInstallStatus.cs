@@ -6,5 +6,5 @@ namespace Core.Domain.Enums;
 public enum EdgeBoxInstallStatus
 {
     Valid = 1,
-    Expired
+    Expired = 2
 }
