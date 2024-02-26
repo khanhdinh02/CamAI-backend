@@ -29,7 +29,11 @@ public class JwtService(
 
     public string GenerateToken(Guid userId, IEnumerable<Role> roles, AccountStatus? status, TokenType tokenType)
     {
-        var claims = new List<Claim> { new("id", userId.ToString()), new("roles", JsonSerializer.Serialize(roles)) };
+        var claims = new List<Claim>
+        {
+            new("id", userId.ToString()),
+            new("roles", JsonSerializer.Serialize(roles.Select(role => role.ToString())))
+        };
 
         int tokenDurationInMinute;
         string jwtSecret;
@@ -115,7 +119,15 @@ public class JwtService(
         var userRoleString = tokenClaims.FirstOrDefault(c => c.Type == "roles")?.Value;
         if (string.IsNullOrEmpty(userRoleString))
             throw new BadRequestException("Cannot get user role from jwt");
-        var userRoles = (JsonSerializer.Deserialize<Role[]>(userRoleString) ?? []).ToArray();
+        var userRoles = (
+            JsonSerializer
+                .Deserialize<string[]>(userRoleString)
+                ?.Select(str =>
+                {
+                    Enum.TryParse(str, true, out Role role);
+                    return role;
+                }) ?? []
+        ).ToArray();
 
         if (acceptableRoles is { Length: > 0 } && !acceptableRoles.Intersect(userRoles).Any())
             throw new ForbiddenException("Unauthorized");
