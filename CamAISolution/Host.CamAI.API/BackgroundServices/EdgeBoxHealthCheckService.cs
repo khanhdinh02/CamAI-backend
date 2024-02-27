@@ -1,16 +1,16 @@
-﻿using Core.Domain;
+using Core.Domain;
 using Core.Domain.DTO;
 using Core.Domain.Entities;
 using Core.Domain.Models.Configurations;
 using Core.Domain.Repositories;
 using Core.Domain.Services;
+using Microsoft.Extensions.Configuration;
 
 namespace Host.CamAI.API.BackgroundServices;
 
 public class EdgeBoxHealthCheckService(
     IAppLogging<EdgeBoxHealthCheckService> logger,
-    IServiceProvider provider,
-    IUnitOfWork uow
+    IServiceProvider provider
 ) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -18,6 +18,7 @@ public class EdgeBoxHealthCheckService(
         while (!stoppingToken.IsCancellationRequested)
         {
             using var scope = provider.CreateScope();
+            var uow = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
             //TODO [Dat]: Use pagination in stead of fetching all data in DB
             var edgeBoxInstalls = (
                 await uow.GetRepository<EdgeBoxInstall>()
@@ -36,7 +37,7 @@ public class EdgeBoxHealthCheckService(
                 int? newStatusId;
                 try
                 {
-                    var res = await SendRequest($"{edgeBoxInstall.IpAddress}/api/{edgeBoxInstall.Id}");
+                    var res = await SendRequest($"{edgeBoxInstall.IpAddress}:{edgeBoxInstall.Port}/api/test/{edgeBoxInstall.Id}");
                     newStatusId = res.IsSuccessStatusCode ? EdgeBoxStatusEnum.Active : EdgeBoxStatusEnum.Broken;
                     if (res.IsSuccessStatusCode)
                     {
@@ -72,7 +73,7 @@ public class EdgeBoxHealthCheckService(
             }
             await Task.Delay(
                 TimeSpan.FromSeconds(
-                    scope.ServiceProvider.GetRequiredService<HealthCheckConfiguration>().EdgeBoxHealthCheckDelay
+                    scope.ServiceProvider.GetRequiredService<IConfiguration>().GetRequiredSection("HealthCheckConfiguration").Get<HealthCheckConfiguration>()!.EdgeBoxHealthCheckDelay
                 ),
                 stoppingToken
             );
@@ -106,7 +107,7 @@ public class EdgeBoxHealthCheckService(
                 }
                 try
                 {
-                    var res = await SendRequest($"{edgeBoxInstall.IpAddress}/api/{edgeBoxInstall.Id}");
+                    var res = await SendRequest($"{edgeBoxInstall.IpAddress}/api/test/{edgeBoxInstall.Id}");
                     if (res.IsSuccessStatusCode)
                     {
                         failedEdgeBoxDic.Remove(edgeBoxInstall.Id);
