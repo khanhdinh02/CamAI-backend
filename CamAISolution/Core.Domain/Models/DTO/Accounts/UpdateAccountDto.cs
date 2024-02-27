@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
-using Core.Domain.Entities;
+using Core.Domain.Enums;
 
 namespace Core.Domain.DTO;
 
@@ -11,8 +11,6 @@ public class UpdateAccountDto
 
     [StringLength(50)]
     public string Name { get; set; } = null!;
-
-    [JsonConverter(typeof(JsonStringEnumConverter))]
     public Gender Gender { get; set; }
 
     [StringLength(50)]

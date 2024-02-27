@@ -1,5 +1,6 @@
 using Core.Domain.DTO;
 using Core.Domain.Entities;
+using Core.Domain.Enums;
 using Core.Domain.Interfaces.Mappings;
 using Core.Domain.Interfaces.Services;
 using Core.Domain.Models;
@@ -24,11 +25,14 @@ public class NotificationsController(INotificationService notificationService, I
     ) => Ok(mapping.Map<AccountNotification, NotificationDto>(await notificationService.SearchNotification(req)));
 
     [HttpPatch("{notificationId}/status/{statusId}")]
-    public async Task<ActionResult<Notification>> UpdateNotificationStatus(Guid notificationId, int statusId)
+    public async Task<ActionResult<Notification>> UpdateNotificationStatus(
+        Guid notificationId,
+        NotificationStatus status
+    )
     {
         return Ok(
             mapping.Map<AccountNotification, NotificationDto>(
-                await notificationService.UpdateStatus(notificationId, statusId)
+                await notificationService.UpdateStatus(notificationId, status)
             )
         );
     }

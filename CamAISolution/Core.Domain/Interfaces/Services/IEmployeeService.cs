@@ -11,5 +11,4 @@ public interface IEmployeeService
     Task<Employee> CreateEmployee(CreateEmployeeDto dto);
     Task<Employee> UpdateEmployee(Guid id, UpdateEmployeeDto dto);
     Task DeleteEmployee(Guid id);
-    Task<IEnumerable<EmployeeShift>> GetShifts(Guid employeeId);
 }

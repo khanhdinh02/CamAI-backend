@@ -15,8 +15,8 @@ public class ShopSearchSpec : RepositorySpec<Shop>
         if (!string.IsNullOrEmpty(search.Phone))
             baseSpec.And(new ShopByPhoneSpec(search.Phone));
 
-        if (search.StatusId.HasValue)
-            baseSpec.And(new ShopByStatusSpec(search.StatusId.Value));
+        if (search.Status.HasValue)
+            baseSpec.And(new ShopByStatusSpec(search.Status.Value));
 
         if (search.BrandId.HasValue)
             baseSpec.And(new ShopByBrandIdSpec(search.BrandId.Value));
@@ -32,7 +32,6 @@ public class ShopSearchSpec : RepositorySpec<Shop>
     public ShopSearchSpec(ShopSearchRequest search)
         : base(GetExpression(search))
     {
-        AddIncludes(s => s.ShopStatus);
         AddIncludes(s => s.Brand);
         ApplyingPaging(search);
         ApplyOrderByDescending(s => s.CreatedDate);

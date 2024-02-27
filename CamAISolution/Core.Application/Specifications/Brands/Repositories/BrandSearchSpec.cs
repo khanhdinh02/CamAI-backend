@@ -10,7 +10,6 @@ public class BrandSearchSpec : RepositorySpec<Brand>
         : base(GetExpression(searchRequest))
     {
         ApplyingPaging(searchRequest);
-        AddIncludes(b => b.BrandStatus);
         AddIncludes(b => b.BrandManager!);
         AddIncludes(nameof(Brand.Logo));
         AddIncludes(nameof(Brand.Banner));
@@ -21,8 +20,8 @@ public class BrandSearchSpec : RepositorySpec<Brand>
         var baseSpec = new Specification<Brand>();
         if (!string.IsNullOrEmpty(searchRequest.Name))
             baseSpec.And(new BrandByNameSpec(searchRequest.Name));
-        if (searchRequest.StatusId.HasValue)
-            baseSpec.And(new BrandByStatusSpec(searchRequest.StatusId.Value));
+        if (searchRequest.BrandStatus.HasValue)
+            baseSpec.And(new BrandByStatusSpec(searchRequest.BrandStatus.Value));
         if (searchRequest.BrandId.HasValue)
             baseSpec.And(new BrandByIdSpec(searchRequest.BrandId.Value));
         if (searchRequest.HasManager.HasValue)

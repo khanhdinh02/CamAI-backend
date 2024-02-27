@@ -5,12 +5,12 @@ using Core.Application.Specifications.Repositories;
 using Core.Domain;
 using Core.Domain.DTO;
 using Core.Domain.Entities;
+using Core.Domain.Enums;
 using Core.Domain.Interfaces.Mappings;
 using Core.Domain.Interfaces.Services;
 using Core.Domain.Models;
 using Core.Domain.Repositories;
 using Core.Domain.Services;
-using Core.Domain.Utilities;
 
 namespace Core.Application.Implements;
 
@@ -27,15 +27,15 @@ public class BrandService(
     public async Task<PaginationResult<Brand>> GetBrands(SearchBrandRequest searchRequest)
     {
         var currentAccount = await accountService.GetAccountById(accountService.GetCurrentAccount().Id);
-        if (currentAccount.HasRole(RoleEnum.BrandManager))
+        if (currentAccount.Role == Role.BrandManager)
             searchRequest.BrandId =
                 currentAccount.BrandId ?? throw new BadRequestException("Brand manager does not have brand yet");
-        else if (currentAccount.HasRole(RoleEnum.ShopManager))
+        else if (currentAccount.Role == Role.ShopManager)
         {
             var shop = await shopService.GetShopById(currentAccount.ManagingShop!.Id);
             searchRequest.BrandId = shop.BrandId;
         }
-        else if (!currentAccount.HasRole(RoleEnum.Admin))
+        else if (currentAccount.Role != Role.Admin)
             throw new ForbiddenException(currentAccount, typeof(Brand));
 
         return await unitOfWork.Brands.GetAsync(new BrandSearchSpec(searchRequest));
@@ -61,7 +61,7 @@ public class BrandService(
             brand.BannerId = (await blobService.UploadImage(banner, nameof(Brand), nameof(Brand.Banner))).Id;
         if (logo != null)
             brand.LogoId = (await blobService.UploadImage(logo, nameof(Brand), nameof(Brand.Logo))).Id;
-        brand.BrandStatusId = BrandStatusEnum.Active;
+        brand.BrandStatus = BrandStatus.Active;
         try
         {
             await unitOfWork.Brands.AddAsync(brand);
@@ -89,7 +89,7 @@ public class BrandService(
         var currentAccount = accountService.GetCurrentAccount();
         if (!IsAccountOwnBrand(currentAccount, brand))
             throw new ForbiddenException(currentAccount, brand);
-        if (brand.BrandStatusId == BrandStatusEnum.Inactive)
+        if (brand.BrandStatus == BrandStatus.Inactive)
             throw new BadRequestException("Cannot modified inactive brand");
 
         mapping.Map(brandDto, brand);
@@ -105,10 +105,10 @@ public class BrandService(
         var brand = await unitOfWork.Brands.GetByIdAsync(id);
         if (brand == null)
             throw new NotFoundException(typeof(Brand), id);
-        if (brand.BrandStatusId == BrandStatusEnum.Active)
+        if (brand.BrandStatus == BrandStatus.Active)
             throw new BadRequestException("Brand is already active");
 
-        brand.BrandStatusId = BrandStatusEnum.Active;
+        brand.BrandStatus = BrandStatus.Active;
         brand = unitOfWork.Brands.Update(brand);
         await unitOfWork.CompleteAsync();
         return brand;
@@ -183,7 +183,7 @@ public class BrandService(
             unitOfWork.Brands.Delete(brand);
         else
         {
-            brand.BrandStatusId = BrandStatusEnum.Inactive;
+            brand.BrandStatus = BrandStatus.Inactive;
             unitOfWork.Brands.Update(brand);
         }
 
@@ -210,7 +210,7 @@ public class BrandService(
 
     private async Task<bool> IsAccountOwnShopRelatedToBrand(Account account, Brand brand)
     {
-        if (account.HasRole(RoleEnum.ShopManager))
+        if (account.Role == Role.ShopManager)
         {
             var shop = await shopService.GetShopById(account.ManagingShop!.Id);
             if (shop.BrandId == brand.Id)
@@ -223,9 +223,6 @@ public class BrandService(
     private static bool IsAccountOwnBrand(Account account, Brand? brand)
     {
         return brand != null
-            && (
-                account.HasRole(RoleEnum.Admin)
-                || (account.HasRole(RoleEnum.BrandManager) && account.Brand!.Id == brand.Id)
-            );
+            && (account.Role == Role.Admin || (account.Role == Role.BrandManager && account.Brand!.Id == brand.Id));
     }
 }

@@ -1,4 +1,4 @@
-﻿using System.Linq.Expressions;
+using System.Linq.Expressions;
 using Core.Application.Specifications;
 using Core.Application.Specifications.Repositories;
 using Core.Domain.DTO;
@@ -8,7 +8,7 @@ namespace Core.Application;
 
 public class AccountNotificationSearchSpec : RepositorySpec<AccountNotification>
 {
-    private static Expression<Func<AccountNotification, bool>> GetExpresion(SearchNotificationRequest req)
+    private static Expression<Func<AccountNotification, bool>> GetExpression(SearchNotificationRequest req)
     {
         var baseCriteria = new AccountNotificationByAccountIdSpec(req.AccountId);
         if (req.NotificationId.HasValue)
@@ -19,9 +19,8 @@ public class AccountNotificationSearchSpec : RepositorySpec<AccountNotification>
     }
 
     public AccountNotificationSearchSpec(SearchNotificationRequest req)
-        : base(GetExpresion(req))
+        : base(GetExpression(req))
     {
-        AddIncludes(a => a.Status);
         AddIncludes(a => a.Account);
         AddIncludes(a => a.Notification.SentBy);
         ApplyOrderByDescending(a => a.Notification.CreatedDate);

@@ -1,28 +1,28 @@
 using Core.Application.Exceptions;
-using Core.Domain.DTO;
 using Core.Domain.Entities;
+using Core.Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace Infrastructure.Jwt.Guard;
 
-public class AccessTokenGuardFilter(int[]? roles, bool allowNew) : IAuthorizationFilter
+public class AccessTokenGuardFilter(Role[]? roles, bool allowNew) : IAuthorizationFilter
 {
     public void OnAuthorization(AuthorizationFilterContext context)
     {
         var allowAnonymous = context.ActionDescriptor.EndpointMetadata.OfType<AllowAnonymousAttribute>().Any();
         if (allowAnonymous)
             return;
-        var account = context.HttpContext.Items[nameof(Account)] as Account ?? throw new UnauthorizedException("Unauthorized");
-        var currentRole = account.Roles.Select(r => r.Id).ToArray();
-        if (roles != null && roles.Count() > 0 && !roles.Intersect(currentRole).Any())
+        var account =
+            context.HttpContext.Items[nameof(Account)] as Account ?? throw new UnauthorizedException("Unauthorized");
+        if (roles is { Length: > 0 } && !roles.Contains(account.Role))
         {
             throw new ForbiddenException("Current user is not allowed");
         }
         if (!allowNew)
         {
             // validate account status is not new
-            if (account.AccountStatusId == AccountStatusEnum.New)
+            if (account.AccountStatus == AccountStatus.New)
                 throw new NewAccountException(account);
         }
     }

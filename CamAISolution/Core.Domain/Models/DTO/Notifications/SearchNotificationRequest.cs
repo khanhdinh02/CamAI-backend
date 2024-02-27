@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Serialization;
+using System.Text.Json.Serialization;
+using Core.Domain.Enums;
 
 namespace Core.Domain.DTO;
 
@@ -10,5 +11,5 @@ public class SearchNotificationRequest : BaseSearchRequest
     [JsonIgnore]
     public Guid AccountId { get; set; }
     public Guid? NotificationId { get; set; }
-    public int? Status { get; set; }
+    public NotificationStatus? Status { get; set; }
 }

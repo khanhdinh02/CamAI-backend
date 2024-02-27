@@ -1,9 +1,10 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 using Core.Application.Events;
 using Core.Application.Exceptions;
 using Core.Application.Models;
 using Core.Domain.DTO;
 using Core.Domain.Entities;
+using Core.Domain.Enums;
 using Core.Domain.Interfaces.Services;
 using Core.Domain.Models;
 using Core.Domain.Models.Configurations;
@@ -40,7 +41,7 @@ public class ReportService(
 
     private static void CheckAuthority(Account account)
     {
-        if (!account.HasRole(RoleEnum.ShopManager))
+        if (account.Role != Role.ShopManager)
             throw new BadRequestException("Please specify a shop id");
         if (account.ManagingShop == null)
             throw new BadRequestException("Account is not manging any shop");

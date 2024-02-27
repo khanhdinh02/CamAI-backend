@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using Core.Domain.DTO;
 using Core.Domain.Entities;
+using Core.Domain.Enums;
 using Core.Domain.Interfaces.Mappings;
 using Core.Domain.Models;
 using Core.Domain.Services;
@@ -31,7 +32,7 @@ public class BrandsController(IBrandService brandService, IBaseMapping mapping) 
     /// </remarks>
     /// <returns></returns>
     [HttpGet]
-    [AccessTokenGuard(RoleEnum.Admin, RoleEnum.BrandManager, RoleEnum.ShopManager)]
+    [AccessTokenGuard(Role.Admin, Role.BrandManager, Role.ShopManager)]
     public async Task<ActionResult<PaginationResult<BrandDto>>> GetBrands([FromQuery] SearchBrandRequest searchRequest)
     {
         var brands = await brandService.GetBrands(searchRequest);
@@ -57,7 +58,7 @@ public class BrandsController(IBrandService brandService, IBaseMapping mapping) 
     /// </para>
     /// <returns></returns>
     [HttpGet("{id}")]
-    [AccessTokenGuard(RoleEnum.Admin, RoleEnum.BrandManager, RoleEnum.ShopManager)]
+    [AccessTokenGuard(Role.Admin, Role.BrandManager, Role.ShopManager)]
     public async Task<ActionResult<BrandDto>> GetBrandById([FromRoute] Guid id)
     {
         var brand = await brandService.GetBrandById(id);
@@ -70,7 +71,7 @@ public class BrandsController(IBrandService brandService, IBaseMapping mapping) 
     /// <param name="createBrandObj"></param>
     /// <returns></returns>
     [HttpPost]
-    [AccessTokenGuard(RoleEnum.Admin)]
+    [AccessTokenGuard(Role.Admin)]
     public async Task<ActionResult<BrandDto>> CreateBrand([FromForm] CreateBrandWithImageDto createBrandObj)
     {
         var banner = createBrandObj.Banner != null ? await createBrandObj.Banner.ToCreateImageDto() : null;
@@ -86,7 +87,7 @@ public class BrandsController(IBrandService brandService, IBaseMapping mapping) 
     /// <param name="brandDto"></param>
     /// <returns></returns>
     [HttpPut("{id}")]
-    [AccessTokenGuard(RoleEnum.Admin, RoleEnum.BrandManager)]
+    [AccessTokenGuard(Role.Admin, Role.BrandManager)]
     public async Task<ActionResult<BrandDto>> UpdateBrand([FromRoute] Guid id, [FromBody] UpdateBrandDto brandDto)
     {
         var updatedBrand = await brandService.UpdateBrand(id, brandDto);
@@ -99,7 +100,7 @@ public class BrandsController(IBrandService brandService, IBaseMapping mapping) 
     /// <param name="id"></param>
     /// <returns></returns>
     [HttpPut("{id}/reactivate")]
-    [AccessTokenGuard(RoleEnum.Admin)]
+    [AccessTokenGuard(Role.Admin)]
     public async Task<ActionResult<BrandDto>> ReactivateBrand([FromRoute] Guid id)
     {
         var reactivatedBrand = await brandService.ReactivateBrand(id);
@@ -118,7 +119,7 @@ public class BrandsController(IBrandService brandService, IBaseMapping mapping) 
     /// </para>
     /// <returns></returns>
     [HttpDelete("{id}")]
-    [AccessTokenGuard(RoleEnum.Admin)]
+    [AccessTokenGuard(Role.Admin)]
     public async Task<IActionResult> DeleteBrand([FromRoute] Guid id)
     {
         // TODO [Duy]: discuss what to return for delete
@@ -133,7 +134,7 @@ public class BrandsController(IBrandService brandService, IBaseMapping mapping) 
     /// <param name="type"></param>
     /// <returns></returns>
     [HttpPut("images/{type}")]
-    [AccessTokenGuard(RoleEnum.BrandManager)]
+    [AccessTokenGuard(Role.BrandManager)]
     public async Task<IActionResult> UpdateImage(ControllerCreateImageDto imageDto, BrandImageType type)
     {
         switch (type)

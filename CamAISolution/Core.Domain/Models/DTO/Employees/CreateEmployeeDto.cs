@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
-using Core.Domain.Entities;
+using Core.Domain.Enums;
 
 namespace Core.Domain.DTO;
 

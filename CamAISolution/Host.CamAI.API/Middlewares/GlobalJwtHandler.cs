@@ -1,7 +1,7 @@
 using Core.Application.Exceptions;
 using Core.Domain;
-using Core.Domain.DTO;
 using Core.Domain.Entities;
+using Core.Domain.Enums;
 using Core.Domain.Interfaces.Services;
 using Core.Domain.Services;
 using Host.CamAI.API.Models;

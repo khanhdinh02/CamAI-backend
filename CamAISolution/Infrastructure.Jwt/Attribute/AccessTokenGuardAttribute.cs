@@ -1,3 +1,4 @@
+using Core.Domain.Enums;
 using Infrastructure.Jwt.Guard;
 using Microsoft.AspNetCore.Mvc;
 
@@ -6,15 +7,15 @@ namespace Infrastructure.Jwt.Attribute;
 [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class)]
 public sealed class AccessTokenGuardAttribute : TypeFilterAttribute
 {
-    public AccessTokenGuardAttribute(params int[] roleIds)
+    public AccessTokenGuardAttribute(params Role[] roles)
         : base(typeof(AccessTokenGuardFilter))
     {
-        Arguments =  [ roleIds, false ];
+        Arguments = [roles, false];
     }
 
-    public AccessTokenGuardAttribute(bool allowNew, int[]? roleIds)
+    public AccessTokenGuardAttribute(bool allowNew, Role[]? roles)
         : base(typeof(AccessTokenGuardFilter))
     {
-        Arguments =  [ roleIds, allowNew ];
+        Arguments = [roles, allowNew];
     }
 }

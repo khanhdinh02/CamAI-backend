@@ -1,11 +1,17 @@
 using Core.Domain.Entities.Base;
+using Core.Domain.Enums;
 
 namespace Core.Domain.Entities;
 
 public class Evidence : BusinessEntity
 {
     public Uri? Uri { get; set; }
-    public int EvidenceTypeId { get; set; }
+    public EvidenceType EvidenceType { get; set; }
+    public Guid IncidentId { get; set; }
+    public Guid CameraId { get; set; }
+    public Guid EdgeBoxId { get; set; }
 
-    public virtual EvidenceType EvidenceType { get; set; } = null!;
+    public virtual Incident Incident { get; set; } = null!;
+    public virtual Camera Camera { get; set; } = null!;
+    public virtual EdgeBox EdgeBox { get; set; } = null!;
 }

@@ -1,5 +1,6 @@
 using Core.Domain.DTO;
 using Core.Domain.Entities;
+using Core.Domain.Enums;
 using Core.Domain.Models;
 using Core.Domain.Models.DTO;
 
@@ -15,5 +16,5 @@ public interface INotificationService
     /// <returns></returns>
     Task<Notification> CreateNotification(CreateNotificationDto dto, bool willSend);
     Task<PaginationResult<AccountNotification>> SearchNotification(SearchNotificationRequest req);
-    Task<AccountNotification> UpdateStatus(Guid notificationId, int statusId);
+    Task<AccountNotification> UpdateStatus(Guid notificationId, NotificationStatus status);
 }

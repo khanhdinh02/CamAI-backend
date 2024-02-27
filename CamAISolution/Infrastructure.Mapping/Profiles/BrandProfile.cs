@@ -14,6 +14,5 @@ public class BrandProfile : Profile
             .ForMember(des => des.Banner, opts => opts.Ignore())
             .ForMember(des => des.Logo, opts => opts.Ignore());
         CreateMap<UpdateBrandDto, Brand>();
-        CreateMap<BrandStatus, LookupDto>();
     }
 }

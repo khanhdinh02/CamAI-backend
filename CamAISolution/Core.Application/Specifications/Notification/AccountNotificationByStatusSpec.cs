@@ -1,13 +1,14 @@
-﻿using System.Linq.Expressions;
+using System.Linq.Expressions;
 using Core.Domain.Entities;
+using Core.Domain.Enums;
 
 namespace Core.Application.Specifications;
 
 public class AccountNotificationByStatusSpec : Specification<AccountNotification>
 {
-    private readonly int status;
+    private readonly NotificationStatus status;
 
-    public AccountNotificationByStatusSpec(int status)
+    public AccountNotificationByStatusSpec(NotificationStatus status)
     {
         this.status = status;
         Expr = GetExpression();
@@ -15,6 +16,6 @@ public class AccountNotificationByStatusSpec : Specification<AccountNotification
 
     public override Expression<Func<AccountNotification, bool>> GetExpression()
     {
-        return an => an.StatusId == status;
+        return an => an.Status == status;
     }
 }

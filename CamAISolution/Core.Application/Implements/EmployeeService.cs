@@ -2,11 +2,11 @@ using Core.Application.Exceptions;
 using Core.Application.Specifications.Repositories;
 using Core.Domain.DTO;
 using Core.Domain.Entities;
+using Core.Domain.Enums;
 using Core.Domain.Interfaces.Mappings;
 using Core.Domain.Interfaces.Services;
 using Core.Domain.Models;
 using Core.Domain.Repositories;
-using Core.Domain.Utilities;
 
 namespace Core.Application.Implements;
 
@@ -18,17 +18,14 @@ public class EmployeeService(IUnitOfWork unitOfWork, IAccountService accountServ
     public async Task<PaginationResult<Employee>> GetEmployees(SearchEmployeeRequest req)
     {
         var user = accountService.GetCurrentAccount();
-        if (!user.HasRole(RoleEnum.Admin))
+        if (user.Role == Role.BrandManager)
+            req.BrandId = user.BrandId;
+        else if (user.Role == Role.ShopManager)
         {
-            if (user.HasRole(RoleEnum.BrandManager))
-                req.BrandId = user.BrandId;
-            else if (user.HasRole(RoleEnum.ShopManager))
-            {
-                if (user.ManagingShop == null)
-                    throw new ForbiddenException("Shop manager must be assigned to a shop");
-                req.BrandId = null;
-                req.ShopId = user.ManagingShop.Id;
-            }
+            if (user.ManagingShop == null)
+                throw new ForbiddenException("Shop manager must be assigned to a shop");
+            req.BrandId = null;
+            req.ShopId = user.ManagingShop.Id;
         }
 
         return await unitOfWork.Employees.GetAsync(new EmployeeSearchSpec(req));
@@ -54,7 +51,7 @@ public class EmployeeService(IUnitOfWork unitOfWork, IAccountService accountServ
 
         if (oldEmp != null)
         {
-            if (oldEmp.EmployeeStatusId != EmployeeStatusEnum.Inactive)
+            if (oldEmp.EmployeeStatus != EmployeeStatus.Inactive)
                 throw new BadRequestException($"Email {dto.Email} is already taken");
             newEmp = new Employee { Id = oldEmp.Id, Timestamp = oldEmp.Timestamp };
         }
@@ -72,7 +69,7 @@ public class EmployeeService(IUnitOfWork unitOfWork, IAccountService accountServ
 
         mapper.Map(dto, newEmp);
         newEmp.ShopId = user.ManagingShop.Id;
-        newEmp.EmployeeStatusId = EmployeeStatusEnum.Active;
+        newEmp.EmployeeStatus = EmployeeStatus.Active;
 
         unitOfWork.Employees.Update(newEmp);
         await unitOfWork.CompleteAsync();
@@ -100,35 +97,19 @@ public class EmployeeService(IUnitOfWork unitOfWork, IAccountService accountServ
     public async Task DeleteEmployee(Guid id)
     {
         var employee = await GetEmployeeById(id);
-        employee.EmployeeStatusId = EmployeeStatusEnum.Inactive;
+        employee.EmployeeStatus = EmployeeStatus.Inactive;
         employee.ShopId = null;
         unitOfWork.Employees.Update(employee);
         await unitOfWork.CompleteAsync();
     }
 
-    public async Task<IEnumerable<EmployeeShift>> GetShifts(Guid employeeId)
-    {
-        var user = accountService.GetCurrentAccount();
-        var employee = await GetEmployeeById(employeeId);
-        if (!HasAuthority(user, employee))
-            throw new ForbiddenException(user, employee);
-
-        return (
-            await unitOfWork
-                .EmployeeShifts
-                .GetAsync(es => es.EmployeeId == employeeId, includeProperties: [nameof(EmployeeShift.Shift)])
-        ).Values;
-    }
-
-    // TODO [Khanh]: Assign shifts to employee
-
     private bool HasAuthority(Account user, Employee employee)
     {
-        if (user.HasRole(RoleEnum.Admin))
+        if (user.Role == Role.Admin)
             return true;
-        if (user.HasRole(RoleEnum.BrandManager))
+        if (user.Role == Role.BrandManager)
             return user.BrandId == employee.Shop?.BrandId;
-        if (user.HasRole(RoleEnum.ShopManager) && user.ManagingShop != null)
+        if (user.Role == Role.ShopManager && user.ManagingShop != null)
             return user.ManagingShop.Id == employee.ShopId;
         return false;
     }
