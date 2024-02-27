@@ -9,8 +9,8 @@ public class EdgeBoxSearchSpec : RepositorySpec<EdgeBox>
     private static Expression<Func<EdgeBox, bool>> GetExpression(SearchEdgeBoxRequest searchRequest)
     {
         var baseSpec = new Specification<EdgeBox>();
-        if (!string.IsNullOrEmpty(searchRequest.Model))
-            baseSpec.And(new EdgeBoxByModelSpec(searchRequest.Model));
+        if (!string.IsNullOrEmpty(searchRequest.Name))
+            baseSpec.And(new EdgeBoxByNameSpec(searchRequest.Name));
 
         if (searchRequest.EdgeBoxStatus.HasValue)
             baseSpec.And(new EdgeBoxByStatusSpec(searchRequest.EdgeBoxStatus.Value));
@@ -25,5 +25,6 @@ public class EdgeBoxSearchSpec : RepositorySpec<EdgeBox>
     {
         ApplyingPaging(searchRequest);
         ApplyOrderByDescending(s => s.CreatedDate);
+        AddIncludes(eb => eb.EdgeBoxModel);
     }
 }

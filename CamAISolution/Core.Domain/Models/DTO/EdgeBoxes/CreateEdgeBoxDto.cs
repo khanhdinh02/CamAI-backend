@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
 namespace Core.Domain.DTO;
 
@@ -8,5 +8,6 @@ public class CreateEdgeBoxDto
     public string Password { get; set; } = null!;
 
     [StringLength(50)]
-    public string? Model { get; set; }
+    public string? Name { get; set; }
+    public Guid EdgeBoxModelId { get; set; }
 }

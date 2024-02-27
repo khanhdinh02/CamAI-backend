@@ -19,6 +19,7 @@ public class CamAIContext : DbContext
     public virtual DbSet<District> Districts { get; set; } = null!;
     public virtual DbSet<Ward> Wards { get; set; } = null!;
     public virtual DbSet<EdgeBox> EdgeBoxes { get; set; } = null!;
+    public virtual DbSet<EdgeBoxModel> EdgeBoxModels { get; set; } = null!;
     public virtual DbSet<EdgeBoxInstall> EdgeBoxInstalls { get; set; } = null!;
     public virtual DbSet<EdgeBoxActivity> EdgeBoxActivities { get; set; } = null!;
     public virtual DbSet<Camera> Cameras { get; set; } = null!;

@@ -36,6 +36,7 @@ public class EdgeBoxService(
 
     public async Task<EdgeBox> CreateEdgeBox(CreateEdgeBoxDto edgeBoxDto)
     {
+        // TODO: Check if the edge box model exists
         var edgeBox = mapping.Map<CreateEdgeBoxDto, EdgeBox>(edgeBoxDto);
         edgeBox.EdgeBoxStatus = EdgeBoxStatus.Active;
         edgeBox.EdgeBoxLocation = Domain.Enums.EdgeBoxLocation.Idle;
