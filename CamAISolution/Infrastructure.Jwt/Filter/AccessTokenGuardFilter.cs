@@ -15,8 +15,7 @@ public class AccessTokenGuardFilter(Role[]? roles, bool allowNew) : IAuthorizati
             return;
         var account =
             context.HttpContext.Items[nameof(Account)] as Account ?? throw new UnauthorizedException("Unauthorized");
-        var currentRole = account.Roles.Select(ar => ar.Role).ToArray();
-        if (roles is { Length: > 0 } && !roles.Intersect(currentRole).Any())
+        if (roles is { Length: > 0 } && !roles.Contains(account.Role))
         {
             throw new ForbiddenException("Current user is not allowed");
         }

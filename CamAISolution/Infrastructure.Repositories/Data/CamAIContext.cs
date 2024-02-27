@@ -11,7 +11,6 @@ public class CamAIContext : DbContext
         : base(options) { }
 
     public virtual DbSet<Account> Accounts { get; set; } = null!;
-    public virtual DbSet<AccountRole> AccountRoles { get; set; } = null!;
     public virtual DbSet<Employee> Employees { get; set; } = null!;
     public virtual DbSet<Brand> Brands { get; set; } = null!;
     public virtual DbSet<Shop> Shops { get; set; } = null!;
@@ -33,8 +32,6 @@ public class CamAIContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
-
-        modelBuilder.Entity<AccountRole>().HasKey(ar => new { ar.AccountId, ar.Role });
 
         modelBuilder.Entity<Employee>(builder =>
         {

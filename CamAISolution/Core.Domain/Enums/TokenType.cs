@@ -1,4 +1,4 @@
-namespace Core.Domain.DTO;
+namespace Core.Domain.Enums;
 
 public enum TokenType
 {

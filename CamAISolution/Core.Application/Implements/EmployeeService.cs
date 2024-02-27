@@ -7,7 +7,6 @@ using Core.Domain.Interfaces.Mappings;
 using Core.Domain.Interfaces.Services;
 using Core.Domain.Models;
 using Core.Domain.Repositories;
-using Core.Domain.Utilities;
 
 namespace Core.Application.Implements;
 
@@ -19,17 +18,14 @@ public class EmployeeService(IUnitOfWork unitOfWork, IAccountService accountServ
     public async Task<PaginationResult<Employee>> GetEmployees(SearchEmployeeRequest req)
     {
         var user = accountService.GetCurrentAccount();
-        if (!user.HasRole(Role.Admin))
+        if (user.Role == Role.BrandManager)
+            req.BrandId = user.BrandId;
+        else if (user.Role == Role.ShopManager)
         {
-            if (user.HasRole(Role.BrandManager))
-                req.BrandId = user.BrandId;
-            else if (user.HasRole(Role.ShopManager))
-            {
-                if (user.ManagingShop == null)
-                    throw new ForbiddenException("Shop manager must be assigned to a shop");
-                req.BrandId = null;
-                req.ShopId = user.ManagingShop.Id;
-            }
+            if (user.ManagingShop == null)
+                throw new ForbiddenException("Shop manager must be assigned to a shop");
+            req.BrandId = null;
+            req.ShopId = user.ManagingShop.Id;
         }
 
         return await unitOfWork.Employees.GetAsync(new EmployeeSearchSpec(req));
@@ -109,11 +105,11 @@ public class EmployeeService(IUnitOfWork unitOfWork, IAccountService accountServ
 
     private bool HasAuthority(Account user, Employee employee)
     {
-        if (user.HasRole(Role.Admin))
+        if (user.Role == Role.Admin)
             return true;
-        if (user.HasRole(Role.BrandManager))
+        if (user.Role == Role.BrandManager)
             return user.BrandId == employee.Shop?.BrandId;
-        if (user.HasRole(Role.ShopManager) && user.ManagingShop != null)
+        if (user.Role == Role.ShopManager && user.ManagingShop != null)
             return user.ManagingShop.Id == employee.ShopId;
         return false;
     }

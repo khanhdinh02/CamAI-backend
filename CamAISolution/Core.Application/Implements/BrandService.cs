@@ -11,7 +11,6 @@ using Core.Domain.Interfaces.Services;
 using Core.Domain.Models;
 using Core.Domain.Repositories;
 using Core.Domain.Services;
-using Core.Domain.Utilities;
 
 namespace Core.Application.Implements;
 
@@ -28,15 +27,15 @@ public class BrandService(
     public async Task<PaginationResult<Brand>> GetBrands(SearchBrandRequest searchRequest)
     {
         var currentAccount = await accountService.GetAccountById(accountService.GetCurrentAccount().Id);
-        if (currentAccount.HasRole(Role.BrandManager))
+        if (currentAccount.Role == Role.BrandManager)
             searchRequest.BrandId =
                 currentAccount.BrandId ?? throw new BadRequestException("Brand manager does not have brand yet");
-        else if (currentAccount.HasRole(Role.ShopManager))
+        else if (currentAccount.Role == Role.ShopManager)
         {
             var shop = await shopService.GetShopById(currentAccount.ManagingShop!.Id);
             searchRequest.BrandId = shop.BrandId;
         }
-        else if (!currentAccount.HasRole(Role.Admin))
+        else if (currentAccount.Role != Role.Admin)
             throw new ForbiddenException(currentAccount, typeof(Brand));
 
         return await unitOfWork.Brands.GetAsync(new BrandSearchSpec(searchRequest));
@@ -211,7 +210,7 @@ public class BrandService(
 
     private async Task<bool> IsAccountOwnShopRelatedToBrand(Account account, Brand brand)
     {
-        if (account.HasRole(Role.ShopManager))
+        if (account.Role == Role.ShopManager)
         {
             var shop = await shopService.GetShopById(account.ManagingShop!.Id);
             if (shop.BrandId == brand.Id)
@@ -224,6 +223,6 @@ public class BrandService(
     private static bool IsAccountOwnBrand(Account account, Brand? brand)
     {
         return brand != null
-            && (account.HasRole(Role.Admin) || (account.HasRole(Role.BrandManager) && account.Brand!.Id == brand.Id));
+            && (account.Role == Role.Admin || (account.Role == Role.BrandManager && account.Brand!.Id == brand.Id));
     }
 }

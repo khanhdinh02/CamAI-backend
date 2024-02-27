@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-using System.Text.Json.Serialization;
 using Core.Domain.Enums;
 
 namespace Core.Domain.DTO;
@@ -20,5 +19,5 @@ public class CreateAccountDto
     public int? WardId { get; set; }
     public string? AddressLine { get; set; } = null!;
     public Guid? BrandId { get; set; }
-    public ICollection<Role> Roles { get; set; } = new HashSet<Role>();
+    public Role Role { get; set; }
 }

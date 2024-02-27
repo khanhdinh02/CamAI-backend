@@ -70,6 +70,9 @@ namespace Infrastructure.Repositories.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
+                    b.Property<int>("Role")
+                        .HasColumnType("int");
+
                     b.Property<byte[]>("Timestamp")
                         .IsConcurrencyToken()
                         .ValueGeneratedOnAddOrUpdate()
@@ -103,57 +106,6 @@ namespace Infrastructure.Repositories.Migrations
                     b.HasIndex("NotificationId");
 
                     b.ToTable("AccountNotifications");
-                });
-
-            modelBuilder.Entity("Core.Domain.Entities.AccountRole", b =>
-                {
-                    b.Property<Guid>("AccountId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<int>("Role")
-                        .HasColumnType("int");
-
-                    b.HasKey("AccountId", "Role");
-
-                    b.ToTable("AccountRoles");
-                });
-
-            modelBuilder.Entity("Core.Domain.Entities.Behavior", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid?>("CameraId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid?>("EmployeeId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<int>("IncidentType")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("ModifiedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("Time")
-                        .HasColumnType("datetime2");
-
-                    b.Property<byte[]>("Timestamp")
-                        .IsConcurrencyToken()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CameraId");
-
-                    b.HasIndex("EmployeeId");
-
-                    b.ToTable("Behaviors");
                 });
 
             modelBuilder.Entity("Core.Domain.Entities.Brand", b =>
@@ -219,12 +171,6 @@ namespace Infrastructure.Repositories.Migrations
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<Guid?>("EdgeBoxId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid?>("EdgeBoxInstallId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<DateTime>("ModifiedDate")
                         .HasColumnType("datetime2");
 
@@ -241,9 +187,10 @@ namespace Infrastructure.Repositories.Migrations
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("rowversion");
 
-                    b.HasKey("Id");
+                    b.Property<int>("Zone")
+                        .HasColumnType("int");
 
-                    b.HasIndex("EdgeBoxInstallId");
+                    b.HasKey("Id");
 
                     b.HasIndex("ShopId");
 
@@ -285,15 +232,18 @@ namespace Infrastructure.Repositories.Migrations
                     b.Property<int>("EdgeBoxLocation")
                         .HasColumnType("int");
 
+                    b.Property<Guid>("EdgeBoxModelId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<int>("EdgeBoxStatus")
                         .HasColumnType("int");
 
-                    b.Property<string>("Model")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
                     b.Property<DateTime>("ModifiedDate")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("Name")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("Password")
                         .IsRequired()
@@ -312,6 +262,8 @@ namespace Infrastructure.Repositories.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("EdgeBoxModelId");
 
                     b.ToTable("EdgeBoxes");
                 });
@@ -398,6 +350,53 @@ namespace Infrastructure.Repositories.Migrations
                     b.ToTable("EdgeBoxInstalls");
                 });
 
+            modelBuilder.Entity("Core.Domain.Entities.EdgeBoxModel", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("CPU")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Manufacturer")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ModelCode")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("ModifiedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("OS")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("RAM")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Storage")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<byte[]>("Timestamp")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("EdgeBoxModels");
+                });
+
             modelBuilder.Entity("Core.Domain.Entities.Employee", b =>
                 {
                     b.Property<Guid>("Id")
@@ -465,17 +464,20 @@ namespace Infrastructure.Repositories.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid?>("BehaviorId")
+                    b.Property<Guid>("CameraId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<Guid>("EdgeBoxId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<int>("EvidenceType")
                         .HasColumnType("int");
 
-                    b.Property<int>("EvidenceTypeId")
-                        .HasColumnType("int");
+                    b.Property<Guid>("IncidentId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("ModifiedDate")
                         .HasColumnType("datetime2");
@@ -490,7 +492,11 @@ namespace Infrastructure.Repositories.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("BehaviorId");
+                    b.HasIndex("CameraId");
+
+                    b.HasIndex("EdgeBoxId");
+
+                    b.HasIndex("IncidentId");
 
                     b.ToTable("Evidences");
                 });
@@ -516,6 +522,34 @@ namespace Infrastructure.Repositories.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Image");
+                });
+
+            modelBuilder.Entity("Core.Domain.Entities.Incident", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("IncidentType")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("ModifiedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("Time")
+                        .HasColumnType("datetime2");
+
+                    b.Property<byte[]>("Timestamp")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Incidents");
                 });
 
             modelBuilder.Entity("Core.Domain.Entities.Notification", b =>
@@ -664,6 +698,9 @@ namespace Infrastructure.Repositories.Migrations
                     b.Property<Guid>("BrandId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<TimeOnly>("CloseTime")
+                        .HasColumnType("time");
+
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
 
@@ -674,6 +711,9 @@ namespace Infrastructure.Repositories.Migrations
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
+
+                    b.Property<TimeOnly>("OpenTime")
+                        .HasColumnType("time");
 
                     b.Property<string>("Phone")
                         .HasMaxLength(50)
@@ -729,6 +769,21 @@ namespace Infrastructure.Repositories.Migrations
                     b.ToTable("Wards");
                 });
 
+            modelBuilder.Entity("EmployeeIncident", b =>
+                {
+                    b.Property<Guid>("EmployeeId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("IncidentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("EmployeeId", "IncidentId");
+
+                    b.HasIndex("IncidentId");
+
+                    b.ToTable("EmployeeIncident");
+                });
+
             modelBuilder.Entity("Core.Domain.Entities.Account", b =>
                 {
                     b.HasOne("Core.Domain.Entities.Brand", "Brand")
@@ -763,32 +818,6 @@ namespace Infrastructure.Repositories.Migrations
                     b.Navigation("Notification");
                 });
 
-            modelBuilder.Entity("Core.Domain.Entities.AccountRole", b =>
-                {
-                    b.HasOne("Core.Domain.Entities.Account", "Account")
-                        .WithMany("Roles")
-                        .HasForeignKey("AccountId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Account");
-                });
-
-            modelBuilder.Entity("Core.Domain.Entities.Behavior", b =>
-                {
-                    b.HasOne("Core.Domain.Entities.Camera", "Camera")
-                        .WithMany()
-                        .HasForeignKey("CameraId");
-
-                    b.HasOne("Core.Domain.Entities.Employee", "Employee")
-                        .WithMany("Behaviors")
-                        .HasForeignKey("EmployeeId");
-
-                    b.Navigation("Camera");
-
-                    b.Navigation("Employee");
-                });
-
             modelBuilder.Entity("Core.Domain.Entities.Brand", b =>
                 {
                     b.HasOne("Core.Domain.Entities.Image", "Banner")
@@ -812,17 +841,11 @@ namespace Infrastructure.Repositories.Migrations
 
             modelBuilder.Entity("Core.Domain.Entities.Camera", b =>
                 {
-                    b.HasOne("Core.Domain.Entities.EdgeBoxInstall", "EdgeBoxInstall")
-                        .WithMany("Cameras")
-                        .HasForeignKey("EdgeBoxInstallId");
-
                     b.HasOne("Core.Domain.Entities.Shop", "Shop")
                         .WithMany("Cameras")
                         .HasForeignKey("ShopId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("EdgeBoxInstall");
 
                     b.Navigation("Shop");
                 });
@@ -836,6 +859,17 @@ namespace Infrastructure.Repositories.Migrations
                         .IsRequired();
 
                     b.Navigation("Province");
+                });
+
+            modelBuilder.Entity("Core.Domain.Entities.EdgeBox", b =>
+                {
+                    b.HasOne("Core.Domain.Entities.EdgeBoxModel", "EdgeBoxModel")
+                        .WithMany("EdgeBoxes")
+                        .HasForeignKey("EdgeBoxModelId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("EdgeBoxModel");
                 });
 
             modelBuilder.Entity("Core.Domain.Entities.EdgeBoxActivity", b =>
@@ -893,9 +927,29 @@ namespace Infrastructure.Repositories.Migrations
 
             modelBuilder.Entity("Core.Domain.Entities.Evidence", b =>
                 {
-                    b.HasOne("Core.Domain.Entities.Behavior", null)
+                    b.HasOne("Core.Domain.Entities.Camera", "Camera")
+                        .WithMany()
+                        .HasForeignKey("CameraId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Core.Domain.Entities.EdgeBox", "EdgeBox")
+                        .WithMany()
+                        .HasForeignKey("EdgeBoxId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Core.Domain.Entities.Incident", "Incident")
                         .WithMany("Evidences")
-                        .HasForeignKey("BehaviorId");
+                        .HasForeignKey("IncidentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Camera");
+
+                    b.Navigation("EdgeBox");
+
+                    b.Navigation("Incident");
                 });
 
             modelBuilder.Entity("Core.Domain.Entities.Notification", b =>
@@ -979,6 +1033,21 @@ namespace Infrastructure.Repositories.Migrations
                     b.Navigation("District");
                 });
 
+            modelBuilder.Entity("EmployeeIncident", b =>
+                {
+                    b.HasOne("Core.Domain.Entities.Employee", null)
+                        .WithMany()
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Core.Domain.Entities.Incident", null)
+                        .WithMany()
+                        .HasForeignKey("IncidentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Core.Domain.Entities.Account", b =>
                 {
                     b.Navigation("ManagingBrand");
@@ -987,14 +1056,7 @@ namespace Infrastructure.Repositories.Migrations
 
                     b.Navigation("ReceivedNotifications");
 
-                    b.Navigation("Roles");
-
                     b.Navigation("SentNotifications");
-                });
-
-            modelBuilder.Entity("Core.Domain.Entities.Behavior", b =>
-                {
-                    b.Navigation("Evidences");
                 });
 
             modelBuilder.Entity("Core.Domain.Entities.Brand", b =>
@@ -1014,14 +1076,14 @@ namespace Infrastructure.Repositories.Migrations
                     b.Navigation("Installs");
                 });
 
-            modelBuilder.Entity("Core.Domain.Entities.EdgeBoxInstall", b =>
+            modelBuilder.Entity("Core.Domain.Entities.EdgeBoxModel", b =>
                 {
-                    b.Navigation("Cameras");
+                    b.Navigation("EdgeBoxes");
                 });
 
-            modelBuilder.Entity("Core.Domain.Entities.Employee", b =>
+            modelBuilder.Entity("Core.Domain.Entities.Incident", b =>
                 {
-                    b.Navigation("Behaviors");
+                    b.Navigation("Evidences");
                 });
 
             modelBuilder.Entity("Core.Domain.Entities.Notification", b =>

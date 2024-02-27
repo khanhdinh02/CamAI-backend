@@ -11,7 +11,6 @@ public class AccountByIdRepoSpec : EntityByIdSpec<Account, Guid>
     public AccountByIdRepoSpec(Guid id)
         : base(a => a.Id == id)
     {
-        AddIncludes(a => a.Roles);
         AddIncludes(a => a.Brand!);
         AddIncludes(a => a.Ward!.District.Province);
         AddIncludes(a => a.ManagingShop!);

@@ -10,7 +10,6 @@ public class Account : BusinessEntity
     public Account()
     {
         SentNotifications = new HashSet<Notification>();
-        Roles = new HashSet<AccountRole>();
         ReceivedNotifications = new HashSet<AccountNotification>();
     }
 
@@ -29,6 +28,7 @@ public class Account : BusinessEntity
     public int? WardId { get; set; }
     public string? AddressLine { get; set; }
     public Guid? BrandId { get; set; }
+    public Role Role { get; set; }
     public AccountStatus AccountStatus { get; set; }
 
     /// <summary>
@@ -51,8 +51,6 @@ public class Account : BusinessEntity
 
     [InverseProperty(nameof(Brand.BrandManager))]
     public virtual Brand? ManagingBrand { get; set; }
-
     public virtual Shop? ManagingShop { get; set; }
-    public virtual ICollection<AccountRole> Roles { get; set; }
     public virtual ICollection<AccountNotification> ReceivedNotifications { get; set; }
 }

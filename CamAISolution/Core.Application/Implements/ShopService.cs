@@ -11,7 +11,6 @@ using Core.Domain.Interfaces.Services;
 using Core.Domain.Models;
 using Core.Domain.Repositories;
 using Core.Domain.Services;
-using Core.Domain.Utilities;
 
 namespace Core.Application.Implements;
 
@@ -55,11 +54,11 @@ public class ShopService(
             throw notFoundException;
         var account = accountService.GetCurrentAccount();
         var shop = foundShop.Values[0];
-        if (account.HasRole(Role.Admin))
+        if (account.Role == Role.Admin)
             return shop;
-        if (account.HasRole(Role.BrandManager))
+        if (account.Role == Role.BrandManager)
             return account.Brand != null && shop.BrandId == account.Brand.Id ? shop : throw notFoundException;
-        if (account.HasRole(Role.ShopManager) && shop.ShopManagerId == account.Id)
+        if (account.Role == Role.ShopManager && shop.ShopManagerId == account.Id)
             return shop;
         throw notFoundException;
     }
@@ -67,13 +66,9 @@ public class ShopService(
     public async Task<PaginationResult<Shop>> GetShops(ShopSearchRequest searchRequest)
     {
         var account = accountService.GetCurrentAccount();
-        if (account.HasRole(Role.Admin))
-        {
-            // this if will ensure that admin role has highest priority
-        }
-        else if (account.HasRole(Role.BrandManager))
+        if (account.Role == Role.BrandManager)
             searchRequest.BrandId = account.BrandId;
-        else if (account.HasRole(Role.ShopManager))
+        else if (account.Role == Role.ShopManager)
         {
             searchRequest.ShopManagerId = account.Id;
             // TODO [Duy]: is there a way to specify not condition like != Status.Inactive
@@ -113,7 +108,7 @@ public class ShopService(
         var currentAccount = accountService.GetCurrentAccount();
         var isShopManager = foundShop.ShopManagerId == currentAccount.Id;
         var isBrandManager = currentAccount.BrandId.HasValue && foundShop.BrandId == currentAccount.BrandId.Value;
-        var isAdmin = currentAccount.HasRole(Role.Admin);
+        var isAdmin = currentAccount.Role == Role.Admin;
         if ((isShopManager || isBrandManager) && !isAdmin)
             throw new ForbiddenException("Current user not allowed to do this action.");
 
@@ -136,12 +131,12 @@ public class ShopService(
                     expression: a =>
                         a.Id == shopDto.ShopManagerId.Value
                         && (a.AccountStatus == AccountStatus.Active || a.AccountStatus == AccountStatus.New),
-                    includeProperties: [nameof(Account.Roles), nameof(Account.ManagingShop)]
+                    includeProperties: [nameof(Account.ManagingShop)]
                 );
             if (foundAccounts.Values.Count == 0)
                 throw new NotFoundException(typeof(Account), shopDto.ShopManagerId.Value);
             var account = foundAccounts.Values[0];
-            if (!account.HasRole(Role.ShopManager))
+            if (account.Role != Role.ShopManager)
                 throw new BadRequestException("Account is not a shop manager");
             var brandManager = accountService.GetCurrentAccount();
 

@@ -41,7 +41,7 @@ public class ReportService(
 
     private static void CheckAuthority(Account account)
     {
-        if (!account.HasRole(Role.ShopManager))
+        if (account.Role != Role.ShopManager)
             throw new BadRequestException("Please specify a shop id");
         if (account.ManagingShop == null)
             throw new BadRequestException("Account is not manging any shop");

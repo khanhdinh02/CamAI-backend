@@ -38,7 +38,6 @@ public class AccountSearchSpec : RepositorySpec<Account>
         base.ApplyOrderByDescending(a => a.CreatedDate);
         if (includeAll)
         {
-            AddIncludes(a => a.Roles);
             AddIncludes(a => a.Brand!);
             AddIncludes(a => a.Ward!.District.Province);
             AddIncludes(a => a.ManagingShop!);

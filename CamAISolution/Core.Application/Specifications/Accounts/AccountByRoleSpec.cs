@@ -14,5 +14,5 @@ public class AccountByRoleSpec : Specification<Account>
         Expr = GetExpression();
     }
 
-    public override Expression<Func<Account, bool>> GetExpression() => a => a.Roles.Any(ar => ar.Role == role);
+    public override Expression<Func<Account, bool>> GetExpression() => a => a.Role == role;
 }

@@ -1,6 +1,5 @@
 using Core.Application.Exceptions;
 using Core.Application.Specifications.Repositories;
-using Core.Domain;
 using Core.Domain.DTO;
 using Core.Domain.Entities;
 using Core.Domain.Enums;
@@ -9,16 +8,11 @@ using Core.Domain.Interfaces.Services;
 using Core.Domain.Models;
 using Core.Domain.Repositories;
 using Core.Domain.Services;
-using Core.Domain.Utilities;
 
 namespace Core.Application.Implements;
 
-public class EdgeBoxService(
-    IUnitOfWork unitOfWork,
-    IAccountService accountService,
-    IAppLogging<EdgeBoxService> logger,
-    IBaseMapping mapping
-) : IEdgeBoxService
+public class EdgeBoxService(IUnitOfWork unitOfWork, IAccountService accountService, IBaseMapping mapping)
+    : IEdgeBoxService
 {
     public async Task<EdgeBox> GetEdgeBoxById(Guid id)
     {
@@ -52,7 +46,7 @@ public class EdgeBoxService(
             throw new NotFoundException(typeof(EdgeBox), id);
         var foundEdgeBox = foundEdgeBoxes.Values[0];
         var currentAccount = accountService.GetCurrentAccount();
-        if (foundEdgeBox.EdgeBoxStatus == EdgeBoxStatus.Inactive && !currentAccount.HasRole(Role.Admin))
+        if (foundEdgeBox.EdgeBoxStatus == EdgeBoxStatus.Inactive && currentAccount.Role != Role.Admin)
             throw new BadRequestException("Cannot modified inactive edgeBox");
 
         mapping.Map(edgeBoxDto, foundEdgeBox);

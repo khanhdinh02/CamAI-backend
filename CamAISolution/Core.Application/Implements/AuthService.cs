@@ -1,6 +1,5 @@
 using Core.Application.Exceptions;
 using Core.Domain.DTO;
-using Core.Domain.Entities;
 using Core.Domain.Enums;
 using Core.Domain.Interfaces.Services;
 using Core.Domain.Repositories;
@@ -19,8 +18,7 @@ public class AuthService(IJwtService jwtService, IAccountService accountService,
                 expression: a =>
                     a.Email == email
                     && (a.AccountStatus == AccountStatus.Active || a.AccountStatus == AccountStatus.New),
-                orderBy: e => e.OrderBy(a => a.Id),
-                includeProperties: [nameof(Account.Roles)]
+                orderBy: e => e.OrderBy(a => a.Id)
             );
         if (foundAccount.Values.Count == 0)
             throw new UnauthorizedException("Wrong email or password");
@@ -30,9 +28,9 @@ public class AuthService(IJwtService jwtService, IAccountService accountService,
         if (!isHashedCorrect)
             throw new UnauthorizedException("Wrong email or password");
 
-        var roles = account.Roles.Select(ar => ar.Role);
-        var accessToken = jwtService.GenerateToken(account.Id, roles, account.AccountStatus, TokenType.AccessToken);
-        var refreshToken = jwtService.GenerateToken(account.Id, roles, TokenType.RefreshToken);
+        var role = account.Role;
+        var accessToken = jwtService.GenerateToken(account.Id, role, account.AccountStatus, TokenType.AccessToken);
+        var refreshToken = jwtService.GenerateToken(account.Id, role, TokenType.RefreshToken);
         return new TokenResponseDto { AccessToken = accessToken, RefreshToken = refreshToken };
     }
 
@@ -49,12 +47,7 @@ public class AuthService(IJwtService jwtService, IAccountService accountService,
             throw new UnauthorizedException("Invalid Tokens");
 
         var account = await accountService.GetAccountById(accessTokenDetail.UserId);
-        return jwtService.GenerateToken(
-            account.Id,
-            account.Roles.Select(ar => ar.Role),
-            account.AccountStatus,
-            TokenType.AccessToken
-        );
+        return jwtService.GenerateToken(account.Id, account.Role, account.AccountStatus, TokenType.AccessToken);
     }
 
     public async Task ChangePassword(ChangePasswordDto changePasswordDto)

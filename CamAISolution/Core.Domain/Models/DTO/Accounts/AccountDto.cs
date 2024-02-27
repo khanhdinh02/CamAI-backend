@@ -11,12 +11,11 @@ public class AccountDtoWithoutBrand : BaseDto
     public DateOnly? Birthday { get; set; }
     public int? WardId { get; set; }
     public string? AddressLine { get; set; }
-    public Guid? WorkingShopId { get; set; }
+    public Role Role { get; set; }
     public AccountStatus AccountStatus { get; set; }
+
     public WardDto? Ward { get; set; }
-    public ShopDto? WorkingShop { get; set; }
     public ShopDto? ManagingShop { get; set; }
-    public ICollection<Role> Roles { get; set; } = new HashSet<Role>();
 }
 
 public class AccountDto : AccountDtoWithoutBrand
