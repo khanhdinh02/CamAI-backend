@@ -25,6 +25,8 @@ public static class ApiDependencyInjection
         services.AddScoped<ILocationService, LocationService>();
         services.AddScoped<IShiftService, ShiftService>();
         services.AddSingleton<EventManager>();
+        services.AddScoped<IReportService, ReportService>();
+        services.AddSingleton<EventManager>().AddSingleton<ClassifierSubject>();
         return services;
     }
 

@@ -8,5 +8,8 @@ public class BrandByIdRepoSpec : EntityByIdSpec<Brand, Guid>
         : base(x => x.Id == id)
     {
         AddIncludes(x => x.BrandStatus);
+        AddIncludes(b => b.BrandManager!);
+        AddIncludes(nameof(Brand.Logo));
+        AddIncludes(nameof(Brand.Banner));
     }
 }

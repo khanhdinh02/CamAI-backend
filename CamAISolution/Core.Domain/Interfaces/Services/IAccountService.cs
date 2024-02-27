@@ -12,4 +12,5 @@ public interface IAccountService
     Task<Account> UpdateAccount(Guid id, UpdateAccountDto dto);
     Task DeleteAccount(Guid id);
     Account GetCurrentAccount();
+    Task<Account> UpdateProfile(UpdateProfileDto dto);
 }

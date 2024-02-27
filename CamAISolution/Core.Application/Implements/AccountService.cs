@@ -157,6 +157,20 @@ public class AccountService(IUnitOfWork unitOfWork, IJwtService jwtService, IBas
         await unitOfWork.CompleteAsync();
     }
 
+    public async Task<Account> UpdateProfile(UpdateProfileDto dto)
+    {
+        var account = GetCurrentAccount();
+        if (dto.Email != account.Email && await unitOfWork.Accounts.CountAsync(a => a.Email == dto.Email) > 0)
+            throw new BadRequestException("Email is already taken");
+        if (dto.WardId != null && !await unitOfWork.Wards.IsExisted(dto.WardId))
+            throw new NotFoundException(typeof(Ward), dto.WardId);
+
+        mapper.Map(dto, account);
+        unitOfWork.Accounts.Update(account);
+        await unitOfWork.CompleteAsync();
+        return account;
+    }
+
     private async Task<Account> CreateBrandManager(Account newAccount)
     {
         if (newAccount.BrandId == null)

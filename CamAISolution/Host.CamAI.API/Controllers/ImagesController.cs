@@ -1,14 +1,12 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Core.Domain.Services;
 using Host.CamAI.API.Utils;
-using Infrastructure.Jwt.Attribute;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Host.CamAI.API.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-[AccessTokenGuard]
 public class ImagesController(IBlobService blobService) : ControllerBase
 {
     [HttpGet("{id}")]
