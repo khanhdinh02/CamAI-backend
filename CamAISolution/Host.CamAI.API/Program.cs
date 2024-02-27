@@ -34,8 +34,6 @@ builder
     .AddServices(builder.Configuration)
     .AddMapping()
     .AddObserver(builder.Configuration)
-    .AddNotification(builder.Configuration.GetRequiredSection("GoogleSecret").Get<GoogleSecret>());
-    .AddObserver()
     .AddNotification(builder.Configuration.GetRequiredSection("GoogleSecret").Get<GoogleSecret>())
     .AddBackgroundService();
 
