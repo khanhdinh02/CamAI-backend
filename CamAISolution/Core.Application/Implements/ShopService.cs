@@ -94,7 +94,16 @@ public class ShopService(
         mapping.Map(shopDto, foundShop);
         var shop = unitOfWork.Shops.Update(foundShop);
         if (await unitOfWork.CompleteAsync() > 0)
-            eventManager.NotifyShopChanged(shop);
+        {
+            try
+            {
+                eventManager.NotifyShopChanged(shop);
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex.Message, ex);
+            }
+        }
         return shop;
     }
 
