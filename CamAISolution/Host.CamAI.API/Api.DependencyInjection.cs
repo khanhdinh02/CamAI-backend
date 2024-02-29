@@ -22,25 +22,27 @@ public static class ApiDependencyInjection
         services.AddScoped<IShopService, ShopService>();
         services.AddScoped<IEdgeBoxService, EdgeBoxService>();
         services.AddScoped<ILocationService, LocationService>();
+        services.AddScoped<IEdgeBoxInstallService, EdgeBoxInstallService>();
         services.AddSingleton<EventManager>();
         services.AddScoped<IReportService, ReportService>();
         services.AddSingleton<EventManager>().AddSingleton<ClassifierSubject>();
         return services;
     }
 
-    public static IServiceCollection AddBackgroundService(this IServiceCollection services)
+    public static IServiceCollection AddServices(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddHostedService<EdgeBoxHealthCheckService>();
+        var imgConfig =
+            configuration.GetRequiredSection("ImageConfiguration").Get<ImageConfiguration>()
+            ?? throw new ServiceUnavailableException("Cannot get image configuration");
+        services.AddSingleton(imgConfig);
+        services.AddSingleton(configuration.GetSection("HealthCheckConfiguration").Get<HealthCheckConfiguration>()!);
+        services.AddScoped<IBlobService, BlobService>();
         return services;
     }
 
-    public static IServiceCollection AddServices(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddBackgroundService(this IServiceCollection services)
     {
-        var config =
-            configuration.GetRequiredSection("ImageConfiguration").Get<ImageConfiguration>()
-            ?? throw new ServiceUnavailableException("Cannot get image configuration");
-        services.AddSingleton(config);
-        services.AddScoped<IBlobService, BlobService>();
+        services.AddHostedService<EdgeBoxHealthCheckService>();
         return services;
     }
 
