@@ -9,7 +9,6 @@ public class ShopProfile : Profile
     public ShopProfile()
     {
         CreateMap<Shop, ShopDto>();
-        CreateMap<ShopStatus, LookupDto>();
         CreateMap<CreateOrUpdateShopDto, Shop>();
     }
 }

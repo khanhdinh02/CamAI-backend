@@ -1,5 +1,6 @@
-﻿using Core.Domain.DTO;
+using Core.Domain.DTO;
 using Core.Domain.Entities;
+using Core.Domain.Enums;
 using Core.Domain.Interfaces.Mappings;
 using Core.Domain.Models;
 using Core.Domain.Services;
@@ -13,7 +14,7 @@ namespace Host.CamAI.API.Controllers;
 public class EdgeBoxesController(IEdgeBoxService edgeBoxService, IBaseMapping mapping) : ControllerBase
 {
     [HttpGet]
-    [AccessTokenGuard(RoleEnum.Admin)]
+    [AccessTokenGuard(Role.Admin)]
     public async Task<ActionResult<PaginationResult<EdgeBoxDto>>> GetEdgeBoxes(
         [FromQuery] SearchEdgeBoxRequest searchRequest
     )
@@ -23,7 +24,7 @@ public class EdgeBoxesController(IEdgeBoxService edgeBoxService, IBaseMapping ma
     }
 
     [HttpGet("{id}")]
-    [AccessTokenGuard(RoleEnum.Admin)]
+    [AccessTokenGuard(Role.Admin)]
     public async Task<ActionResult<EdgeBoxDto>> GetEdgeBoxById([FromRoute] Guid id)
     {
         var edgeBox = await edgeBoxService.GetEdgeBoxById(id);
@@ -31,7 +32,7 @@ public class EdgeBoxesController(IEdgeBoxService edgeBoxService, IBaseMapping ma
     }
 
     [HttpPost]
-    [AccessTokenGuard(RoleEnum.Admin)]
+    [AccessTokenGuard(Role.Admin)]
     public async Task<ActionResult<EdgeBoxDto>> CreateEdgeBox([FromBody] CreateEdgeBoxDto edgeBoxDto)
     {
         var createdEdgeBox = await edgeBoxService.CreateEdgeBox(edgeBoxDto);
@@ -39,7 +40,7 @@ public class EdgeBoxesController(IEdgeBoxService edgeBoxService, IBaseMapping ma
     }
 
     [HttpPut("{id}")]
-    [AccessTokenGuard(RoleEnum.Admin)]
+    [AccessTokenGuard(Role.Admin)]
     public async Task<ActionResult<EdgeBoxDto>> UpdateEdgeBox(
         [FromRoute] Guid id,
         [FromBody] UpdateEdgeBoxDto edgeBoxDto
@@ -50,7 +51,7 @@ public class EdgeBoxesController(IEdgeBoxService edgeBoxService, IBaseMapping ma
     }
 
     [HttpDelete("{id}")]
-    [AccessTokenGuard(RoleEnum.Admin)]
+    [AccessTokenGuard(Role.Admin)]
     public async Task<IActionResult> DeleteEdgeBox([FromRoute] Guid id)
     {
         // TODO [Duy]: discuss what to return for delete

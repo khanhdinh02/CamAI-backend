@@ -2,6 +2,7 @@ using Core.Application.Exceptions;
 using Core.Application.Specifications.Repositories;
 using Core.Domain.DTO;
 using Core.Domain.Entities;
+using Core.Domain.Enums;
 using Core.Domain.Interfaces.Mappings;
 using Core.Domain.Interfaces.Services;
 using Core.Domain.Models;
@@ -16,11 +17,8 @@ public class AccountService(IUnitOfWork unitOfWork, IJwtService jwtService, IBas
     public async Task<PaginationResult<Account>> GetAccounts(SearchAccountRequest req)
     {
         var user = GetCurrentAccount();
-        if (!user.HasRole(RoleEnum.Admin))
-        {
-            if (user.HasRole(RoleEnum.BrandManager))
-                req.BrandId = user.Brand?.Id;
-        }
+        if (user.Role == Role.BrandManager)
+            req.BrandId = user.Brand?.Id;
         var accounts = await unitOfWork.Accounts.GetAsync(new AccountSearchSpec(req, user));
         return accounts;
     }
@@ -51,7 +49,7 @@ public class AccountService(IUnitOfWork unitOfWork, IJwtService jwtService, IBas
                 .Accounts
                 .GetAsync(
                     a => a.Email == dto.Email,
-                    includeProperties: [nameof(Account.ManagingShop), nameof(Account.Roles)],
+                    includeProperties: [nameof(Account.ManagingShop)],
                     disableTracking: false
                 )
         )
@@ -62,7 +60,7 @@ public class AccountService(IUnitOfWork unitOfWork, IJwtService jwtService, IBas
         else
         {
             newEntity = false;
-            if (accountThatHasTheSameMail.AccountStatusId != AccountStatusEnum.Inactive)
+            if (accountThatHasTheSameMail.AccountStatus != AccountStatus.Inactive)
                 throw new BadRequestException("Email is already taken");
             accountThatHasTheSameMail.BrandId = null;
             accountThatHasTheSameMail.ManagingShop = null;
@@ -75,21 +73,21 @@ public class AccountService(IUnitOfWork unitOfWork, IJwtService jwtService, IBas
         newAccount.Password = Hasher.Hash(dto.Password);
         var currentUser = GetCurrentAccount();
 
-        if (currentUser.HasRole(RoleEnum.Admin))
+        if (currentUser.Role == Role.Admin)
         {
-            if (dto.RoleIds.Any(r => r == RoleEnum.BrandManager))
+            if (dto.Role == Role.BrandManager)
                 newAccount = await CreateBrandManager(newAccount);
-            else if (dto.RoleIds.Any(r => r == RoleEnum.Technician))
-                newAccount = await CreateTechnician(newAccount);
+            else if (dto.Role == Role.Technician)
+                newAccount = CreateTechnician(newAccount);
             else
                 throw new ForbiddenException(currentUser, typeof(Account));
         }
-        else if (currentUser.HasRole(RoleEnum.BrandManager))
+        else if (currentUser.Role == Role.BrandManager)
         {
-            if (dto.RoleIds.Any(r => r == RoleEnum.ShopManager))
+            if (dto.Role == Role.ShopManager)
             {
                 newAccount.BrandId = currentUser.Brand?.Id;
-                newAccount = await CreateShopManager(newAccount);
+                newAccount = CreateShopManager(newAccount);
             }
             else
                 throw new ForbiddenException(currentUser, typeof(Account));
@@ -118,16 +116,16 @@ public class AccountService(IUnitOfWork unitOfWork, IJwtService jwtService, IBas
 
         mapper.Map(dto, account);
         var user = GetCurrentAccount();
-        if (user.HasRole(RoleEnum.Admin))
+        if (user.Role == Role.Admin)
         {
-            if (account.HasRole(RoleEnum.BrandManager) || account.HasRole(RoleEnum.Technician))
+            if (account.Role == Role.BrandManager || account.Role == Role.Technician)
                 unitOfWork.Accounts.Update(account);
             else
                 throw new ForbiddenException(user, account);
         }
-        else if (user.HasRole(RoleEnum.BrandManager))
+        else if (user.Role == Role.BrandManager)
         {
-            if (account.HasRole(RoleEnum.ShopManager) || account.HasRole(RoleEnum.Employee))
+            if (account.Role == Role.ShopManager || account.Role == Role.Employee)
                 unitOfWork.Accounts.Update(account);
             else
                 throw new ForbiddenException(user, account);
@@ -141,18 +139,18 @@ public class AccountService(IUnitOfWork unitOfWork, IJwtService jwtService, IBas
     {
         var user = GetCurrentAccount();
         var account = await GetAccountById(id);
-        if (user.HasRole(RoleEnum.Admin))
+        if (user.Role == Role.Admin)
         {
-            if (!account.HasRole(RoleEnum.BrandManager) && !account.HasRole(RoleEnum.Technician))
+            if (account.Role != Role.BrandManager && account.Role != Role.Technician)
                 throw new ForbiddenException(user, account);
         }
-        else if (user.HasRole(RoleEnum.BrandManager))
+        else if (user.Role == Role.BrandManager)
         {
-            if (!account.HasRole(RoleEnum.ShopManager) && !account.HasRole(RoleEnum.Employee))
+            if (account.Role != Role.ShopManager && account.Role != Role.Employee)
                 throw new ForbiddenException(user, account);
         }
 
-        account.AccountStatusId = AccountStatusEnum.Inactive;
+        account.AccountStatus = AccountStatus.Inactive;
         unitOfWork.Accounts.Update(account);
         await unitOfWork.CompleteAsync();
     }
@@ -181,32 +179,29 @@ public class AccountService(IUnitOfWork unitOfWork, IJwtService jwtService, IBas
             ?? throw new NotFoundException(typeof(Brand), newAccount.BrandId.Value);
 
         if (
-            await unitOfWork
-                .Accounts
-                .CountAsync(
-                    a => a.Roles.Contains(new Role { Id = RoleEnum.BrandManager }) && a.BrandId == newAccount.BrandId
-                ) > 0
+            await unitOfWork.Accounts.CountAsync(a => a.Role == Role.BrandManager && a.BrandId == newAccount.BrandId)
+            > 0
         )
             throw new BadRequestException("Brand manager already exists for this brand");
 
         newAccount.Brand = brand;
         newAccount.ManagingBrand = brand;
-        newAccount.Roles = [await unitOfWork.Roles.GetByIdAsync(RoleEnum.BrandManager)];
-        newAccount.AccountStatusId = AccountStatusEnum.New;
+        newAccount.Role = Role.BrandManager;
+        newAccount.AccountStatus = AccountStatus.New;
         return newAccount;
     }
 
-    private async Task<Account> CreateTechnician(Account newAccount)
+    private Account CreateTechnician(Account newAccount)
     {
-        newAccount.Roles = [await unitOfWork.Roles.GetByIdAsync(RoleEnum.Technician)];
-        newAccount.AccountStatusId = AccountStatusEnum.New;
+        newAccount.Role = Role.Technician;
+        newAccount.AccountStatus = AccountStatus.New;
         return newAccount;
     }
 
-    private async Task<Account> CreateShopManager(Account newAccount)
+    private Account CreateShopManager(Account newAccount)
     {
-        newAccount.Roles = [await unitOfWork.Roles.GetByIdAsync(RoleEnum.ShopManager)];
-        newAccount.AccountStatusId = AccountStatusEnum.New;
+        newAccount.Role = Role.ShopManager;
+        newAccount.AccountStatus = AccountStatus.New;
         return newAccount;
     }
 }

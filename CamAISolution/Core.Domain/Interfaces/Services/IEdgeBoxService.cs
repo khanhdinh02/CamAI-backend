@@ -1,5 +1,6 @@
-﻿using Core.Domain.DTO;
+using Core.Domain.DTO;
 using Core.Domain.Entities;
+using Core.Domain.Enums;
 using Core.Domain.Models;
 
 namespace Core.Domain.Services;
@@ -12,5 +13,5 @@ public interface IEdgeBoxService
     Task<EdgeBox> CreateEdgeBox(CreateEdgeBoxDto edgeBoxDto);
     Task<EdgeBox> UpdateEdgeBox(Guid id, UpdateEdgeBoxDto edgeBoxDto);
     Task DeleteEdgeBox(Guid id);
-    Task UpdateStatus(Guid id, int statusId);
+    Task UpdateStatus(Guid id, EdgeBoxStatus status);
 }

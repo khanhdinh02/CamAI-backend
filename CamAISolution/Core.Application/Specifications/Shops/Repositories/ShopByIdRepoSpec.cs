@@ -10,9 +10,8 @@ public class ShopByIdRepoSpec : EntityByIdSpec<Shop, Guid>
         if (includeAll)
         {
             AddIncludes(s => s.Ward.District.Province);
-            AddIncludes(s => s.ShopStatus);
-            AddIncludes(s => s.Brand.BrandStatus);
-            AddIncludes(nameof(Shop.ShopManager));
+            AddIncludes(s => s.Brand);
+            AddIncludes(s => s.ShopManager!);
         }
     }
 }

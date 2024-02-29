@@ -1,17 +1,18 @@
-﻿using System.Linq.Expressions;
+using System.Linq.Expressions;
 using Core.Domain.Entities;
+using Core.Domain.Enums;
 
 namespace Core.Application.Specifications;
 
 public class EdgeBoxByLocationSpec : Specification<EdgeBox>
 {
-    private readonly int locationId;
+    private readonly EdgeBoxLocation edgeBoxLocation;
 
-    public EdgeBoxByLocationSpec(int edgeBoxLocationId)
+    public EdgeBoxByLocationSpec(EdgeBoxLocation edgeBoxLocation)
     {
-        locationId = edgeBoxLocationId;
+        this.edgeBoxLocation = edgeBoxLocation;
         Expr = GetExpression();
     }
 
-    public override Expression<Func<EdgeBox, bool>> GetExpression() => x => x.EdgeBoxLocationId == locationId;
+    public override Expression<Func<EdgeBox, bool>> GetExpression() => x => x.EdgeBoxLocation == edgeBoxLocation;
 }

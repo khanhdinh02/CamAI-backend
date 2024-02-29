@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using Core.Domain.Entities.Base;
+using Core.Domain.Enums;
 
 namespace Core.Domain.Entities;
 
@@ -13,10 +14,8 @@ public class EdgeBoxInstall : BusinessEntity
     public int Port { get; set; }
     public DateTime ValidFrom { get; set; }
     public DateTime ValidUntil { get; set; }
-    public int EdgeBoxInstallStatusId { get; set; }
+    public EdgeBoxInstallStatus EdgeBoxInstallStatus { get; set; }
 
     public virtual EdgeBox EdgeBox { get; set; } = null!;
     public virtual Shop Shop { get; set; } = null!;
-    public virtual EdgeBoxInstallStatus EdgeBoxInstallStatus { get; set; } = null!;
-    public virtual ICollection<Camera> Cameras { get; set; } = new HashSet<Camera>();
 }

@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Core.Domain.Entities.Base;
+using Core.Domain.Enums;
 
 namespace Core.Domain.Entities;
 
@@ -9,7 +10,6 @@ public class Account : BusinessEntity
     public Account()
     {
         SentNotifications = new HashSet<Notification>();
-        Roles = new HashSet<Role>();
         ReceivedNotifications = new HashSet<AccountNotification>();
     }
 
@@ -28,7 +28,8 @@ public class Account : BusinessEntity
     public int? WardId { get; set; }
     public string? AddressLine { get; set; }
     public Guid? BrandId { get; set; }
-    public int AccountStatusId { get; set; }
+    public Role Role { get; set; }
+    public AccountStatus AccountStatus { get; set; }
 
     /// <summary>
     /// Token which registered in Firebase Cloud Messaging is used for receiving notification
@@ -36,7 +37,6 @@ public class Account : BusinessEntity
     public string? FCMToken { get; set; }
 
     public virtual Ward? Ward { get; set; }
-    public virtual AccountStatus AccountStatus { get; set; } = null!;
 
     /// <summary>
     /// Notifications that sent by this account
@@ -51,8 +51,6 @@ public class Account : BusinessEntity
 
     [InverseProperty(nameof(Brand.BrandManager))]
     public virtual Brand? ManagingBrand { get; set; }
-
     public virtual Shop? ManagingShop { get; set; }
-    public virtual ICollection<Role> Roles { get; set; }
     public virtual ICollection<AccountNotification> ReceivedNotifications { get; set; }
 }

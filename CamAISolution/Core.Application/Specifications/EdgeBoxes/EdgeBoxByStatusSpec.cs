@@ -1,17 +1,18 @@
-﻿using System.Linq.Expressions;
+using System.Linq.Expressions;
 using Core.Domain.Entities;
+using Core.Domain.Enums;
 
 namespace Core.Application.Specifications;
 
 public class EdgeBoxByStatusSpec : Specification<EdgeBox>
 {
-    private readonly int statusId;
+    private readonly EdgeBoxStatus status;
 
-    public EdgeBoxByStatusSpec(int edgeBoxStatusId)
+    public EdgeBoxByStatusSpec(EdgeBoxStatus edgeBoxStatus)
     {
-        statusId = edgeBoxStatusId;
+        status = edgeBoxStatus;
         Expr = GetExpression();
     }
 
-    public override Expression<Func<EdgeBox, bool>> GetExpression() => x => x.EdgeBoxStatusId == statusId;
+    public override Expression<Func<EdgeBox, bool>> GetExpression() => x => x.EdgeBoxStatus == status;
 }

@@ -1,4 +1,4 @@
-﻿using Core.Domain.Entities;
+using Core.Domain.Entities;
 
 namespace Core.Application.Specifications.Repositories;
 
@@ -7,7 +7,6 @@ public class AccountNotificationByAccountIdRepoSpec : RepositorySpec<AccountNoti
     public AccountNotificationByAccountIdRepoSpec(Guid id)
         : base(an => an.AccountId == id)
     {
-        AddIncludes(a => a.Status);
         AddIncludes(a => a.Account);
         AddIncludes(a => a.Notification.SentBy);
     }

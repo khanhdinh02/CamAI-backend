@@ -14,7 +14,6 @@ public class UnitOfWork(CamAIContext context, IServiceProvider serviceProvider) 
     private bool disposed = false;
     private bool haveTransaction = false;
 
-    public IRepository<Role> Roles => serviceProvider.GetRequiredService<IRepository<Role>>();
     public IRepository<Brand> Brands => serviceProvider.GetRequiredService<IRepository<Brand>>();
 
     public IRepository<Shop> Shops => serviceProvider.GetRequiredService<IRepository<Shop>>();
@@ -23,21 +22,9 @@ public class UnitOfWork(CamAIContext context, IServiceProvider serviceProvider) 
     public IRepository<District> Districts => serviceProvider.GetRequiredService<IRepository<District>>();
     public IRepository<Ward> Wards => serviceProvider.GetRequiredService<IRepository<Ward>>();
 
-    public IRepository<ShopStatus> ShopStatuses => serviceProvider.GetRequiredService<IRepository<ShopStatus>>();
-
     public IRepository<Account> Accounts => serviceProvider.GetRequiredService<IRepository<Account>>();
     public IRepository<Employee> Employees => serviceProvider.GetRequiredService<IRepository<Employee>>();
     public IRepository<EdgeBox> EdgeBoxes => serviceProvider.GetRequiredService<IRepository<EdgeBox>>();
-
-    public IRepository<Ticket> Tickets => serviceProvider.GetRequiredService<IRepository<Ticket>>();
-
-    public IRepository<TicketStatus> TicketStatuses => serviceProvider.GetRequiredService<IRepository<TicketStatus>>();
-
-    public IRepository<TicketType> TicketTypes => serviceProvider.GetRequiredService<IRepository<TicketType>>();
-
-    public IRepository<Shift> Shifts => serviceProvider.GetRequiredService<IRepository<Shift>>();
-    public IRepository<EmployeeShift> EmployeeShifts =>
-        serviceProvider.GetRequiredService<IRepository<EmployeeShift>>();
 
     public Task BeginTransaction()
     {

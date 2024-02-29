@@ -1,18 +1,19 @@
 using System.Security.Claims;
 using Core.Domain.DTO;
 using Core.Domain.Entities;
+using Core.Domain.Enums;
 
 namespace Core.Domain.Services;
 
 public interface IJwtService
 {
-    string GenerateToken(Guid userId, IEnumerable<Role> roles, AccountStatus? status, TokenType tokenType);
-    string GenerateToken(Guid userId, IEnumerable<Role> roles, TokenType tokenType);
+    string GenerateToken(Guid userId, Role role, AccountStatus? status, TokenType tokenType);
+    string GenerateToken(Guid userId, Role role, TokenType tokenType);
 
     TokenDetailDto ValidateToken(
         string token,
         TokenType tokenType,
-        int[]? acceptableRoles = null,
+        Role[]? acceptableRoles = null,
         bool isValidateTime = true
     );
 

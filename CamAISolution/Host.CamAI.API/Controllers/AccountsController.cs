@@ -1,5 +1,6 @@
 using Core.Domain.DTO;
 using Core.Domain.Entities;
+using Core.Domain.Enums;
 using Core.Domain.Interfaces.Mappings;
 using Core.Domain.Interfaces.Services;
 using Core.Domain.Models;
@@ -25,7 +26,7 @@ public class AccountsController(IAccountService accountService, IBaseMapping map
     /// <param name="req"></param>
     /// <returns></returns>
     [HttpGet]
-    [AccessTokenGuard(RoleEnum.Admin, RoleEnum.BrandManager)]
+    [AccessTokenGuard(Role.Admin, Role.BrandManager)]
     public async Task<ActionResult<PaginationResult<AccountDto>>> GetAccounts([FromQuery] SearchAccountRequest req)
     {
         var accounts = await accountService.GetAccounts(req);
@@ -55,7 +56,7 @@ public class AccountsController(IAccountService accountService, IBaseMapping map
     /// <param name="account"></param>
     /// <returns>The created account</returns>
     [HttpPost]
-    [AccessTokenGuard(RoleEnum.Admin, RoleEnum.BrandManager)]
+    [AccessTokenGuard(Role.Admin, Role.BrandManager)]
     public async Task<ActionResult<AccountDto>> CreateAccount(CreateAccountDto account)
     {
         var newAccount = await accountService.CreateAccount(account);
@@ -86,7 +87,7 @@ public class AccountsController(IAccountService accountService, IBaseMapping map
     /// <param name="account"></param>
     /// <returns>The updated account</returns>
     [HttpPut("{id}")]
-    [AccessTokenGuard(RoleEnum.Admin, RoleEnum.BrandManager)]
+    [AccessTokenGuard(Role.Admin, Role.BrandManager)]
     public async Task<ActionResult<AccountDto>> UpdateAccount(Guid id, UpdateAccountDto account)
     {
         var updatedAccount = await accountService.UpdateAccount(id, account);
@@ -103,7 +104,7 @@ public class AccountsController(IAccountService accountService, IBaseMapping map
     /// <param name="id"></param>
     /// <returns></returns>
     [HttpDelete("{id}")]
-    [AccessTokenGuard(RoleEnum.Admin, RoleEnum.BrandManager)]
+    [AccessTokenGuard(Role.Admin, Role.BrandManager)]
     public async Task<ActionResult> DeleteAccount(Guid id)
     {
         await accountService.DeleteAccount(id);
