@@ -27,7 +27,7 @@ public class EdgeBoxHealthCheckService(
                     .GetAsync(
                         expression: e =>
                         e.EdgeBox.EdgeBoxStatus == EdgeBoxStatus.Active,
-                        includeProperties: [nameof(EdgeBoxActivity.EdgeBox)],
+                        includeProperties: [nameof(EdgeBoxInstall.Shop)],
                         pageIndex: pageIndex,
                         pageSize: pageSize
                     );
@@ -79,10 +79,7 @@ public class EdgeBoxHealthCheckService(
         }
     }
 
-    private async Task HealthCheckAllFailedEdgeBox(
-        IEnumerable<EdgeBoxInstall> failedHealthCheckEdgeBoxes,
-        CancellationToken cancellation
-    )
+    private async Task HealthCheckAllFailedEdgeBox(IEnumerable<EdgeBoxInstall> failedHealthCheckEdgeBoxes, CancellationToken cancellation)
     {
         var failedEdgeBoxDic = failedHealthCheckEdgeBoxes.ToDictionary(s => s.Id, s => 0);
         while (failedEdgeBoxDic.Any() && !cancellation.IsCancellationRequested)
@@ -93,10 +90,12 @@ public class EdgeBoxHealthCheckService(
                 var currentNumberOfRetry = failedEdgeBoxDic[edgeBoxInstall.Id];
                 using var scope = provider.CreateScope();
                 var edgeBoxInstallService = scope.ServiceProvider.GetRequiredService<IEdgeBoxInstallService>();
+                var notificationService = scope.ServiceProvider.GetRequiredService<INotificationService>();
                 if (currentNumberOfRetry > healthCheckConfiguration.MaxNumberOfRetry)
                 {
                     failedEdgeBoxDic.Remove(edgeBoxInstall.Id);
                     await edgeBoxInstallService.UpdateStatus(edgeBoxInstall.Id, EdgeBoxInstallStatus.Unhealthy, edgeBoxInstall);
+                    await Notification(notificationService, $"Edgebox install's status has been changed to {EdgeBoxInstallStatus.Unhealthy}", edgeBoxInstall);
                     continue;
                 }
                 try
@@ -105,6 +104,7 @@ public class EdgeBoxHealthCheckService(
                     if (res.IsSuccessStatusCode)
                     {
                         failedEdgeBoxDic.Remove(edgeBoxInstall.Id);
+                        await Notification(notificationService, $"Edgebox install's status has been changed to {EdgeBoxInstallStatus.Unhealthy}", edgeBoxInstall);
                         await edgeBoxInstallService.UpdateStatus(edgeBoxInstall.Id, EdgeBoxInstallStatus.Unhealthy, edgeBoxInstall);
                     }
                     else
@@ -122,6 +122,28 @@ public class EdgeBoxHealthCheckService(
             if (durration.Seconds < 5 * 60)
                 await Task.Delay(TimeSpan.FromMinutes(healthCheckConfiguration.RetryDelay - durration.Seconds), cancellation);
         }
+    }
+
+    private async Task Notification(INotificationService notificationSerivce, string content, EdgeBoxInstall edgeBoxInstall)
+    {
+        var sentTo = await GetAdminAccount();
+        if (edgeBoxInstall.Shop.ShopManagerId.HasValue)
+            sentTo.Add(edgeBoxInstall.Shop.ShopManagerId.Value);
+        await notificationSerivce.CreateNotification(new()
+        {
+            Content = content,
+            NotificationType = NotificationType.Urgent,
+            SentToId = sentTo
+        },
+        true
+        );
+    }
+
+    private async Task<ICollection<Guid>> GetAdminAccount()
+    {
+        using var scope = provider.CreateScope();
+        var uow = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+        return (await uow.Accounts.GetAsync(expression: a => a.Role == Role.Admin)).Values.Select(s => s.Id).ToList();
     }
 
     private Task<HttpResponseMessage> SendRequest(string uri)
