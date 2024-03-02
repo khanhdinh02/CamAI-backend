@@ -64,7 +64,7 @@ public class ShopsController(IShopService shopService, IBaseMapping baseMapping)
     public async Task<ActionResult<ShopDto>> UpdateShopStatus(Guid id, ShopStatus shopStatus)
     {
         var updatedShop = await shopService.UpdateShopStatus(id, shopStatus);
-        if (updatedShop.ShopStatus == Core.Domain.Enums.ShopStatus.Inactive)
+        if (updatedShop.ShopStatus == ShopStatus.Inactive)
             return base.Ok();
         return Ok(baseMapping.Map<Shop, ShopDto>(updatedShop));
     }
