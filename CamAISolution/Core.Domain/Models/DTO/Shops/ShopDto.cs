@@ -16,6 +16,7 @@ public class ShopDto : BaseDto
     public string? AddressLine { get; set; }
     public ShopStatus ShopStatus { get; set; }
 
+    public AccountDto ShopManager { get; set; } = null!;
     public WardDto Ward { get; set; } = null!;
     public BrandDto Brand { get; set; } = null!;
 }
