@@ -113,15 +113,12 @@ public class ShopService(
         if (foundShop == null)
             throw new NotFoundException(typeof(Shop), shopId);
 
-        //Check if current user is not a shop manager or a brand manager of this shop and else not an admin, then reject the action.
         var currentAccount = accountService.GetCurrentAccount();
-        var isShopManager = foundShop.ShopManagerId == currentAccount.Id;
         var isBrandManager = currentAccount.BrandId.HasValue && foundShop.BrandId == currentAccount.BrandId.Value;
-        var isAdmin = currentAccount.Role == Role.Admin;
-        if ((isShopManager || isBrandManager) && !isAdmin)
+        if (!isBrandManager)
             throw new ForbiddenException("Current user not allowed to do this action.");
-
-        if (foundShop.ShopStatus != ShopStatus.Active && !isAdmin)
+        // If shop's status is Inactive, only admin can update status
+        if (foundShop.ShopStatus != ShopStatus.Active && currentAccount.Role != Role.Admin)
             throw new BadRequestException("Cannot update inactive shop");
         foundShop.ShopStatus = shopStatus;
         await unitOfWork.CompleteAsync();
