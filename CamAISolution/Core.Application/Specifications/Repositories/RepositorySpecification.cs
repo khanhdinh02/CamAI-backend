@@ -1,6 +1,4 @@
 using System.Linq.Expressions;
-using System.Text.Json.Serialization;
-using Core.Application.Exceptions;
 using Core.Domain.DTO;
 using Core.Domain.Specifications.Repositories;
 
@@ -14,7 +12,7 @@ namespace Core.Application.Specifications.Repositories;
 public abstract class RepositorySpec<T>(Expression<Func<T, bool>>? criteria = null) : IRepositorySpecification<T>
 {
     public Expression<Func<T, bool>>? Criteria => criteria;
-    public List<Expression<Func<T, object>>>? Includes { get; } = new List<Expression<Func<T, object>>>();
+    public List<Expression<Func<T, object?>>>? Includes { get; } = new List<Expression<Func<T, object?>>>();
     public List<string>? IncludeStrings { get; } = new List<string>();
     public Expression<Func<T, object>>? OrderBy { get; private set; }
     public Expression<Func<T, object>>? OrderByDescending { get; private set; }
@@ -24,12 +22,12 @@ public abstract class RepositorySpec<T>(Expression<Func<T, bool>>? criteria = nu
     public bool IsDisableTracking { get; private set; } = false;
     public bool IsOrderBySet { get; private set; } = false;
 
-    protected virtual void AddIncludes(Expression<Func<T, object>> include)
+    protected virtual void AddIncludes(Expression<Func<T, object?>> include)
     {
         Includes?.Add(include);
     }
 
-    protected virtual void AddIncludes(params Expression<Func<T, object>>[] include)
+    protected virtual void AddIncludes(params Expression<Func<T, object?>>[] include)
     {
         Includes?.AddRange(include);
     }
