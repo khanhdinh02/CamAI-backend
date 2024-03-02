@@ -1,10 +1,10 @@
 using System.Linq.Expressions;
-using Core.Domain.Entities.Base;
 using Core.Domain.Models;
 using Core.Domain.Repositories;
 using Core.Domain.Specifications.Repositories;
 using Infrastructure.Repositories.Data;
 using Microsoft.EntityFrameworkCore;
+using static Infrastructure.Repositories.Utils.QueryHelper;
 
 namespace Infrastructure.Repositories.Base;
 
@@ -85,8 +85,6 @@ public class Repository<T>(CamAIContext context, IRepositorySpecificationEvaluat
         if (specification == null)
             return new PaginationResult<T>();
         var query = specificationEvaluator.GetQuery(context.Set<T>(), specification);
-        if (!specification.IsOrderBySet)
-            query = SetDefaultOrderBy(query);
         var count = await CountAsync(specification.Criteria);
         var data = await query.ToListAsync();
         return new PaginationResult<T>
@@ -117,13 +115,5 @@ public class Repository<T>(CamAIContext context, IRepositorySpecificationEvaluat
             Context.Entry(entity).State = EntityState.Modified;
         }
         return entity;
-    }
-
-    private IOrderedQueryable<T> SetDefaultOrderBy(IQueryable<T> query)
-    {
-        if (typeof(BusinessEntity).IsAssignableFrom(typeof(T)))
-            return query.OrderByDescending(e => (e as BusinessEntity)!.CreatedDate);
-        // Order by the primary key of entity
-        return query.OrderBy(e => e);
     }
 }

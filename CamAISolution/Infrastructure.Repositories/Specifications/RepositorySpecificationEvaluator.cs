@@ -1,6 +1,6 @@
 using Core.Domain.Specifications.Repositories;
 using Microsoft.EntityFrameworkCore;
-
+using static Infrastructure.Repositories.Utils.QueryHelper;
 namespace Infrastructure.Repositories.Specifications;
 
 /// <summary>
@@ -27,10 +27,15 @@ public class RepositorySpecificationEvaluator<T> : IRepositorySpecificationEvalu
             query = specification.Includes.Aggregate(query, (current, include) => current.Include(include));
         if (specification.IncludeStrings != null)
             query = specification.IncludeStrings.Aggregate(query, (current, include) => current.Include(include));
-        if (specification.OrderByDescending != null)
-            query = query.OrderByDescending(specification.OrderByDescending);
-        if (specification.OrderBy != null)
-            query = query.OrderBy(specification.OrderBy);
+        if (specification.IsOrderBySet)
+        {
+            if (specification.OrderByDescending != null)
+                query = query.OrderByDescending(specification.OrderByDescending);
+            if (specification.OrderBy != null)
+                query = query.OrderBy(specification.OrderBy);
+        }
+        else
+            query = SetDefaultOrderBy(query);
         if (specification.IsPagingEnabled)
             query = query.Skip(specification.Skip).Take(specification.Take);
         return query;
