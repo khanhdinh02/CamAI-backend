@@ -109,8 +109,6 @@ public class AccountService(IUnitOfWork unitOfWork, IJwtService jwtService, IBas
         var account =
             (await unitOfWork.Accounts.GetAsync(new AccountByIdRepoSpec(id))).Values.FirstOrDefault()
             ?? throw new NotFoundException(typeof(Account), id);
-        if (dto.Email != account.Email && await unitOfWork.Accounts.CountAsync(a => a.Email == dto.Email) > 0)
-            throw new BadRequestException("Email is already taken");
         if (dto.WardId != null && !await unitOfWork.Wards.IsExisted(dto.WardId))
             throw new NotFoundException(typeof(Ward), dto.WardId);
 
