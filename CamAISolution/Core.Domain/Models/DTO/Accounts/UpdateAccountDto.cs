@@ -1,14 +1,10 @@
 using System.ComponentModel.DataAnnotations;
-using System.Text.Json.Serialization;
 using Core.Domain.Enums;
 
 namespace Core.Domain.DTO;
 
 public class UpdateAccountDto
 {
-    [EmailAddress]
-    public string Email { get; set; } = null!;
-
     [StringLength(50)]
     public string Name { get; set; } = null!;
     public Gender Gender { get; set; }
