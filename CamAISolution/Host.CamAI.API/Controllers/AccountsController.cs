@@ -27,10 +27,10 @@ public class AccountsController(IAccountService accountService, IBaseMapping map
     /// <returns></returns>
     [HttpGet]
     [AccessTokenGuard(Role.Admin, Role.BrandManager)]
-    public async Task<ActionResult<PaginationResult<AccountDto>>> GetAccounts([FromQuery] SearchAccountRequest req)
+    public async Task<ActionResult<PaginationResult<AccountDtoWithBrand>>> GetAccounts([FromQuery] SearchAccountRequest req)
     {
         var accounts = await accountService.GetAccounts(req);
-        return mapper.Map<Account, AccountDto>(accounts);
+        return mapper.Map<Account, AccountDtoWithBrand>(accounts);
     }
 
     /// <summary>
@@ -39,10 +39,10 @@ public class AccountsController(IAccountService accountService, IBaseMapping map
     /// <param name="id"></param>
     /// <returns></returns>
     [HttpGet("{id}")]
-    public async Task<ActionResult<AccountDto>> GetAccountById(Guid id)
+    public async Task<ActionResult<AccountDtoWithBrand>> GetAccountById(Guid id)
     {
         var account = await accountService.GetAccountById(id);
-        return mapper.Map<Account, AccountDto>(account);
+        return mapper.Map<Account, AccountDtoWithBrand>(account);
     }
 
     /// <summary>
@@ -57,10 +57,10 @@ public class AccountsController(IAccountService accountService, IBaseMapping map
     /// <returns>The created account</returns>
     [HttpPost]
     [AccessTokenGuard(Role.Admin, Role.BrandManager)]
-    public async Task<ActionResult<AccountDto>> CreateAccount(CreateAccountDto account)
+    public async Task<ActionResult<AccountDtoWithBrand>> CreateAccount(CreateAccountDto account)
     {
         var newAccount = await accountService.CreateAccount(account);
-        return mapper.Map<Account, AccountDto>(newAccount);
+        return mapper.Map<Account, AccountDtoWithBrand>(newAccount);
     }
 
     /// <summary>
@@ -88,10 +88,10 @@ public class AccountsController(IAccountService accountService, IBaseMapping map
     /// <returns>The updated account</returns>
     [HttpPut("{id}")]
     [AccessTokenGuard(Role.Admin, Role.BrandManager)]
-    public async Task<ActionResult<AccountDto>> UpdateAccount(Guid id, UpdateAccountDto account)
+    public async Task<ActionResult<AccountDtoWithBrand>> UpdateAccount(Guid id, UpdateAccountDto account)
     {
         var updatedAccount = await accountService.UpdateAccount(id, account);
-        return mapper.Map<Account, AccountDto>(updatedAccount);
+        return mapper.Map<Account, AccountDtoWithBrand>(updatedAccount);
     }
 
     /// <summary>

@@ -36,7 +36,7 @@ builder
     .AddObserver(builder.Configuration)
     .AddNotification(builder.Configuration.GetRequiredSection("GoogleSecret").Get<GoogleSecret>());
 
-builder.ConfigureMassTransit();
+// builder.ConfigureMassTransit();
 
 builder.Services.Configure<RouteOptions>(opts =>
 {

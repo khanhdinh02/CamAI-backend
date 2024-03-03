@@ -10,8 +10,9 @@ public class AccountProfile : Profile
     {
         CreateMap<CreateAccountDto, Account>();
         CreateMap<UpdateAccountDto, Account>();
-        CreateMap<Account, AccountDto>();
-        CreateMap<Account, AccountDtoWithoutBrand>();
+        CreateMap<Account, AccountDtoWithBrand>();
+        CreateMap<Account, AccountDtoWithShop>();
+        CreateMap<Account, AccountDtoWithoutBrandAndShop>();
         CreateMap<UpdateProfileDto, Account>();
     }
 }

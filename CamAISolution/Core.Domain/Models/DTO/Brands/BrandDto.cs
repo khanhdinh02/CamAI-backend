@@ -16,5 +16,5 @@ public class BrandDtoWithoutBrandManager : BaseDto
 
 public class BrandDto : BrandDtoWithoutBrandManager
 {
-    public AccountDtoWithoutBrand? BrandManager { get; set; }
+    public AccountDtoWithoutBrandAndShop? BrandManager { get; set; }
 }
