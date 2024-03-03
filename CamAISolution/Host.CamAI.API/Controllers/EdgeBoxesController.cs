@@ -54,7 +54,6 @@ public class EdgeBoxesController(IEdgeBoxService edgeBoxService, IBaseMapping ma
     [AccessTokenGuard(Role.Admin)]
     public async Task<IActionResult> DeleteEdgeBox([FromRoute] Guid id)
     {
-        // TODO [Duy]: discuss what to return for delete
         await edgeBoxService.DeleteEdgeBox(id);
         return Accepted();
     }
