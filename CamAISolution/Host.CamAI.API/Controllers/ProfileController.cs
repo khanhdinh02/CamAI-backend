@@ -13,15 +13,15 @@ public class ProfileController(IAccountService accountService, IBaseMapping mapp
 {
     [AccessTokenGuard]
     [HttpGet]
-    public AccountDtoWithBrand GetProfile()
+    public AccountDto GetProfile()
     {
-        return mapper.Map<Account, AccountDtoWithBrand>(accountService.GetCurrentAccount());
+        return mapper.Map<Account, AccountDto>(accountService.GetCurrentAccount());
     }
 
     [AccessTokenGuard]
     [HttpPut]
-    public async Task<AccountDtoWithBrand> UpdateProfile(UpdateProfileDto dto)
+    public async Task<AccountDto> UpdateProfile(UpdateProfileDto dto)
     {
-        return mapper.Map<Account, AccountDtoWithBrand>(await accountService.UpdateProfile(dto));
+        return mapper.Map<Account, AccountDto>(await accountService.UpdateProfile(dto));
     }
 }

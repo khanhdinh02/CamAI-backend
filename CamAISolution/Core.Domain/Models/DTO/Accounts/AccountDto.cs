@@ -2,7 +2,7 @@ using Core.Domain.Enums;
 
 namespace Core.Domain.DTO;
 
-public class AccountDtoWithoutBrandAndShop : BaseDto
+public class AccountDto : BaseDto
 {
     public string Email { get; set; } = null!;
     public string Name { get; set; } = null!;
@@ -13,16 +13,8 @@ public class AccountDtoWithoutBrandAndShop : BaseDto
     public string? AddressLine { get; set; }
     public Role Role { get; set; }
     public AccountStatus AccountStatus { get; set; }
+    public BrandDto? Brand { get; set; }
+    public ShopDto? ManagingShop { get; set; }
 
     public WardDto? Ward { get; set; }
-}
-
-public class AccountDtoWithBrand : AccountDtoWithoutBrandAndShop
-{
-    public BrandDtoWithoutBrandManager? Brand { get; set; }
-}
-
-public class AccountDtoWithShop : AccountDtoWithoutBrandAndShop
-{
-    public ShopDto? ManagingShop { get; set; }
 }

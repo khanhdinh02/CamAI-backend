@@ -10,9 +10,9 @@ public class AccountProfile : Profile
     {
         CreateMap<CreateAccountDto, Account>();
         CreateMap<UpdateAccountDto, Account>();
-        CreateMap<Account, AccountDtoWithBrand>();
-        CreateMap<Account, AccountDtoWithShop>();
-        CreateMap<Account, AccountDtoWithoutBrandAndShop>();
+        CreateMap<Account, AccountDto>()
+            .ForPath(x => x.ManagingShop!.ShopManager, opts => opts.Ignore())
+            .ForPath(x => x.Brand!.BrandManager, opts => opts.Ignore());
         CreateMap<UpdateProfileDto, Account>();
     }
 }
