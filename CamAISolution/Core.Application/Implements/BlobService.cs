@@ -1,4 +1,4 @@
-﻿using Core.Application.Exceptions;
+using Core.Application.Exceptions;
 using Core.Domain.DTO;
 using Core.Domain.Entities;
 using Core.Domain.Models.Configurations;
@@ -18,7 +18,7 @@ public class BlobService(IUnitOfWork unitOfWork, ImageConfiguration imgConfig) :
 
     public async Task StoreImageToFileSystem(string destination, byte[] imageBytes)
     {
-        if (imageBytes.Length > imgConfig.MaxImageSize * 1024 * 1024)
+        if (imageBytes.Length > imgConfig.MaxImageSize * 1024 * 1024 / 8)
             throw new BadRequestException($"Image's size must less than or equal to {imgConfig.MaxImageSize} MB");
 
         using var file = File.Create(destination);
