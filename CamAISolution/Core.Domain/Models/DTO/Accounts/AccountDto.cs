@@ -10,6 +10,7 @@ public class AccountDto : BaseDto
     public string? Phone { get; set; }
     public DateOnly? Birthday { get; set; }
     public int? WardId { get; set; }
+    public Guid? BrandId { get; set; }
     public string? AddressLine { get; set; }
     public Role Role { get; set; }
     public AccountStatus AccountStatus { get; set; }
