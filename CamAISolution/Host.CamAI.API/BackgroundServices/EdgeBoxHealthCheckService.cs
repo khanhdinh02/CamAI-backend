@@ -26,8 +26,6 @@ public class EdgeBoxHealthCheckService(
             {
                 var edgeBoxInstallsPagination = await uow.GetRepository<EdgeBoxInstall>()
                     .GetAsync(
-                        expression: e =>
-                        e.EdgeBox.EdgeBoxStatus == EdgeBoxStatus.Active,
                         includeProperties: [nameof(EdgeBoxInstall.Shop)],
                         pageIndex: pageIndex,
                         pageSize: pageSize
