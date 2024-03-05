@@ -1,4 +1,4 @@
-﻿using Core.Domain.DTO;
+using Core.Domain.DTO;
 
 namespace Host.CamAI.API.Models;
 

@@ -3,7 +3,7 @@ using Core.Domain.Models.DTO;
 
 namespace Core.Domain.DTO;
 
-public class BrandDtoWithoutBrandManager : BaseDto
+public class BrandDto : BaseDto
 {
     public string Name { get; set; } = null!;
     public string? Email { get; set; }
@@ -12,9 +12,5 @@ public class BrandDtoWithoutBrandManager : BaseDto
     public ImageDto? Banner { get; set; }
     public Guid? BrandManagerId { get; set; }
     public BrandStatus BrandStatus { get; set; }
-}
-
-public class BrandDto : BrandDtoWithoutBrandManager
-{
-    public AccountDtoWithoutBrand? BrandManager { get; set; }
+    public AccountDto? BrandManager { get; set; }
 }
