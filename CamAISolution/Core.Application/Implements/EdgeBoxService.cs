@@ -81,14 +81,17 @@ public class EdgeBoxService(IUnitOfWork unitOfWork, IAccountService accountServi
                 NewStatus = status,
             });
             edgeBox.EdgeBoxStatus = status;
-            
+
             unitOfWork.EdgeBoxes.Update(edgeBox);
+            if (status == EdgeBoxStatus.Inactive)
+            {
+                var edgeboxInstalls = (await unitOfWork.GetRepository<EdgeBoxInstall>().GetAsync(expression: ei => ei.EdgeBoxId == id, takeAll: true)).Values;
+                foreach (var ei in edgeboxInstalls)
+                {
+                    ei.EdgeBoxInstallStatus = EdgeBoxInstallStatus.Unhealthy;
+                }
+            }
             await unitOfWork.CommitTransaction();
         }
-    }
-
-    public async Task<IEnumerable<EdgeBox>> GetEdgeBoxes()
-    {
-        return (await unitOfWork.EdgeBoxes.GetAsync(takeAll: true)).Values;
     }
 }

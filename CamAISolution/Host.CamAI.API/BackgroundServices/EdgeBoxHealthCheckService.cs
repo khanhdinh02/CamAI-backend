@@ -4,6 +4,7 @@ using Core.Domain.Enums;
 using Core.Domain.Interfaces.Services;
 using Core.Domain.Models.Configurations;
 using Core.Domain.Repositories;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace Host.CamAI.API.BackgroundServices;
 
@@ -117,10 +118,10 @@ public class EdgeBoxHealthCheckService(
                 }
             }
             var endOperationTime = new TimeSpan(DateTime.Now.Ticks);
-            var durration = endOperationTime.Subtract(startOperationTime);
+            var duration = endOperationTime.Subtract(startOperationTime);
 
-            if (durration.Seconds < 5 * 60)
-                await Task.Delay(TimeSpan.FromMinutes(healthCheckConfiguration.RetryDelay - durration.Seconds), cancellation);
+            if (duration.Seconds < 5 * 60)
+                await Task.Delay(TimeSpan.FromMinutes(healthCheckConfiguration.RetryDelay - duration.Seconds), cancellation);
         }
     }
 
@@ -142,8 +143,18 @@ public class EdgeBoxHealthCheckService(
     private async Task<ICollection<Guid>> GetAdminAccount()
     {
         using var scope = provider.CreateScope();
-        var uow = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
-        return (await uow.Accounts.GetAsync(expression: a => a.Role == Role.Admin)).Values.Select(s => s.Id).ToList();
+        var cache = scope.ServiceProvider.GetRequiredService<IMemoryCache>();
+        var adminAccounts = cache.Get<IList<Account>>("AdminAccounts");
+        if (adminAccounts == null)
+        {
+
+            var uow = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+            adminAccounts = (await uow.Accounts.GetAsync(expression: a => a.Role == Role.Admin, takeAll: true)).Values;
+            //TODO [Dat]: Consider to set expired time.
+            cache.Set("AdminAccounts", adminAccounts);
+        }
+
+        return adminAccounts.Select(s => s.Id).ToList();
     }
 
     private Task<HttpResponseMessage> SendRequest(string uri)
