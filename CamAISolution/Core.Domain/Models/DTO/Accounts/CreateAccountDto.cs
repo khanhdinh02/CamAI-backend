@@ -9,15 +9,15 @@ public class CreateAccountDto
     public string Email { get; set; } = null!;
     public string Password { get; set; } = null!;
 
-    [StringLength(50)]
+    [StringLength(50, MinimumLength = 1)]
     public string Name { get; set; } = null!;
     public Gender Gender { get; set; }
 
     [StringLength(50)]
-    public string Phone { get; set; } = null!;
-    public DateOnly Birthday { get; set; }
+    public string? Phone { get; set; }
+    public DateOnly? Birthday { get; set; }
     public int? WardId { get; set; }
-    public string? AddressLine { get; set; } = null!;
+    public string? AddressLine { get; set; }
     public Guid? BrandId { get; set; }
     public Role Role { get; set; }
 }

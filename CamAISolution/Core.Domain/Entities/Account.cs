@@ -18,8 +18,6 @@ public class Account : BusinessEntity
 
     [StringLength(50)]
     public string Name { get; set; } = null!;
-
-    [StringLength(20)]
     public Gender? Gender { get; set; }
 
     [StringLength(50)]
