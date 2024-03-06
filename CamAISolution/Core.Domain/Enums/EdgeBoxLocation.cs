@@ -8,6 +8,5 @@ public enum EdgeBoxLocation
     Idle = 1,
     Installing = 2,
     Occupied = 3,
-    Uninstalling = 4,
-    Disposed = 5
+    Uninstalling = 4
 }

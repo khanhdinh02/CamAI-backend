@@ -12,6 +12,8 @@ public interface IUnitOfWork : IDisposable, IAsyncDisposable
     IRepository<Account> Accounts { get; }
     IRepository<Employee> Employees { get; }
     IRepository<EdgeBox> EdgeBoxes { get; }
+    IRepository<EdgeBoxInstall> EdgeBoxInstalls { get; }
+    IRepository<EdgeBoxModel> EdgeBoxModels { get; }
     Task BeginTransaction();
     Task CommitTransaction();
     Task RollBack();
