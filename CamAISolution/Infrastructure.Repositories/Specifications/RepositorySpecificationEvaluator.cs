@@ -36,6 +36,12 @@ public class RepositorySpecificationEvaluator<T> : IRepositorySpecificationEvalu
         }
         else
             query = SetDefaultOrderBy(query);
+        if (specification.OrderByDescending != null)
+            query = query.OrderByDescending(specification.OrderByDescending);
+        if (specification.OrderBy != null)
+            query = query.OrderBy(specification.OrderBy);
+        if (specification.SelectedProperties != null)
+            query = query.Select(specification.SelectedProperties);
         if (specification.IsPagingEnabled)
             query = query.Skip(specification.Skip).Take(specification.Take);
         return query;

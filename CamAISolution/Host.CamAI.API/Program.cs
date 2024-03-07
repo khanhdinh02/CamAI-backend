@@ -34,7 +34,8 @@ builder
     .AddServices(builder.Configuration)
     .AddMapping()
     .AddObserver(builder.Configuration)
-    .AddNotification(builder.Configuration.GetRequiredSection("GoogleSecret").Get<GoogleSecret>());
+    .AddNotification(builder.Configuration.GetRequiredSection("GoogleSecret").Get<GoogleSecret>())
+    .AddBackgroundService();
 
 // builder.ConfigureMassTransit();
 

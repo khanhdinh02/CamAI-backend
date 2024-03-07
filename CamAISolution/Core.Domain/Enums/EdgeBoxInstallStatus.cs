@@ -5,6 +5,7 @@ namespace Core.Domain.Enums;
 [Lookup]
 public enum EdgeBoxInstallStatus
 {
-    Valid = 1,
-    Expired = 2
+    Healthy = 1,
+    Unhealthy = 2,
+    Disabled = 3,
 }
