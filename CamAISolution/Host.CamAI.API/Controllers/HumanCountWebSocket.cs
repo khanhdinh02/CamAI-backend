@@ -23,9 +23,17 @@ public class HumanCountWebSocket(WebSocket webSocket, IReportService reportServi
         );
         while (webSocket.State == WebSocketState.Open)
         {
+            Thread.Sleep(5000);
             if (await CheckCloseMessage())
                 continue;
 
+            var humanCount = new HumanCountModel
+            {
+                Time = DateTime.Now,
+                Total = Random.Shared.Next(1, 5),
+                ShopId = Guid.Empty
+            };
+            buffer.Write(humanCount);
             if (buffer.Count > 0)
             {
                 var result = buffer.Read();
