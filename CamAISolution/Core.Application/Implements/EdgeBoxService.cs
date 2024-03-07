@@ -24,16 +24,70 @@ public class EdgeBoxService(IUnitOfWork unitOfWork, IAccountService accountServi
 
     public async Task<PaginationResult<EdgeBox>> GetEdgeBoxes(SearchEdgeBoxRequest searchRequest)
     {
-        var edgeBoxes = await unitOfWork.EdgeBoxes.GetAsync(new EdgeBoxSearchSpec(searchRequest));
-        return edgeBoxes;
+        var crit = new EdgeBoxSearchSpec(searchRequest).Criteria;
+        IEnumerable<EdgeBox> edgeBoxes = (await unitOfWork.EdgeBoxes.GetAsync(crit, takeAll: true)).Values;
+        if (searchRequest.BrandId.HasValue)
+            edgeBoxes = edgeBoxes.IntersectBy(
+                (await GetEdgeBoxesByBrand(searchRequest.BrandId.Value)).Select(eb => eb.Id),
+                eb => eb.Id
+            );
+        if (searchRequest.ShopId.HasValue)
+            edgeBoxes = edgeBoxes.IntersectBy(
+                (await GetEdgeBoxesByShop(searchRequest.ShopId.Value)).Select(eb => eb.Id),
+                eb => eb.Id
+            );
+        return new PaginationResult<EdgeBox>(edgeBoxes, searchRequest.PageIndex, searchRequest.Size);
+    }
+
+    public async Task<IEnumerable<EdgeBox>> GetEdgeBoxesByShop(Guid shopId)
+    {
+        // The edge box is currently installed in a shop if EdgeBoxLocation is neither Idle nor Disposed
+        // The current shop that the edge box is installed in is the shop that has the latest installation record
+        return (
+            await unitOfWork
+                .EdgeBoxes
+                .GetAsync(
+                    eb => eb.EdgeBoxLocation != EdgeBoxLocation.Idle,
+                    null,
+                    [nameof(EdgeBox.Installs)],
+                    true,
+                    true
+                )
+        )
+            .Values
+            .Where(eb => eb.Installs.MaxBy(i => i.ValidUntil)?.ShopId == shopId)
+            .ToList();
+    }
+
+    public async Task<IEnumerable<EdgeBox>> GetEdgeBoxesByBrand(Guid brandId)
+    {
+        // The edge box is currently installed in a Brand if EdgeBoxLocation is neither Idle nor Disposed
+        // The current Brand that the edge box is installed in is the Brand that has the latest installation record
+        return (
+            await unitOfWork
+                .EdgeBoxes
+                .GetAsync(
+                    eb => eb.EdgeBoxLocation != EdgeBoxLocation.Idle,
+                    null,
+                    [$"{nameof(EdgeBox.Installs)}.{nameof(EdgeBoxInstall.Shop)}"],
+                    true,
+                    true
+                )
+        )
+            .Values
+            .Where(eb => eb.Installs.MaxBy(i => i.ValidUntil)?.Shop?.BrandId == brandId)
+            .ToList();
     }
 
     public async Task<EdgeBox> CreateEdgeBox(CreateEdgeBoxDto edgeBoxDto)
     {
-        // TODO: Check if the edge box model exists
+        _ =
+            await unitOfWork.EdgeBoxModels.GetByIdAsync(edgeBoxDto.EdgeBoxModelId)
+            ?? throw new NotFoundException(typeof(EdgeBoxModel), edgeBoxDto.EdgeBoxModelId);
+
         var edgeBox = mapping.Map<CreateEdgeBoxDto, EdgeBox>(edgeBoxDto);
         edgeBox.EdgeBoxStatus = EdgeBoxStatus.Active;
-        edgeBox.EdgeBoxLocation = Domain.Enums.EdgeBoxLocation.Idle;
+        edgeBox.EdgeBoxLocation = EdgeBoxLocation.Idle;
         edgeBox = await unitOfWork.EdgeBoxes.AddAsync(edgeBox);
         await unitOfWork.CompleteAsync();
         return edgeBox;
@@ -49,6 +103,10 @@ public class EdgeBoxService(IUnitOfWork unitOfWork, IAccountService accountServi
         if (foundEdgeBox.EdgeBoxStatus == EdgeBoxStatus.Inactive && currentAccount.Role != Role.Admin)
             throw new BadRequestException("Cannot modified inactive edgeBox");
 
+        _ =
+            await unitOfWork.EdgeBoxModels.GetByIdAsync(edgeBoxDto.EdgeBoxModelId)
+            ?? throw new NotFoundException(typeof(EdgeBoxModel), edgeBoxDto.EdgeBoxModelId);
+
         mapping.Map(edgeBoxDto, foundEdgeBox);
         await unitOfWork.CompleteAsync();
         return await GetEdgeBoxById(id);
@@ -56,14 +114,24 @@ public class EdgeBoxService(IUnitOfWork unitOfWork, IAccountService accountServi
 
     public async Task DeleteEdgeBox(Guid id)
     {
-        var edgeBox = await unitOfWork.EdgeBoxes.GetByIdAsync(id);
+        var edgeBox = (
+            await unitOfWork.EdgeBoxes.GetAsync(eb => eb.Id == id, includeProperties: [nameof(EdgeBox.Installs)])
+        )
+            .Values
+            .FirstOrDefault();
+
         if (edgeBox == null)
             return;
+        if (edgeBox.Installs.Count == 0)
+            unitOfWork.EdgeBoxes.Delete(edgeBox);
+        else
+        {
+            if (edgeBox.EdgeBoxLocation != EdgeBoxLocation.Idle)
+                throw new ConflictException($"Cannot delete edge box that is not idle, id {id}");
+            edgeBox.EdgeBoxStatus = EdgeBoxStatus.Disposed;
+            unitOfWork.EdgeBoxes.Update(edgeBox);
+        }
 
-        if (edgeBox.EdgeBoxLocation != EdgeBoxLocation.Idle)
-            throw new ConflictException($"Cannot delete edge box that is not idle, id {id}");
-
-        unitOfWork.EdgeBoxes.Delete(edgeBox);
         await unitOfWork.CompleteAsync();
     }
 
