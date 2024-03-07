@@ -1,11 +1,12 @@
 using System.ComponentModel.DataAnnotations;
 using Core.Domain.DTO;
+using Host.CamAI.API.Attributes;
 
 namespace Host.CamAI.API.Models;
 
 public class ControllerCreateImageDto
 {
-    [Required]
+    [Required, FileSizeLimit(50)]
     public IFormFile File { get; set; } = null!;
 
     public async Task<CreateImageDto> ToCreateImageDto()

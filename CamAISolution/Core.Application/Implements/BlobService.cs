@@ -18,9 +18,6 @@ public class BlobService(IUnitOfWork unitOfWork, ImageConfiguration imgConfig) :
 
     public async Task StoreImageToFileSystem(string destination, byte[] imageBytes)
     {
-        if (imageBytes.Length > imgConfig.MaxImageSize * 1024 * 1024 / 8)
-            throw new BadRequestException($"Image's size must less than or equal to {imgConfig.MaxImageSize} MB");
-
         using var file = File.Create(destination);
         await file.WriteAsync(imageBytes);
     }
