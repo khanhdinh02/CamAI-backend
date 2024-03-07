@@ -2,8 +2,8 @@
 
 namespace Core.Domain.Interfaces.Events;
 
-public interface IClassifierObserver
+public interface IHumanCountObserver
 {
     Guid ShopId { get; }
-    void ReceiveData(ClassifierModel model);
+    void ReceiveData(HumanCountModel model);
 }

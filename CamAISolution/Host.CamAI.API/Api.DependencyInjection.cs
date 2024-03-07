@@ -26,7 +26,7 @@ public static class ApiDependencyInjection
         services.AddScoped<IEdgeBoxInstallService, EdgeBoxInstallService>();
         services.AddSingleton<EventManager>();
         services.AddScoped<IReportService, ReportService>();
-        services.AddSingleton<EventManager>().AddSingleton<ClassifierSubject>();
+        services.AddSingleton<EventManager>().AddSingleton<HumanCountSubject>();
         return services;
     }
 
