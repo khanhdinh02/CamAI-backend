@@ -30,7 +30,7 @@ public class EdgeBoxHealthCheckService(
                         pageIndex: pageIndex,
                         pageSize: pageSize
                     );
-                await HandleEdgeBoxInstallHealthcheck(edgeBoxInstallsPagination.Values, stoppingToken, uow);
+                await HandleEdgeBoxInstallHealthCheck(edgeBoxInstallsPagination.Values, stoppingToken, uow);
                 if (pageIndex * edgeBoxInstallsPagination.PageSize + edgeBoxInstallsPagination.Values.Count >= edgeBoxInstallsPagination.TotalCount)
                     break;
                 else
@@ -40,7 +40,7 @@ public class EdgeBoxHealthCheckService(
         }
     }
 
-    private async Task HandleEdgeBoxInstallHealthcheck(IEnumerable<EdgeBoxInstall> edgeBoxInstalls, CancellationToken cancellation, IUnitOfWork uow)
+    private async Task HandleEdgeBoxInstallHealthCheck(IEnumerable<EdgeBoxInstall> edgeBoxInstalls, CancellationToken cancellation, IUnitOfWork uow)
     {
         HashSet<EdgeBoxInstall> failedEdgeBoxInstall = new();
         await uow.BeginTransaction();
@@ -123,12 +123,12 @@ public class EdgeBoxHealthCheckService(
         }
     }
 
-    private async Task Notification(INotificationService notificationSerivce, string content, EdgeBoxInstall edgeBoxInstall)
+    private async Task Notification(INotificationService notificationService, string content, EdgeBoxInstall edgeBoxInstall)
     {
-        var sentTo = await GetAdminAccount();
+        var sentTo = await GetAdminAccounts();
         if (edgeBoxInstall.Shop.ShopManagerId.HasValue)
             sentTo.Add(edgeBoxInstall.Shop.ShopManagerId.Value);
-        await notificationSerivce.CreateNotification(new()
+        await notificationService.CreateNotification(new()
         {
             Content = content,
             NotificationType = NotificationType.Urgent,
@@ -138,21 +138,17 @@ public class EdgeBoxHealthCheckService(
         );
     }
 
-    private async Task<ICollection<Guid>> GetAdminAccount()
+    private async Task<ICollection<Guid>> GetAdminAccounts()
     {
         using var scope = provider.CreateScope();
         var cache = scope.ServiceProvider.GetRequiredService<IMemoryCache>();
-        var adminAccounts = cache.Get<IList<Account>>("AdminAccounts");
-        if (adminAccounts == null)
+        var adminAccounts = await cache.GetOrCreateAsync("AdminAccounts", async (entry) =>
         {
-
             var uow = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
-            adminAccounts = (await uow.Accounts.GetAsync(expression: a => a.Role == Role.Admin, takeAll: true)).Values;
-            //TODO [Dat]: Consider to set expired time.
-            cache.Set("AdminAccounts", adminAccounts);
-        }
+            return (await uow.Accounts.GetAsync(expression: a => a.Role == Role.Admin, takeAll: true)).Values;
+        });
 
-        return adminAccounts.Select(s => s.Id).ToList();
+        return adminAccounts!.Select(s => s.Id).ToList();
     }
 
     private Task<HttpResponseMessage> SendRequest(string uri)

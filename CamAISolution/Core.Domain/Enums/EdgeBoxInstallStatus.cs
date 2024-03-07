@@ -6,5 +6,6 @@ namespace Core.Domain.Enums;
 public enum EdgeBoxInstallStatus
 {
     Healthy = 1,
-    Unhealthy = 2
+    Unhealthy = 2,
+    Disabled = 3,
 }

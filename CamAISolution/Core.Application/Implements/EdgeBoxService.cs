@@ -11,7 +11,7 @@ using Core.Domain.Services;
 
 namespace Core.Application.Implements;
 
-public class EdgeBoxService(IUnitOfWork unitOfWork, IAccountService accountService, IBaseMapping mapping)
+public class EdgeBoxService(IUnitOfWork unitOfWork, IAccountService accountService, IEdgeBoxInstallService edgeBoxInstallService, IBaseMapping mapping)
     : IEdgeBoxService
 {
     public async Task<EdgeBox> GetEdgeBoxById(Guid id)
@@ -85,10 +85,10 @@ public class EdgeBoxService(IUnitOfWork unitOfWork, IAccountService accountServi
             unitOfWork.EdgeBoxes.Update(edgeBox);
             if (status == EdgeBoxStatus.Inactive)
             {
-                var edgeboxInstalls = (await unitOfWork.GetRepository<EdgeBoxInstall>().GetAsync(expression: ei => ei.EdgeBoxId == id, takeAll: true)).Values;
-                foreach (var ei in edgeboxInstalls)
+                var edgeBoxInstalls = (await unitOfWork.GetRepository<EdgeBoxInstall>().GetAsync(expression: ei => ei.EdgeBoxId == id && ei.EdgeBoxInstallStatus != EdgeBoxInstallStatus.Disabled, takeAll: true)).Values;
+                foreach (var ei in edgeBoxInstalls)
                 {
-                    ei.EdgeBoxInstallStatus = EdgeBoxInstallStatus.Unhealthy;
+                    await edgeBoxInstallService.UpdateStatus(ei.Id, EdgeBoxInstallStatus.Unhealthy, ei);
                 }
             }
             await unitOfWork.CommitTransaction();
