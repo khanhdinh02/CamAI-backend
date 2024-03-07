@@ -30,7 +30,7 @@ public class EdgeBoxHealthCheckService(
                         pageIndex: pageIndex,
                         pageSize: pageSize
                     );
-                await HandleEdgeBoxInstallHealthCheck(edgeBoxInstallsPagination.Values, stoppingToken, uow);
+                // await HandleEdgeBoxInstallHealthCheck(edgeBoxInstallsPagination.Values, stoppingToken, uow);
                 if (pageIndex * edgeBoxInstallsPagination.PageSize + edgeBoxInstallsPagination.Values.Count >= edgeBoxInstallsPagination.TotalCount)
                     break;
                 else
