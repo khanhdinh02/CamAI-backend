@@ -2,11 +2,10 @@
 using Host.CamAI.API.Consumers.Contracts;
 using Infrastructure.MessageQueue;
 using MassTransit;
-using Serilog;
 
 namespace Host.CamAI.API.Consumers;
 
-[Consumer("{MachineName}", ConsumerConstant.Classifier)]
+[Consumer("{MachineName}_HumanCount", ConsumerConstant.Classifier)]
 public class ClassifierConsumer(ClassifierSubject subject) : IConsumer<ClassifierModelContract>
 {
     public Task Consume(ConsumeContext<ClassifierModelContract> context)

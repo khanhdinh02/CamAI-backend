@@ -14,6 +14,7 @@ public interface IUnitOfWork : IDisposable, IAsyncDisposable
     IRepository<EdgeBox> EdgeBoxes { get; }
     IRepository<EdgeBoxInstall> EdgeBoxInstalls { get; }
     IRepository<EdgeBoxModel> EdgeBoxModels { get; }
+    IRepository<Incident> Incidents { get; }
     Task BeginTransaction();
     Task CommitTransaction();
     Task RollBack();

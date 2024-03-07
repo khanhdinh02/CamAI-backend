@@ -7,4 +7,5 @@ public static class ConsumerConstant
     public const string UpdateData = "UpdateData";
 
     public const string Classifier = "Classifier";
+    public const string Detection = "Detection";
 }
