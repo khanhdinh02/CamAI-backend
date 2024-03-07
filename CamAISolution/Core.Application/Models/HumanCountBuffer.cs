@@ -4,9 +4,9 @@ using Core.Domain.Models.Consumers;
 
 namespace Core.Application.Models;
 
-public class ClassifierBuffer : CircularBuffer<ClassifierModel>, IClassifierObserver
+public class HumanCountBuffer : CircularBuffer<HumanCountModel>, IHumanCountObserver
 {
-    public ClassifierBuffer(ClassifierSubject subject, Guid shopId)
+    public HumanCountBuffer(HumanCountSubject subject, Guid shopId)
         : base(10)
     {
         ShopId = shopId;
@@ -15,7 +15,7 @@ public class ClassifierBuffer : CircularBuffer<ClassifierModel>, IClassifierObse
 
     public Guid ShopId { get; }
 
-    public void ReceiveData(ClassifierModel model) => Write(model);
+    public void ReceiveData(HumanCountModel model) => Write(model);
 
     // TODO [Duy]: Detach and dispose
 }

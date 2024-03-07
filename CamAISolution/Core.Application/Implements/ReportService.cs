@@ -17,26 +17,26 @@ namespace Core.Application.Implements;
 public class ReportService(
     IAccountService accountService,
     IShopService shopService,
-    ClassifierSubject subject,
+    HumanCountSubject subject,
     AiConfiguration configuration
 ) : IReportService
 {
     private readonly string baseOutputDir = configuration.OutputDirectory;
 
-    public Task<ICircularBuffer<ClassifierModel>> GetClassifierStream()
+    public Task<ICircularBuffer<HumanCountModel>> GetHumanCountStream()
     {
         var account = accountService.GetCurrentAccount();
         CheckAuthority(account);
 
-        var buffer = CreateClassifierBufferResult(account.ManagingShop!.Id);
-        return Task.FromResult<ICircularBuffer<ClassifierModel>>(buffer);
+        var buffer = CreateHumanCountBufferResult(account.ManagingShop!.Id);
+        return Task.FromResult<ICircularBuffer<HumanCountModel>>(buffer);
     }
 
-    public async Task<ICircularBuffer<ClassifierModel>> GetClassifierStream(Guid shopId)
+    public async Task<ICircularBuffer<HumanCountModel>> GetHumanCountStream(Guid shopId)
     {
         // validation is already in shop service
         await shopService.GetShopById(shopId);
-        return CreateClassifierBufferResult(shopId);
+        return CreateHumanCountBufferResult(shopId);
     }
 
     private static void CheckAuthority(Account account)
@@ -47,40 +47,36 @@ public class ReportService(
             throw new BadRequestException("Account is not manging any shop");
     }
 
-    private ClassifierBuffer CreateClassifierBufferResult(Guid shopId)
-    {
-        var buffer = new ClassifierBuffer(subject, shopId);
-        return buffer;
-    }
+    private HumanCountBuffer CreateHumanCountBufferResult(Guid shopId) => new(subject, shopId);
 
-    public async Task<List<ClassifierModel>> GetClassifierDataForDate(DateOnly date)
+    public async Task<List<HumanCountModel>> GetHumanCountDataForDate(DateOnly date)
     {
         var account = accountService.GetCurrentAccount();
         CheckAuthority(account);
         var shopId = account.ManagingShop!.Id;
 
-        return await GetClassifierDataForShop(date, shopId);
+        return await GetHumanCountDataForShop(date, shopId);
     }
 
-    public async Task<List<ClassifierModel>> GetClassifierDataForDate(Guid shopId, DateOnly date)
+    public async Task<List<HumanCountModel>> GetHumanCountDataForDate(Guid shopId, DateOnly date)
     {
         // validation is already in shop service
         await shopService.GetShopById(shopId);
-        return await GetClassifierDataForShop(date, shopId);
+        return await GetHumanCountDataForShop(date, shopId);
     }
 
-    private async Task<List<ClassifierModel>> GetClassifierDataForShop(DateOnly date, Guid shopId)
+    private async Task<List<HumanCountModel>> GetHumanCountDataForShop(DateOnly date, Guid shopId)
     {
         // shopId -> date -> time
         var outputPath = Path.Combine(baseOutputDir, shopId.ToString("N"), date.ToFilePath());
         try
         {
             var lines = await File.ReadAllLinesAsync(outputPath);
-            return lines.Select(l => JsonSerializer.Deserialize<ClassifierModel>(l)!).ToList();
+            return lines.Select(l => JsonSerializer.Deserialize<HumanCountModel>(l)!).ToList();
         }
         catch (Exception)
         {
-            throw new NotFoundException($"Cannot find classifier data for date {date} and shop {shopId}");
+            throw new NotFoundException($"Cannot find human count data for date {date} and shop {shopId}");
         }
     }
 }

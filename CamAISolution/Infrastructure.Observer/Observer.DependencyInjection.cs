@@ -11,7 +11,7 @@ public static class ObserverDependencyInjection
         var aiConfiguration = configuration.GetRequiredSection("Ai").Get<AiConfiguration>()!;
         services.AddSingleton(aiConfiguration);
         services.AddSingleton<SyncObserver>();
-        services.AddSingleton<ClassifierFileSaverObserver>();
+        services.AddSingleton<HumanCountFileSaverObserver>();
         return services;
     }
 }

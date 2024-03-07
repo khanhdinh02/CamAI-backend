@@ -71,7 +71,7 @@ app.MapControllers();
 app.UseWebSockets();
 
 RegisterSyncObserver();
-AttachClassifierFileSave();
+AttachHumanCountFileSave();
 
 app.Run();
 return;
@@ -82,9 +82,9 @@ void RegisterSyncObserver()
     observer.RegisterEvent();
 }
 
-void AttachClassifierFileSave()
+void AttachHumanCountFileSave()
 {
-    var classifier = app.Services.GetRequiredService<ClassifierFileSaverObserver>();
-    var subject = app.Services.GetRequiredService<ClassifierSubject>();
-    subject.Attach(classifier);
+    var humanCount = app.Services.GetRequiredService<HumanCountFileSaverObserver>();
+    var subject = app.Services.GetRequiredService<HumanCountSubject>();
+    subject.Attach(humanCount);
 }
