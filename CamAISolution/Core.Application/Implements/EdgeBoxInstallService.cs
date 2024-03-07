@@ -1,0 +1,58 @@
+using Core.Application.Exceptions;
+using Core.Domain.DTO;
+using Core.Domain.Entities;
+using Core.Domain.Enums;
+using Core.Domain.Interfaces.Mappings;
+using Core.Domain.Interfaces.Services;
+using Core.Domain.Repositories;
+using Core.Domain.Utilities;
+
+namespace Core.Application.Implements;
+
+public class EdgeBoxInstallService(IUnitOfWork unitOfWork, IBaseMapping mapper, IAccountService accountService)
+    : IEdgeBoxInstallService
+{
+    public async Task<EdgeBoxInstall> LeaseEdgeBox(CreateEdgeBoxInstallDto dto)
+    {
+        var edgeBox =
+            await unitOfWork.EdgeBoxes.GetByIdAsync(dto.EdgeBoxId)
+            ?? throw new NotFoundException(typeof(EdgeBox), dto.EdgeBoxId);
+        if (edgeBox.EdgeBoxStatus != EdgeBoxStatus.Active || edgeBox.EdgeBoxLocation != EdgeBoxLocation.Idle)
+            throw new BadRequestException("Edge box is not active or idle");
+
+        if (dto.ValidFrom >= dto.ValidUntil)
+            throw new BadRequestException("ValidFrom must be smaller than ValidUntil");
+
+        var ebInstall = mapper.Map<CreateEdgeBoxInstallDto, EdgeBoxInstall>(dto);
+        // ebInstall.ActivationCode = RandomGenerator.GetAlphanumericString(16);
+        ebInstall.EdgeBoxInstallStatus = EdgeBoxInstallStatus.Inactive;
+        await unitOfWork.EdgeBoxInstalls.AddAsync(ebInstall);
+        await unitOfWork.CompleteAsync();
+        return ebInstall;
+    }
+
+    public async Task<EdgeBoxInstall> ActivateEdgeBox(ActivateEdgeBoxDto dto)
+    {
+        var user = accountService.GetCurrentAccount();
+        var ebInstall =
+            (
+                await unitOfWork
+                    .EdgeBoxInstalls
+                    .GetAsync(
+                        i =>
+                            i.ActivationCode == dto.ActivationCode
+                            && i.ShopId == dto.ShopId
+                            && i.Shop.BrandId == user.BrandId
+                    )
+            )
+                .Values
+                .FirstOrDefault() ?? throw new NotFoundException("Wrong activation code");
+        if (ebInstall.EdgeBoxInstallStatus == EdgeBoxInstallStatus.Expired)
+            throw new BadRequestException("Edge box subscription is expired");
+
+        ebInstall.EdgeBoxInstallStatus = EdgeBoxInstallStatus.Valid;
+        unitOfWork.EdgeBoxInstalls.Update(ebInstall);
+        await unitOfWork.CompleteAsync();
+        return ebInstall;
+    }
+}

@@ -25,7 +25,9 @@ public class EdgeBoxService(IUnitOfWork unitOfWork, IAccountService accountServi
     public async Task<PaginationResult<EdgeBox>> GetEdgeBoxes(SearchEdgeBoxRequest searchRequest)
     {
         var crit = new EdgeBoxSearchSpec(searchRequest).Criteria;
-        IEnumerable<EdgeBox> edgeBoxes = (await unitOfWork.EdgeBoxes.GetAsync(crit, takeAll: true)).Values;
+        IEnumerable<EdgeBox> edgeBoxes = (
+            await unitOfWork.EdgeBoxes.GetAsync(crit, takeAll: true, includeProperties: [nameof(EdgeBox.EdgeBoxModel)])
+        ).Values;
         if (searchRequest.BrandId.HasValue)
             edgeBoxes = edgeBoxes.IntersectBy(
                 (await GetEdgeBoxesByBrand(searchRequest.BrandId.Value)).Select(eb => eb.Id),
@@ -49,7 +51,7 @@ public class EdgeBoxService(IUnitOfWork unitOfWork, IAccountService accountServi
                 .GetAsync(
                     eb => eb.EdgeBoxLocation != EdgeBoxLocation.Idle,
                     null,
-                    [nameof(EdgeBox.Installs)],
+                    [nameof(EdgeBox.Installs), nameof(EdgeBox.EdgeBoxModel)],
                     true,
                     true
                 )
@@ -69,7 +71,7 @@ public class EdgeBoxService(IUnitOfWork unitOfWork, IAccountService accountServi
                 .GetAsync(
                     eb => eb.EdgeBoxLocation != EdgeBoxLocation.Idle,
                     null,
-                    [$"{nameof(EdgeBox.Installs)}.{nameof(EdgeBoxInstall.Shop)}"],
+                    [$"{nameof(EdgeBox.Installs)}.{nameof(EdgeBoxInstall.Shop)}", nameof(EdgeBox.EdgeBoxModel)],
                     true,
                     true
                 )
