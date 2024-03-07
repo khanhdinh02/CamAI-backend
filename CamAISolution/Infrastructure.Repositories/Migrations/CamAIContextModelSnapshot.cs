@@ -349,6 +349,39 @@ namespace Infrastructure.Repositories.Migrations
                     b.ToTable("EdgeBoxInstalls");
                 });
 
+            modelBuilder.Entity("Core.Domain.Entities.EdgeBoxInstallActivity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("EdgeBoxInstallId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ModifiedById")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("ModifiedTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("NewStatus")
+                        .HasColumnType("int");
+
+                    b.Property<int>("OldStatus")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EdgeBoxInstallId");
+
+                    b.HasIndex("ModifiedById");
+
+                    b.ToTable("EdgeBoxInstallActivities");
+                });
+
             modelBuilder.Entity("Core.Domain.Entities.EdgeBoxModel", b =>
                 {
                     b.Property<Guid>("Id")
@@ -913,6 +946,25 @@ namespace Infrastructure.Repositories.Migrations
                     b.Navigation("EdgeBox");
 
                     b.Navigation("Shop");
+                });
+
+            modelBuilder.Entity("Core.Domain.Entities.EdgeBoxInstallActivity", b =>
+                {
+                    b.HasOne("Core.Domain.Entities.EdgeBoxInstall", "EdgeBoxInstall")
+                        .WithMany()
+                        .HasForeignKey("EdgeBoxInstallId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Core.Domain.Entities.Account", "ModifiedBy")
+                        .WithMany()
+                        .HasForeignKey("ModifiedById")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("EdgeBoxInstall");
+
+                    b.Navigation("ModifiedBy");
                 });
 
             modelBuilder.Entity("Core.Domain.Entities.Employee", b =>

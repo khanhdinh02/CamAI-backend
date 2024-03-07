@@ -6,7 +6,7 @@ using Core.Domain.Models.Consumers;
 
 namespace Host.CamAI.API.Controllers;
 
-public class ClassifierWebSocket(WebSocket webSocket, IReportService reportService, Guid? shopId = default)
+public class HumanCountWebSocket(WebSocket webSocket, IReportService reportService, Guid? shopId = default)
 {
     private Task<WebSocketReceiveResult> receiveMessageTask = null!;
 
@@ -14,8 +14,8 @@ public class ClassifierWebSocket(WebSocket webSocket, IReportService reportServi
     {
         var buffer =
             shopId == null
-                ? await reportService.GetClassifierStream()
-                : await reportService.GetClassifierStream(shopId.Value);
+                ? await reportService.GetHumanCountStream()
+                : await reportService.GetHumanCountStream(shopId.Value);
 
         receiveMessageTask = webSocket.ReceiveAsync(
             new ArraySegment<byte>(Array.Empty<byte>()),
@@ -23,9 +23,17 @@ public class ClassifierWebSocket(WebSocket webSocket, IReportService reportServi
         );
         while (webSocket.State == WebSocketState.Open)
         {
+            Thread.Sleep(5000);
             if (await CheckCloseMessage())
                 continue;
 
+            var humanCount = new HumanCountModel
+            {
+                Time = DateTime.Now,
+                Total = Random.Shared.Next(1, 5),
+                ShopId = Guid.Empty
+            };
+            buffer.Write(humanCount);
             if (buffer.Count > 0)
             {
                 var result = buffer.Read();
@@ -58,7 +66,7 @@ public class ClassifierWebSocket(WebSocket webSocket, IReportService reportServi
         return false;
     }
 
-    private async Task SendData(ClassifierModel data)
+    private async Task SendData(HumanCountModel data)
     {
         var dataBytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(data));
 

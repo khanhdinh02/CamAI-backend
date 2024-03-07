@@ -22,8 +22,8 @@ public class ReportsController(IReportService reportService) : ControllerBase
         if (HttpContext.WebSockets.IsWebSocketRequest)
         {
             using var webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
-            var classifierWs = new ClassifierWebSocket(webSocket, reportService);
-            classifierWs.Start().Wait();
+            var humanCountWs = new HumanCountWebSocket(webSocket, reportService);
+            humanCountWs.Start().Wait();
         }
         else
             HttpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
@@ -40,27 +40,27 @@ public class ReportsController(IReportService reportService) : ControllerBase
         if (HttpContext.WebSockets.IsWebSocketRequest)
         {
             using var webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
-            var classifierWs = new ClassifierWebSocket(webSocket, reportService, shopId);
-            classifierWs.Start().Wait();
+            var humanCountWs = new HumanCountWebSocket(webSocket, reportService, shopId);
+            humanCountWs.Start().Wait();
         }
         else
             HttpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
     }
 
     /// <summary>
-    /// Get past data of classifier for shop manager
+    /// Get past data of human count for shop manager
     /// </summary>
     [HttpGet("customer")]
     // [AccessTokenGuard(Role.ShopManager)]
-    public async Task<List<ClassifierModel>> GetClassifierData([FromQuery] DateOnly date)
+    public async Task<List<HumanCountModel>> GetHumanCountData([FromQuery] DateOnly date)
     {
-        return await reportService.GetClassifierDataForDate(date);
+        return await reportService.GetHumanCountDataForDate(date);
     }
 
     [HttpGet("{shopId}/customer")]
     // [AccessTokenGuard(Role.ShopManager, Role.BrandManager)]
-    public async Task<List<ClassifierModel>> GetClassifierData([FromRoute] Guid shopId, [FromQuery] DateOnly date)
+    public async Task<List<HumanCountModel>> GetHumanCountData([FromRoute] Guid shopId, [FromQuery] DateOnly date)
     {
-        return await reportService.GetClassifierDataForDate(shopId, date);
+        return await reportService.GetHumanCountDataForDate(shopId, date);
     }
 }

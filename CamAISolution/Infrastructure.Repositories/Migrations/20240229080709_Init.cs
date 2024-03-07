@@ -474,6 +474,35 @@ namespace Infrastructure.Repositories.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "EdgeBoxInstallActivities",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    EdgeBoxInstallId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    OldStatus = table.Column<int>(type: "int", nullable: false),
+                    NewStatus = table.Column<int>(type: "int", nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ModifiedById = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ModifiedTime = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_EdgeBoxInstallActivities", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_EdgeBoxInstallActivities_Accounts_ModifiedById",
+                        column: x => x.ModifiedById,
+                        principalTable: "Accounts",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_EdgeBoxInstallActivities_EdgeBoxInstalls_EdgeBoxInstallId",
+                        column: x => x.EdgeBoxInstallId,
+                        principalTable: "EdgeBoxInstalls",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "EmployeeIncident",
                 columns: table => new
                 {
@@ -581,6 +610,16 @@ namespace Infrastructure.Repositories.Migrations
                 name: "IX_EdgeBoxes_EdgeBoxModelId",
                 table: "EdgeBoxes",
                 column: "EdgeBoxModelId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_EdgeBoxInstallActivities_EdgeBoxInstallId",
+                table: "EdgeBoxInstallActivities",
+                column: "EdgeBoxInstallId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_EdgeBoxInstallActivities_ModifiedById",
+                table: "EdgeBoxInstallActivities",
+                column: "ModifiedById");
 
             migrationBuilder.CreateIndex(
                 name: "IX_EdgeBoxInstalls_EdgeBoxId",
@@ -707,7 +746,7 @@ namespace Infrastructure.Repositories.Migrations
                 name: "EdgeBoxActivities");
 
             migrationBuilder.DropTable(
-                name: "EdgeBoxInstalls");
+                name: "EdgeBoxInstallActivities");
 
             migrationBuilder.DropTable(
                 name: "EmployeeIncident");
@@ -722,13 +761,13 @@ namespace Infrastructure.Repositories.Migrations
                 name: "Notifications");
 
             migrationBuilder.DropTable(
+                name: "EdgeBoxInstalls");
+
+            migrationBuilder.DropTable(
                 name: "Employees");
 
             migrationBuilder.DropTable(
                 name: "Cameras");
-
-            migrationBuilder.DropTable(
-                name: "EdgeBoxes");
 
             migrationBuilder.DropTable(
                 name: "Incidents");
@@ -737,10 +776,13 @@ namespace Infrastructure.Repositories.Migrations
                 name: "Requests");
 
             migrationBuilder.DropTable(
-                name: "EdgeBoxModels");
+                name: "EdgeBoxes");
 
             migrationBuilder.DropTable(
                 name: "Shops");
+
+            migrationBuilder.DropTable(
+                name: "EdgeBoxModels");
 
             migrationBuilder.DropTable(
                 name: "Accounts");
