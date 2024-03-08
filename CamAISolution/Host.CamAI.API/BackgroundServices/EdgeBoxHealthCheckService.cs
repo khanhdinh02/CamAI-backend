@@ -30,7 +30,7 @@ public class EdgeBoxHealthCheckService(
                         pageIndex: pageIndex,
                         pageSize: pageSize
                     );
-                // await HandleEdgeBoxInstallHealthCheck(edgeBoxInstallsPagination.Values, stoppingToken, uow);
+                await HandleEdgeBoxInstallHealthCheck(edgeBoxInstallsPagination.Values, stoppingToken, uow);
                 if (pageIndex * edgeBoxInstallsPagination.PageSize + edgeBoxInstallsPagination.Values.Count >= edgeBoxInstallsPagination.TotalCount)
                     break;
                 else
@@ -66,9 +66,9 @@ public class EdgeBoxHealthCheckService(
                 failedEdgeBoxInstall.Add(edgeBoxInstall);
             }
         }
-        await HealthCheckAllFailedEdgeBox(failedEdgeBoxInstall, cancellation);
         try
         {
+            await HealthCheckAllFailedEdgeBox(failedEdgeBoxInstall, cancellation);
             await uow.CommitTransaction();
         }
         catch (Exception ex)
