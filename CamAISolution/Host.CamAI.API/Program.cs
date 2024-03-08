@@ -47,6 +47,7 @@ builder.Services.Configure<RouteOptions>(opts =>
 
 var app = builder.Build();
 
+app.UseWebSockets();
 app.UseMiddleware<GlobalExceptionHandler>();
 
 app.UseCors(allowPolicy);
@@ -69,7 +70,6 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.MapControllers();
-app.UseWebSockets();
 
 RegisterSyncObserver();
 AttachHumanCountFileSave();
