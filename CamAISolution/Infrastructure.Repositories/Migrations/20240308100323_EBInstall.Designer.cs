@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Repositories.Migrations
 {
     [DbContext(typeof(CamAIContext))]
-    [Migration("20240227184254_Init")]
-    partial class Init
+    [Migration("20240308100323_EBInstall")]
+    partial class EBInstall
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -54,7 +54,6 @@ namespace Infrastructure.Repositories.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int?>("Gender")
-                        .HasMaxLength(20)
                         .HasColumnType("int");
 
                     b.Property<DateTime>("ModifiedDate")
@@ -310,6 +309,9 @@ namespace Infrastructure.Repositories.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("ActivationCode")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
 
@@ -319,15 +321,17 @@ namespace Infrastructure.Repositories.Migrations
                     b.Property<int>("EdgeBoxInstallStatus")
                         .HasColumnType("int");
 
+                    b.Property<int>("EdgeBoxInstallSubscription")
+                        .HasColumnType("int");
+
                     b.Property<string>("IpAddress")
-                        .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
                     b.Property<DateTime>("ModifiedDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("Port")
+                    b.Property<int?>("Port")
                         .HasColumnType("int");
 
                     b.Property<Guid>("ShopId")
@@ -351,6 +355,39 @@ namespace Infrastructure.Repositories.Migrations
                     b.HasIndex("ShopId");
 
                     b.ToTable("EdgeBoxInstalls");
+                });
+
+            modelBuilder.Entity("Core.Domain.Entities.EdgeBoxInstallActivity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("EdgeBoxInstallId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ModifiedById")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("ModifiedTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("NewStatus")
+                        .HasColumnType("int");
+
+                    b.Property<int>("OldStatus")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EdgeBoxInstallId");
+
+                    b.HasIndex("ModifiedById");
+
+                    b.ToTable("EdgeBoxInstallActivities");
                 });
 
             modelBuilder.Entity("Core.Domain.Entities.EdgeBoxModel", b =>
@@ -473,9 +510,6 @@ namespace Infrastructure.Repositories.Migrations
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<Guid>("EdgeBoxId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<int>("EvidenceType")
                         .HasColumnType("int");
 
@@ -484,6 +518,9 @@ namespace Infrastructure.Repositories.Migrations
 
                     b.Property<DateTime>("ModifiedDate")
                         .HasColumnType("datetime2");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
 
                     b.Property<byte[]>("Timestamp")
                         .IsConcurrencyToken()
@@ -496,8 +533,6 @@ namespace Infrastructure.Repositories.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("CameraId");
-
-                    b.HasIndex("EdgeBoxId");
 
                     b.HasIndex("IncidentId");
 
@@ -536,11 +571,17 @@ namespace Infrastructure.Repositories.Migrations
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<Guid>("EdgeBoxId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<int>("IncidentType")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("ModifiedDate")
                         .HasColumnType("datetime2");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("Time")
                         .HasColumnType("datetime2");
@@ -551,6 +592,8 @@ namespace Infrastructure.Repositories.Migrations
                         .HasColumnType("rowversion");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("EdgeBoxId");
 
                     b.ToTable("Incidents");
                 });
@@ -913,6 +956,25 @@ namespace Infrastructure.Repositories.Migrations
                     b.Navigation("Shop");
                 });
 
+            modelBuilder.Entity("Core.Domain.Entities.EdgeBoxInstallActivity", b =>
+                {
+                    b.HasOne("Core.Domain.Entities.EdgeBoxInstall", "EdgeBoxInstall")
+                        .WithMany()
+                        .HasForeignKey("EdgeBoxInstallId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Core.Domain.Entities.Account", "ModifiedBy")
+                        .WithMany()
+                        .HasForeignKey("ModifiedById")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("EdgeBoxInstall");
+
+                    b.Navigation("ModifiedBy");
+                });
+
             modelBuilder.Entity("Core.Domain.Entities.Employee", b =>
                 {
                     b.HasOne("Core.Domain.Entities.Shop", "Shop")
@@ -936,12 +998,6 @@ namespace Infrastructure.Repositories.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Core.Domain.Entities.EdgeBox", "EdgeBox")
-                        .WithMany()
-                        .HasForeignKey("EdgeBoxId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("Core.Domain.Entities.Incident", "Incident")
                         .WithMany("Evidences")
                         .HasForeignKey("IncidentId")
@@ -950,9 +1006,18 @@ namespace Infrastructure.Repositories.Migrations
 
                     b.Navigation("Camera");
 
-                    b.Navigation("EdgeBox");
-
                     b.Navigation("Incident");
+                });
+
+            modelBuilder.Entity("Core.Domain.Entities.Incident", b =>
+                {
+                    b.HasOne("Core.Domain.Entities.EdgeBox", "EdgeBox")
+                        .WithMany()
+                        .HasForeignKey("EdgeBoxId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("EdgeBox");
                 });
 
             modelBuilder.Entity("Core.Domain.Entities.Notification", b =>

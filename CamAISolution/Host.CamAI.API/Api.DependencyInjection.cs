@@ -6,6 +6,7 @@ using Core.Application.Implements;
 using Core.Domain.Interfaces.Services;
 using Core.Domain.Models.Configurations;
 using Core.Domain.Services;
+using Host.CamAI.API.BackgroundServices;
 using Microsoft.OpenApi.Models;
 
 namespace Host.CamAI.API;
@@ -23,19 +24,27 @@ public static class ApiDependencyInjection
         services.AddScoped<IEdgeBoxInstallService, EdgeBoxInstallService>();
         services.AddScoped<IEdgeBoxModelService, EdgeBoxModelService>();
         services.AddScoped<ILocationService, LocationService>();
+        services.AddScoped<IEdgeBoxInstallService, EdgeBoxInstallService>();
         services.AddSingleton<EventManager>();
         services.AddScoped<IReportService, ReportService>();
-        services.AddSingleton<EventManager>().AddSingleton<ClassifierSubject>();
+        services.AddSingleton<EventManager>().AddSingleton<HumanCountSubject>();
         return services;
     }
 
     public static IServiceCollection AddServices(this IServiceCollection services, IConfiguration configuration)
     {
-        var config =
+        var imgConfig =
             configuration.GetRequiredSection("ImageConfiguration").Get<ImageConfiguration>()
             ?? throw new ServiceUnavailableException("Cannot get image configuration");
-        services.AddSingleton(config);
+        services.AddSingleton(imgConfig);
+        services.AddSingleton(configuration.GetSection("HealthCheckConfiguration").Get<HealthCheckConfiguration>()!);
         services.AddScoped<IBlobService, BlobService>();
+        return services;
+    }
+
+    public static IServiceCollection AddBackgroundService(this IServiceCollection services)
+    {
+        services.AddHostedService<EdgeBoxHealthCheckService>();
         return services;
     }
 

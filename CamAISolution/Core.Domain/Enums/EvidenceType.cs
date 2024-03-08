@@ -3,4 +3,7 @@ using Core.Domain.Models.Attributes;
 namespace Core.Domain.Enums;
 
 [Lookup]
-public enum EvidenceType { }
+public enum EvidenceType
+{
+    Image = 1
+}

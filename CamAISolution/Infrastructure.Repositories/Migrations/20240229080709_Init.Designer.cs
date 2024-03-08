@@ -4,6 +4,7 @@ using Infrastructure.Repositories.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Repositories.Migrations
 {
     [DbContext(typeof(CamAIContext))]
-    partial class CamAIContextModelSnapshot : ModelSnapshot
+    [Migration("20240229080709_Init")]
+    partial class Init
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -51,6 +54,7 @@ namespace Infrastructure.Repositories.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int?>("Gender")
+                        .HasMaxLength(20)
                         .HasColumnType("int");
 
                     b.Property<DateTime>("ModifiedDate")
@@ -306,9 +310,6 @@ namespace Infrastructure.Repositories.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("ActivationCode")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
 
@@ -318,17 +319,15 @@ namespace Infrastructure.Repositories.Migrations
                     b.Property<int>("EdgeBoxInstallStatus")
                         .HasColumnType("int");
 
-                    b.Property<int>("EdgeBoxInstallSubscription")
-                        .HasColumnType("int");
-
                     b.Property<string>("IpAddress")
+                        .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
                     b.Property<DateTime>("ModifiedDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<int?>("Port")
+                    b.Property<int>("Port")
                         .HasColumnType("int");
 
                     b.Property<Guid>("ShopId")
@@ -507,6 +506,9 @@ namespace Infrastructure.Repositories.Migrations
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<Guid>("EdgeBoxId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<int>("EvidenceType")
                         .HasColumnType("int");
 
@@ -515,9 +517,6 @@ namespace Infrastructure.Repositories.Migrations
 
                     b.Property<DateTime>("ModifiedDate")
                         .HasColumnType("datetime2");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
 
                     b.Property<byte[]>("Timestamp")
                         .IsConcurrencyToken()
@@ -530,6 +529,8 @@ namespace Infrastructure.Repositories.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("CameraId");
+
+                    b.HasIndex("EdgeBoxId");
 
                     b.HasIndex("IncidentId");
 
@@ -568,17 +569,11 @@ namespace Infrastructure.Repositories.Migrations
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<Guid>("EdgeBoxId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<int>("IncidentType")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("ModifiedDate")
                         .HasColumnType("datetime2");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
 
                     b.Property<DateTime>("Time")
                         .HasColumnType("datetime2");
@@ -589,8 +584,6 @@ namespace Infrastructure.Repositories.Migrations
                         .HasColumnType("rowversion");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("EdgeBoxId");
 
                     b.ToTable("Incidents");
                 });
@@ -995,6 +988,12 @@ namespace Infrastructure.Repositories.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Core.Domain.Entities.EdgeBox", "EdgeBox")
+                        .WithMany()
+                        .HasForeignKey("EdgeBoxId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("Core.Domain.Entities.Incident", "Incident")
                         .WithMany("Evidences")
                         .HasForeignKey("IncidentId")
@@ -1003,18 +1002,9 @@ namespace Infrastructure.Repositories.Migrations
 
                     b.Navigation("Camera");
 
-                    b.Navigation("Incident");
-                });
-
-            modelBuilder.Entity("Core.Domain.Entities.Incident", b =>
-                {
-                    b.HasOne("Core.Domain.Entities.EdgeBox", "EdgeBox")
-                        .WithMany()
-                        .HasForeignKey("EdgeBoxId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.Navigation("EdgeBox");
+
+                    b.Navigation("Incident");
                 });
 
             modelBuilder.Entity("Core.Domain.Entities.Notification", b =>

@@ -25,7 +25,6 @@ public class LookupController : ControllerBase
     [LookupHttpGet("request-types", typeof(RequestType))]
     [LookupHttpGet("roles", typeof(Role))]
     [LookupHttpGet("shop-statuses", typeof(ShopStatus))]
-    [LookupHttpGet("short-days-of-week", typeof(ShortDayOfWeek))]
     [LookupHttpGet("zones", typeof(Zone))]
     public ActionResult<Dictionary<int, string>> GetLookup()
     {

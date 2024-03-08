@@ -60,4 +60,35 @@ public class EdgeBoxInstallService(IUnitOfWork unitOfWork, IBaseMapping mapper, 
         }
         return ebInstall;
     }
+
+    public async Task<EdgeBoxInstall> UpdateStatus(
+        Guid edgeBoxInstallId,
+        EdgeBoxInstallStatus status,
+        EdgeBoxInstall? edgeBoxInstall = null
+    )
+    {
+        edgeBoxInstall ??=
+            await unitOfWork.GetRepository<EdgeBoxInstall>().GetByIdAsync(edgeBoxInstallId)
+            ?? throw new NotFoundException(typeof(EdgeBoxInstall), edgeBoxInstallId);
+        if (edgeBoxInstall.EdgeBoxInstallStatus != status)
+        {
+            await unitOfWork.BeginTransaction();
+            await unitOfWork
+                .GetRepository<EdgeBoxInstallActivity>()
+                .AddAsync(
+                    new()
+                    {
+                        Description = $"Update status from {edgeBoxInstall.EdgeBoxInstallStatus} to {status}",
+                        NewStatus = status,
+                        OldStatus = edgeBoxInstall.EdgeBoxInstallStatus,
+                        EdgeBoxInstallId = edgeBoxInstallId,
+                    }
+                );
+            edgeBoxInstall.EdgeBoxInstallStatus = status;
+            unitOfWork.GetRepository<EdgeBoxInstall>().Update(edgeBoxInstall);
+
+            await unitOfWork.CommitTransaction();
+        }
+        return edgeBoxInstall;
+    }
 }

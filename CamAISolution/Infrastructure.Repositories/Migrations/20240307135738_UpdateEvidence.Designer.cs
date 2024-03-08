@@ -4,6 +4,7 @@ using Infrastructure.Repositories.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Repositories.Migrations
 {
     [DbContext(typeof(CamAIContext))]
-    partial class CamAIContextModelSnapshot : ModelSnapshot
+    [Migration("20240307135738_UpdateEvidence")]
+    partial class UpdateEvidence
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -306,9 +309,6 @@ namespace Infrastructure.Repositories.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("ActivationCode")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
 
@@ -318,17 +318,15 @@ namespace Infrastructure.Repositories.Migrations
                     b.Property<int>("EdgeBoxInstallStatus")
                         .HasColumnType("int");
 
-                    b.Property<int>("EdgeBoxInstallSubscription")
-                        .HasColumnType("int");
-
                     b.Property<string>("IpAddress")
+                        .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
                     b.Property<DateTime>("ModifiedDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<int?>("Port")
+                    b.Property<int>("Port")
                         .HasColumnType("int");
 
                     b.Property<Guid>("ShopId")
@@ -352,39 +350,6 @@ namespace Infrastructure.Repositories.Migrations
                     b.HasIndex("ShopId");
 
                     b.ToTable("EdgeBoxInstalls");
-                });
-
-            modelBuilder.Entity("Core.Domain.Entities.EdgeBoxInstallActivity", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<Guid>("EdgeBoxInstallId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("ModifiedById")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("ModifiedTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("NewStatus")
-                        .HasColumnType("int");
-
-                    b.Property<int>("OldStatus")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("EdgeBoxInstallId");
-
-                    b.HasIndex("ModifiedById");
-
-                    b.ToTable("EdgeBoxInstallActivities");
                 });
 
             modelBuilder.Entity("Core.Domain.Entities.EdgeBoxModel", b =>
@@ -951,25 +916,6 @@ namespace Infrastructure.Repositories.Migrations
                     b.Navigation("EdgeBox");
 
                     b.Navigation("Shop");
-                });
-
-            modelBuilder.Entity("Core.Domain.Entities.EdgeBoxInstallActivity", b =>
-                {
-                    b.HasOne("Core.Domain.Entities.EdgeBoxInstall", "EdgeBoxInstall")
-                        .WithMany()
-                        .HasForeignKey("EdgeBoxInstallId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Core.Domain.Entities.Account", "ModifiedBy")
-                        .WithMany()
-                        .HasForeignKey("ModifiedById")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("EdgeBoxInstall");
-
-                    b.Navigation("ModifiedBy");
                 });
 
             modelBuilder.Entity("Core.Domain.Entities.Employee", b =>
