@@ -29,6 +29,7 @@ public class UnitOfWork(CamAIContext context, IServiceProvider serviceProvider) 
         serviceProvider.GetRequiredService<IRepository<EdgeBoxInstall>>();
     public IRepository<EdgeBoxModel> EdgeBoxModels => serviceProvider.GetRequiredService<IRepository<EdgeBoxModel>>();
     public IRepository<Incident> Incidents => serviceProvider.GetRequiredService<IRepository<Incident>>();
+    public IRepository<Evidence> Evidences => serviceProvider.GetRequiredService<IRepository<Evidence>>();
 
     public Task BeginTransaction()
     {

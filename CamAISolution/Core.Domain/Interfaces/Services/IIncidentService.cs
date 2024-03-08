@@ -5,5 +5,5 @@ namespace Core.Domain.Interfaces.Services;
 
 public interface IIncidentService
 {
-    Task<Incident> CreateIncident(CreateIncidentDto incidentDto);
+    Task<Incident> UpsertIncident(CreateIncidentDto incidentDto);
 }

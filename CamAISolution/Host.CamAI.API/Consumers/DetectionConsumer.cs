@@ -1,6 +1,5 @@
 using Core.Domain.DTO;
 using Core.Domain.Interfaces.Services;
-using Core.Domain.Models.DTO.Evidences;
 using Host.CamAI.API.Consumers.Contracts;
 using Infrastructure.MessageQueue;
 using MassTransit;
@@ -13,7 +12,7 @@ public class DetectionConsumer(IIncidentService incidentService) : IConsumer<Rec
     public async Task Consume(ConsumeContext<ReceivedIncident> context)
     {
         var receivedIncident = context.Message;
-        await incidentService.CreateIncident(Map(receivedIncident));
+        await incidentService.UpsertIncident(Map(receivedIncident));
     }
 
     private CreateIncidentDto Map(ReceivedIncident receivedIncident)
