@@ -6,14 +6,14 @@ using Core.Domain.Utilities;
 
 namespace Infrastructure.Observer;
 
-public class ClassifierFileSaverObserver(AiConfiguration configuration) : IClassifierObserver
+public class HumanCountFileSaverObserver(AiConfiguration configuration) : IHumanCountObserver
 {
     private static readonly JsonSerializerOptions Options = new() { WriteIndented = false };
 
     private readonly string baseOutputDir = configuration.OutputDirectory;
     public Guid ShopId => Guid.Empty;
 
-    public void ReceiveData(ClassifierModel model)
+    public void ReceiveData(HumanCountModel model)
     {
         var date = DateOnly.FromDateTime(model.Time);
         // shopId -> date -> time
