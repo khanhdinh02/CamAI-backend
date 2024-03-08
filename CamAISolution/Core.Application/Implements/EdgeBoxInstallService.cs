@@ -5,7 +5,6 @@ using Core.Domain.Enums;
 using Core.Domain.Interfaces.Mappings;
 using Core.Domain.Interfaces.Services;
 using Core.Domain.Repositories;
-using Core.Domain.Utilities;
 
 namespace Core.Application.Implements;
 
@@ -24,9 +23,12 @@ public class EdgeBoxInstallService(IUnitOfWork unitOfWork, IBaseMapping mapper, 
             throw new BadRequestException("ValidFrom must be smaller than ValidUntil");
 
         var ebInstall = mapper.Map<CreateEdgeBoxInstallDto, EdgeBoxInstall>(dto);
-        // ebInstall.ActivationCode = RandomGenerator.GetAlphanumericString(16);
-        ebInstall.EdgeBoxInstallStatus = EdgeBoxInstallStatus.Inactive;
+        ebInstall.EdgeBoxInstallSubscription = EdgeBoxInstallSubscription.Inactive;
         await unitOfWork.EdgeBoxInstalls.AddAsync(ebInstall);
+
+        edgeBox.EdgeBoxLocation = EdgeBoxLocation.Installing;
+        unitOfWork.EdgeBoxes.Update(edgeBox);
+
         await unitOfWork.CompleteAsync();
         return ebInstall;
     }
@@ -47,12 +49,15 @@ public class EdgeBoxInstallService(IUnitOfWork unitOfWork, IBaseMapping mapper, 
             )
                 .Values
                 .FirstOrDefault() ?? throw new NotFoundException("Wrong activation code");
-        if (ebInstall.EdgeBoxInstallStatus == EdgeBoxInstallStatus.Expired)
-            throw new BadRequestException("Edge box subscription is expired");
 
-        ebInstall.EdgeBoxInstallStatus = EdgeBoxInstallStatus.Valid;
-        unitOfWork.EdgeBoxInstalls.Update(ebInstall);
-        await unitOfWork.CompleteAsync();
+        if (ebInstall.EdgeBoxInstallSubscription == EdgeBoxInstallSubscription.Inactive)
+        {
+            ebInstall.EdgeBoxInstallSubscription = EdgeBoxInstallSubscription.Activated;
+            unitOfWork.EdgeBoxInstalls.Update(ebInstall);
+            await unitOfWork.CompleteAsync();
+
+            // TODO: Send message to activate edge box
+        }
         return ebInstall;
     }
 }
