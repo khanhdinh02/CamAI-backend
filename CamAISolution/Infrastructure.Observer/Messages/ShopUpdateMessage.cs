@@ -3,6 +3,7 @@ using MassTransit;
 
 namespace Infrastructure.Observer.Messages;
 
+[Publisher(PublisherConstant.UpdateData)]
 [MessageUrn(nameof(ShopUpdateMessage))]
 public class ShopUpdateMessage : RoutingKeyMessage
 {
