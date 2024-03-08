@@ -66,9 +66,9 @@ public class EdgeBoxHealthCheckService(
                 failedEdgeBoxInstall.Add(edgeBoxInstall);
             }
         }
-        await HealthCheckAllFailedEdgeBox(failedEdgeBoxInstall, cancellation);
         try
         {
+            await HealthCheckAllFailedEdgeBox(failedEdgeBoxInstall, cancellation);
             await uow.CommitTransaction();
         }
         catch (Exception ex)
