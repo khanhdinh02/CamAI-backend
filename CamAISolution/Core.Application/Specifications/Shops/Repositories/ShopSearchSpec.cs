@@ -29,9 +29,11 @@ public class ShopSearchSpec : RepositorySpec<Shop>
         return baseSpec.GetExpression();
     }
 
-    public ShopSearchSpec(ShopSearchRequest search)
+    public ShopSearchSpec(ShopSearchRequest search, bool includeWard = false)
         : base(GetExpression(search))
     {
+        if (includeWard)
+            AddIncludes(s => s.Ward.District.Province);
         AddIncludes(s => s.Brand);
         ApplyingPaging(search);
         ApplyOrderByDescending(s => s.CreatedDate);

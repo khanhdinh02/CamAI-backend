@@ -65,6 +65,7 @@ public class ShopService(
 
     public async Task<PaginationResult<Shop>> GetShops(ShopSearchRequest searchRequest)
     {
+        var includeWard = false;
         var account = accountService.GetCurrentAccount();
         if (account.Role == Role.BrandManager)
             searchRequest.BrandId = account.BrandId;
@@ -73,9 +74,10 @@ public class ShopService(
             searchRequest.ShopManagerId = account.Id;
             // TODO [Duy]: is there a way to specify not condition like != Status.Inactive
             searchRequest.Status = ShopStatus.Active;
+            includeWard = true;
         }
 
-        var shops = await unitOfWork.Shops.GetAsync(new ShopSearchSpec(searchRequest));
+        var shops = await unitOfWork.Shops.GetAsync(new ShopSearchSpec(searchRequest, includeWard));
         return shops;
     }
 
@@ -131,14 +133,12 @@ public class ShopService(
             throw new NotFoundException(typeof(Ward), shopDto.WardId);
         if (shopDto.ShopManagerId.HasValue)
         {
-            var foundAccounts = await unitOfWork
-                .Accounts
-                .GetAsync(
-                    expression: a =>
-                        a.Id == shopDto.ShopManagerId.Value
-                        && (a.AccountStatus == AccountStatus.Active || a.AccountStatus == AccountStatus.New),
-                    includeProperties: [nameof(Account.ManagingShop)]
-                );
+            var foundAccounts = await unitOfWork.Accounts.GetAsync(
+                expression: a =>
+                    a.Id == shopDto.ShopManagerId.Value
+                    && (a.AccountStatus == AccountStatus.Active || a.AccountStatus == AccountStatus.New),
+                includeProperties: [nameof(Account.ManagingShop)]
+            );
             if (foundAccounts.Values.Count == 0)
                 throw new NotFoundException(typeof(Account), shopDto.ShopManagerId.Value);
             var account = foundAccounts.Values[0];
