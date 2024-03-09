@@ -9,6 +9,7 @@ using Infrastructure.Notification;
 using Infrastructure.Notification.Models;
 using Infrastructure.Observer;
 using Infrastructure.Repositories;
+using Infrastructure.Cache;
 
 var builder = WebApplication.CreateBuilder(args).ConfigureSerilog();
 
@@ -35,7 +36,8 @@ builder
     .AddMapping()
     .AddObserver(builder.Configuration)
     .AddNotification(builder.Configuration.GetRequiredSection("GoogleSecret").Get<GoogleSecret>())
-    .AddBackgroundService();
+    .AddBackgroundService()
+    .AddCacheService();
 
 builder.ConfigureMassTransit();
 
