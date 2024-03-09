@@ -105,11 +105,7 @@ public class EdgeBoxHealthCheckService(
                 if (currentNumberOfRetry > healthCheckConfiguration.MaxNumberOfRetry)
                 {
                     failedEdgeBoxDic.Remove(edgeBoxInstall.Id);
-                    await edgeBoxInstallService.UpdateStatus(
-                        edgeBoxInstall.Id,
-                        EdgeBoxInstallStatus.Unhealthy,
-                        edgeBoxInstall
-                    );
+                    await edgeBoxInstallService.UpdateStatus(edgeBoxInstall, EdgeBoxInstallStatus.Unhealthy);
                     await Notification(
                         notificationService,
                         $"Edgebox install's status has been changed to {EdgeBoxInstallStatus.Unhealthy}",
@@ -130,11 +126,7 @@ public class EdgeBoxHealthCheckService(
                             $"Edgebox install's status has been changed to {EdgeBoxInstallStatus.Unhealthy}",
                             edgeBoxInstall
                         );
-                        await edgeBoxInstallService.UpdateStatus(
-                            edgeBoxInstall.Id,
-                            EdgeBoxInstallStatus.Unhealthy,
-                            edgeBoxInstall
-                        );
+                        await edgeBoxInstallService.UpdateStatus(edgeBoxInstall, EdgeBoxInstallStatus.Unhealthy);
                     }
                     else
                         failedEdgeBoxDic[edgeBoxInstall.Id] = ++failedEdgeBoxDic[edgeBoxInstall.Id];

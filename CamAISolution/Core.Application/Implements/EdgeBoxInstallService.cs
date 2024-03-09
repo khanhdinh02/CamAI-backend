@@ -52,24 +52,23 @@ public class EdgeBoxInstallService(IUnitOfWork unitOfWork, IBaseMapping mapper, 
 
         if (ebInstall.EdgeBoxInstallStatus == EdgeBoxInstallStatus.Connected)
         {
-            ebInstall.EdgeBoxInstallStatus = EdgeBoxInstallStatus.Working;
-            unitOfWork.EdgeBoxInstalls.Update(ebInstall);
-            await unitOfWork.CompleteAsync();
+            await UpdateStatus(ebInstall, EdgeBoxInstallStatus.Working);
 
             // TODO: Send message to activate edge box
         }
         return ebInstall;
     }
 
-    public async Task<EdgeBoxInstall> UpdateStatus(
-        Guid edgeBoxInstallId,
-        EdgeBoxInstallStatus status,
-        EdgeBoxInstall? edgeBoxInstall = null
-    )
+    public async Task<EdgeBoxInstall> UpdateStatus(Guid edgeBoxInstallId, EdgeBoxInstallStatus status)
     {
-        edgeBoxInstall ??=
-            await unitOfWork.GetRepository<EdgeBoxInstall>().GetByIdAsync(edgeBoxInstallId)
+        var ebInstall =
+            await unitOfWork.EdgeBoxInstalls.GetByIdAsync(edgeBoxInstallId)
             ?? throw new NotFoundException(typeof(EdgeBoxInstall), edgeBoxInstallId);
+        return await UpdateStatus(ebInstall, status);
+    }
+
+    public async Task<EdgeBoxInstall> UpdateStatus(EdgeBoxInstall edgeBoxInstall, EdgeBoxInstallStatus status)
+    {
         if (edgeBoxInstall.EdgeBoxInstallStatus != status)
         {
             await unitOfWork.BeginTransaction();
@@ -81,7 +80,7 @@ public class EdgeBoxInstallService(IUnitOfWork unitOfWork, IBaseMapping mapper, 
                         Description = $"Update status from {edgeBoxInstall.EdgeBoxInstallStatus} to {status}",
                         NewStatus = status,
                         OldStatus = edgeBoxInstall.EdgeBoxInstallStatus,
-                        EdgeBoxInstallId = edgeBoxInstallId,
+                        EdgeBoxInstallId = edgeBoxInstall.Id,
                     }
                 );
             edgeBoxInstall.EdgeBoxInstallStatus = status;
