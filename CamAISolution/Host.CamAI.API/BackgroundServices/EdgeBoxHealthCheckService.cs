@@ -21,8 +21,8 @@ public class EdgeBoxHealthCheckService(
         {
             using var scope = provider.CreateScope();
             var uow = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
-            int pageIndex = 0;
-            int pageSize = 100;
+            var pageIndex = 0;
+            const int pageSize = 100;
             while (true)
             {
                 var edgeBoxInstallsPagination = await uow.GetRepository<EdgeBoxInstall>()
@@ -31,14 +31,13 @@ public class EdgeBoxHealthCheckService(
                         pageIndex: pageIndex,
                         pageSize: pageSize
                     );
-                // await HandleEdgeBoxInstallHealthCheck(edgeBoxInstallsPagination.Values, stoppingToken, uow);
+                await HandleEdgeBoxInstallHealthCheck(edgeBoxInstallsPagination.Values, uow, stoppingToken);
                 if (
                     pageIndex * edgeBoxInstallsPagination.PageSize + edgeBoxInstallsPagination.Values.Count
                     >= edgeBoxInstallsPagination.TotalCount
                 )
                     break;
-                else
-                    pageIndex++;
+                pageIndex++;
             }
             await Task.Delay(TimeSpan.FromSeconds(healthCheckConfiguration.EdgeBoxHealthCheckDelay), stoppingToken);
         }
@@ -46,8 +45,8 @@ public class EdgeBoxHealthCheckService(
 
     private async Task HandleEdgeBoxInstallHealthCheck(
         IEnumerable<EdgeBoxInstall> edgeBoxInstalls,
-        CancellationToken cancellation,
-        IUnitOfWork uow
+        IUnitOfWork uow,
+        CancellationToken cancellation
     )
     {
         HashSet<EdgeBoxInstall> failedEdgeBoxInstall = [];
@@ -76,9 +75,9 @@ public class EdgeBoxHealthCheckService(
                 failedEdgeBoxInstall.Add(edgeBoxInstall);
             }
         }
-        await HealthCheckAllFailedEdgeBox(failedEdgeBoxInstall, cancellation);
         try
         {
+            await HealthCheckAllFailedEdgeBox(failedEdgeBoxInstall, cancellation);
             await uow.CommitTransaction();
         }
         catch (Exception ex)

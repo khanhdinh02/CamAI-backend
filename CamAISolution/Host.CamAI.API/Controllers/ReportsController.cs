@@ -1,4 +1,3 @@
-using Core.Domain.DTO;
 using Core.Domain.Enums;
 using Core.Domain.Interfaces.Services;
 using Core.Domain.Models.Consumers;
