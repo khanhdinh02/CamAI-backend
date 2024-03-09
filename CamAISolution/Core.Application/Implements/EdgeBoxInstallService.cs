@@ -23,7 +23,7 @@ public class EdgeBoxInstallService(IUnitOfWork unitOfWork, IBaseMapping mapper, 
             throw new BadRequestException("ValidFrom must be smaller than ValidUntil");
 
         var ebInstall = mapper.Map<CreateEdgeBoxInstallDto, EdgeBoxInstall>(dto);
-        ebInstall.EdgeBoxInstallSubscription = EdgeBoxInstallSubscription.Inactive;
+        ebInstall.EdgeBoxInstallStatus = EdgeBoxInstallStatus.New;
         await unitOfWork.EdgeBoxInstalls.AddAsync(ebInstall);
 
         edgeBox.EdgeBoxLocation = EdgeBoxLocation.Installing;
@@ -50,9 +50,9 @@ public class EdgeBoxInstallService(IUnitOfWork unitOfWork, IBaseMapping mapper, 
                 .Values
                 .FirstOrDefault() ?? throw new NotFoundException("Wrong activation code");
 
-        if (ebInstall.EdgeBoxInstallSubscription == EdgeBoxInstallSubscription.Inactive)
+        if (ebInstall.EdgeBoxInstallStatus == EdgeBoxInstallStatus.Connected)
         {
-            ebInstall.EdgeBoxInstallSubscription = EdgeBoxInstallSubscription.Activated;
+            ebInstall.EdgeBoxInstallStatus = EdgeBoxInstallStatus.Working;
             unitOfWork.EdgeBoxInstalls.Update(ebInstall);
             await unitOfWork.CompleteAsync();
 
@@ -76,7 +76,7 @@ public class EdgeBoxInstallService(IUnitOfWork unitOfWork, IBaseMapping mapper, 
             await unitOfWork
                 .GetRepository<EdgeBoxInstallActivity>()
                 .AddAsync(
-                    new()
+                    new EdgeBoxInstallActivity
                     {
                         Description = $"Update status from {edgeBoxInstall.EdgeBoxInstallStatus} to {status}",
                         NewStatus = status,
@@ -90,5 +90,24 @@ public class EdgeBoxInstallService(IUnitOfWork unitOfWork, IBaseMapping mapper, 
             await unitOfWork.CommitTransaction();
         }
         return edgeBoxInstall;
+    }
+
+    public async Task<EdgeBoxInstall?> GetInstallingByEdgeBox(Guid edgeBoxId)
+    {
+        return (
+            await unitOfWork
+                .EdgeBoxInstalls
+                .GetAsync(
+                    i => i.EdgeBoxId == edgeBoxId && i.EdgeBox.EdgeBoxLocation != EdgeBoxLocation.Idle,
+                    o => o.OrderByDescending(i => i.ValidUntil),
+                    [
+                        nameof(EdgeBoxInstall.EdgeBox),
+                        $"{nameof(EdgeBoxInstall.Shop)}.{nameof(Shop.Brand)}",
+                        $"{nameof(EdgeBoxInstall.Shop)}.{nameof(Shop.Ward)}.{nameof(Ward.District)}.{nameof(District.Province)}"
+                    ]
+                )
+        )
+            .Values
+            .FirstOrDefault();
     }
 }

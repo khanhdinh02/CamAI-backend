@@ -10,7 +10,6 @@ public class EdgeBoxInstallDto : BaseDto
     public int? Port { get; set; }
     public DateTime ValidFrom { get; set; }
     public DateTime ValidUntil { get; set; }
-    public EdgeBoxInstallSubscription EdgeBoxInstallSubscription { get; set; }
     public EdgeBoxInstallStatus EdgeBoxInstallStatus { get; set; }
 
     public EdgeBoxDto EdgeBox { get; set; } = null!;

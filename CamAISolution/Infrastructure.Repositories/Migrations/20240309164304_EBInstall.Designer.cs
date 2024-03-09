@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Repositories.Migrations
 {
     [DbContext(typeof(CamAIContext))]
-    [Migration("20240308100323_EBInstall")]
+    [Migration("20240309164304_EBInstall")]
     partial class EBInstall
     {
         /// <inheritdoc />
@@ -321,9 +321,6 @@ namespace Infrastructure.Repositories.Migrations
                     b.Property<int>("EdgeBoxInstallStatus")
                         .HasColumnType("int");
 
-                    b.Property<int>("EdgeBoxInstallSubscription")
-                        .HasColumnType("int");
-
                     b.Property<string>("IpAddress")
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
@@ -460,7 +457,6 @@ namespace Infrastructure.Repositories.Migrations
                         .HasColumnType("int");
 
                     b.Property<int>("Gender")
-                        .HasMaxLength(20)
                         .HasColumnType("int");
 
                     b.Property<string>("Image")

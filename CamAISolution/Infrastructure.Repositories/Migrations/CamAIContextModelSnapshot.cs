@@ -318,9 +318,6 @@ namespace Infrastructure.Repositories.Migrations
                     b.Property<int>("EdgeBoxInstallStatus")
                         .HasColumnType("int");
 
-                    b.Property<int>("EdgeBoxInstallSubscription")
-                        .HasColumnType("int");
-
                     b.Property<string>("IpAddress")
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
@@ -457,7 +454,6 @@ namespace Infrastructure.Repositories.Migrations
                         .HasColumnType("int");
 
                     b.Property<int>("Gender")
-                        .HasMaxLength(20)
                         .HasColumnType("int");
 
                     b.Property<string>("Image")

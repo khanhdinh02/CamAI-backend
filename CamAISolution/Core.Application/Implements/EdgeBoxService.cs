@@ -11,8 +11,12 @@ using Core.Domain.Services;
 
 namespace Core.Application.Implements;
 
-public class EdgeBoxService(IUnitOfWork unitOfWork, IAccountService accountService, IEdgeBoxInstallService edgeBoxInstallService, IBaseMapping mapping)
-    : IEdgeBoxService
+public class EdgeBoxService(
+    IUnitOfWork unitOfWork,
+    IAccountService accountService,
+    IEdgeBoxInstallService edgeBoxInstallService,
+    IBaseMapping mapping
+) : IEdgeBoxService
 {
     public async Task<EdgeBox> GetEdgeBoxById(Guid id)
     {
@@ -139,29 +143,36 @@ public class EdgeBoxService(IUnitOfWork unitOfWork, IAccountService accountServi
 
     public async Task UpdateStatus(Guid id, EdgeBoxStatus status)
     {
-        var edgeBox = await unitOfWork.EdgeBoxes.GetByIdAsync(id);
-        if (edgeBox != null && edgeBox.EdgeBoxStatus != status)
-        {
-            await unitOfWork.BeginTransaction();
-            await unitOfWork.GetRepository<EdgeBoxActivity>().AddAsync(new EdgeBoxActivity
-            {
-                Description = $"Update status from {edgeBox.EdgeBoxStatus} to {status}",
-                OldStatus = edgeBox.EdgeBoxStatus,
-                EdgeBoxId = edgeBox.Id,
-                NewStatus = status,
-            });
-            edgeBox.EdgeBoxStatus = status;
+        var edgeBox = await unitOfWork.EdgeBoxes.GetByIdAsync(id) ?? throw new NotFoundException(typeof(EdgeBox), id);
+        if (edgeBox.EdgeBoxStatus == status)
+            return;
 
-            unitOfWork.EdgeBoxes.Update(edgeBox);
-            if (status == EdgeBoxStatus.Inactive)
-            {
-                var edgeBoxInstalls = (await unitOfWork.GetRepository<EdgeBoxInstall>().GetAsync(expression: ei => ei.EdgeBoxId == id && ei.EdgeBoxInstallStatus != EdgeBoxInstallStatus.Disabled, takeAll: true)).Values;
-                foreach (var ei in edgeBoxInstalls)
-                {
-                    await edgeBoxInstallService.UpdateStatus(ei.Id, EdgeBoxInstallStatus.Unhealthy, ei);
-                }
-            }
-            await unitOfWork.CommitTransaction();
+        await unitOfWork.BeginTransaction();
+
+        // Active -> *, broken -> disposed: check no edge box install valid
+        // Active -> broken: allow
+        if (
+            (edgeBox.EdgeBoxStatus == EdgeBoxStatus.Active && status != EdgeBoxStatus.Broken)
+            || (edgeBox.EdgeBoxStatus == EdgeBoxStatus.Broken && status == EdgeBoxStatus.Disposed)
+        )
+        {
+            if (await edgeBoxInstallService.GetInstallingByEdgeBox(id) == null)
+                throw new BadRequestException("Cannot change status of edge box that is installing");
         }
+
+        await unitOfWork
+            .GetRepository<EdgeBoxActivity>()
+            .AddAsync(
+                new EdgeBoxActivity
+                {
+                    Description = $"Update status from {edgeBox.EdgeBoxStatus} to {status}",
+                    OldStatus = edgeBox.EdgeBoxStatus,
+                    EdgeBoxId = edgeBox.Id,
+                    NewStatus = status,
+                }
+            );
+        edgeBox.EdgeBoxStatus = status;
+        unitOfWork.EdgeBoxes.Update(edgeBox);
+        await unitOfWork.CommitTransaction();
     }
 }

@@ -33,13 +33,6 @@ namespace Infrastructure.Repositories.Migrations
                 table: "EdgeBoxInstalls",
                 type: "nvarchar(max)",
                 nullable: true);
-
-            migrationBuilder.AddColumn<int>(
-                name: "EdgeBoxInstallSubscription",
-                table: "EdgeBoxInstalls",
-                type: "int",
-                nullable: false,
-                defaultValue: 0);
         }
 
         /// <inheritdoc />
@@ -47,10 +40,6 @@ namespace Infrastructure.Repositories.Migrations
         {
             migrationBuilder.DropColumn(
                 name: "ActivationCode",
-                table: "EdgeBoxInstalls");
-
-            migrationBuilder.DropColumn(
-                name: "EdgeBoxInstallSubscription",
                 table: "EdgeBoxInstalls");
 
             migrationBuilder.AlterColumn<int>(
