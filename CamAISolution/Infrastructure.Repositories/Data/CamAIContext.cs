@@ -51,8 +51,6 @@ public class CamAIContext : DbContext
 
         modelBuilder.Entity<Image>().Property(i => i.HostingUri).HasConversion<string>();
 
-        modelBuilder.Entity<Evidence>().Property(p => p.Uri).HasConversion<string>();
-
         modelBuilder.Entity<AccountNotification>().HasKey(an => new { an.AccountId, an.NotificationId });
         modelBuilder
             .Entity<Notification>()
