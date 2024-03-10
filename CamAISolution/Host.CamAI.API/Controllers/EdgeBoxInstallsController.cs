@@ -3,7 +3,6 @@ using Core.Domain.Entities;
 using Core.Domain.Enums;
 using Core.Domain.Interfaces.Mappings;
 using Core.Domain.Interfaces.Services;
-using Core.Domain.Models;
 using Infrastructure.Jwt.Attribute;
 using Microsoft.AspNetCore.Mvc;
 
@@ -14,6 +13,12 @@ namespace Host.CamAI.API.Controllers;
 public class EdgeBoxInstallsController(IEdgeBoxInstallService edgeBoxInstallService, IBaseMapping mapper)
     : ControllerBase
 {
+    /// <summary>
+    /// Get all installs, that has been activated and not disabled by admin, of a shop.
+    /// </summary>
+    /// <remarks>Use for Brand Manager and Shop Manager.</remarks>
+    /// <param name="shopId"></param>
+    /// <returns></returns>
     [HttpGet("/api/shops/{shopId}/installs")]
     [AccessTokenGuard(Role.BrandManager, Role.ShopManager)]
     public async Task<IEnumerable<EdgeBoxInstallDto>> GetEdgeBoxInstallsByShop(Guid shopId)

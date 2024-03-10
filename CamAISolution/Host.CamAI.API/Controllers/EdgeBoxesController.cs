@@ -13,6 +13,16 @@ namespace Host.CamAI.API.Controllers;
 [ApiController]
 public class EdgeBoxesController(IEdgeBoxService edgeBoxService, IBaseMapping mapping) : ControllerBase
 {
+    /// <summary>
+    ///
+    /// </summary>
+    /// <remarks>
+    /// Use for Admin.<br/>
+    /// <c>BrandId</c>: Get all edge boxes that are currently installed for a brand.<br/>
+    /// <c>ShopId</c>: Get all edge boxes that are currently installed for a shop.
+    /// </remarks>
+    /// <param name="searchRequest"></param>
+    /// <returns></returns>
     [HttpGet]
     [AccessTokenGuard(Role.Admin)]
     public async Task<ActionResult<PaginationResult<EdgeBoxDto>>> GetEdgeBoxes(
