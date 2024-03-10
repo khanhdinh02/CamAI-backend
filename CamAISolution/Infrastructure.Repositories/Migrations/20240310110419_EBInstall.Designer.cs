@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Repositories.Migrations
 {
     [DbContext(typeof(CamAIContext))]
-    [Migration("20240309164304_EBInstall")]
+    [Migration("20240310110419_EBInstall")]
     partial class EBInstall
     {
         /// <inheritdoc />
@@ -506,8 +506,15 @@ namespace Infrastructure.Repositories.Migrations
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("EdgeBoxPath")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("EvidenceType")
                         .HasColumnType("int");
+
+                    b.Property<Guid?>("ImageId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("IncidentId")
                         .HasColumnType("uniqueidentifier");
@@ -523,12 +530,11 @@ namespace Infrastructure.Repositories.Migrations
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("rowversion");
 
-                    b.Property<string>("Uri")
-                        .HasColumnType("nvarchar(max)");
-
                     b.HasKey("Id");
 
                     b.HasIndex("CameraId");
+
+                    b.HasIndex("ImageId");
 
                     b.HasIndex("IncidentId");
 
@@ -994,6 +1000,10 @@ namespace Infrastructure.Repositories.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Core.Domain.Entities.Image", "Image")
+                        .WithMany()
+                        .HasForeignKey("ImageId");
+
                     b.HasOne("Core.Domain.Entities.Incident", "Incident")
                         .WithMany("Evidences")
                         .HasForeignKey("IncidentId")
@@ -1001,6 +1011,8 @@ namespace Infrastructure.Repositories.Migrations
                         .IsRequired();
 
                     b.Navigation("Camera");
+
+                    b.Navigation("Image");
 
                     b.Navigation("Incident");
                 });
