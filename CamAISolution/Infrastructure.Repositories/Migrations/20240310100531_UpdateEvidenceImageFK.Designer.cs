@@ -4,6 +4,7 @@ using Infrastructure.Repositories.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Repositories.Migrations
 {
     [DbContext(typeof(CamAIContext))]
-    partial class CamAIContextModelSnapshot : ModelSnapshot
+    [Migration("20240310100531_UpdateEvidenceImageFK")]
+    partial class UpdateEvidenceImageFK
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -306,9 +309,6 @@ namespace Infrastructure.Repositories.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("ActivationCode")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
 
@@ -319,13 +319,14 @@ namespace Infrastructure.Repositories.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("IpAddress")
+                        .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
                     b.Property<DateTime>("ModifiedDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<int?>("Port")
+                    b.Property<int>("Port")
                         .HasColumnType("int");
 
                     b.Property<Guid>("ShopId")
@@ -454,6 +455,7 @@ namespace Infrastructure.Repositories.Migrations
                         .HasColumnType("int");
 
                     b.Property<int>("Gender")
+                        .HasMaxLength(20)
                         .HasColumnType("int");
 
                     b.Property<string>("Image")
