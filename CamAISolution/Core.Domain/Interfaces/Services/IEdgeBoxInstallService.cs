@@ -20,4 +20,11 @@ public interface IEdgeBoxInstallService
     Task<EdgeBoxInstall> UpdateStatus(EdgeBoxInstall edgeBoxInstall, EdgeBoxInstallStatus status);
 
     Task<EdgeBoxInstall?> GetInstallingByEdgeBox(Guid edgeBoxId);
+
+    /// <summary>
+    /// Get all installs, that has been activated and not disabled by admin, of a shop.
+    /// </summary>
+    /// <param name="shopId"></param>
+    /// <returns></returns>
+    Task<IEnumerable<EdgeBoxInstall>> GetInstallingByShop(Guid shopId);
 }
