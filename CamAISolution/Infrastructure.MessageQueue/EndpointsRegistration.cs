@@ -6,15 +6,11 @@ namespace Infrastructure.MessageQueue;
 
 public static class ReceiveEndpointConfigurator
 {
-    private static readonly MethodInfo? MessageTopologyMethod =
-        typeof(IMessageTopologyConfigurator).GetMethod(
-            nameof(IMessageTopologyConfigurator.GetMessageTopology)
-        );
+    private static readonly MethodInfo? MessageTopologyMethod = typeof(IMessageTopologyConfigurator).GetMethod(
+        nameof(IMessageTopologyConfigurator.GetMessageTopology)
+    );
 
-    public static void RegisterPublisher(
-        this IRabbitMqBusFactoryConfigurator cfg,
-        IList<Assembly> assemblies
-    )
+    public static void RegisterPublisher(this IRabbitMqBusFactoryConfigurator cfg, IList<Assembly> assemblies)
     {
         var publishers = assemblies.GetEndpoints<PublisherAttribute>();
         foreach (var (publisher, endpoint) in publishers)
@@ -38,9 +34,7 @@ public static class ReceiveEndpointConfigurator
     )
     {
         var topology = cfg.MessageTopology;
-        var topologyConfigurator = MessageTopologyMethod!
-            .MakeGenericMethod(publisher)
-            .Invoke(topology, null);
+        var topologyConfigurator = MessageTopologyMethod!.MakeGenericMethod(publisher).Invoke(topology, null);
         var method = topologyConfigurator!
             .GetType()
             .GetMethod(nameof(IMessageTopologyConfigurator<object>.SetEntityName));
@@ -53,25 +47,16 @@ public static class ReceiveEndpointConfigurator
         IList<Assembly> assemblies
     )
     {
-        var consumers = assemblies
-            .GetEndpoints<ConsumerAttribute>()
-            .GroupBy(x => x.Endpoint.QueueName);
+        var consumers = assemblies.GetEndpoints<ConsumerAttribute>().GroupBy(x => x.Endpoint.QueueName);
         if (cfg is IRabbitMqBusFactoryConfigurator rabbitMqCfg)
             foreach (var queue in consumers)
-                RegisterConsumer(
-                    rabbitMqCfg,
-                    context,
-                    queue.Key,
-                    queue.Select(x => (x.Type, x.Endpoint))
-                );
+                RegisterConsumer(rabbitMqCfg, context, queue.Key, queue.Select(x => (x.Type, x.Endpoint)));
         else if (cfg is IInMemoryBusFactoryConfigurator)
             foreach (var topic in consumers)
                 RegisterConsumer(cfg, context, topic.Key, topic.Select(x => x.Type));
     }
 
-    private static IEnumerable<(Type Type, T Endpoint)> GetEndpoints<T>(
-        this IEnumerable<Assembly> assemblies
-    )
+    private static IEnumerable<(Type Type, T Endpoint)> GetEndpoints<T>(this IEnumerable<Assembly> assemblies)
         where T : MessageQueueEndpointAttribute
     {
         var types =
@@ -96,6 +81,8 @@ public static class ReceiveEndpointConfigurator
             {
                 e.ConcurrentMessageLimit = 5;
                 e.ConfigureConsumeTopology = false;
+                e.DiscardFaultedMessages();
+                e.DiscardSkippedMessages();
 
                 foreach (var (type, attr) in consumers)
                 {
@@ -126,6 +113,8 @@ public static class ReceiveEndpointConfigurator
             {
                 e.ConcurrentMessageLimit = 5;
                 e.ConfigureConsumeTopology = false;
+                e.DiscardFaultedMessages();
+                e.DiscardSkippedMessages();
 
                 foreach (var type in consumers)
                     e.ConfigureConsumer(context, type);

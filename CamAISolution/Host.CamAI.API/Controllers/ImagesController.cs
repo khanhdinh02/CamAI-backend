@@ -14,7 +14,7 @@ public class ImagesController(IBlobService blobService) : ControllerBase
         Guid id,
         int? width = null,
         int? height = null,
-        [Range(0, 2)] float scaleFactor = 1
+        [Range(0, 1)] float scaleFactor = 1
     )
     {
         var img = await blobService.GetImageById(id);

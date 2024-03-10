@@ -20,29 +20,35 @@ public class SyncObserver(EventManager eventManager, IServiceProvider provider)
     {
         using var scope = provider.CreateScope();
         var bus = scope.ServiceProvider.GetRequiredService<IPublishEndpoint>();
-        bus.Publish(message);
+        bus.Publish(message).Wait();
     }
 
-    private void SyncBrand(Brand brand)
+    public void SyncBrand(Brand brand) => SyncBrand(brand, $"{brand.Id}.*");
+
+    public void SyncBrand(Brand brand, string? routingKey = null)
     {
+        routingKey ??= $"{brand.Id}.*";
         var updateMessage = new BrandUpdateMessage
         {
             Name = brand.Name,
             Email = brand.Email,
             Phone = brand.Phone,
-            RoutingKey = $"{brand.Id}.*"
+            RoutingKey = routingKey
         };
         SendMessage(updateMessage);
     }
 
-    private void SyncShop(Shop shop)
+    public void SyncShop(Shop shop) => SyncShop(shop, $"{shop.BrandId}.{shop.Id}");
+
+    public void SyncShop(Shop shop, string? routingKey = null)
     {
+        routingKey ??= $"{shop.BrandId}.{shop.Id}";
         var updateMessage = new ShopUpdateMessage
         {
             Name = shop.Name,
             Address = ProvinceHelper.GetFullAddress(shop.AddressLine, shop.Ward),
             Phone = shop.Phone,
-            RoutingKey = $"{shop.BrandId}.{shop.Id}"
+            RoutingKey = routingKey
         };
         SendMessage(updateMessage);
     }

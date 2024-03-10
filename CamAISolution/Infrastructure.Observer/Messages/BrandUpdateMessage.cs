@@ -3,7 +3,7 @@ using MassTransit;
 
 namespace Infrastructure.Observer.Messages;
 
-[Publisher(ConsumerConstant.UpdateData)]
+[Publisher(PublisherConstant.UpdateData)]
 [MessageUrn(nameof(BrandUpdateMessage))]
 public class BrandUpdateMessage : RoutingKeyMessage
 {
