@@ -7,23 +7,23 @@ using MassTransit;
 namespace Host.CamAI.API.Consumers;
 
 [Consumer("{MachineName}_Detection", ConsumerConstant.Detection)]
-public class DetectionConsumer(IIncidentService incidentService) : IConsumer<ReceivedIncident>
+public class DetectionConsumer(IIncidentService incidentService) : IConsumer<ReceivedIncidentMessage>
 {
-    public async Task Consume(ConsumeContext<ReceivedIncident> context)
+    public async Task Consume(ConsumeContext<ReceivedIncidentMessage> context)
     {
         var receivedIncident = context.Message;
         await incidentService.UpsertIncident(Map(receivedIncident));
     }
 
-    private CreateIncidentDto Map(ReceivedIncident receivedIncident)
+    private CreateIncidentDto Map(ReceivedIncidentMessage receivedIncidentMessage)
     {
         return new CreateIncidentDto
         {
-            EdgeBoxId = receivedIncident.EdgeBoxId,
-            Id = receivedIncident.Id,
-            IncidentType = receivedIncident.IncidentType,
-            Time = receivedIncident.Time,
-            Evidences = receivedIncident.Evidences.Select(Map).ToList()
+            EdgeBoxId = receivedIncidentMessage.EdgeBoxId,
+            Id = receivedIncidentMessage.Id,
+            IncidentType = receivedIncidentMessage.IncidentType,
+            Time = receivedIncidentMessage.Time,
+            Evidences = receivedIncidentMessage.Evidences.Select(Map).ToList()
         };
     }
 

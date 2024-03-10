@@ -4,7 +4,7 @@ using MassTransit;
 namespace Host.CamAI.API.Consumers.Contracts;
 
 [MessageUrn("ReceivedIncident")]
-public class ReceivedIncident
+public class ReceivedIncidentMessage
 {
     public Guid EdgeBoxId { get; set; }
     public Guid Id { get; set; }

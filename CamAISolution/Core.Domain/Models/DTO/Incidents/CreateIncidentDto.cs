@@ -1,5 +1,4 @@
 using Core.Domain.Enums;
-using Core.Domain.Models.DTO.Evidences;
 
 namespace Core.Domain.DTO;
 
