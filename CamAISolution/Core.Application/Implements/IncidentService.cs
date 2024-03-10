@@ -35,6 +35,7 @@ public class IncidentService(
             evidences = mapping.Map<ICollection<CreateEvidenceDto>, List<Evidence>>(incidentDto.Evidences);
             foreach (var evidence in evidences)
             {
+                evidence.IncidentId = incident.Id;
                 evidence.Status = EvidenceStatus.ToBeFetched;
                 await unitOfWork.Evidences.AddAsync(evidence);
             }
@@ -48,6 +49,10 @@ public class IncidentService(
 
     private async Task FetchEvidenceFromEdgeBox(Guid edgeBoxId, Guid incidentId, List<Evidence> evidences)
     {
+        evidences = evidences.Where(x => x.Status == EvidenceStatus.ToBeFetched).ToList();
+        if (evidences.Count == 0)
+            return;
+
         // TODO: make this run in another thread
         var ebInstall = (await unitOfWork.EdgeBoxInstalls.GetAsync(x => x.EdgeBoxId == edgeBoxId)).Values[0];
         var uriBuilder = new UriBuilder
@@ -62,14 +67,16 @@ public class IncidentService(
             try
             {
                 uriBuilder.Query = EvidencePathQuery(evidence);
-                var stream = await httpClient.GetStreamAsync(uriBuilder.Uri);
-                using var binaryReader = new BinaryReader(stream);
+                var response = await httpClient.GetAsync(uriBuilder.Uri);
 
+                response.EnsureSuccessStatusCode();
+
+                // TODO: get extension from content-type
                 var imageDto = new CreateImageDto
                 {
                     ContentType = MediaTypeNames.Image.Png,
-                    Filename = evidence.Id.ToString("N"),
-                    ImageBytes = binaryReader.ReadBytes((int)stream.Length)
+                    Filename = evidence.Id.ToString("N") + ".png",
+                    ImageBytes = await response.Content.ReadAsByteArrayAsync()
                 };
                 evidence.Image = await blobService.UploadImage(imageDto, nameof(Incident), incidentId.ToString("N"));
                 evidence.Status = EvidenceStatus.Fetched;
@@ -82,6 +89,8 @@ public class IncidentService(
             // TODO: test if we can create new image and update evidence at the same time
             unitOfWork.Evidences.Update(evidence);
         }
+
+        await unitOfWork.CompleteAsync();
     }
 
     private static string EvidencePathQuery(Evidence evidence) => "path=" + evidence.EdgeBoxPath;

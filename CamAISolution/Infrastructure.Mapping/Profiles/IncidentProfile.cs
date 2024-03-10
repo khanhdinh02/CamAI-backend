@@ -9,5 +9,6 @@ public class IncidentProfile : Profile
     public IncidentProfile()
     {
         CreateMap<CreateIncidentDto, Incident>();
+        CreateMap<Incident, IncidentDto>();
     }
 }

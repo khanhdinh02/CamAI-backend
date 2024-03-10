@@ -1,5 +1,8 @@
 using Core.Application.Events;
+using Core.Domain.DTO;
 using Core.Domain.Entities;
+using Core.Domain.Interfaces.Mappings;
+using Core.Domain.Interfaces.Services;
 using Infrastructure.Observer.Messages;
 using Microsoft.AspNetCore.Mvc;
 
@@ -7,7 +10,8 @@ namespace Host.CamAI.API.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class TestsController(EventManager eventManager) : ControllerBase
+public class TestsController(IBaseMapping mapping, IIncidentService incidentService, EventManager eventManager)
+    : ControllerBase
 {
     [HttpGet]
     public ActionResult<string> TestEndpoint()
@@ -37,5 +41,12 @@ public class TestsController(EventManager eventManager) : ControllerBase
             Phone = message.Phone,
         };
         eventManager.NotifyShopChanged(shop);
+    }
+
+    [HttpPost("incident")]
+    public async Task<IncidentDto> UpsertIncident([FromBody] CreateIncidentDto dto)
+    {
+        var incident = await incidentService.UpsertIncident(dto);
+        return mapping.Map<Incident, IncidentDto>(incident);
     }
 }
