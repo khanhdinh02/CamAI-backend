@@ -9,8 +9,12 @@ public class Incident : BusinessEntity
     public DateTime Time { get; set; }
     public Guid EdgeBoxId { get; set; }
     public IncidentStatus Status { get; set; } = IncidentStatus.New;
+    public Guid ShopId { get; set; }
+    public Guid? EmployeeId { get; set; }
 
     public virtual EdgeBox EdgeBox { get; set; } = null!;
-    public virtual IEnumerable<Employee> Employees { get; set; } = new HashSet<Employee>();
+    public virtual Shop Shop { get; set; } = null!;
+
+    public virtual Employee? Employee { get; set; }
     public virtual ICollection<Evidence> Evidences { get; set; } = new HashSet<Evidence>();
 }

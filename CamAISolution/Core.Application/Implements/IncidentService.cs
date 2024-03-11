@@ -1,9 +1,12 @@
 using System.Net.Mime;
+using Core.Application.Exceptions;
+using Core.Application.Specifications.Incidents.Repositories;
 using Core.Domain.DTO;
 using Core.Domain.Entities;
 using Core.Domain.Enums;
 using Core.Domain.Interfaces.Mappings;
 using Core.Domain.Interfaces.Services;
+using Core.Domain.Models;
 using Core.Domain.Repositories;
 using Core.Domain.Services;
 
@@ -12,10 +15,43 @@ namespace Core.Application.Implements;
 public class IncidentService(
     HttpClient httpClient,
     IBlobService blobService,
+    IAccountService accountService,
+    IEdgeBoxInstallService edgeBoxInstallService,
     IUnitOfWork unitOfWork,
     IBaseMapping mapping
 ) : IIncidentService
 {
+    public async Task<Incident> GetIncidentById(Guid id)
+    {
+        var incident =
+            (await unitOfWork.Incidents.GetAsync(new IncidentByIdRepoSpec(id))).Values.FirstOrDefault()
+            ?? throw new NotFoundException(typeof(Incident), id);
+        var currentAccount = accountService.GetCurrentAccount();
+        return currentAccount.Role switch
+        {
+            Role.BrandManager when currentAccount.BrandId == incident.Shop.BrandId => incident,
+            Role.ShopManager when currentAccount.Id == incident.Shop.ShopManagerId => incident,
+            _ => throw new NotFoundException(typeof(Incident), id)
+        };
+    }
+
+    public Task<PaginationResult<Incident>> GetIncidents(IncidentSearchRequest searchRequest)
+    {
+        var account = accountService.GetCurrentAccount();
+        switch (account.Role)
+        {
+            case Role.BrandManager:
+                searchRequest.BrandId = account.BrandId;
+                break;
+            case Role.ShopManager:
+                searchRequest.BrandId = null;
+                searchRequest.ShopId = account.ManagingShop!.Id;
+                break;
+        }
+
+        return unitOfWork.Incidents.GetAsync(new IncidentSearchSpec(searchRequest));
+    }
+
     public async Task<Incident> UpsertIncident(CreateIncidentDto incidentDto)
     {
         var incident = await unitOfWork.Incidents.GetByIdAsync(incidentDto.Id);
@@ -23,6 +59,8 @@ public class IncidentService(
         if (incident == null)
         {
             incident = mapping.Map<CreateIncidentDto, Incident>(incidentDto);
+            var ebInstall = await edgeBoxInstallService.GetInstallingByEdgeBox(incident.EdgeBoxId);
+            incident.ShopId = ebInstall!.ShopId;
             foreach (var evidence in incident.Evidences)
                 evidence.Status = EvidenceStatus.ToBeFetched;
 
@@ -55,7 +93,7 @@ public class IncidentService(
             return;
 
         // TODO: make this run in another thread
-        var ebInstall = (await unitOfWork.EdgeBoxInstalls.GetAsync(x => x.EdgeBoxId == edgeBoxId)).Values[0];
+        var ebInstall = (await edgeBoxInstallService.GetInstallingByEdgeBox(edgeBoxId))!;
         var uriBuilder = new UriBuilder
         {
             Host = ebInstall.IpAddress,
