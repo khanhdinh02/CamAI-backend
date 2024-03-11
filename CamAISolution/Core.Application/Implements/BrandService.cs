@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Text.Json;
 using Core.Application.Events;
 using Core.Application.Exceptions;
@@ -114,24 +115,35 @@ public class BrandService(
         return brand;
     }
 
-    // TODO [Dat]: Clean up logic in both update logo and banner
-    public async Task UpdateLogo(CreateImageDto imageDto)
+    public async Task UpdateImage(CreateImageDto imageDto, BrandImageType type)
     {
         var currentAccount = accountService.GetCurrentAccount();
         if (!IsAccountOwnBrand(currentAccount, currentAccount.Brand))
             throw new BadRequestException("Account doesn't manage any brand");
         var brand = await GetBrandById(currentAccount.BrandId!.Value);
-        var oldLogoId = brand.LogoId;
-        var newLogo = await blobService.UploadImage(imageDto, nameof(Brand), nameof(Brand.Logo));
-        brand.LogoId = newLogo.Id;
+
+        Guid? oldImageId;
+        string imageTypePath;
+        switch (type)
+        {
+            case BrandImageType.Logo:
+                oldImageId = brand.LogoId;
+                imageTypePath = nameof(Brand.Logo);
+                break;
+            case BrandImageType.Banner:
+                oldImageId = brand.BannerId;
+                imageTypePath = nameof(Brand.Banner);
+                break;
+            default:
+                throw new BadRequestException("Unknown image enum");
+        }
+        var newLogo = await blobService.UploadImage(imageDto, nameof(Brand), imageTypePath);
+        UpdateBrandImageId(type, brand, newLogo.Id);
         unitOfWork.Brands.Update(brand);
         try
         {
-            if (await unitOfWork.CompleteAsync() > 0)
-            {
-                if (oldLogoId.HasValue)
-                    await blobService.DeleteImageInFilesystem(oldLogoId.Value);
-            }
+            if (await unitOfWork.CompleteAsync() > 0 && oldImageId.HasValue)
+                await blobService.DeleteImageInFilesystem(oldImageId.Value);
             else
                 await blobService.DeleteImageInFilesystem(newLogo.Id);
         }
@@ -143,31 +155,16 @@ public class BrandService(
         }
     }
 
-    public async Task UpdateBanner(CreateImageDto imageDto)
+    private static void UpdateBrandImageId(BrandImageType type, Brand brand, Guid imageId)
     {
-        var currentAccount = accountService.GetCurrentAccount();
-        if (!IsAccountOwnBrand(currentAccount, currentAccount.Brand))
-            throw new BadRequestException("Account doesn't manage any brand");
-        var brand = await GetBrandById(currentAccount.BrandId!.Value);
-        var oldBannerId = brand.BannerId;
-        var newBanner = await blobService.UploadImage(imageDto, nameof(Brand), nameof(Brand.Banner));
-        brand.BannerId = newBanner.Id;
-        unitOfWork.Brands.Update(brand);
-        try
+        switch (type)
         {
-            if (await unitOfWork.CompleteAsync() > 0)
-            {
-                if (oldBannerId.HasValue)
-                    await blobService.DeleteImageInFilesystem(oldBannerId.Value);
-            }
-            else
-                await blobService.DeleteImageInFilesystem(newBanner.Id);
-        }
-        catch (Exception ex)
-        {
-            logger.Error(ex.Message, ex);
-            await blobService.DeleteImageInFilesystem(newBanner.Id);
-            throw new ServiceUnavailableException("Update Banner failed");
+            case BrandImageType.Logo:
+                brand.LogoId = imageId;
+                break;
+            case BrandImageType.Banner:
+                brand.BannerId = imageId;
+                break;
         }
     }
 
