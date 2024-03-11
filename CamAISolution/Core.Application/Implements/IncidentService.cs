@@ -49,6 +49,7 @@ public class IncidentService(
 
     private async Task FetchEvidenceFromEdgeBox(Guid edgeBoxId, Guid incidentId, List<Evidence> evidences)
     {
+        // TODO: [Duy] validate that eb install has port and ip address
         evidences = evidences.Where(x => x.Status == EvidenceStatus.ToBeFetched).ToList();
         if (evidences.Count == 0)
             return;
@@ -58,7 +59,7 @@ public class IncidentService(
         var uriBuilder = new UriBuilder
         {
             Host = ebInstall.IpAddress,
-            Port = ebInstall.Port,
+            Port = ebInstall.Port!.Value,
             Path = "/api/images"
         };
         foreach (var evidence in evidences)
