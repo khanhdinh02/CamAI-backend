@@ -3,7 +3,7 @@ using Core.Domain.Models.DTO;
 
 namespace Core.Domain.DTO;
 
-public class EvidenceDto
+public class EvidenceDto : BaseDto
 {
     public EvidenceType EvidenceType { get; set; }
     public Guid IncidentId { get; set; }
