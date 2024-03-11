@@ -8,9 +8,8 @@ public interface IIncidentService
 {
     Task<Incident> UpsertIncident(CreateIncidentDto incidentDto);
     Task<Incident> GetIncidentById(Guid id);
-    Task<PaginationResult<Incident>> GetIncidents(IncidentSearchRequest searchRequest);
+    Task<PaginationResult<Incident>> GetIncidents(SearchIncidentRequest searchRequest);
 
-    // TODO [Duy]: chagne the signature of these method
-    // Task<Incident> AssignIncident(Guid id);
-    // Task<Incident> UpdateStatus(Guid id);
+    Task AssignIncidentToEmployee(Guid id, Guid employeeId);
+    Task RejectIncident(Guid id);
 }

@@ -7,7 +7,7 @@ namespace Core.Application.Specifications.Incidents.Repositories;
 
 public class IncidentSearchSpec : RepositorySpec<Incident>
 {
-    private static Expression<Func<Incident, bool>> GetExpression(IncidentSearchRequest search)
+    private static Expression<Func<Incident, bool>> GetExpression(SearchIncidentRequest search)
     {
         var baseSpec = new Specification<Incident>();
 
@@ -38,7 +38,7 @@ public class IncidentSearchSpec : RepositorySpec<Incident>
         return baseSpec.GetExpression();
     }
 
-    public IncidentSearchSpec(IncidentSearchRequest search, bool includeShop = false)
+    public IncidentSearchSpec(SearchIncidentRequest search, bool includeShop = false)
         : base(GetExpression(search))
     {
         if (includeShop)

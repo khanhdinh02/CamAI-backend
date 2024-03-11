@@ -16,6 +16,7 @@ public class IncidentService(
     HttpClient httpClient,
     IBlobService blobService,
     IAccountService accountService,
+    IEmployeeService employeeService,
     IEdgeBoxInstallService edgeBoxInstallService,
     IUnitOfWork unitOfWork,
     IBaseMapping mapping
@@ -35,7 +36,7 @@ public class IncidentService(
         };
     }
 
-    public Task<PaginationResult<Incident>> GetIncidents(IncidentSearchRequest searchRequest)
+    public Task<PaginationResult<Incident>> GetIncidents(SearchIncidentRequest searchRequest)
     {
         var account = accountService.GetCurrentAccount();
         switch (account.Role)
@@ -49,7 +50,31 @@ public class IncidentService(
                 break;
         }
 
-        return unitOfWork.Incidents.GetAsync(new IncidentSearchSpec(searchRequest));
+        var includeShop = account.Role == Role.BrandManager;
+        return unitOfWork.Incidents.GetAsync(new IncidentSearchSpec(searchRequest, includeShop));
+    }
+
+    public async Task AssignIncidentToEmployee(Guid id, Guid employeeId)
+    {
+        // TODO: should we limit the time or have some rule when assigning incident
+        var incident = await GetIncidentById(id);
+        var employee = await employeeService.GetEmployeeById(employeeId);
+        if (incident.ShopId != employee.ShopId)
+            throw new BadRequestException("Incident and employee are not in the same shop");
+        incident.EmployeeId = employee.Id;
+        incident.Status = IncidentStatus.Accepted;
+        unitOfWork.Incidents.Update(incident);
+        await unitOfWork.CompleteAsync();
+    }
+
+    public async Task RejectIncident(Guid id)
+    {
+        var incident = await GetIncidentById(id);
+        incident.Status = IncidentStatus.Rejected;
+        incident.EmployeeId = null;
+        // if previously accepted then remove employee id
+        unitOfWork.Incidents.Update(incident);
+        await unitOfWork.CompleteAsync();
     }
 
     public async Task<Incident> UpsertIncident(CreateIncidentDto incidentDto)

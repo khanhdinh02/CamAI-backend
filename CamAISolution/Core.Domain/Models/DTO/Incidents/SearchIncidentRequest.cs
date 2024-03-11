@@ -2,7 +2,7 @@ using Core.Domain.Enums;
 
 namespace Core.Domain.DTO;
 
-public class IncidentSearchRequest : BaseSearchRequest
+public class SearchIncidentRequest : BaseSearchRequest
 {
     // shop, brand, edge box, employee,...
     public IncidentType? IncidentType { get; set; }

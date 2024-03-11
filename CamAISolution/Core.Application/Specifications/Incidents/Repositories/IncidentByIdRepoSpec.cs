@@ -8,6 +8,8 @@ public class IncidentByIdRepoSpec : EntityByIdSpec<Incident, Guid>
     public IncidentByIdRepoSpec(Guid id, bool includeAll = true)
         : base(x => x.Id == id)
     {
+        AddIncludes(x => x.Shop);
+
         if (includeAll)
         {
             AddIncludes(x => x.Evidences);
