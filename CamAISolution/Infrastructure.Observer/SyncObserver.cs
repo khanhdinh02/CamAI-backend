@@ -13,6 +13,7 @@ public class SyncObserver(EventManager eventManager, IServiceProvider provider)
     {
         eventManager.BrandChangedEvent += SyncBrand;
         eventManager.ShopChangedEvent += SyncShop;
+        eventManager.ActivateEdgeBoxEvent += ActivateEdgeBox;
     }
 
     private void SendMessage<T>(T message)
@@ -23,7 +24,10 @@ public class SyncObserver(EventManager eventManager, IServiceProvider provider)
         bus.Publish(message).Wait();
     }
 
-    public void SyncBrand(Brand brand) => SyncBrand(brand, $"{brand.Id}.*");
+    public void SyncBrand(Brand brand)
+    {
+        SyncBrand(brand, $"{brand.Id}.*");
+    }
 
     public void SyncBrand(Brand brand, string? routingKey = null)
     {
@@ -38,7 +42,10 @@ public class SyncObserver(EventManager eventManager, IServiceProvider provider)
         SendMessage(updateMessage);
     }
 
-    public void SyncShop(Shop shop) => SyncShop(shop, $"{shop.BrandId}.{shop.Id}");
+    public void SyncShop(Shop shop)
+    {
+        SyncShop(shop, $"{shop.BrandId}.{shop.Id}");
+    }
 
     public void SyncShop(Shop shop, string? routingKey = null)
     {
@@ -51,5 +58,14 @@ public class SyncObserver(EventManager eventManager, IServiceProvider provider)
             RoutingKey = routingKey
         };
         SendMessage(updateMessage);
+    }
+
+    private void ActivateEdgeBox(Guid edgeBoxId)
+    {
+        var activateEdgeBoxMessage = new ActivateEdgeBoxMessage
+        {
+            RoutingKey = $"{edgeBoxId}"
+        };
+        SendMessage(activateEdgeBoxMessage);
     }
 }

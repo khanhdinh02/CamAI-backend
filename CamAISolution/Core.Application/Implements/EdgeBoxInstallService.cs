@@ -17,10 +17,14 @@ public class EdgeBoxInstallService(IUnitOfWork unitOfWork, IBaseMapping mapper, 
             await unitOfWork.EdgeBoxes.GetByIdAsync(dto.EdgeBoxId)
             ?? throw new NotFoundException(typeof(EdgeBox), dto.EdgeBoxId);
         if (edgeBox.EdgeBoxStatus != EdgeBoxStatus.Active || edgeBox.EdgeBoxLocation != EdgeBoxLocation.Idle)
+        {
             throw new BadRequestException("Edge box is not active or idle");
+        }
 
         if (dto.ValidFrom >= dto.ValidUntil)
+        {
             throw new BadRequestException("ValidFrom must be smaller than ValidUntil");
+        }
 
         var ebInstall = mapper.Map<CreateEdgeBoxInstallDto, EdgeBoxInstall>(dto);
         ebInstall.EdgeBoxInstallStatus = EdgeBoxInstallStatus.New;
@@ -41,14 +45,14 @@ public class EdgeBoxInstallService(IUnitOfWork unitOfWork, IBaseMapping mapper, 
                 await unitOfWork
                     .EdgeBoxInstalls
                     .GetAsync(
-                        i =>
-                            i.ActivationCode == dto.ActivationCode
-                            && i.ShopId == dto.ShopId
-                            && i.Shop.BrandId == user.BrandId
+                        i => i.ValidUntil != null
+                        // i.ActivationCode == dto.ActivationCode
+                        // && i.ShopId == dto.ShopId
+                        // && i.Shop.BrandId == user.BrandId
                     )
             )
-                .Values
-                .FirstOrDefault() ?? throw new NotFoundException("Wrong activation code");
+            .Values
+            .FirstOrDefault() ?? throw new NotFoundException("Wrong activation code");
 
         if (ebInstall.EdgeBoxInstallStatus == EdgeBoxInstallStatus.Connected)
         {
@@ -56,6 +60,7 @@ public class EdgeBoxInstallService(IUnitOfWork unitOfWork, IBaseMapping mapper, 
 
             // TODO: Send message to activate edge box
         }
+
         return ebInstall;
     }
 
@@ -80,7 +85,7 @@ public class EdgeBoxInstallService(IUnitOfWork unitOfWork, IBaseMapping mapper, 
                         Description = $"Update status from {edgeBoxInstall.EdgeBoxInstallStatus} to {status}",
                         NewStatus = status,
                         OldStatus = edgeBoxInstall.EdgeBoxInstallStatus,
-                        EdgeBoxInstallId = edgeBoxInstall.Id,
+                        EdgeBoxInstallId = edgeBoxInstall.Id
                     }
                 );
             edgeBoxInstall.EdgeBoxInstallStatus = status;
@@ -88,24 +93,25 @@ public class EdgeBoxInstallService(IUnitOfWork unitOfWork, IBaseMapping mapper, 
 
             await unitOfWork.CommitTransaction();
         }
+
         return edgeBoxInstall;
     }
 
     public async Task<EdgeBoxInstall?> GetInstallingByEdgeBox(Guid edgeBoxId)
     {
         return (
-            await unitOfWork
-                .EdgeBoxInstalls
-                .GetAsync(
-                    i => i.EdgeBoxId == edgeBoxId && i.EdgeBox.EdgeBoxLocation != EdgeBoxLocation.Idle,
-                    o => o.OrderByDescending(i => i.ValidUntil),
-                    [
-                        nameof(EdgeBoxInstall.EdgeBox),
-                        $"{nameof(EdgeBoxInstall.Shop)}.{nameof(Shop.Brand)}",
-                        $"{nameof(EdgeBoxInstall.Shop)}.{nameof(Shop.Ward)}.{nameof(Ward.District)}.{nameof(District.Province)}"
-                    ]
-                )
-        )
+                await unitOfWork
+                    .EdgeBoxInstalls
+                    .GetAsync(
+                        i => i.EdgeBoxId == edgeBoxId && i.EdgeBox.EdgeBoxLocation != EdgeBoxLocation.Idle,
+                        o => o.OrderByDescending(i => i.ValidUntil),
+                        [
+                            nameof(EdgeBoxInstall.EdgeBox),
+                            $"{nameof(EdgeBoxInstall.Shop)}.{nameof(Shop.Brand)}",
+                            $"{nameof(EdgeBoxInstall.Shop)}.{nameof(Shop.Ward)}.{nameof(Ward.District)}.{nameof(District.Province)}"
+                        ]
+                    )
+            )
             .Values
             .FirstOrDefault();
     }

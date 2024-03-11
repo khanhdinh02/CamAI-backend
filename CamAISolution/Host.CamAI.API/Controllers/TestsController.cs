@@ -26,7 +26,7 @@ public class TestsController(IBaseMapping mapping, IIncidentService incidentServ
         {
             Name = message.Name,
             Email = message.Email,
-            Phone = message.Phone,
+            Phone = message.Phone
         };
         eventManager.NotifyBrandChanged(brand);
     }
@@ -38,7 +38,7 @@ public class TestsController(IBaseMapping mapping, IIncidentService incidentServ
         {
             Name = message.Name,
             AddressLine = message.Address,
-            Phone = message.Phone,
+            Phone = message.Phone
         };
         eventManager.NotifyShopChanged(shop);
     }
@@ -48,5 +48,12 @@ public class TestsController(IBaseMapping mapping, IIncidentService incidentServ
     {
         var incident = await incidentService.UpsertIncident(dto);
         return mapping.Map<Incident, IncidentDto>(incident);
+    }
+
+    [HttpPatch("activate/edge-box/{edgeBoxId:guid}")]
+    public IActionResult ActivateEdgeBox(Guid edgeBoxId)
+    {
+        eventManager.NotifyActivatedEdgeBox(edgeBoxId);
+        return Ok();
     }
 }
