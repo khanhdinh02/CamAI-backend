@@ -34,7 +34,7 @@ public class ShopSearchSpec : RepositorySpec<Shop>
     {
         if (includeWard)
             AddIncludes(s => s.Ward.District.Province);
-        AddIncludes(s => s.Brand);
+        AddIncludes(s => s.Brand, s => s.ShopManager);
         ApplyingPaging(search);
         ApplyOrderByDescending(s => s.CreatedDate);
     }
