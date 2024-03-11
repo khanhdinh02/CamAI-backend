@@ -8,9 +8,9 @@ namespace Host.CamAI.API.Consumers;
 
 [Consumer("{MachineName}", ConsumerConstant.SyncDataRequest)]
 public class SyncDataRequestConsumer(SyncObserver syncObserver, IUnitOfWork unitOfWork, IPublishEndpoint bus)
-    : IConsumer<SyncDataRequest>
+    : IConsumer<SyncDataRequestMessage>
 {
-    public async Task Consume(ConsumeContext<SyncDataRequest> context)
+    public async Task Consume(ConsumeContext<SyncDataRequestMessage> context)
     {
         // TODO [Duy]: Use ebinstall service after implemented
         var edgeBoxId = context.Message.EdgeBoxId;
