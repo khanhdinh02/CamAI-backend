@@ -5,11 +5,11 @@ namespace Core.Domain.Repositories;
 public interface IUnitOfWork : IDisposable, IAsyncDisposable
 {
     IRepository<Brand> Brands { get; }
-    IRepository<Shop> Shops { get; }
+    ICustomShopRepository Shops { get; }
     IRepository<Province> Provinces { get; }
     IRepository<District> Districts { get; }
     IRepository<Ward> Wards { get; }
-    IRepository<Account> Accounts { get; }
+    ICustomAccountRepository Accounts { get; }
     IRepository<Employee> Employees { get; }
     IRepository<EdgeBox> EdgeBoxes { get; }
     IRepository<EdgeBoxInstall> EdgeBoxInstalls { get; }

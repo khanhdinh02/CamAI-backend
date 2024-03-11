@@ -16,13 +16,13 @@ public class UnitOfWork(CamAIContext context, IServiceProvider serviceProvider) 
 
     public IRepository<Brand> Brands => serviceProvider.GetRequiredService<IRepository<Brand>>();
 
-    public IRepository<Shop> Shops => serviceProvider.GetRequiredService<IRepository<Shop>>();
+    public ICustomShopRepository Shops => serviceProvider.GetRequiredService<ICustomShopRepository>();
 
     public IRepository<Province> Provinces => serviceProvider.GetRequiredService<IRepository<Province>>();
     public IRepository<District> Districts => serviceProvider.GetRequiredService<IRepository<District>>();
     public IRepository<Ward> Wards => serviceProvider.GetRequiredService<IRepository<Ward>>();
 
-    public IRepository<Account> Accounts => serviceProvider.GetRequiredService<IRepository<Account>>();
+    public ICustomAccountRepository Accounts => serviceProvider.GetRequiredService<ICustomAccountRepository>();
     public IRepository<Employee> Employees => serviceProvider.GetRequiredService<IRepository<Employee>>();
     public IRepository<EdgeBox> EdgeBoxes => serviceProvider.GetRequiredService<IRepository<EdgeBox>>();
     public IRepository<EdgeBoxInstall> EdgeBoxInstalls =>
