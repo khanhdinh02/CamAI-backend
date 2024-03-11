@@ -125,12 +125,31 @@ public class EdgeBoxInstallService(IUnitOfWork unitOfWork, IBaseMapping mapper, 
             await unitOfWork
                 .EdgeBoxInstalls
                 .GetAsync(
-                    i =>
-                        (
-                            i.EdgeBoxInstallStatus == EdgeBoxInstallStatus.Working
-                            || i.EdgeBoxInstallStatus == EdgeBoxInstallStatus.Unhealthy
-                        )
-                        && i.ShopId == shopId,
+                    i => i.EdgeBoxInstallStatus != EdgeBoxInstallStatus.Disabled && i.ShopId == shopId,
+                    includeProperties:
+                    [
+                        nameof(EdgeBoxInstall.EdgeBox),
+                        $"{nameof(EdgeBoxInstall.Shop)}.{nameof(Shop.Brand)}",
+                        $"{nameof(EdgeBoxInstall.Shop)}.{nameof(Shop.Ward)}.{nameof(Ward.District)}.{nameof(District.Province)}"
+                    ],
+                    takeAll: true
+                )
+        ).Values;
+    }
+
+    public async Task<IEnumerable<EdgeBoxInstall>> GetInstallingByBrand(Guid brandId)
+    {
+        var user = accountService.GetCurrentAccount();
+        var brand =
+            await unitOfWork.Brands.GetByIdAsync(brandId) ?? throw new NotFoundException(typeof(Brand), brandId);
+        if (user.Role == Role.BrandManager && brandId != user.BrandId)
+            throw new ForbiddenException(user, brand);
+
+        return (
+            await unitOfWork
+                .EdgeBoxInstalls
+                .GetAsync(
+                    i => i.EdgeBoxInstallStatus != EdgeBoxInstallStatus.Disabled && i.Shop.BrandId == brandId,
                     includeProperties:
                     [
                         nameof(EdgeBoxInstall.EdgeBox),

@@ -27,4 +27,11 @@ public interface IEdgeBoxInstallService
     /// <param name="shopId"></param>
     /// <returns></returns>
     Task<IEnumerable<EdgeBoxInstall>> GetInstallingByShop(Guid shopId);
+
+    /// <summary>
+    /// Get all installs, that has been activated and not disabled by admin, of a brand.
+    /// </summary>
+    /// <param name="brandId"></param>
+    /// <returns></returns>
+    Task<IEnumerable<EdgeBoxInstall>> GetInstallingByBrand(Guid brandId);
 }

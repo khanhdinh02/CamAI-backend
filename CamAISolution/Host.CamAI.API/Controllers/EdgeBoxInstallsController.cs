@@ -27,6 +27,20 @@ public class EdgeBoxInstallsController(IEdgeBoxInstallService edgeBoxInstallServ
         return edgeBoxInstalls.Select(mapper.Map<EdgeBoxInstall, EdgeBoxInstallDto>);
     }
 
+    /// <summary>
+    /// Get all installs, that has been activated and not disabled by admin, of a brand.
+    /// </summary>
+    /// <remarks>Use for Brand Manager.</remarks>
+    /// <param name="brandId"></param>
+    /// <returns></returns>
+    [HttpGet("/api/brands/{brandId}/installs")]
+    [AccessTokenGuard(Role.BrandManager)]
+    public async Task<IEnumerable<EdgeBoxInstallDto>> GetEdgeBoxInstallsByBrand(Guid brandId)
+    {
+        var edgeBoxInstalls = await edgeBoxInstallService.GetInstallingByBrand(brandId);
+        return edgeBoxInstalls.Select(mapper.Map<EdgeBoxInstall, EdgeBoxInstallDto>);
+    }
+
     [HttpPost]
     [AccessTokenGuard(Role.Admin)]
     public async Task<EdgeBoxInstallDto> LeaseEdgeBox(CreateEdgeBoxInstallDto dto)
