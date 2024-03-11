@@ -31,11 +31,7 @@ public class AccountService(IUnitOfWork unitOfWork, IJwtService jwtService, IBas
         return foundAccounts.Values[0];
     }
 
-    //TODO [Dat]: Make this return Account's detail
-    public Account GetCurrentAccount()
-    {
-        return jwtService.GetCurrentUser();
-    }
+    public Account GetCurrentAccount() => jwtService.GetCurrentUser();
 
     public async Task<Account> CreateAccount(CreateAccountDto dto)
     {
@@ -45,16 +41,12 @@ public class AccountService(IUnitOfWork unitOfWork, IJwtService jwtService, IBas
         Account newAccount;
         var newEntity = true;
         var accountThatHasTheSameMail = (
-            await unitOfWork
-                .Accounts
-                .GetAsync(
-                    a => a.Email == dto.Email,
-                    includeProperties: [nameof(Account.ManagingShop)],
-                    disableTracking: false
-                )
-        )
-            .Values
-            .FirstOrDefault();
+            await unitOfWork.Accounts.GetAsync(
+                a => a.Email == dto.Email,
+                includeProperties: [nameof(Account.ManagingShop)],
+                disableTracking: false
+            )
+        ).Values.FirstOrDefault();
         if (accountThatHasTheSameMail == null)
             newAccount = mapper.Map<CreateAccountDto, Account>(dto);
         else
@@ -105,7 +97,6 @@ public class AccountService(IUnitOfWork unitOfWork, IJwtService jwtService, IBas
 
     public async Task<Account> UpdateAccount(Guid id, UpdateAccountDto dto)
     {
-        // TODO: Update role. Currently, the role can only be changed by deleting and recreating the account
         var account =
             (await unitOfWork.Accounts.GetAsync(new AccountByIdRepoSpec(id))).Values.FirstOrDefault()
             ?? throw new NotFoundException(typeof(Account), id);
@@ -114,18 +105,13 @@ public class AccountService(IUnitOfWork unitOfWork, IJwtService jwtService, IBas
 
         mapper.Map(dto, account);
         var user = GetCurrentAccount();
-        if (user.Role == Role.Admin)
+        switch (user.Role)
         {
-            if (account.Role == Role.BrandManager || account.Role == Role.Technician)
+            case Role.Admin when account.Role is Role.BrandManager or Role.Technician:
+            case Role.BrandManager when account.Role == Role.ShopManager:
                 unitOfWork.Accounts.Update(account);
-            else
-                throw new ForbiddenException(user, account);
-        }
-        else if (user.Role == Role.BrandManager)
-        {
-            if (account.Role == Role.ShopManager || account.Role == Role.Employee)
-                unitOfWork.Accounts.Update(account);
-            else
+                break;
+            default:
                 throw new ForbiddenException(user, account);
         }
 
@@ -137,14 +123,10 @@ public class AccountService(IUnitOfWork unitOfWork, IJwtService jwtService, IBas
     {
         var user = GetCurrentAccount();
         var account = await GetAccountById(id);
-        if (user.Role == Role.Admin)
+        switch (user.Role)
         {
-            if (account.Role != Role.BrandManager && account.Role != Role.Technician)
-                throw new ForbiddenException(user, account);
-        }
-        else if (user.Role == Role.BrandManager)
-        {
-            if (account.Role != Role.ShopManager && account.Role != Role.Employee)
+            case Role.Admin when account.Role != Role.BrandManager && account.Role != Role.Technician:
+            case Role.BrandManager when account.Role != Role.ShopManager:
                 throw new ForbiddenException(user, account);
         }
 

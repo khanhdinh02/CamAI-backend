@@ -72,7 +72,6 @@ public class ShopService(
         else if (account.Role == Role.ShopManager)
         {
             searchRequest.ShopManagerId = account.Id;
-            // TODO [Duy]: is there a way to specify not condition like != Status.Inactive
             searchRequest.Status = ShopStatus.Active;
             includeWard = true;
         }
