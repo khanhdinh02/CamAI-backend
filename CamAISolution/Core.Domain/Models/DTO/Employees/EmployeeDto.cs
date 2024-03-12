@@ -16,5 +16,5 @@ public class EmployeeDto : BaseDto
     public EmployeeStatus EmployeeStatus { get; set; }
 
     public WardDto? Ward { get; set; }
-    public ShopDto? Shop { get; set; } = null!;
+    public ShopDto? Shop { get; set; }
 }
