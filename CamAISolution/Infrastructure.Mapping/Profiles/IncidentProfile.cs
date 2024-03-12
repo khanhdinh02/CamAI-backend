@@ -14,14 +14,12 @@ public class IncidentProfile : Profile
                 x => x.Evidences,
                 opts =>
                     opts.MapFrom(
-                        (
-                            (incident, _, _, ctx) =>
-                            {
-                                foreach (var evidence in incident.Evidences)
-                                    evidence.Incident = null!;
-                                return ctx.Mapper.Map<ICollection<Evidence>, List<EvidenceDto>>(incident.Evidences);
-                            }
-                        )
+                        (incident, _, _, ctx) =>
+                        {
+                            foreach (var evidence in incident.Evidences)
+                                evidence.Incident = null!;
+                            return ctx.Mapper.Map<ICollection<Evidence>, List<EvidenceDto>>(incident.Evidences);
+                        }
                     )
             );
     }
