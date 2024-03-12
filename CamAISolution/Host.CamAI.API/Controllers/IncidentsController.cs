@@ -30,7 +30,7 @@ public class IncidentsController(IBaseMapping mapping, IIncidentService incident
     [AccessTokenGuard(Role.ShopManager, Role.BrandManager)]
     public async Task<IncidentDto> GetIncidentById(Guid id)
     {
-        return mapping.Map<Incident, IncidentDto>(await incidentService.GetIncidentById(id));
+        return mapping.Map<Incident, IncidentDto>(await incidentService.GetIncidentById(id, true));
     }
 
     /// <summary>

@@ -22,10 +22,10 @@ public class IncidentService(
     IBaseMapping mapping
 ) : IIncidentService
 {
-    public async Task<Incident> GetIncidentById(Guid id)
+    public async Task<Incident> GetIncidentById(Guid id, bool includeAll = false)
     {
         var incident =
-            (await unitOfWork.Incidents.GetAsync(new IncidentByIdRepoSpec(id))).Values.FirstOrDefault()
+            (await unitOfWork.Incidents.GetAsync(new IncidentByIdRepoSpec(id, includeAll))).Values.FirstOrDefault()
             ?? throw new NotFoundException(typeof(Incident), id);
         var currentAccount = accountService.GetCurrentAccount();
         return currentAccount.Role switch
@@ -36,7 +36,7 @@ public class IncidentService(
         };
     }
 
-    public Task<PaginationResult<Incident>> GetIncidents(SearchIncidentRequest searchRequest)
+    public async Task<PaginationResult<Incident>> GetIncidents(SearchIncidentRequest searchRequest)
     {
         var account = accountService.GetCurrentAccount();
         switch (account.Role)
@@ -51,7 +51,7 @@ public class IncidentService(
         }
 
         var includeShop = account.Role == Role.BrandManager;
-        return unitOfWork.Incidents.GetAsync(new IncidentSearchSpec(searchRequest, includeShop));
+        return await unitOfWork.Incidents.GetAsync(new IncidentSearchSpec(searchRequest, includeShop));
     }
 
     public async Task AssignIncidentToEmployee(Guid id, Guid employeeId)
