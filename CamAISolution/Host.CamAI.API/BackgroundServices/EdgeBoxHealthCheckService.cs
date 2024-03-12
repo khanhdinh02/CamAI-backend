@@ -7,6 +7,7 @@ using Core.Domain.Interfaces.Services;
 using Core.Domain.Models;
 using Core.Domain.Models.Configurations;
 using Core.Domain.Repositories;
+using Core.Domain.Services;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace Host.CamAI.API.BackgroundServices;
@@ -26,6 +27,7 @@ public class EdgeBoxHealthCheckService(
 
     private static HttpClient CreateHttpClient()
     {
+        // disable ssl
         var handler = new HttpClientHandler();
         handler.ClientCertificateOptions = ClientCertificateOption.Manual;
         handler.ServerCertificateCustomValidationCallback = (_, _, _, _) => true;
@@ -39,20 +41,26 @@ public class EdgeBoxHealthCheckService(
         while (!stoppingToken.IsCancellationRequested)
         {
             // init service
-            using var scope = provider.CreateScope();
+            var scope = provider.CreateScope();
+
+            var jwtService = scope.ServiceProvider.GetRequiredService<IJwtService>();
+            await jwtService.SetCurrentUserToSystemHandler();
+
             uow = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
             edgeBoxInstallService = scope.ServiceProvider.GetRequiredService<IEdgeBoxInstallService>();
             notificationService = scope.ServiceProvider.GetRequiredService<INotificationService>();
 
             // fetch 100 edge box install each
             const int pageSize = 100;
-            var edgeBoxInstallsPagination = new PaginationResult<EdgeBoxInstall> { TotalCount = 1 };
+            var edgeBoxInstallsPagination = new PaginationResult<EdgeBoxInstall> { Values = [new EdgeBoxInstall()] };
             var pageIndex = 0;
-            while (edgeBoxInstallsPagination.TotalCount != 0)
+            while (!edgeBoxInstallsPagination.IsValuesEmpty)
             {
                 edgeBoxInstallsPagination = await uow.GetRepository<EdgeBoxInstall>()
                     .GetAsync(
-                        x => x.EdgeBoxInstallStatus != EdgeBoxInstallStatus.Disabled,
+                        x =>
+                            x.EdgeBoxInstallStatus == EdgeBoxInstallStatus.Working
+                            || x.EdgeBoxInstallStatus == EdgeBoxInstallStatus.Unhealthy,
                         includeProperties: [nameof(EdgeBoxInstall.Shop)],
                         pageIndex: pageIndex,
                         pageSize: pageSize
@@ -69,10 +77,10 @@ public class EdgeBoxHealthCheckService(
     private async Task CheckEdgeBoxInstallHealth(IList<EdgeBoxInstall> edgeBoxInstalls, CancellationToken cancellation)
     {
         var notificationDto = new List<CreateNotificationDto>();
-        Parallel.ForEach(
+        await Parallel.ForEachAsync(
             edgeBoxInstalls,
             new ParallelOptions { MaxDegreeOfParallelism = 8 },
-            async edgeBoxInstall =>
+            async (edgeBoxInstall, cancel) =>
             {
                 for (var numOfRetry = 0; numOfRetry < healthCheckConfiguration.MaxNumberOfRetry; numOfRetry++)
                 {
@@ -80,10 +88,7 @@ public class EdgeBoxHealthCheckService(
                     {
                         // call edge box endpoint
                         var response = await SendRequest(GetEdgeBoxLink(edgeBoxInstall));
-                        if (
-                            response.IsSuccessStatusCode
-                            && edgeBoxInstall.EdgeBox.EdgeBoxStatus != EdgeBoxStatus.Active
-                        )
+                        if (response.IsSuccessStatusCode)
                         {
                             await LockUpdateStatus(edgeBoxInstall, EdgeBoxInstallStatus.Working);
                             return;
@@ -94,19 +99,15 @@ public class EdgeBoxHealthCheckService(
                         logger.Error(ex.Message, ex);
                     }
 
-                    await Task.Delay(TimeSpan.FromMinutes(healthCheckConfiguration.RetryDelay), cancellation);
+                    await Task.Delay(TimeSpan.FromSeconds(healthCheckConfiguration.RetryDelay), cancel);
                 }
 
                 // failed after max retry
                 // this will update status and send notification
+                // TODO: only update notified if update status
                 await LockUpdateStatus(edgeBoxInstall, EdgeBoxInstallStatus.Unhealthy);
 
-                notificationDto.Add(
-                    await CreateNotification(
-                        $"Edgebox install's status has been changed to {EdgeBoxInstallStatus.Unhealthy}",
-                        edgeBoxInstall
-                    )
-                );
+                notificationDto.Add(await CreateNotification(edgeBoxInstall));
             }
         );
         foreach (var dto in notificationDto)
@@ -125,7 +126,7 @@ public class EdgeBoxHealthCheckService(
         return $"http://{edgeBoxInstall.IpAddress}:{edgeBoxInstall.Port}/api/test/{edgeBoxInstall.Id}";
     }
 
-    private async Task<CreateNotificationDto> CreateNotification(string content, EdgeBoxInstall edgeBoxInstall)
+    private async Task<CreateNotificationDto> CreateNotification(EdgeBoxInstall edgeBoxInstall)
     {
         var sentTo = new List<Guid> { await GetAdminAccount() };
         if (edgeBoxInstall.Shop.ShopManagerId.HasValue)
@@ -133,7 +134,8 @@ public class EdgeBoxHealthCheckService(
 
         var dto = new CreateNotificationDto
         {
-            Content = content,
+            Title = "Edge box failed",
+            Content = $"Edge box install status has been changed to {EdgeBoxInstallStatus.Unhealthy}",
             NotificationType = NotificationType.Urgent,
             SentToId = sentTo
         };
