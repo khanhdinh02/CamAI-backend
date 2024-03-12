@@ -23,6 +23,7 @@ builder
                 builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader().WithExposedHeaders(HeaderNameConstant.Auto)
         )
     )
+    .AddMemoryCache()
     .AddRepository(builder.Configuration.GetConnectionString("Default"))
     .AddJwtService(builder.Configuration)
     .AddLoggingDependencyInjection()
