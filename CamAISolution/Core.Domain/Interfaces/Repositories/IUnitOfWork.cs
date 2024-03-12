@@ -10,7 +10,7 @@ public interface IUnitOfWork : IDisposable, IAsyncDisposable
     IRepository<District> Districts { get; }
     IRepository<Ward> Wards { get; }
     ICustomAccountRepository Accounts { get; }
-    IRepository<Employee> Employees { get; }
+    ICustomEmployeeRepository Employees { get; }
     IRepository<EdgeBox> EdgeBoxes { get; }
     IRepository<EdgeBoxInstall> EdgeBoxInstalls { get; }
     IRepository<EdgeBoxModel> EdgeBoxModels { get; }

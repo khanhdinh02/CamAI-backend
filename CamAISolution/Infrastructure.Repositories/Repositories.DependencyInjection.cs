@@ -22,6 +22,7 @@ public static class RepositoriesDependencyInjection
         services.AddScoped(typeof(IRepository<>), typeof(Base.Repository<>));
         services.AddScoped<ICustomShopRepository, CustomShopRepository>();
         services.AddScoped<ICustomAccountRepository, CustomAccountRepository>();
+        services.AddScoped<ICustomEmployeeRepository, CustomEmployeeRepository>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         return services;
     }

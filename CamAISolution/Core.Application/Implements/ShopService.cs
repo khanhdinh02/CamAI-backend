@@ -49,7 +49,10 @@ public class ShopService(
         if (await unitOfWork.EdgeBoxInstalls.CountAsync(x => x.ShopId == id) > 0)
             shop.ShopStatus = ShopStatus.Inactive;
         else
+        {
             unitOfWork.Shops.Delete(shop);
+            unitOfWork.Employees.DeleteEmployeeInShop(id);
+        }
         await unitOfWork.CompleteAsync();
         logger.Info($"Shop{shop.Id} has been Inactivated");
     }

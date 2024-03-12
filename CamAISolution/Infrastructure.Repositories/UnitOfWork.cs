@@ -3,6 +3,7 @@ using Core.Domain.Entities.Base;
 using Core.Domain.Repositories;
 using Core.Domain.Services;
 using Core.Domain.Utilities;
+using Infrastructure.Repositories.Base;
 using Infrastructure.Repositories.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -23,7 +24,7 @@ public class UnitOfWork(CamAIContext context, IServiceProvider serviceProvider) 
     public IRepository<Ward> Wards => serviceProvider.GetRequiredService<IRepository<Ward>>();
 
     public ICustomAccountRepository Accounts => serviceProvider.GetRequiredService<ICustomAccountRepository>();
-    public IRepository<Employee> Employees => serviceProvider.GetRequiredService<IRepository<Employee>>();
+    public ICustomEmployeeRepository Employees => serviceProvider.GetRequiredService<ICustomEmployeeRepository>();
     public IRepository<EdgeBox> EdgeBoxes => serviceProvider.GetRequiredService<IRepository<EdgeBox>>();
     public IRepository<EdgeBoxInstall> EdgeBoxInstalls =>
         serviceProvider.GetRequiredService<IRepository<EdgeBoxInstall>>();

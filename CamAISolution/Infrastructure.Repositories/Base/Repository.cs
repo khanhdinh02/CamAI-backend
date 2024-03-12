@@ -1,11 +1,9 @@
 using System.Linq.Expressions;
-using Core.Domain.Entities;
 using Core.Domain.Models;
 using Core.Domain.Repositories;
 using Core.Domain.Specifications.Repositories;
 using Infrastructure.Repositories.Data;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Query;
 using static Infrastructure.Repositories.Utils.QueryHelper;
 
 namespace Infrastructure.Repositories.Base;
