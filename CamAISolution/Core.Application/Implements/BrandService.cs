@@ -178,7 +178,7 @@ public class BrandService(
         if (brand == null)
             return;
 
-        if (brand.BrandManager == null || brand.BrandManager.AccountStatus == AccountStatus.New)
+        if (brand.BrandManagerId == null)
         {
             unitOfWork.Brands.Delete(brand);
             await unitOfWork.CompleteAsync();
