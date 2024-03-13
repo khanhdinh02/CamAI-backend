@@ -48,6 +48,8 @@ public class SyncObserver(EventManager eventManager, IServiceProvider provider)
             Name = shop.Name,
             Address = ProvinceHelper.GetFullAddress(shop.AddressLine, shop.Ward),
             Phone = shop.Phone,
+            OpenTime = shop.OpenTime,
+            CloseTime = shop.CloseTime,
             RoutingKey = routingKey
         };
         SendMessage(updateMessage);
