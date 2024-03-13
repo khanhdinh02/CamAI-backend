@@ -18,6 +18,7 @@ namespace Core.Application.Implements;
 public class BrandService(
     IAccountService accountService,
     IShopService shopService,
+    IEdgeBoxService edgeBoxService,
     IUnitOfWork unitOfWork,
     IAppLogging<BrandService> logger,
     IBaseMapping mapping,
@@ -168,30 +169,33 @@ public class BrandService(
         }
     }
 
-    //TODO [Dat]: If truly delete, also remove Logo, Banner in filesystem
     public async Task DeleteBrand(Guid id)
     {
-        // TODO [Duy]: implement more business in here
         var brand = await unitOfWork.Brands.GetByIdAsync(id);
         if (brand == null)
             return;
 
-        if (!HasRelatedEntities(brand))
+        if (brand.BrandManagerId == null)
+        {
             unitOfWork.Brands.Delete(brand);
+            await unitOfWork.CompleteAsync();
+            if (brand.BannerId.HasValue)
+                await blobService.DeleteImageInFilesystem(brand.BannerId.Value);
+            if (brand.LogoId.HasValue)
+                await blobService.DeleteImageInFilesystem(brand.LogoId.Value);
+        }
         else
         {
+            var installedEdgeBoxes = await edgeBoxService.GetEdgeBoxesByBrand(id);
+            if (installedEdgeBoxes.Any())
+                throw new BadRequestException("Cannot delete brand that has active edge box");
+
+            unitOfWork.Shops.UpdateStatusInBrand(id, ShopStatus.Inactive);
+            unitOfWork.Accounts.UpdateStatusInBrand(id, AccountStatus.Inactive);
             brand.BrandStatus = BrandStatus.Inactive;
             unitOfWork.Brands.Update(brand);
+            await unitOfWork.CompleteAsync();
         }
-
-        await unitOfWork.CompleteAsync();
-    }
-
-    private bool HasRelatedEntities(Brand brand)
-    {
-        // TODO [Duy]: implement this
-        // return brand.BrandManagerId != null;
-        throw new NotImplementedException();
     }
 
     private async Task<bool> HasAccessToBrand(Account account, Brand brand)
@@ -199,10 +203,7 @@ public class BrandService(
         if (IsAccountOwnBrand(account, brand))
             return true;
 
-        if (await IsAccountOwnShopRelatedToBrand(account, brand))
-            return true;
-
-        return false;
+        return await IsAccountOwnShopRelatedToBrand(account, brand);
     }
 
     private async Task<bool> IsAccountOwnShopRelatedToBrand(Account account, Brand brand)

@@ -16,6 +16,7 @@ namespace Core.Application.Implements;
 
 public class ShopService(
     IUnitOfWork unitOfWork,
+    IEdgeBoxService edgeBoxService,
     IAppLogging<ShopService> logger,
     IBaseMapping mapping,
     IAccountService accountService,
@@ -38,10 +39,20 @@ public class ShopService(
         return shop;
     }
 
-    //TODO [Dat]: update shop status if there is EdgeBoxInstall
     public async Task DeleteShop(Guid id)
     {
-        var shop = unitOfWork.Shops.Delete(new Shop { Id = id });
+        var installedEdgeBoxes = await edgeBoxService.GetEdgeBoxesByShop(id);
+        if (installedEdgeBoxes.Any())
+            throw new BadRequestException("Cannot delete shop that has active edge box");
+
+        var shop = await GetShopById(id);
+        if (await unitOfWork.EdgeBoxInstalls.CountAsync(x => x.ShopId == id) > 0)
+            shop.ShopStatus = ShopStatus.Inactive;
+        else
+        {
+            unitOfWork.Shops.Delete(shop);
+            unitOfWork.Employees.DeleteEmployeeInShop(id);
+        }
         await unitOfWork.CompleteAsync();
         logger.Info($"Shop{shop.Id} has been Inactivated");
     }
@@ -145,7 +156,7 @@ public class ShopService(
                 throw new BadRequestException("Account is not a shop manager");
             var brandManager = accountService.GetCurrentAccount();
 
-            if (account.ManagingShop?.Id != shopId)
+            if (account.ManagingShop != null && account.ManagingShop?.Id != shopId)
                 throw new BadRequestException("Account is a manager of another shop");
 
             if (account.BrandId != brandManager.BrandId)
