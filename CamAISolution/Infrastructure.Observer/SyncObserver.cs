@@ -11,8 +11,8 @@ public class SyncObserver(EventManager eventManager, IServiceProvider provider)
 {
     public void RegisterEvent()
     {
-        eventManager.BrandChangedEvent += SyncBrand;
-        eventManager.ShopChangedEvent += SyncShop;
+        eventManager.BrandChangedEvent += brand => SyncBrand(brand);
+        eventManager.ShopChangedEvent += shop => SyncShop(shop);
     }
 
     private void SendMessage<T>(T message)
@@ -23,13 +23,12 @@ public class SyncObserver(EventManager eventManager, IServiceProvider provider)
         bus.Publish(message).Wait();
     }
 
-    public void SyncBrand(Brand brand) => SyncBrand(brand, $"{brand.Id}.*");
-
     public void SyncBrand(Brand brand, string? routingKey = null)
     {
-        routingKey ??= $"{brand.Id}.*";
+        routingKey ??= $"{brand.Id:N}.*";
         var updateMessage = new BrandUpdateMessage
         {
+            Id = brand.Id,
             Name = brand.Name,
             Email = brand.Email,
             Phone = brand.Phone,
@@ -38,13 +37,12 @@ public class SyncObserver(EventManager eventManager, IServiceProvider provider)
         SendMessage(updateMessage);
     }
 
-    public void SyncShop(Shop shop) => SyncShop(shop, $"{shop.BrandId}.{shop.Id}");
-
     public void SyncShop(Shop shop, string? routingKey = null)
     {
-        routingKey ??= $"{shop.BrandId}.{shop.Id}";
+        routingKey ??= $"{shop.BrandId:N}.{shop.Id:N}";
         var updateMessage = new ShopUpdateMessage
         {
+            Id = shop.Id,
             Name = shop.Name,
             Address = ProvinceHelper.GetFullAddress(shop.AddressLine, shop.Ward),
             Phone = shop.Phone,
