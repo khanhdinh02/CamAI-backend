@@ -13,5 +13,5 @@ public interface IRequestService
     Task<Request> CreateRequest(CreateRequestDto dto);
     Task<Request> UpdateRequest(Guid requestId, UpdateRequestDto dto);
     Task<Request> UpdateStatus(Request request, RequestStatus status);
-    Task<Request> Reply(Request request, string reply);
+    Task<Request> UpdateReply(Request request, string reply);
 }

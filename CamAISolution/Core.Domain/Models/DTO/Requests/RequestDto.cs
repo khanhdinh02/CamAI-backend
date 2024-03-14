@@ -1,4 +1,3 @@
-using Core.Domain.Entities;
 using Core.Domain.Enums;
 
 namespace Core.Domain.DTO;

@@ -83,7 +83,7 @@ public class RequestService(IUnitOfWork unitOfWork, IBaseMapping mapper, IAccoun
             ?? throw new NotFoundException(typeof(Request), requestId);
 
         if (dto.Reply != null)
-            await Reply(request, dto.Reply);
+            await UpdateReply(request, dto.Reply);
         if (dto.RequestStatus.HasValue)
             await UpdateStatus(request, dto.RequestStatus.Value);
 
@@ -113,7 +113,7 @@ public class RequestService(IUnitOfWork unitOfWork, IBaseMapping mapper, IAccoun
         return request;
     }
 
-    public async Task<Request> Reply(Request request, string reply)
+    public async Task<Request> UpdateReply(Request request, string reply)
     {
         request.Reply = reply;
         unitOfWork.Requests.Update(request);
