@@ -20,4 +20,5 @@ public interface IJwtService
     IEnumerable<Claim> GetClaims(string token, TokenType tokenType, bool isValidateTime = true);
 
     Account GetCurrentUser();
+    Task SetCurrentUserToSystemHandler();
 }

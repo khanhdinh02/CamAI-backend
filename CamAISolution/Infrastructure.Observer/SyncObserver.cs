@@ -49,12 +49,15 @@ public class SyncObserver(EventManager eventManager, IServiceProvider provider)
 
     public void SyncShop(Shop shop, string? routingKey = null)
     {
-        routingKey ??= $"{shop.BrandId}.{shop.Id}";
+        routingKey ??= $"{shop.BrandId:N}.{shop.Id:N}";
         var updateMessage = new ShopUpdateMessage
         {
+            Id = shop.Id,
             Name = shop.Name,
             Address = ProvinceHelper.GetFullAddress(shop.AddressLine, shop.Ward),
             Phone = shop.Phone,
+            OpenTime = shop.OpenTime,
+            CloseTime = shop.CloseTime,
             RoutingKey = routingKey
         };
         SendMessage(updateMessage);

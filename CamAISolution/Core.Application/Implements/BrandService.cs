@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Text.Json;
 using Core.Application.Events;
 using Core.Application.Exceptions;
@@ -17,6 +18,7 @@ namespace Core.Application.Implements;
 public class BrandService(
     IAccountService accountService,
     IShopService shopService,
+    IEdgeBoxService edgeBoxService,
     IUnitOfWork unitOfWork,
     IAppLogging<BrandService> logger,
     IBaseMapping mapping,
@@ -114,24 +116,35 @@ public class BrandService(
         return brand;
     }
 
-    // TODO [Dat]: Clean up logic in both update logo and banner
-    public async Task UpdateLogo(CreateImageDto imageDto)
+    public async Task UpdateImage(CreateImageDto imageDto, BrandImageType type)
     {
         var currentAccount = accountService.GetCurrentAccount();
         if (!IsAccountOwnBrand(currentAccount, currentAccount.Brand))
             throw new BadRequestException("Account doesn't manage any brand");
         var brand = await GetBrandById(currentAccount.BrandId!.Value);
-        var oldLogoId = brand.LogoId;
-        var newLogo = await blobService.UploadImage(imageDto, nameof(Brand), nameof(Brand.Logo));
-        brand.LogoId = newLogo.Id;
+
+        Guid? oldImageId;
+        string imageTypePath;
+        switch (type)
+        {
+            case BrandImageType.Logo:
+                oldImageId = brand.LogoId;
+                imageTypePath = nameof(Brand.Logo);
+                break;
+            case BrandImageType.Banner:
+                oldImageId = brand.BannerId;
+                imageTypePath = nameof(Brand.Banner);
+                break;
+            default:
+                throw new BadRequestException("Unknown image enum");
+        }
+        var newLogo = await blobService.UploadImage(imageDto, nameof(Brand), imageTypePath);
+        UpdateBrandImageId(type, brand, newLogo.Id);
         unitOfWork.Brands.Update(brand);
         try
         {
-            if (await unitOfWork.CompleteAsync() > 0)
-            {
-                if (oldLogoId.HasValue)
-                    await blobService.DeleteImageInFilesystem(oldLogoId.Value);
-            }
+            if (await unitOfWork.CompleteAsync() > 0 && oldImageId.HasValue)
+                await blobService.DeleteImageInFilesystem(oldImageId.Value);
             else
                 await blobService.DeleteImageInFilesystem(newLogo.Id);
         }
@@ -143,58 +156,46 @@ public class BrandService(
         }
     }
 
-    public async Task UpdateBanner(CreateImageDto imageDto)
+    private static void UpdateBrandImageId(BrandImageType type, Brand brand, Guid imageId)
     {
-        var currentAccount = accountService.GetCurrentAccount();
-        if (!IsAccountOwnBrand(currentAccount, currentAccount.Brand))
-            throw new BadRequestException("Account doesn't manage any brand");
-        var brand = await GetBrandById(currentAccount.BrandId!.Value);
-        var oldBannerId = brand.BannerId;
-        var newBanner = await blobService.UploadImage(imageDto, nameof(Brand), nameof(Brand.Banner));
-        brand.BannerId = newBanner.Id;
-        unitOfWork.Brands.Update(brand);
-        try
+        switch (type)
         {
-            if (await unitOfWork.CompleteAsync() > 0)
-            {
-                if (oldBannerId.HasValue)
-                    await blobService.DeleteImageInFilesystem(oldBannerId.Value);
-            }
-            else
-                await blobService.DeleteImageInFilesystem(newBanner.Id);
-        }
-        catch (Exception ex)
-        {
-            logger.Error(ex.Message, ex);
-            await blobService.DeleteImageInFilesystem(newBanner.Id);
-            throw new ServiceUnavailableException("Update Banner failed");
+            case BrandImageType.Logo:
+                brand.LogoId = imageId;
+                break;
+            case BrandImageType.Banner:
+                brand.BannerId = imageId;
+                break;
         }
     }
 
-    //TODO [Dat]: If truly delete, also remove Logo, Banner in filesystem
     public async Task DeleteBrand(Guid id)
     {
-        // TODO [Duy]: implement more business in here
         var brand = await unitOfWork.Brands.GetByIdAsync(id);
         if (brand == null)
             return;
 
-        if (!HasRelatedEntities(brand))
+        if (brand.BrandManagerId == null)
+        {
             unitOfWork.Brands.Delete(brand);
+            await unitOfWork.CompleteAsync();
+            if (brand.BannerId.HasValue)
+                await blobService.DeleteImageInFilesystem(brand.BannerId.Value);
+            if (brand.LogoId.HasValue)
+                await blobService.DeleteImageInFilesystem(brand.LogoId.Value);
+        }
         else
         {
+            var installedEdgeBoxes = await edgeBoxService.GetEdgeBoxesByBrand(id);
+            if (installedEdgeBoxes.Any())
+                throw new BadRequestException("Cannot delete brand that has active edge box");
+
+            unitOfWork.Shops.UpdateStatusInBrand(id, ShopStatus.Inactive);
+            unitOfWork.Accounts.UpdateStatusInBrand(id, AccountStatus.Inactive);
             brand.BrandStatus = BrandStatus.Inactive;
             unitOfWork.Brands.Update(brand);
+            await unitOfWork.CompleteAsync();
         }
-
-        await unitOfWork.CompleteAsync();
-    }
-
-    private bool HasRelatedEntities(Brand brand)
-    {
-        // TODO [Duy]: implement this
-        // return brand.BrandManagerId != null;
-        throw new NotImplementedException();
     }
 
     private async Task<bool> HasAccessToBrand(Account account, Brand brand)
@@ -202,10 +203,7 @@ public class BrandService(
         if (IsAccountOwnBrand(account, brand))
             return true;
 
-        if (await IsAccountOwnShopRelatedToBrand(account, brand))
-            return true;
-
-        return false;
+        return await IsAccountOwnShopRelatedToBrand(account, brand);
     }
 
     private async Task<bool> IsAccountOwnShopRelatedToBrand(Account account, Brand brand)

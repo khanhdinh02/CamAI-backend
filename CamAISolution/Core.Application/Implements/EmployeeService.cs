@@ -11,7 +11,6 @@ using Core.Domain.Repositories;
 namespace Core.Application.Implements;
 
 // TODO [Khanh]: What authority do brand manager and shop manager have over employees?
-// TODO: Sync with edge box
 public class EmployeeService(IUnitOfWork unitOfWork, IAccountService accountService, IBaseMapping mapper)
     : IEmployeeService
 {

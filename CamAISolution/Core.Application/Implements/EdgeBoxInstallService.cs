@@ -45,14 +45,15 @@ public class EdgeBoxInstallService(IUnitOfWork unitOfWork, IBaseMapping mapper, 
                 await unitOfWork
                     .EdgeBoxInstalls
                     .GetAsync(
-                        i => i.ValidUntil != null
-                        // i.ActivationCode == dto.ActivationCode
-                        // && i.ShopId == dto.ShopId
-                        // && i.Shop.BrandId == user.BrandId
+                        i =>
+                            i.ActivationCode == dto.ActivationCode
+                            && i.EdgeBoxInstallStatus != EdgeBoxInstallStatus.Disabled
+                            && i.ShopId == dto.ShopId
+                            && i.Shop.BrandId == user.BrandId
                     )
             )
-            .Values
-            .FirstOrDefault() ?? throw new NotFoundException("Wrong activation code");
+                .Values
+                .FirstOrDefault() ?? throw new NotFoundException("Wrong activation code");
 
         if (ebInstall.EdgeBoxInstallStatus == EdgeBoxInstallStatus.Connected)
         {
@@ -60,7 +61,6 @@ public class EdgeBoxInstallService(IUnitOfWork unitOfWork, IBaseMapping mapper, 
 
             // TODO: Send message to activate edge box
         }
-
         return ebInstall;
     }
 
@@ -85,7 +85,7 @@ public class EdgeBoxInstallService(IUnitOfWork unitOfWork, IBaseMapping mapper, 
                         Description = $"Update status from {edgeBoxInstall.EdgeBoxInstallStatus} to {status}",
                         NewStatus = status,
                         OldStatus = edgeBoxInstall.EdgeBoxInstallStatus,
-                        EdgeBoxInstallId = edgeBoxInstall.Id
+                        EdgeBoxInstallId = edgeBoxInstall.Id,
                     }
                 );
             edgeBoxInstall.EdgeBoxInstallStatus = status;
@@ -93,26 +93,71 @@ public class EdgeBoxInstallService(IUnitOfWork unitOfWork, IBaseMapping mapper, 
 
             await unitOfWork.CommitTransaction();
         }
-
         return edgeBoxInstall;
     }
 
     public async Task<EdgeBoxInstall?> GetInstallingByEdgeBox(Guid edgeBoxId)
     {
         return (
-                await unitOfWork
-                    .EdgeBoxInstalls
-                    .GetAsync(
-                        i => i.EdgeBoxId == edgeBoxId && i.EdgeBox.EdgeBoxLocation != EdgeBoxLocation.Idle,
-                        o => o.OrderByDescending(i => i.ValidUntil),
-                        [
-                            nameof(EdgeBoxInstall.EdgeBox),
-                            $"{nameof(EdgeBoxInstall.Shop)}.{nameof(Shop.Brand)}",
-                            $"{nameof(EdgeBoxInstall.Shop)}.{nameof(Shop.Ward)}.{nameof(Ward.District)}.{nameof(District.Province)}"
-                        ]
-                    )
+            await unitOfWork.EdgeBoxInstalls.GetAsync(
+                i => i.EdgeBoxId == edgeBoxId && i.EdgeBox.EdgeBoxLocation != EdgeBoxLocation.Idle,
+                o => o.OrderByDescending(i => i.ValidUntil),
+                [
+                    nameof(EdgeBoxInstall.EdgeBox),
+                    $"{nameof(EdgeBoxInstall.Shop)}.{nameof(Shop.Brand)}",
+                    $"{nameof(EdgeBoxInstall.Shop)}.{nameof(Shop.Ward)}.{nameof(Ward.District)}.{nameof(District.Province)}"
+                ]
             )
-            .Values
-            .FirstOrDefault();
+        ).Values.FirstOrDefault();
+    }
+
+    public async Task<IEnumerable<EdgeBoxInstall>> GetInstallingByShop(Guid shopId)
+    {
+        var user = accountService.GetCurrentAccount();
+        var shop = await unitOfWork.Shops.GetByIdAsync(shopId) ?? throw new NotFoundException(typeof(Shop), shopId);
+        if (
+            (user.Role == Role.BrandManager && shop.BrandId != user.BrandId)
+            || (user.Role == Role.ShopManager && shop.ShopManagerId != user.Id)
+        )
+            throw new ForbiddenException(user, shop);
+
+        return (
+            await unitOfWork
+                .EdgeBoxInstalls
+                .GetAsync(
+                    i => i.EdgeBoxInstallStatus != EdgeBoxInstallStatus.Disabled && i.ShopId == shopId,
+                    includeProperties:
+                    [
+                        nameof(EdgeBoxInstall.EdgeBox),
+                        $"{nameof(EdgeBoxInstall.Shop)}.{nameof(Shop.Brand)}",
+                        $"{nameof(EdgeBoxInstall.Shop)}.{nameof(Shop.Ward)}.{nameof(Ward.District)}.{nameof(District.Province)}"
+                    ],
+                    takeAll: true
+                )
+        ).Values;
+    }
+
+    public async Task<IEnumerable<EdgeBoxInstall>> GetInstallingByBrand(Guid brandId)
+    {
+        var user = accountService.GetCurrentAccount();
+        var brand =
+            await unitOfWork.Brands.GetByIdAsync(brandId) ?? throw new NotFoundException(typeof(Brand), brandId);
+        if (user.Role == Role.BrandManager && brandId != user.BrandId)
+            throw new ForbiddenException(user, brand);
+
+        return (
+            await unitOfWork
+                .EdgeBoxInstalls
+                .GetAsync(
+                    i => i.EdgeBoxInstallStatus != EdgeBoxInstallStatus.Disabled && i.Shop.BrandId == brandId,
+                    includeProperties:
+                    [
+                        nameof(EdgeBoxInstall.EdgeBox),
+                        $"{nameof(EdgeBoxInstall.Shop)}.{nameof(Shop.Brand)}",
+                        $"{nameof(EdgeBoxInstall.Shop)}.{nameof(Shop.Ward)}.{nameof(Ward.District)}.{nameof(District.Province)}"
+                    ],
+                    takeAll: true
+                )
+        ).Values;
     }
 }

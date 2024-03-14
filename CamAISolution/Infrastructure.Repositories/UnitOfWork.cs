@@ -3,6 +3,7 @@ using Core.Domain.Entities.Base;
 using Core.Domain.Repositories;
 using Core.Domain.Services;
 using Core.Domain.Utilities;
+using Infrastructure.Repositories.Base;
 using Infrastructure.Repositories.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -16,20 +17,21 @@ public class UnitOfWork(CamAIContext context, IServiceProvider serviceProvider) 
 
     public IRepository<Brand> Brands => serviceProvider.GetRequiredService<IRepository<Brand>>();
 
-    public IRepository<Shop> Shops => serviceProvider.GetRequiredService<IRepository<Shop>>();
+    public ICustomShopRepository Shops => serviceProvider.GetRequiredService<ICustomShopRepository>();
 
     public IRepository<Province> Provinces => serviceProvider.GetRequiredService<IRepository<Province>>();
     public IRepository<District> Districts => serviceProvider.GetRequiredService<IRepository<District>>();
     public IRepository<Ward> Wards => serviceProvider.GetRequiredService<IRepository<Ward>>();
 
-    public IRepository<Account> Accounts => serviceProvider.GetRequiredService<IRepository<Account>>();
-    public IRepository<Employee> Employees => serviceProvider.GetRequiredService<IRepository<Employee>>();
+    public ICustomAccountRepository Accounts => serviceProvider.GetRequiredService<ICustomAccountRepository>();
+    public ICustomEmployeeRepository Employees => serviceProvider.GetRequiredService<ICustomEmployeeRepository>();
     public IRepository<EdgeBox> EdgeBoxes => serviceProvider.GetRequiredService<IRepository<EdgeBox>>();
     public IRepository<EdgeBoxInstall> EdgeBoxInstalls =>
         serviceProvider.GetRequiredService<IRepository<EdgeBoxInstall>>();
     public IRepository<EdgeBoxModel> EdgeBoxModels => serviceProvider.GetRequiredService<IRepository<EdgeBoxModel>>();
     public IRepository<Incident> Incidents => serviceProvider.GetRequiredService<IRepository<Incident>>();
     public IRepository<Evidence> Evidences => serviceProvider.GetRequiredService<IRepository<Evidence>>();
+    public IRepository<Request> Requests => serviceProvider.GetRequiredService<IRepository<Request>>();
 
     public Task BeginTransaction()
     {
@@ -71,7 +73,7 @@ public class UnitOfWork(CamAIContext context, IServiceProvider serviceProvider) 
         }
         foreach (var entry in context.ChangeTracker.Entries<ActivityEntity>())
         {
-            if (entry.State == EntityState.Modified)
+            if (entry.State is EntityState.Added or EntityState.Modified)
             {
                 entry.Entity.ModifiedTime = DateTimeHelper.VNDateTime;
                 entry.Entity.ModifiedById = serviceProvider.GetRequiredService<IJwtService>().GetCurrentUser().Id;

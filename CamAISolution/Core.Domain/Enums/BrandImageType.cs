@@ -1,4 +1,4 @@
-﻿namespace Host.CamAI.API;
+namespace Core.Domain.Enums;
 
 public enum BrandImageType
 {

@@ -18,11 +18,9 @@ const string allowPolicy = "AllowAll";
 builder
     .Services.AddCors(opts =>
         opts.AddPolicy(
-            allowPolicy,
+            name: allowPolicy,
             builder =>
                 builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader().WithExposedHeaders(HeaderNameConstant.Auto)
-            // TODO[Dat]: Enable allow credential when have specific origin
-            // .AllowCredentials()
         )
     )
     .AddRepository(builder.Configuration.GetConnectionString("Default"))

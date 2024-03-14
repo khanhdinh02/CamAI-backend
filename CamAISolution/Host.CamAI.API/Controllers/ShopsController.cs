@@ -70,10 +70,10 @@ public class ShopsController(IShopService shopService, IBaseMapping baseMapping)
     }
 
     [HttpDelete("{id:guid}")]
-    [AccessTokenGuard(Role.Admin)]
+    [AccessTokenGuard(Role.Admin, Role.BrandManager)]
     public async Task<IActionResult> DeleteShop(Guid id)
     {
-        await shopService.UpdateShopStatus(id, ShopStatus.Inactive);
+        await shopService.DeleteShop(id);
         return Accepted();
     }
 }
