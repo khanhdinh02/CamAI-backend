@@ -31,6 +31,7 @@ public class UnitOfWork(CamAIContext context, IServiceProvider serviceProvider) 
     public IRepository<EdgeBoxModel> EdgeBoxModels => serviceProvider.GetRequiredService<IRepository<EdgeBoxModel>>();
     public IRepository<Incident> Incidents => serviceProvider.GetRequiredService<IRepository<Incident>>();
     public IRepository<Evidence> Evidences => serviceProvider.GetRequiredService<IRepository<Evidence>>();
+    public IRepository<Request> Requests => serviceProvider.GetRequiredService<IRepository<Request>>();
 
     public Task BeginTransaction()
     {
@@ -72,7 +73,7 @@ public class UnitOfWork(CamAIContext context, IServiceProvider serviceProvider) 
         }
         foreach (var entry in context.ChangeTracker.Entries<ActivityEntity>())
         {
-            if (entry.State == EntityState.Modified)
+            if (entry.State is EntityState.Added or EntityState.Modified)
             {
                 entry.Entity.ModifiedTime = DateTimeHelper.VNDateTime;
                 entry.Entity.ModifiedById = serviceProvider.GetRequiredService<IJwtService>().GetCurrentUser().Id;
