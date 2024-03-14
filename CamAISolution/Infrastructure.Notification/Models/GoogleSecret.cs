@@ -1,39 +1,39 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace Infrastructure.Notification.Models;
 
 public class GoogleSecret
 {
-    [JsonProperty("type")]
+    [JsonPropertyName("type")]
     public string Type { get; set; } = null!;
 
-    [JsonProperty("project_id")]
+    [JsonPropertyName("project_id")]
     public string ProjectId { get; set; } = null!;
 
-    [JsonProperty("private_key_id")]
+    [JsonPropertyName("private_key_id")]
     public string PrivateKeyId { get; set; } = null!;
 
-    [JsonProperty("private_key")]
+    [JsonPropertyName("private_key")]
     public string PrivateKey { get; set; } = null!;
 
-    [JsonProperty("client_email")]
+    [JsonPropertyName("client_email")]
     public string ClientEmail { get; set; } = null!;
 
-    [JsonProperty("client_id")]
+    [JsonPropertyName("client_id")]
     public string ClientId { get; set; } = null!;
 
-    [JsonProperty("auth_uri")]
+    [JsonPropertyName("auth_uri")]
     public string AuthUri { get; set; } = null!;
 
-    [JsonProperty("token_uri")]
+    [JsonPropertyName("token_uri")]
     public string TokenUri { get; set; } = null!;
 
-    [JsonProperty("auth_provider_x509_cert_url")]
+    [JsonPropertyName("auth_provider_x509_cert_url")]
     public string AuthProviderX509CertUrl { get; set; } = null!;
 
-    [JsonProperty("client_x509_cert_url")]
+    [JsonPropertyName("client_x509_cert_url")]
     public string ClientX509CertUrl { get; set; } = null!;
 
-    [JsonProperty("universe_domain")]
+    [JsonPropertyName("universe_domain")]
     public string UniverseDomain { get; set; } = null!;
 }
