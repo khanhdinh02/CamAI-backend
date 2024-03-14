@@ -17,6 +17,7 @@ public class IncidentService(
     IBlobService blobService,
     IAccountService accountService,
     IEmployeeService employeeService,
+    ICameraService cameraService,
     IEdgeBoxInstallService edgeBoxInstallService,
     IUnitOfWork unitOfWork,
     IBaseMapping mapping
@@ -70,9 +71,9 @@ public class IncidentService(
     public async Task RejectIncident(Guid id)
     {
         var incident = await GetIncidentById(id);
+        // if previously accepted then remove employee id
         incident.Status = IncidentStatus.Rejected;
         incident.EmployeeId = null;
-        // if previously accepted then remove employee id
         unitOfWork.Incidents.Update(incident);
         await unitOfWork.CompleteAsync();
     }
@@ -80,11 +81,15 @@ public class IncidentService(
     public async Task<Incident> UpsertIncident(CreateIncidentDto incidentDto)
     {
         var incident = await unitOfWork.Incidents.GetByIdAsync(incidentDto.Id);
+
+        var ebInstall = await edgeBoxInstallService.GetInstallingByEdgeBox(incidentDto.EdgeBoxId);
+        foreach (var cameraId in incidentDto.Evidences.Select(x => x.CameraId))
+            await cameraService.CreateCameraIfNotExist(cameraId, ebInstall!.ShopId);
+
         List<Evidence> evidences;
         if (incident == null)
         {
             incident = mapping.Map<CreateIncidentDto, Incident>(incidentDto);
-            var ebInstall = await edgeBoxInstallService.GetInstallingByEdgeBox(incident.EdgeBoxId);
             incident.ShopId = ebInstall!.ShopId;
             foreach (var evidence in incident.Evidences)
                 evidence.Status = EvidenceStatus.ToBeFetched;
@@ -150,7 +155,6 @@ public class IncidentService(
                 evidence.Status = EvidenceStatus.NotFound;
             }
 
-            // TODO: test if we can create new image and update evidence at the same time
             unitOfWork.Evidences.Update(evidence);
         }
 
