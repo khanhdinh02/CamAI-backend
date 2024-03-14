@@ -1,16 +1,26 @@
 using Core.Application.Events;
 using Core.Domain.DTO;
 using Core.Domain.Entities;
+using Core.Domain.Enums;
 using Core.Domain.Interfaces.Mappings;
 using Core.Domain.Interfaces.Services;
+using Core.Domain.Services;
 using Infrastructure.Observer.Messages;
+using MassTransit;
 using Microsoft.AspNetCore.Mvc;
+using Timer = System.Timers.Timer;
 
 namespace Host.CamAI.API.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class TestsController(IBaseMapping mapping, IIncidentService incidentService, EventManager eventManager)
+public class TestsController(
+    IBaseMapping mapping,
+    IIncidentService incidentService,
+    IEdgeBoxService edgeBoxService,
+    IEdgeBoxInstallService edgeBoxInstallService,
+    EventManager eventManager,
+    IPublishEndpoint bus)
     : ControllerBase
 {
     [HttpGet]
@@ -51,9 +61,41 @@ public class TestsController(IBaseMapping mapping, IIncidentService incidentServ
     }
 
     [HttpPatch("activate/edge-box/{edgeBoxId:guid}")]
-    public IActionResult ActivateEdgeBox(Guid edgeBoxId)
+    public async Task<ActionResult> ActivateEdgeBox(Guid edgeBoxId)
     {
-        eventManager.NotifyActivatedEdgeBox(edgeBoxId);
+        // eventManager.NotifyActivatedEdgeBox(edgeBoxId);
+        var activatedEdgeBoxMessage = new ActivatedEdgeBoxMessage
+        {
+            RoutingKey = edgeBoxId.ToString("N"),
+            Message = "Hello"
+        };
+
+        // Create Timer object for handling edge box status after time interval.
+        // TODO[Dat]: Timer or Task.Delay ?
+        SetTimer(edgeBoxId, 5000);
+
+        await edgeBoxService.UpdateStatus(edgeBoxId, EdgeBoxStatus.Activating);
+        await bus.Publish(activatedEdgeBoxMessage);
+
         return Ok();
+    }
+
+    private void SetTimer(Guid edgeBoxId, long interval)
+    {
+        var timer = new Timer(interval);
+        timer.Elapsed += async (_, _) => await Handle(edgeBoxId);
+        timer.AutoReset = false;
+        timer.Start();
+    }
+
+    private async Task Handle(Guid edgeBoxId)
+    {
+        var edgeBox = await edgeBoxService.GetEdgeBoxById(edgeBoxId);
+
+        // This is indicating that edge box is still disconnected from server
+        if (edgeBox.EdgeBoxStatus == EdgeBoxStatus.Activating)
+        {
+            await edgeBoxService.UpdateStatus(edgeBoxId, EdgeBoxStatus.Inactive);
+        }
     }
 }

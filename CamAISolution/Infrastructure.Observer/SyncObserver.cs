@@ -62,9 +62,10 @@ public class SyncObserver(EventManager eventManager, IServiceProvider provider)
 
     private void ActivateEdgeBox(Guid edgeBoxId)
     {
-        var activateEdgeBoxMessage = new ActivateEdgeBoxMessage
+        var activateEdgeBoxMessage = new ActivatedEdgeBoxMessage
         {
-            RoutingKey = $"{edgeBoxId}"
+            RoutingKey = $"{edgeBoxId.ToString("N")}"
+            // Token = "Hello"
         };
         SendMessage(activateEdgeBoxMessage);
     }
