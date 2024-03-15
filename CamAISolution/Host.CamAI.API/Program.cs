@@ -18,7 +18,7 @@ const string allowPolicy = "AllowAll";
 builder
     .Services.AddCors(opts =>
         opts.AddPolicy(
-            name: allowPolicy,
+            allowPolicy,
             builder =>
                 builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader().WithExposedHeaders(HeaderNameConstant.Auto)
         )
@@ -33,7 +33,8 @@ builder
     .AddMapping()
     .AddObserver(builder.Configuration)
     .AddNotification(builder.Configuration.GetRequiredSection("GoogleSecret").Get<GoogleSecret>())
-    .AddBackgroundService();
+    .AddBackgroundService()
+    .AddMemoryCache();
 
 builder.Services.AddHttpClient();
 
