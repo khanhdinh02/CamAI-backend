@@ -15,6 +15,7 @@ public class EdgeBoxInstall : BusinessEntity
     public DateTime ValidFrom { get; set; }
     public DateTime ValidUntil { get; set; }
     public string? ActivationCode { get; set; }
+    public EdgeBoxActivationStatus ActivationStatus { get; set; }
     public EdgeBoxInstallStatus EdgeBoxInstallStatus { get; set; }
 
     public virtual EdgeBox EdgeBox { get; set; } = null!;

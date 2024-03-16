@@ -5,12 +5,15 @@ using Core.Domain.Enums;
 using Core.Domain.Interfaces.Mappings;
 using Core.Domain.Interfaces.Services;
 using Core.Domain.Repositories;
+using Core.Domain.Utilities;
 
 namespace Core.Application.Implements;
 
 public class EdgeBoxInstallService(IUnitOfWork unitOfWork, IBaseMapping mapper, IAccountService accountService)
     : IEdgeBoxInstallService
 {
+    private const int CodeLength = 16;
+
     public async Task<EdgeBoxInstall> LeaseEdgeBox(CreateEdgeBoxInstallDto dto)
     {
         var edgeBox =
@@ -23,6 +26,7 @@ public class EdgeBoxInstallService(IUnitOfWork unitOfWork, IBaseMapping mapper, 
             throw new BadRequestException("ValidFrom must be smaller than ValidUntil");
 
         var ebInstall = mapper.Map<CreateEdgeBoxInstallDto, EdgeBoxInstall>(dto);
+        ebInstall.ActivationCode = RandomGenerator.GetAlphanumericString(CodeLength);
         ebInstall.EdgeBoxInstallStatus = EdgeBoxInstallStatus.New;
         await unitOfWork.EdgeBoxInstalls.AddAsync(ebInstall);
 
@@ -30,6 +34,8 @@ public class EdgeBoxInstallService(IUnitOfWork unitOfWork, IBaseMapping mapper, 
         unitOfWork.EdgeBoxes.Update(edgeBox);
 
         await unitOfWork.CompleteAsync();
+
+        // TODO: Send Activation code to brand manager via email
         return ebInstall;
     }
 
@@ -51,11 +57,15 @@ public class EdgeBoxInstallService(IUnitOfWork unitOfWork, IBaseMapping mapper, 
                 .Values
                 .FirstOrDefault() ?? throw new NotFoundException("Wrong activation code");
 
-        if (ebInstall.EdgeBoxInstallStatus == EdgeBoxInstallStatus.Connected)
+        if (ebInstall.ActivationStatus == EdgeBoxActivationStatus.NotActivated)
         {
-            await UpdateStatus(ebInstall, EdgeBoxInstallStatus.Working);
-
-            // TODO: Send message to activate edge box
+            if (ebInstall.EdgeBoxInstallStatus != EdgeBoxInstallStatus.Working)
+                ebInstall.ActivationStatus = EdgeBoxActivationStatus.Failed;
+            else
+            {
+                ebInstall.ActivationStatus = EdgeBoxActivationStatus.Pending;
+                // TODO: Send message to activate edge box
+            }
         }
         return ebInstall;
     }
@@ -93,16 +103,20 @@ public class EdgeBoxInstallService(IUnitOfWork unitOfWork, IBaseMapping mapper, 
     public async Task<EdgeBoxInstall?> GetInstallingByEdgeBox(Guid edgeBoxId)
     {
         return (
-            await unitOfWork.EdgeBoxInstalls.GetAsync(
-                i => i.EdgeBoxId == edgeBoxId && i.EdgeBox.EdgeBoxLocation != EdgeBoxLocation.Idle,
-                o => o.OrderByDescending(i => i.ValidUntil),
-                [
-                    nameof(EdgeBoxInstall.EdgeBox),
-                    $"{nameof(EdgeBoxInstall.Shop)}.{nameof(Shop.Brand)}",
-                    $"{nameof(EdgeBoxInstall.Shop)}.{nameof(Shop.Ward)}.{nameof(Ward.District)}.{nameof(District.Province)}"
-                ]
-            )
-        ).Values.FirstOrDefault();
+            await unitOfWork
+                .EdgeBoxInstalls
+                .GetAsync(
+                    i => i.EdgeBoxId == edgeBoxId && i.EdgeBox.EdgeBoxLocation != EdgeBoxLocation.Idle,
+                    o => o.OrderByDescending(i => i.ValidUntil),
+                    [
+                        nameof(EdgeBoxInstall.EdgeBox),
+                        $"{nameof(EdgeBoxInstall.Shop)}.{nameof(Shop.Brand)}",
+                        $"{nameof(EdgeBoxInstall.Shop)}.{nameof(Shop.Ward)}.{nameof(Ward.District)}.{nameof(District.Province)}"
+                    ]
+                )
+        )
+            .Values
+            .FirstOrDefault();
     }
 
     public async Task<IEnumerable<EdgeBoxInstall>> GetInstallingByShop(Guid shopId)
@@ -122,7 +136,7 @@ public class EdgeBoxInstallService(IUnitOfWork unitOfWork, IBaseMapping mapper, 
                     i => i.EdgeBoxInstallStatus != EdgeBoxInstallStatus.Disabled && i.ShopId == shopId,
                     includeProperties:
                     [
-                        nameof(EdgeBoxInstall.EdgeBox),
+                        $"{nameof(EdgeBoxInstall.EdgeBox)}.{nameof(EdgeBox.EdgeBoxModel)}",
                         $"{nameof(EdgeBoxInstall.Shop)}.{nameof(Shop.Brand)}",
                         $"{nameof(EdgeBoxInstall.Shop)}.{nameof(Shop.Ward)}.{nameof(Ward.District)}.{nameof(District.Province)}"
                     ],
@@ -146,7 +160,7 @@ public class EdgeBoxInstallService(IUnitOfWork unitOfWork, IBaseMapping mapper, 
                     i => i.EdgeBoxInstallStatus != EdgeBoxInstallStatus.Disabled && i.Shop.BrandId == brandId,
                     includeProperties:
                     [
-                        nameof(EdgeBoxInstall.EdgeBox),
+                        $"{nameof(EdgeBoxInstall.EdgeBox)}.{nameof(EdgeBox.EdgeBoxModel)}",
                         $"{nameof(EdgeBoxInstall.Shop)}.{nameof(Shop.Brand)}",
                         $"{nameof(EdgeBoxInstall.Shop)}.{nameof(Shop.Ward)}.{nameof(Ward.District)}.{nameof(District.Province)}"
                     ],
