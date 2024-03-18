@@ -15,4 +15,5 @@ public interface IEdgeBoxService
     Task UpdateStatus(Guid id, EdgeBoxStatus status);
     Task<IEnumerable<EdgeBox>> GetEdgeBoxesByShop(Guid shopId);
     Task<IEnumerable<EdgeBox>> GetEdgeBoxesByBrand(Guid brandId);
+    Task ActivateEdgeBox(Guid edgeBoxId, string activationCode);
 }
