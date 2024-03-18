@@ -26,6 +26,11 @@ services:
       - RabbitMq__Username=${RABBITMQ_USER}
       - RabbitMq__Password=${RABBITMQ_PASS}
       - RabbitMq__Port=${RABBITMQ_PORT}
+      - Email__Email=${EMAIL_EMAIL}
+      - Email__Password=${EMAIL_PASS}
+      - Email__DisplayName=${EMAIL_NAME}
+      - Email__Host=${EMAIL_HOST}
+      - Email__Port=${EMAIL_PORT}
       - ASPNETCORE_ENVIRONMENT=${STAGE}
       - ImageConfiguration__BaseImageFolderPath=${BASE_IMAGE_FOLER}
       - ImageConfiguration__MaxImageSize=${MAX_IMAGE_SIZE}

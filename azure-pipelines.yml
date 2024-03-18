@@ -25,6 +25,11 @@ steps:
     echo "RABBITMQ_PASS=$(docker.compose.RABBITMQ_PASS)" >> .env
     echo "RABBITMQ_HOST=$(docker.compose.RABBITMQ_HOST)" >> .env
     echo "RABBITMQ_PORT=$(docker.compose.RABBITMQ_PORT)" >> .env
+    echo "EMAIL_EMAIL=$(docker.compose.EMAIL_EMAIL)" >> .env
+    echo "EMAIL_PASS=$(docker.compose.EMAIL_PASS)" >> .env
+    echo "EMAIL_NAME=$(docker.compose.EMAIL_NAME)" >> .env
+    echo "EMAIL_HOST=$(docker.compose.EMAIL_HOST)" >> .env
+    echo "EMAIL_PORT=$(docker.compose.EMAIL_PORT)" >> .env
     echo "GOOGLE_SERVICE_PRIVATE_KEY=$(docker.compose.GOOGLE_SERVICE_PRIVATE_KEY)" >> .env
     echo "BASE_IMAGE_FOLER=$(docker.compose.BASE_IMAGE_FOLER)" >> .env
     echo "MAX_IMAGE_SIZE=$(docker.compose.MAX_IMAGE_SIZE)" >> .env
