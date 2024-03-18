@@ -3,6 +3,7 @@ using Core.Domain.Entities;
 using Core.Domain.Enums;
 using Core.Domain.Interfaces.Mappings;
 using Core.Domain.Interfaces.Services;
+using Core.Domain.Models;
 using Infrastructure.Jwt.Attribute;
 using Microsoft.AspNetCore.Mvc;
 
@@ -39,6 +40,21 @@ public class EdgeBoxInstallsController(IEdgeBoxInstallService edgeBoxInstallServ
     {
         var edgeBoxInstalls = await edgeBoxInstallService.GetInstallingByBrand(brandId);
         return edgeBoxInstalls.Select(mapper.Map<EdgeBoxInstall, EdgeBoxInstallDto>);
+    }
+
+    // TODO: get all install of a edge box
+
+    [HttpGet("{id}/activities")]
+    [AccessTokenGuard(Role.Admin, Role.BrandManager, Role.ShopManager)]
+    public async Task<PaginationResult<EdgeBoxInstallActivityDto>> GetEdgeBoxInstallActivity(
+        [FromRoute] Guid id,
+        BaseSearchRequest searchRequest
+    )
+    {
+        var request = mapper.Map<BaseSearchRequest, EdgeBoxActivityByIdSearchRequest>(searchRequest);
+        request.EdgeBoxInstallId = id;
+        var result = await edgeBoxInstallService.GetEdgeBoxInstallActivities(request);
+        return mapper.Map<EdgeBoxInstallActivity, EdgeBoxInstallActivityDto>(result);
     }
 
     [HttpPost]

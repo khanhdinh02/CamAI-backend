@@ -2,6 +2,7 @@ using Core.Domain.DTO;
 using Core.Domain.Entities;
 using Core.Domain.Enums;
 using Core.Domain.Interfaces.Mappings;
+using Core.Domain.Interfaces.Services;
 using Core.Domain.Models;
 using Core.Domain.Services;
 using Infrastructure.Jwt.Attribute;
@@ -11,7 +12,11 @@ namespace Host.CamAI.API.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class EdgeBoxesController(IEdgeBoxService edgeBoxService, IBaseMapping mapping) : ControllerBase
+public class EdgeBoxesController(
+    IEdgeBoxService edgeBoxService,
+    IEdgeBoxInstallService edgeBoxInstallService,
+    IBaseMapping mapping
+) : ControllerBase
 {
     /// <summary>
     ///
@@ -39,6 +44,19 @@ public class EdgeBoxesController(IEdgeBoxService edgeBoxService, IBaseMapping ma
     {
         var edgeBox = await edgeBoxService.GetEdgeBoxById(id);
         return Ok(mapping.Map<EdgeBox, EdgeBoxDto>(edgeBox));
+    }
+
+    [HttpGet("{id}/activities")]
+    [AccessTokenGuard(Role.Admin, Role.BrandManager, Role.ShopManager)]
+    public async Task<PaginationResult<EdgeBoxInstallActivityDto>> GetEdgeBoxActivity(
+        Guid id,
+        BaseSearchRequest searchRequest
+    )
+    {
+        var request = mapping.Map<BaseSearchRequest, EdgeBoxActivityByEdgeBoxIdSearchRequest>(searchRequest);
+        request.EdgeBoxId = id;
+        var result = await edgeBoxInstallService.GetCurrentEdgeBoxInstallActivities(request);
+        return mapping.Map<EdgeBoxInstallActivity, EdgeBoxInstallActivityDto>(result);
     }
 
     [HttpPost]
