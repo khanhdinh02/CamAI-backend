@@ -2,6 +2,7 @@ using Core.Application.Exceptions;
 using Core.Domain.DTO;
 using Core.Domain.Entities;
 using Core.Domain.Enums;
+using Core.Domain.Interfaces.Emails;
 using Core.Domain.Interfaces.Mappings;
 using Core.Domain.Interfaces.Services;
 using Core.Domain.Repositories;
@@ -9,21 +10,37 @@ using Core.Domain.Utilities;
 
 namespace Core.Application.Implements;
 
-public class EdgeBoxInstallService(IUnitOfWork unitOfWork, IBaseMapping mapper, IAccountService accountService)
-    : IEdgeBoxInstallService
+public class EdgeBoxInstallService(
+    IUnitOfWork unitOfWork,
+    IBaseMapping mapper,
+    IAccountService accountService,
+    IEmailService emailService
+) : IEdgeBoxInstallService
 {
     private const int CodeLength = 16;
 
     public async Task<EdgeBoxInstall> LeaseEdgeBox(CreateEdgeBoxInstallDto dto)
     {
+        if (dto.ValidFrom >= dto.ValidUntil)
+            throw new BadRequestException("ValidFrom must be smaller than ValidUntil");
+
         var edgeBox =
             await unitOfWork.EdgeBoxes.GetByIdAsync(dto.EdgeBoxId)
             ?? throw new NotFoundException(typeof(EdgeBox), dto.EdgeBoxId);
         if (edgeBox.EdgeBoxStatus != EdgeBoxStatus.Active || edgeBox.EdgeBoxLocation != EdgeBoxLocation.Idle)
             throw new BadRequestException("Edge box is not active or idle");
 
-        if (dto.ValidFrom >= dto.ValidUntil)
-            throw new BadRequestException("ValidFrom must be smaller than ValidUntil");
+        var shop =
+            (
+                await unitOfWork
+                    .Shops
+                    .GetAsync(
+                        s => s.Id == dto.ShopId,
+                        includeProperties: [$"{nameof(Shop.Brand)}.{nameof(Brand.BrandManager)}"]
+                    )
+            )
+                .Values
+                .FirstOrDefault() ?? throw new NotFoundException(typeof(Shop), dto.ShopId);
 
         var ebInstall = mapper.Map<CreateEdgeBoxInstallDto, EdgeBoxInstall>(dto);
         ebInstall.ActivationCode = RandomGenerator.GetAlphanumericString(CodeLength);
@@ -35,7 +52,13 @@ public class EdgeBoxInstallService(IUnitOfWork unitOfWork, IBaseMapping mapper, 
 
         await unitOfWork.CompleteAsync();
 
-        // TODO: Send Activation code to brand manager via email
+        // Send Activation code to brand manager via email
+        _ = emailService.SendEmailAsync(
+            shop.Brand.BrandManager!.Email, // Because at lease 1 shop exists, Brand Manager should exist
+            "Your Edge Box activation code",
+            EmailGenerator.GenerateActivationCodeEmail(shop.Brand.BrandManager.Name, ebInstall.ActivationCode)
+        );
+
         return ebInstall;
     }
 

@@ -2,6 +2,7 @@ using Core.Application.Events;
 using Host.CamAI.API;
 using Host.CamAI.API.Middlewares;
 using Host.CamAI.API.Models;
+using Infrastructure.Email;
 using Infrastructure.Jwt;
 using Infrastructure.Logging;
 using Infrastructure.Mapping;
@@ -16,12 +17,18 @@ builder.Services.AddControllers();
 const string allowPolicy = "AllowAll";
 
 builder
-    .Services.AddCors(opts =>
-        opts.AddPolicy(
-            name: allowPolicy,
-            builder =>
-                builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader().WithExposedHeaders(HeaderNameConstant.Auto)
-        )
+    .Services
+    .AddCors(
+        opts =>
+            opts.AddPolicy(
+                name: allowPolicy,
+                builder =>
+                    builder
+                        .AllowAnyOrigin()
+                        .AllowAnyMethod()
+                        .AllowAnyHeader()
+                        .WithExposedHeaders(HeaderNameConstant.Auto)
+            )
     )
     .AddMemoryCache()
     .AddRepository(builder.Configuration.GetConnectionString("Default"))
@@ -34,17 +41,20 @@ builder
     .AddMapping()
     .AddObserver(builder.Configuration)
     .AddNotification(builder.Configuration.GetRequiredSection("GoogleSecret").Get<GoogleSecret>())
+    .AddEmailService(builder.Configuration)
     .AddBackgroundService();
 
 builder.Services.AddHttpClient();
 
 builder.ConfigureMassTransit();
 
-builder.Services.Configure<RouteOptions>(opts =>
-{
-    opts.LowercaseUrls = true;
-    opts.LowercaseQueryStrings = true;
-});
+builder
+    .Services
+    .Configure<RouteOptions>(opts =>
+    {
+        opts.LowercaseUrls = true;
+        opts.LowercaseQueryStrings = true;
+    });
 
 var app = builder.Build();
 
