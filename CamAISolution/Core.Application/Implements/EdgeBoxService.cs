@@ -61,7 +61,7 @@ public class EdgeBoxService(
                 )
         )
             .Values
-            .Where(eb => eb.Installs.MaxBy(i => i.ValidUntil)?.ShopId == shopId)
+            .Where(eb => eb.Installs.MaxBy(i => i.CreatedDate)?.ShopId == shopId)
             .ToList();
     }
 
@@ -81,7 +81,7 @@ public class EdgeBoxService(
                 )
         )
             .Values
-            .Where(eb => eb.Installs.MaxBy(i => i.ValidUntil)?.Shop?.BrandId == brandId)
+            .Where(eb => eb.Installs.MaxBy(i => i.CreatedDate)?.Shop?.BrandId == brandId)
             .ToList();
     }
 

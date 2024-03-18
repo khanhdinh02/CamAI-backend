@@ -130,7 +130,7 @@ public class EdgeBoxInstallService(
                 .EdgeBoxInstalls
                 .GetAsync(
                     i => i.EdgeBoxId == edgeBoxId && i.EdgeBox.EdgeBoxLocation != EdgeBoxLocation.Idle,
-                    o => o.OrderByDescending(i => i.ValidUntil),
+                    o => o.OrderByDescending(i => i.CreatedDate),
                     [
                         nameof(EdgeBoxInstall.EdgeBox),
                         $"{nameof(EdgeBoxInstall.Shop)}.{nameof(Shop.Brand)}",
