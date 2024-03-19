@@ -31,7 +31,10 @@ services:
       - ImageConfiguration__MaxImageSize=${MAX_IMAGE_SIZE}
       - ImageConfiguration__HostingUri=${HOST_URI}
     depends_on:
-      - mssqldb
+      mssqldb:
+        condition: service_started
+      camai-rabbitmq:
+        condition: service_healthy
     volumes:
       - camai-web-api:${BASE_IMAGE_FOLER}
   camai-rabbitmq:
@@ -45,6 +48,11 @@ services:
     volumes:
       - camai-rabbitmq-lib:/var/camai/lib/rabbitmq/
       - camai-rabbitmq-log:/var/camai/log/rabbitmq/
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 30s
+      timeout: 10s
+      retries: 5
 volumes:
   data:
   camai-rabbitmq-lib:

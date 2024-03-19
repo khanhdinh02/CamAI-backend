@@ -72,7 +72,6 @@ public class EdgeBoxInstallService(IUnitOfWork unitOfWork, IBaseMapping mapper, 
     {
         if (edgeBoxInstall.EdgeBoxInstallStatus != status)
         {
-            await unitOfWork.BeginTransaction();
             await unitOfWork
                 .GetRepository<EdgeBoxInstallActivity>()
                 .AddAsync(
@@ -85,9 +84,8 @@ public class EdgeBoxInstallService(IUnitOfWork unitOfWork, IBaseMapping mapper, 
                     }
                 );
             edgeBoxInstall.EdgeBoxInstallStatus = status;
-            unitOfWork.GetRepository<EdgeBoxInstall>().Update(edgeBoxInstall);
-
-            await unitOfWork.CommitTransaction();
+            unitOfWork.EdgeBoxInstalls.Update(edgeBoxInstall);
+            await unitOfWork.CompleteAsync();
         }
         return edgeBoxInstall;
     }
@@ -95,20 +93,16 @@ public class EdgeBoxInstallService(IUnitOfWork unitOfWork, IBaseMapping mapper, 
     public async Task<EdgeBoxInstall?> GetInstallingByEdgeBox(Guid edgeBoxId)
     {
         return (
-            await unitOfWork
-                .EdgeBoxInstalls
-                .GetAsync(
-                    i => i.EdgeBoxId == edgeBoxId && i.EdgeBox.EdgeBoxLocation != EdgeBoxLocation.Idle,
-                    o => o.OrderByDescending(i => i.ValidUntil),
-                    [
-                        nameof(EdgeBoxInstall.EdgeBox),
-                        $"{nameof(EdgeBoxInstall.Shop)}.{nameof(Shop.Brand)}",
-                        $"{nameof(EdgeBoxInstall.Shop)}.{nameof(Shop.Ward)}.{nameof(Ward.District)}.{nameof(District.Province)}"
-                    ]
-                )
-        )
-            .Values
-            .FirstOrDefault();
+            await unitOfWork.EdgeBoxInstalls.GetAsync(
+                i => i.EdgeBoxId == edgeBoxId && i.EdgeBox.EdgeBoxLocation != EdgeBoxLocation.Idle,
+                o => o.OrderByDescending(i => i.ValidUntil),
+                [
+                    nameof(EdgeBoxInstall.EdgeBox),
+                    $"{nameof(EdgeBoxInstall.Shop)}.{nameof(Shop.Brand)}",
+                    $"{nameof(EdgeBoxInstall.Shop)}.{nameof(Shop.Ward)}.{nameof(Ward.District)}.{nameof(District.Province)}"
+                ]
+            )
+        ).Values.FirstOrDefault();
     }
 
     public async Task<IEnumerable<EdgeBoxInstall>> GetInstallingByShop(Guid shopId)

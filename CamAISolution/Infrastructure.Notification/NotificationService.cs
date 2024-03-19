@@ -7,7 +7,6 @@ using Core.Domain.Enums;
 using Core.Domain.Interfaces.Mappings;
 using Core.Domain.Interfaces.Services;
 using Core.Domain.Models;
-using Core.Domain.Models.DTO;
 using Core.Domain.Repositories;
 using Core.Domain.Services;
 using FirebaseAdmin.Messaging;
@@ -51,9 +50,9 @@ public class NotificationService(
             await unitOfWork.CommitTransaction();
             if (willSend)
                 foreach (var acc in sentToAccounts.Where(a => !string.IsNullOrEmpty(a.FCMToken)))
-                    await firebaseService
-                        .Messaging
-                        .SendAsync(CreateMessage(notification.Title, notification.Content, token: acc.FCMToken));
+                    await firebaseService.Messaging.SendAsync(
+                        CreateMessage(notification.Title, notification.Content, token: acc.FCMToken)
+                    );
             return notification;
         }
         catch (Exception ex)
