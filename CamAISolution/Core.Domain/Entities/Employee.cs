@@ -9,12 +9,12 @@ public class Employee : BusinessEntity
     [StringLength(50)]
     public string Name { get; set; } = null!;
     public string Email { get; set; } = null!;
-
-    [StringLength(20)]
     public Gender Gender { get; set; }
 
     [StringLength(50)]
     public string? Phone { get; set; }
+
+    // TODO: change this to table Image
     public Uri? Image { get; set; }
     public DateOnly? Birthday { get; set; }
     public string? AddressLine { get; set; }

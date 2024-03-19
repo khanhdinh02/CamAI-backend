@@ -2,6 +2,8 @@ using Core.Application.Events;
 using Host.CamAI.API;
 using Host.CamAI.API.Middlewares;
 using Host.CamAI.API.Models;
+using Infrastructure.Cache;
+using Infrastructure.Email;
 using Infrastructure.Jwt;
 using Infrastructure.Logging;
 using Infrastructure.Mapping;
@@ -9,7 +11,6 @@ using Infrastructure.Notification;
 using Infrastructure.Notification.Models;
 using Infrastructure.Observer;
 using Infrastructure.Repositories;
-using Infrastructure.Cache;
 
 var builder = WebApplication.CreateBuilder(args).ConfigureSerilog();
 
@@ -22,8 +23,6 @@ builder
             name: allowPolicy,
             builder =>
                 builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader().WithExposedHeaders(HeaderNameConstant.Auto)
-        // TODO[Dat]: Enable allow credential when have specific origin
-        // .AllowCredentials()
         )
     )
     .AddRepository(builder.Configuration.GetConnectionString("Default"))
@@ -37,7 +36,11 @@ builder
     .AddObserver(builder.Configuration)
     .AddNotification(builder.Configuration.GetRequiredSection("GoogleSecret").Get<GoogleSecret>())
     .AddBackgroundService()
-    .AddCacheService();
+    .AddCacheService()
+    .AddEmailService(builder.Configuration)
+    .AddBackgroundService();
+
+builder.Services.AddHttpClient();
 
 builder.ConfigureMassTransit();
 

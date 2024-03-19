@@ -34,24 +34,9 @@ public class CamAIContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
-        modelBuilder.Entity<Employee>(builder =>
-        {
-            builder.Property(e => e.Image).HasConversion<string>();
-
-            var employeeId = "EmployeeId";
-            var incidentId = "IncidentId";
-            builder
-                .HasMany(e => e.Incidents)
-                .WithMany(i => i.Employees)
-                .UsingEntity(
-                    r => r.HasOne(typeof(Incident)).WithMany().HasForeignKey(incidentId),
-                    l => l.HasOne(typeof(Employee)).WithMany().HasForeignKey(employeeId)
-                );
-        });
-
         modelBuilder.Entity<Image>().Property(i => i.HostingUri).HasConversion<string>();
 
-        modelBuilder.Entity<Evidence>().Property(p => p.Uri).HasConversion<string>();
+        modelBuilder.Entity<Incident>().HasOne(x => x.Shop).WithMany().OnDelete(DeleteBehavior.NoAction);
 
         modelBuilder.Entity<AccountNotification>().HasKey(an => new { an.AccountId, an.NotificationId });
         modelBuilder

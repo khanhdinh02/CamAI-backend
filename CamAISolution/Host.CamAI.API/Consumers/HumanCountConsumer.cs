@@ -2,14 +2,13 @@
 using Host.CamAI.API.Consumers.Contracts;
 using Infrastructure.MessageQueue;
 using MassTransit;
-using Serilog;
 
 namespace Host.CamAI.API.Consumers;
 
-[Consumer("{MachineName}", ConsumerConstant.HumanCount)]
-public class HumanCountConsumer(HumanCountSubject subject) : IConsumer<HumanCountModelContract>
+[Consumer("{MachineName}_HumanCount", ConsumerConstant.HumanCount)]
+public class HumanCountConsumer(HumanCountSubject subject) : IConsumer<HumanCountMessage>
 {
-    public Task Consume(ConsumeContext<HumanCountModelContract> context)
+    public Task Consume(ConsumeContext<HumanCountMessage> context)
     {
         subject.Notify(context.Message.ToHumanCountModel());
         return Task.CompletedTask;

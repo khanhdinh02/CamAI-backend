@@ -1,162 +1,160 @@
+using System.Net.Http.Headers;
 using Core.Domain;
+using Core.Domain.DTO;
 using Core.Domain.Entities;
 using Core.Domain.Enums;
 using Core.Domain.Interfaces.Services;
+using Core.Domain.Models;
 using Core.Domain.Models.Configurations;
 using Core.Domain.Repositories;
+using Core.Domain.Services;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace Host.CamAI.API.BackgroundServices;
 
 public class EdgeBoxHealthCheckService(
     IAppLogging<EdgeBoxHealthCheckService> logger,
+    IMemoryCache cache,
     IServiceProvider provider,
     HealthCheckConfiguration healthCheckConfiguration
 ) : BackgroundService
 {
+    private readonly HttpClient httpClient = CreateHttpClient();
+    private IEdgeBoxInstallService? edgeBoxInstallService;
+    private INotificationService? notificationService;
+    private IUnitOfWork? uow;
+    private readonly Mutex mutex = new();
+
+    private static HttpClient CreateHttpClient()
+    {
+        // disable ssl
+        var handler = new HttpClientHandler();
+        handler.ClientCertificateOptions = ClientCertificateOption.Manual;
+        handler.ServerCertificateCustomValidationCallback = (_, _, _, _) => true;
+        var client = new HttpClient(handler);
+        client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+        return client;
+    }
+
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         while (!stoppingToken.IsCancellationRequested)
         {
-            using var scope = provider.CreateScope();
-            var uow = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
-            int pageIndex = 0;
-            int pageSize = 100;
-            while (true)
+            // init service
+            var scope = provider.CreateScope();
+
+            var jwtService = scope.ServiceProvider.GetRequiredService<IJwtService>();
+            await jwtService.SetCurrentUserToSystemHandler();
+
+            uow = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+            edgeBoxInstallService = scope.ServiceProvider.GetRequiredService<IEdgeBoxInstallService>();
+            notificationService = scope.ServiceProvider.GetRequiredService<INotificationService>();
+
+            // fetch 100 edge box install each
+            const int pageSize = 100;
+            var edgeBoxInstallsPagination = new PaginationResult<EdgeBoxInstall> { Values = [new EdgeBoxInstall()] };
+            var pageIndex = 0;
+            while (!edgeBoxInstallsPagination.IsValuesEmpty)
             {
-                var edgeBoxInstallsPagination = await uow.GetRepository<EdgeBoxInstall>()
+                edgeBoxInstallsPagination = await uow.GetRepository<EdgeBoxInstall>()
                     .GetAsync(
+                        x =>
+                            x.EdgeBoxInstallStatus == EdgeBoxInstallStatus.Working
+                            || x.EdgeBoxInstallStatus == EdgeBoxInstallStatus.Unhealthy,
                         includeProperties: [nameof(EdgeBoxInstall.Shop)],
                         pageIndex: pageIndex,
                         pageSize: pageSize
                     );
-                await HandleEdgeBoxInstallHealthCheck(edgeBoxInstallsPagination.Values, stoppingToken, uow);
-                if (pageIndex * edgeBoxInstallsPagination.PageSize + edgeBoxInstallsPagination.Values.Count >= edgeBoxInstallsPagination.TotalCount)
-                    break;
-                else
-                    pageIndex++;
+
+                await CheckEdgeBoxInstallHealth(edgeBoxInstallsPagination.Values, stoppingToken);
+                pageIndex++;
             }
+
             await Task.Delay(TimeSpan.FromSeconds(healthCheckConfiguration.EdgeBoxHealthCheckDelay), stoppingToken);
         }
     }
 
-    private async Task HandleEdgeBoxInstallHealthCheck(IEnumerable<EdgeBoxInstall> edgeBoxInstalls, CancellationToken cancellation, IUnitOfWork uow)
+    private async Task CheckEdgeBoxInstallHealth(IList<EdgeBoxInstall> edgeBoxInstalls, CancellationToken cancellation)
     {
-        HashSet<EdgeBoxInstall> failedEdgeBoxInstall = new();
-        await uow.BeginTransaction();
-        foreach (var edgeBoxInstall in edgeBoxInstalls)
-        {
-            try
+        var notificationDto = new List<CreateNotificationDto>();
+        await Parallel.ForEachAsync(
+            edgeBoxInstalls,
+            new ParallelOptions { MaxDegreeOfParallelism = 8 },
+            async (edgeBoxInstall, cancel) =>
             {
-                var res = await SendRequest($"{edgeBoxInstall.IpAddress}:{edgeBoxInstall.Port}/api/test/{edgeBoxInstall.Id}");
-                if (res.IsSuccessStatusCode)
+                for (var numOfRetry = 0; numOfRetry < healthCheckConfiguration.MaxNumberOfRetry; numOfRetry++)
                 {
-                    if (edgeBoxInstall.EdgeBox.EdgeBoxStatus != EdgeBoxStatus.Active)
+                    try
                     {
-                        edgeBoxInstall.EdgeBoxInstallStatus = EdgeBoxInstallStatus.Healthy;
-                        await uow.CompleteAsync();
+                        // call edge box endpoint
+                        var response = await SendRequest(GetEdgeBoxLink(edgeBoxInstall));
+                        if (response.IsSuccessStatusCode)
+                        {
+                            await LockUpdateStatus(edgeBoxInstall, EdgeBoxInstallStatus.Working);
+                            return;
+                        }
                     }
+                    catch (Exception ex)
+                    {
+                        logger.Error(ex.Message, ex);
+                    }
+
+                    await Task.Delay(TimeSpan.FromSeconds(healthCheckConfiguration.RetryDelay), cancel);
                 }
-                else
-                    failedEdgeBoxInstall.Add(edgeBoxInstall);
+
+                // failed after max retry
+                // this will update status and send notification
+                // TODO: only update notified if update status
+                await LockUpdateStatus(edgeBoxInstall, EdgeBoxInstallStatus.Unhealthy);
+
+                notificationDto.Add(await CreateNotification(edgeBoxInstall));
             }
-            catch (Exception ex)
-            {
-                logger.Error(ex.Message, ex);
-                failedEdgeBoxInstall.Add(edgeBoxInstall);
-            }
-        }
-        try
-        {
-            await HealthCheckAllFailedEdgeBox(failedEdgeBoxInstall, cancellation);
-            await uow.CommitTransaction();
-        }
-        catch (Exception ex)
-        {
-            logger.Error(ex.Message, ex);
-            await uow.RollBack();
-        }
+        );
+        foreach (var dto in notificationDto)
+            await notificationService!.CreateNotification(dto, true);
     }
 
-    private async Task HealthCheckAllFailedEdgeBox(IEnumerable<EdgeBoxInstall> failedHealthCheckEdgeBoxes, CancellationToken cancellation)
+    private async Task LockUpdateStatus(EdgeBoxInstall edgeBoxInstall, EdgeBoxInstallStatus status)
     {
-        var failedEdgeBoxDic = failedHealthCheckEdgeBoxes.ToDictionary(s => s.Id, s => 0);
-        while (failedEdgeBoxDic.Any() && !cancellation.IsCancellationRequested)
-        {
-            var startOperationTime = new TimeSpan(DateTime.Now.Ticks);
-            foreach (var edgeBoxInstall in failedHealthCheckEdgeBoxes)
-            {
-                var currentNumberOfRetry = failedEdgeBoxDic[edgeBoxInstall.Id];
-                using var scope = provider.CreateScope();
-                var edgeBoxInstallService = scope.ServiceProvider.GetRequiredService<IEdgeBoxInstallService>();
-                var notificationService = scope.ServiceProvider.GetRequiredService<INotificationService>();
-                if (currentNumberOfRetry > healthCheckConfiguration.MaxNumberOfRetry)
-                {
-                    failedEdgeBoxDic.Remove(edgeBoxInstall.Id);
-                    await edgeBoxInstallService.UpdateStatus(edgeBoxInstall.Id, EdgeBoxInstallStatus.Unhealthy, edgeBoxInstall);
-                    await Notification(notificationService, $"Edgebox install's status has been changed to {EdgeBoxInstallStatus.Unhealthy}", edgeBoxInstall);
-                    continue;
-                }
-                try
-                {
-                    var res = await SendRequest($"{edgeBoxInstall.IpAddress}:{edgeBoxInstall.Port}/api/test/{edgeBoxInstall.Id}");
-                    if (res.IsSuccessStatusCode)
-                    {
-                        failedEdgeBoxDic.Remove(edgeBoxInstall.Id);
-                        await Notification(notificationService, $"Edgebox install's status has been changed to {EdgeBoxInstallStatus.Unhealthy}", edgeBoxInstall);
-                        await edgeBoxInstallService.UpdateStatus(edgeBoxInstall.Id, EdgeBoxInstallStatus.Unhealthy, edgeBoxInstall);
-                    }
-                    else
-                        failedEdgeBoxDic[edgeBoxInstall.Id] = ++failedEdgeBoxDic[edgeBoxInstall.Id];
-                }
-                catch (Exception ex)
-                {
-                    logger.Error(ex.Message, ex);
-                    failedEdgeBoxDic[edgeBoxInstall.Id] = ++failedEdgeBoxDic[edgeBoxInstall.Id];
-                }
-            }
-            var endOperationTime = new TimeSpan(DateTime.Now.Ticks);
-            var duration = endOperationTime.Subtract(startOperationTime);
-
-            if (duration.Seconds < 5 * 60)
-                await Task.Delay(TimeSpan.FromMinutes(healthCheckConfiguration.RetryDelay - duration.Seconds), cancellation);
-        }
+        mutex.WaitOne();
+        await edgeBoxInstallService!.UpdateStatus(edgeBoxInstall, status);
+        mutex.ReleaseMutex();
     }
 
-    private async Task Notification(INotificationService notificationService, string content, EdgeBoxInstall edgeBoxInstall)
+    private static string GetEdgeBoxLink(EdgeBoxInstall edgeBoxInstall)
     {
-        var sentTo = await GetAdminAccounts();
+        return $"http://{edgeBoxInstall.IpAddress}:{edgeBoxInstall.Port}/api/test/{edgeBoxInstall.Id}";
+    }
+
+    private async Task<CreateNotificationDto> CreateNotification(EdgeBoxInstall edgeBoxInstall)
+    {
+        var sentTo = new List<Guid> { await GetAdminAccount() };
         if (edgeBoxInstall.Shop.ShopManagerId.HasValue)
             sentTo.Add(edgeBoxInstall.Shop.ShopManagerId.Value);
-        await notificationService.CreateNotification(new()
+
+        var dto = new CreateNotificationDto
         {
-            Content = content,
+            Title = "Edge box failed",
+            Content = $"Edge box install status has been changed to {EdgeBoxInstallStatus.Unhealthy}",
             NotificationType = NotificationType.Urgent,
             SentToId = sentTo
-        },
-        true
-        );
+        };
+        return dto;
     }
 
-    private async Task<ICollection<Guid>> GetAdminAccounts()
+    private async Task<Guid> GetAdminAccount()
     {
-        using var scope = provider.CreateScope();
-        var cache = scope.ServiceProvider.GetRequiredService<IMemoryCache>();
-        var adminAccounts = await cache.GetOrCreateAsync("AdminAccounts", async (entry) =>
-        {
-            var uow = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
-            return (await uow.Accounts.GetAsync(expression: a => a.Role == Role.Admin, takeAll: true)).Values;
-        });
-
-        return adminAccounts!.Select(s => s.Id).ToList();
-    }
-
-    private Task<HttpResponseMessage> SendRequest(string uri)
-    {
-        var http = new HttpClient();
-        http.DefaultRequestHeaders.Accept.Add(
-            new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json")
+        var adminAccount = await cache.GetOrCreateAsync(
+            "AdminAccounts",
+            async entry =>
+            {
+                entry.SlidingExpiration = TimeSpan.FromHours(1);
+                return (await uow!.Accounts.GetAsync(expression: a => a.Role == Role.Admin, takeAll: true)).Values[0];
+            }
         );
-        return http.GetAsync(new Uri(uri));
+
+        return adminAccount!.Id;
     }
+
+    private Task<HttpResponseMessage> SendRequest(string uri) => httpClient.GetAsync(new Uri(uri));
 }

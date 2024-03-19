@@ -7,6 +7,7 @@ using Core.Domain.DTO;
 using Core.Domain.Entities;
 using Core.Domain.Enums;
 using Core.Domain.Models.Configurations;
+using Core.Domain.Repositories;
 using Core.Domain.Services;
 using Core.Domain.Utilities;
 using Microsoft.AspNetCore.Http;
@@ -24,6 +25,7 @@ public class JwtService(
 ) : IJwtService
 {
     private readonly JwtConfiguration jwtConfiguration = configuration.Value;
+    private Account? currentUser;
 
     public string GenerateToken(Guid userId, Role role, TokenType tokenType) =>
         GenerateToken(userId, role, null, tokenType);
@@ -99,13 +101,27 @@ public class JwtService(
         }
     }
 
+    public async Task SetCurrentUserToSystemHandler()
+    {
+        using var scope = serviceProvider.CreateScope();
+        currentUser = (
+            await scope
+                .ServiceProvider.GetRequiredService<IUnitOfWork>()
+                .Accounts.GetAsync(x => x.Email == "systemhandler")
+        ).Values[0];
+    }
+
     public Account GetCurrentUser()
     {
+        if (currentUser != null)
+            return currentUser;
+
         using var scope = serviceProvider.CreateScope();
         var httpContext =
             scope.ServiceProvider.GetRequiredService<IHttpContextAccessor>().HttpContext
             ?? throw new ServiceUnavailableException("Service Unavailable");
-        return (httpContext.Items[nameof(Account)] as Account) ?? throw new UnauthorizedException("");
+        currentUser = httpContext.Items[nameof(Account)] as Account ?? throw new UnauthorizedException("");
+        return currentUser;
     }
 
     //TODO: CHECK USER STATUS FROM STORAGE

@@ -122,7 +122,6 @@ public class BrandsController(IBrandService brandService, IBaseMapping mapping) 
     [AccessTokenGuard(Role.Admin)]
     public async Task<IActionResult> DeleteBrand([FromRoute] Guid id)
     {
-        // TODO [Duy]: discuss what to return for delete
         await brandService.DeleteBrand(id);
         return Accepted();
     }
@@ -137,17 +136,7 @@ public class BrandsController(IBrandService brandService, IBaseMapping mapping) 
     [AccessTokenGuard(Role.BrandManager)]
     public async Task<IActionResult> UpdateImage(ControllerCreateImageDto imageDto, BrandImageType type)
     {
-        switch (type)
-        {
-            case BrandImageType.Logo:
-                await brandService.UpdateLogo(await imageDto.ToCreateImageDto());
-                break;
-            case BrandImageType.Banner:
-                await brandService.UpdateBanner(await imageDto.ToCreateImageDto());
-                break;
-            default:
-                return BadRequest();
-        }
+        await brandService.UpdateImage(await imageDto.ToCreateImageDto(), type);
         return Ok();
     }
 }

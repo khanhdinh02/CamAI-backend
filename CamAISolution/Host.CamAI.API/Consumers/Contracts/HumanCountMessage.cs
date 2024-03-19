@@ -4,7 +4,7 @@ using MassTransit;
 namespace Host.CamAI.API.Consumers.Contracts;
 
 [MessageUrn("HumanCountModel")]
-public class HumanCountModelContract
+public class HumanCountMessage
 {
     public DateTime Time { get; set; }
     public int Total { get; set; }

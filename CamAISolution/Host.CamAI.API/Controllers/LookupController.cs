@@ -12,6 +12,7 @@ public class LookupController : ControllerBase
 {
     [LookupHttpGet("account-statuses", typeof(AccountStatus))]
     [LookupHttpGet("brand-statuses", typeof(BrandStatus))]
+    [LookupHttpGet("edgeBox-activation-status", typeof(EdgeBoxActivationStatus))]
     [LookupHttpGet("edgeBox-install-statuses", typeof(EdgeBoxInstallStatus))]
     [LookupHttpGet("edgeBox-locations", typeof(EdgeBoxLocation))]
     [LookupHttpGet("edgeBox-statuses", typeof(EdgeBoxStatus))]

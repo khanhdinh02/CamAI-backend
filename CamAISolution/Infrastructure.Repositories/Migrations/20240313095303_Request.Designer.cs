@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Repositories.Migrations
 {
     [DbContext(typeof(CamAIContext))]
-    [Migration("20240229080709_Init")]
-    partial class Init
+    [Migration("20240313095303_Request")]
+    partial class Request
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -54,7 +54,6 @@ namespace Infrastructure.Repositories.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int?>("Gender")
-                        .HasMaxLength(20)
                         .HasColumnType("int");
 
                     b.Property<DateTime>("ModifiedDate")
@@ -310,6 +309,9 @@ namespace Infrastructure.Repositories.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("ActivationCode")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
 
@@ -320,14 +322,13 @@ namespace Infrastructure.Repositories.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("IpAddress")
-                        .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
                     b.Property<DateTime>("ModifiedDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("Port")
+                    b.Property<int?>("Port")
                         .HasColumnType("int");
 
                     b.Property<Guid>("ShopId")
@@ -456,7 +457,6 @@ namespace Infrastructure.Repositories.Migrations
                         .HasColumnType("int");
 
                     b.Property<int>("Gender")
-                        .HasMaxLength(20)
                         .HasColumnType("int");
 
                     b.Property<string>("Image")
@@ -506,11 +506,15 @@ namespace Infrastructure.Repositories.Migrations
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<Guid>("EdgeBoxId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<string>("EdgeBoxPath")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("EvidenceType")
                         .HasColumnType("int");
+
+                    b.Property<Guid?>("ImageId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("IncidentId")
                         .HasColumnType("uniqueidentifier");
@@ -518,19 +522,19 @@ namespace Infrastructure.Repositories.Migrations
                     b.Property<DateTime>("ModifiedDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
                     b.Property<byte[]>("Timestamp")
                         .IsConcurrencyToken()
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("rowversion");
 
-                    b.Property<string>("Uri")
-                        .HasColumnType("nvarchar(max)");
-
                     b.HasKey("Id");
 
                     b.HasIndex("CameraId");
 
-                    b.HasIndex("EdgeBoxId");
+                    b.HasIndex("ImageId");
 
                     b.HasIndex("IncidentId");
 
@@ -569,11 +573,23 @@ namespace Infrastructure.Repositories.Migrations
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<Guid>("EdgeBoxId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("EmployeeId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<int>("IncidentType")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("ModifiedDate")
                         .HasColumnType("datetime2");
+
+                    b.Property<Guid>("ShopId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("Time")
                         .HasColumnType("datetime2");
@@ -584,6 +600,12 @@ namespace Infrastructure.Repositories.Migrations
                         .HasColumnType("rowversion");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("EdgeBoxId");
+
+                    b.HasIndex("EmployeeId");
+
+                    b.HasIndex("ShopId");
 
                     b.ToTable("Incidents");
                 });
@@ -660,6 +682,9 @@ namespace Infrastructure.Repositories.Migrations
                     b.Property<string>("Detail")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<Guid?>("EdgeBoxId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<DateTime>("ModifiedDate")
                         .HasColumnType("datetime2");
 
@@ -683,6 +708,8 @@ namespace Infrastructure.Repositories.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("AccountId");
+
+                    b.HasIndex("EdgeBoxId");
 
                     b.HasIndex("ShopId");
 
@@ -803,21 +830,6 @@ namespace Infrastructure.Repositories.Migrations
                     b.HasIndex("DistrictId");
 
                     b.ToTable("Wards");
-                });
-
-            modelBuilder.Entity("EmployeeIncident", b =>
-                {
-                    b.Property<Guid>("EmployeeId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("IncidentId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("EmployeeId", "IncidentId");
-
-                    b.HasIndex("IncidentId");
-
-                    b.ToTable("EmployeeIncident");
                 });
 
             modelBuilder.Entity("Core.Domain.Entities.Account", b =>
@@ -988,11 +1000,9 @@ namespace Infrastructure.Repositories.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Core.Domain.Entities.EdgeBox", "EdgeBox")
+                    b.HasOne("Core.Domain.Entities.Image", "Image")
                         .WithMany()
-                        .HasForeignKey("EdgeBoxId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("ImageId");
 
                     b.HasOne("Core.Domain.Entities.Incident", "Incident")
                         .WithMany("Evidences")
@@ -1002,9 +1012,34 @@ namespace Infrastructure.Repositories.Migrations
 
                     b.Navigation("Camera");
 
-                    b.Navigation("EdgeBox");
+                    b.Navigation("Image");
 
                     b.Navigation("Incident");
+                });
+
+            modelBuilder.Entity("Core.Domain.Entities.Incident", b =>
+                {
+                    b.HasOne("Core.Domain.Entities.EdgeBox", "EdgeBox")
+                        .WithMany()
+                        .HasForeignKey("EdgeBoxId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Core.Domain.Entities.Employee", "Employee")
+                        .WithMany("Incidents")
+                        .HasForeignKey("EmployeeId");
+
+                    b.HasOne("Core.Domain.Entities.Shop", "Shop")
+                        .WithMany()
+                        .HasForeignKey("ShopId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("EdgeBox");
+
+                    b.Navigation("Employee");
+
+                    b.Navigation("Shop");
                 });
 
             modelBuilder.Entity("Core.Domain.Entities.Notification", b =>
@@ -1026,11 +1061,17 @@ namespace Infrastructure.Repositories.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Core.Domain.Entities.EdgeBox", "EdgeBox")
+                        .WithMany()
+                        .HasForeignKey("EdgeBoxId");
+
                     b.HasOne("Core.Domain.Entities.Shop", "Shop")
                         .WithMany()
                         .HasForeignKey("ShopId");
 
                     b.Navigation("Account");
+
+                    b.Navigation("EdgeBox");
 
                     b.Navigation("Shop");
                 });
@@ -1088,21 +1129,6 @@ namespace Infrastructure.Repositories.Migrations
                     b.Navigation("District");
                 });
 
-            modelBuilder.Entity("EmployeeIncident", b =>
-                {
-                    b.HasOne("Core.Domain.Entities.Employee", null)
-                        .WithMany()
-                        .HasForeignKey("EmployeeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Core.Domain.Entities.Incident", null)
-                        .WithMany()
-                        .HasForeignKey("IncidentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("Core.Domain.Entities.Account", b =>
                 {
                     b.Navigation("ManagingBrand");
@@ -1134,6 +1160,11 @@ namespace Infrastructure.Repositories.Migrations
             modelBuilder.Entity("Core.Domain.Entities.EdgeBoxModel", b =>
                 {
                     b.Navigation("EdgeBoxes");
+                });
+
+            modelBuilder.Entity("Core.Domain.Entities.Employee", b =>
+                {
+                    b.Navigation("Incidents");
                 });
 
             modelBuilder.Entity("Core.Domain.Entities.Incident", b =>
