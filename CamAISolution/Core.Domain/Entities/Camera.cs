@@ -10,6 +10,6 @@ public class Camera : BusinessEntity
     public string Name { get; set; } = null!;
     public Guid ShopId { get; set; }
     public Zone Zone { get; set; }
-
+    public CameraStatus Status { get; set; } = CameraStatus.Active;
     public virtual Shop Shop { get; set; } = null!;
 }

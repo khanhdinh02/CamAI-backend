@@ -4,6 +4,7 @@ using Infrastructure.Repositories.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Repositories.Migrations
 {
     [DbContext(typeof(CamAIContext))]
-    partial class CamAIContextModelSnapshot : ModelSnapshot
+    [Migration("20240314083750_AddCameraStatus")]
+    partial class AddCameraStatus
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -682,9 +685,6 @@ namespace Infrastructure.Repositories.Migrations
                     b.Property<string>("Detail")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid?>("EdgeBoxId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<DateTime>("ModifiedDate")
                         .HasColumnType("datetime2");
 
@@ -708,8 +708,6 @@ namespace Infrastructure.Repositories.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("AccountId");
-
-                    b.HasIndex("EdgeBoxId");
 
                     b.HasIndex("ShopId");
 
@@ -1061,17 +1059,11 @@ namespace Infrastructure.Repositories.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Core.Domain.Entities.EdgeBox", "EdgeBox")
-                        .WithMany()
-                        .HasForeignKey("EdgeBoxId");
-
                     b.HasOne("Core.Domain.Entities.Shop", "Shop")
                         .WithMany()
                         .HasForeignKey("ShopId");
 
                     b.Navigation("Account");
-
-                    b.Navigation("EdgeBox");
 
                     b.Navigation("Shop");
                 });
