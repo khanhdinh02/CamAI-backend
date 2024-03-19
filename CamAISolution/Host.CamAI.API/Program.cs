@@ -2,6 +2,8 @@ using Core.Application.Events;
 using Host.CamAI.API;
 using Host.CamAI.API.Middlewares;
 using Host.CamAI.API.Models;
+using Infrastructure.Cache;
+using Infrastructure.Email;
 using Infrastructure.Jwt;
 using Infrastructure.Logging;
 using Infrastructure.Mapping;
@@ -34,7 +36,9 @@ builder
     .AddObserver(builder.Configuration)
     .AddNotification(builder.Configuration.GetRequiredSection("GoogleSecret").Get<GoogleSecret>())
     .AddBackgroundService()
-    .AddMemoryCache();
+    .AddCacheService()
+    .AddEmailService(builder.Configuration)
+    .AddBackgroundService();
 
 builder.Services.AddHttpClient();
 

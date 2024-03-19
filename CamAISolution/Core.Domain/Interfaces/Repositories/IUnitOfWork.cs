@@ -17,6 +17,7 @@ public interface IUnitOfWork : IDisposable, IAsyncDisposable
     IRepository<Incident> Incidents { get; }
     IRepository<Evidence> Evidences { get; }
     IRepository<Request> Requests { get; }
+    IRepository<Camera> Cameras { get; }
     Task BeginTransaction();
     Task CommitTransaction();
     Task RollBack();

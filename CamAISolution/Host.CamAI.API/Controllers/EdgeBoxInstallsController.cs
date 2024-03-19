@@ -41,6 +41,11 @@ public class EdgeBoxInstallsController(IEdgeBoxInstallService edgeBoxInstallServ
         return edgeBoxInstalls.Select(mapper.Map<EdgeBoxInstall, EdgeBoxInstallDto>);
     }
 
+    /// <summary>
+    /// Admin leases an edge box to a shop
+    /// </summary>
+    /// <param name="dto"></param>
+    /// <returns></returns>
     [HttpPost]
     [AccessTokenGuard(Role.Admin)]
     public async Task<EdgeBoxInstallDto> LeaseEdgeBox(CreateEdgeBoxInstallDto dto)
@@ -49,6 +54,11 @@ public class EdgeBoxInstallsController(IEdgeBoxInstallService edgeBoxInstallServ
         return mapper.Map<EdgeBoxInstall, EdgeBoxInstallDto>(ebInstall);
     }
 
+    /// <summary>
+    /// Brand manager activates an edge box
+    /// </summary>
+    /// <param name="dto"></param>
+    /// <returns></returns>
     [HttpPut]
     [AccessTokenGuard(Role.BrandManager)]
     public async Task<EdgeBoxInstallDto> ActivateEdgeBox(ActivateEdgeBoxDto dto)

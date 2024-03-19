@@ -19,6 +19,8 @@
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\Infrastructure.Cache\Infrastructure.Cache.csproj" />
+        <ProjectReference Include="..\Infrastructure.Email\Infrastructure.Email.csproj" />
         <ProjectReference Include="..\Infrastructure.Jwt\Infrastructure.Jwt.csproj" />
         <ProjectReference Include="..\Infrastructure.Mapping\Infrastructure.Mapping.csproj" />
         <ProjectReference Include="..\Infrastructure.MessageQueue\Infrastructure.MessageQueue.csproj" />

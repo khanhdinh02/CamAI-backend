@@ -9,10 +9,12 @@ using Core.Domain.Enums;
 using Core.Domain.Models.Configurations;
 using Core.Domain.Repositories;
 using Core.Domain.Services;
+using Core.Domain.Utilities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using static Core.Domain.Utilities.CacheHelper;
 
 namespace Infrastructure.Jwt;
 
@@ -57,7 +59,11 @@ public class JwtService(
             expires: DateTime.UtcNow.AddMinutes(tokenDurationInMinute),
             signingCredentials: credentials
         );
-        return new JwtSecurityTokenHandler().WriteToken(token);
+        using var scope = serviceProvider.CreateScope();
+        var cacheService = scope.ServiceProvider.GetRequiredService<ICacheService>();
+        var tokenStr = new JwtSecurityTokenHandler().WriteToken(token);
+        cacheService.Set(GenerateCachedKey(tokenType, userId), tokenStr, TimeSpan.FromMinutes(tokenDurationInMinute));
+        return tokenStr;
     }
 
     public IEnumerable<Claim> GetClaims(string token, TokenType tokenType, bool isValidateTime = true)
@@ -132,6 +138,8 @@ public class JwtService(
         if (string.IsNullOrEmpty(userId))
             throw new BadRequestException("Cannot get user id from jwt");
 
+        ValidateTokenInCacheMemory(token, tokenType, Guid.Parse(userId));
+
         var userRoleString = tokenClaims.FirstOrDefault(c => c.Type == "role")?.Value;
 
         if (!Enum.TryParse<Role>(userRoleString, true, out var userRole))
@@ -149,6 +157,17 @@ public class JwtService(
             UserId = new Guid(userId),
             UserRole = userRole
         };
+    }
+
+    private void ValidateTokenInCacheMemory(string token, TokenType tokenType, Guid userId)
+    {
+        using var scope = serviceProvider.CreateScope();
+        var cacheService = scope.ServiceProvider.GetRequiredService<ICacheService>();
+        // TODO[Dat]: Consider to separate checking with user login with mobile application
+        string key = GenerateCachedKey(tokenType, userId);
+        var cacheToken = cacheService.Get<string>(key);
+        if (cacheToken == null || (cacheToken != null && cacheToken != token))
+            throw new BadRequestException("Token is invalid");
     }
 
     private void AddClaimToUserContext(IEnumerable<Claim> claims)
