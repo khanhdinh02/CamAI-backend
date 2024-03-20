@@ -6,7 +6,8 @@ public class NotificationDto : BaseDto
 {
     public string Title { get; set; } = null!;
     public string Content { get; set; } = null!;
-    public AccountDto SentBy { get; set; } = null!;
+    public NotificationPriority Priority { get; set; }
+    public NotificationType Type { get; set; }
+    public Guid? RelatedEntityId { get; set; }
     public NotificationStatus Status { get; set; }
-    public ICollection<AccountDto> SentTo { get; set; } = new HashSet<AccountDto>();
 }

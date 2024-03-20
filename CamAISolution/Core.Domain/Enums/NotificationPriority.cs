@@ -3,7 +3,9 @@ using Core.Domain.Models.Attributes;
 namespace Core.Domain.Enums;
 
 [Lookup]
-public enum NotificationType
+public enum NotificationPriority
 {
-    EdgeBoxUnhealthy = 0
+    Normal = 1,
+    Warning = 2,
+    Urgent = 3
 }

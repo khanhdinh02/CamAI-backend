@@ -24,12 +24,12 @@ public class NotificationService(
     public async Task<Core.Domain.Entities.Notification> CreateNotification(CreateNotificationDto dto, bool willSend)
     {
         var notification = mapping.Map<CreateNotificationDto, Core.Domain.Entities.Notification>(dto);
-        notification.SentById = jwtService.GetCurrentUser().Id;
         try
         {
             await unitOfWork.BeginTransaction();
             notification = await unitOfWork.GetRepository<Core.Domain.Entities.Notification>().AddAsync(notification);
             await unitOfWork.CompleteAsync();
+
             var sentToAccounts = (
                 await unitOfWork.Accounts.GetAsync(expression: a => dto.SentToId.Contains(a.Id), disableTracking: false)
             ).Values;
@@ -47,7 +47,9 @@ public class NotificationService(
                     );
             }
             await unitOfWork.CompleteAsync();
+
             await unitOfWork.CommitTransaction();
+
             if (willSend)
                 foreach (var acc in sentToAccounts.Where(a => !string.IsNullOrEmpty(a.FCMToken)))
                     await firebaseService.Messaging.SendAsync(
@@ -63,7 +65,7 @@ public class NotificationService(
         throw new ServiceUnavailableException("Cannot do action");
     }
 
-    private Message CreateMessage(
+    private static Message CreateMessage(
         string title,
         string body,
         Dictionary<string, string>? data = null,
