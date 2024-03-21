@@ -19,7 +19,7 @@ public class GlobalJwtHandler(RequestDelegate next)
             try
             {
                 var tokenDetails = jwtService.ValidateToken(token, TokenType.AccessToken);
-                var account = await accountService.GetAccountById(tokenDetails.UserId);
+                var account = await accountService.GetAccountById(tokenDetails.UserId, includeAdmin: true);
                 context.Items[nameof(Account)] = account;
             }
             catch (Exception ex)
