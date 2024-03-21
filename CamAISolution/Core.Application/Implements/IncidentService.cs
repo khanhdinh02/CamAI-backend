@@ -82,7 +82,7 @@ public class IncidentService(
     {
         var incident = await unitOfWork.Incidents.GetByIdAsync(incidentDto.Id);
 
-        var ebInstall = await edgeBoxInstallService.GetInstallingByEdgeBox(incidentDto.EdgeBoxId);
+        var ebInstall = await edgeBoxInstallService.GetLatestInstallingByEdgeBox(incidentDto.EdgeBoxId);
         foreach (var cameraId in incidentDto.Evidences.Select(x => x.CameraId))
             await cameraService.CreateCameraIfNotExist(cameraId, ebInstall!.ShopId);
 
@@ -123,7 +123,7 @@ public class IncidentService(
             return;
 
         // TODO: make this run in another thread
-        var ebInstall = (await edgeBoxInstallService.GetInstallingByEdgeBox(edgeBoxId))!;
+        var ebInstall = (await edgeBoxInstallService.GetLatestInstallingByEdgeBox(edgeBoxId))!;
         var uriBuilder = new UriBuilder
         {
             Host = ebInstall.IpAddress,

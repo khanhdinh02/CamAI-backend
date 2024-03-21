@@ -1,10 +1,12 @@
 using Core.Application.Exceptions;
+using Core.Application.Specifications.EdgeBoxInstalls.Repositories;
 using Core.Domain.DTO;
 using Core.Domain.Entities;
 using Core.Domain.Enums;
 using Core.Domain.Interfaces.Emails;
 using Core.Domain.Interfaces.Mappings;
 using Core.Domain.Interfaces.Services;
+using Core.Domain.Models;
 using Core.Domain.Repositories;
 using Core.Domain.Utilities;
 
@@ -111,7 +113,7 @@ public class EdgeBoxInstallService(
         return edgeBoxInstall;
     }
 
-    public async Task<EdgeBoxInstall?> GetInstallingByEdgeBox(Guid edgeBoxId)
+    public async Task<EdgeBoxInstall?> GetLatestInstallingByEdgeBox(Guid edgeBoxId)
     {
         return (
             await unitOfWork.EdgeBoxInstalls.GetAsync(
@@ -124,6 +126,11 @@ public class EdgeBoxInstallService(
                 ]
             )
         ).Values.FirstOrDefault();
+    }
+
+    public Task<PaginationResult<EdgeBoxInstall>> GetEdgeBoxInstall(SearchEdgeBoxInstallRequest searchRequest)
+    {
+        return unitOfWork.EdgeBoxInstalls.GetAsync(new EdgeBoxInstallSearchSpec(searchRequest));
     }
 
     public async Task<IEnumerable<EdgeBoxInstall>> GetInstallingByShop(Guid shopId)
