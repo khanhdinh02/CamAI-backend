@@ -3,6 +3,7 @@ using Core.Domain.Entities;
 using Core.Domain.Enums;
 using Core.Domain.Interfaces.Mappings;
 using Core.Domain.Interfaces.Services;
+using Core.Domain.Models;
 using Infrastructure.Jwt.Attribute;
 using Microsoft.AspNetCore.Mvc;
 
@@ -39,6 +40,25 @@ public class EdgeBoxInstallsController(IEdgeBoxInstallService edgeBoxInstallServ
     {
         var edgeBoxInstalls = await edgeBoxInstallService.GetInstallingByBrand(brandId);
         return edgeBoxInstalls.Select(mapper.Map<EdgeBoxInstall, EdgeBoxInstallDto>);
+    }
+
+    /// <summary>
+    /// For admin: Get all install of a edge box
+    /// </summary>
+    /// <remarks>Use for Brand Manager.</remarks>
+    /// <param name="edgeBoxId"></param>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    [HttpGet("/api/edgeBoxes/{edgeBoxId}/installs")]
+    [AccessTokenGuard(Role.Admin)]
+    public async Task<PaginationResult<EdgeBoxInstallDto>> GetEdgeBoxInstallsByEdgeBox(
+        [FromRoute] Guid edgeBoxId,
+        [FromQuery] SearchEdgeBoxInstallRequest request
+    )
+    {
+        request.EdgeBoxId = edgeBoxId;
+        var edgeBoxInstalls = await edgeBoxInstallService.GetEdgeBoxInstall(request);
+        return mapper.Map<EdgeBoxInstall, EdgeBoxInstallDto>(edgeBoxInstalls);
     }
 
     /// <summary>

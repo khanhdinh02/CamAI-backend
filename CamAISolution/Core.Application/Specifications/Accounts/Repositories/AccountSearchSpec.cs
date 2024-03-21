@@ -12,6 +12,8 @@ public class AccountSearchSpec : RepositorySpec<Account>
 
         // Exclude the requesting account
         baseSpec.And(new AccountByIdSpec(reqAccount.Id).Not());
+        // excluding admin account
+        baseSpec.And(new AccountNotAdminSpec());
 
         if (!string.IsNullOrWhiteSpace(req.Name))
             baseSpec.And(new AccountByNameSpec(req.Name.Trim()));

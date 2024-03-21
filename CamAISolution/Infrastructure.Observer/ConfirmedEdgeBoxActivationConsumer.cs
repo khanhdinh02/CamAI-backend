@@ -27,7 +27,7 @@ public class ConfirmedEdgeBoxActivationConsumer(
         logger.Info($"Confirmed activation message from edge box ID: {context.Message.EdgeBoxId}.");
 
         // Update edge box & edge box install status
-        var edgeBoxInstall = (await edgeBoxInstallService.GetInstallingByEdgeBox(context.Message.EdgeBoxId))!;
+        var edgeBoxInstall = (await edgeBoxInstallService.GetLatestInstallingByEdgeBox(context.Message.EdgeBoxId))!;
         await edgeBoxInstallService.UpdateStatus(edgeBoxInstall.EdgeBoxId, EdgeBoxInstallStatus.Working);
         await edgeBoxService.UpdateStatus(context.Message.EdgeBoxId, EdgeBoxStatus.Active);
 

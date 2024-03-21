@@ -8,7 +8,7 @@ public interface IAccountService
 {
     Task<Account> CreateAccount(CreateAccountDto dto);
     Task<PaginationResult<Account>> GetAccounts(SearchAccountRequest req);
-    Task<Account> GetAccountById(Guid id);
+    Task<Account> GetAccountById(Guid id, bool includeAdmin = false);
     Task<Account> UpdateAccount(Guid id, UpdateAccountDto dto);
     Task DeleteAccount(Guid id);
     Account GetCurrentAccount();
