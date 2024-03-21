@@ -1,5 +1,4 @@
 using Core.Domain.Entities;
-using Core.Domain.Enums;
 
 namespace Core.Application.Specifications.Repositories;
 
@@ -10,7 +9,7 @@ namespace Core.Application.Specifications.Repositories;
 public class AccountByIdRepoSpec : EntityByIdSpec<Account, Guid>
 {
     public AccountByIdRepoSpec(Guid id)
-        : base(a => a.Id == id && a.Role != Role.Admin)
+        : base(a => a.Id == id)
     {
         AddIncludes(a => a.Brand!.Logo, a => a.Brand!.Banner, a => a.Brand!.BrandManager, a => a.ManagingShop);
         AddIncludes(a => a.Ward!.District.Province);
