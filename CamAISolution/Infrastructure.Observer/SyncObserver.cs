@@ -13,7 +13,6 @@ public class SyncObserver(EventManager eventManager, IServiceProvider provider)
     {
         eventManager.BrandChangedEvent += SyncBrand;
         eventManager.ShopChangedEvent += SyncShop;
-        eventManager.ActivateEdgeBoxEvent += ActivateEdgeBox;
     }
 
     private void SendMessage<T>(T message)
