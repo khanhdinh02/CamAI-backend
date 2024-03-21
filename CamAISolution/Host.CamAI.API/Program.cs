@@ -38,7 +38,8 @@ builder
     .AddBackgroundService()
     .AddCacheService()
     .AddEmailService(builder.Configuration)
-    .AddBackgroundService();
+    .AddBackgroundService()
+    .AddEventListener();
 
 builder.Services.AddHttpClient();
 

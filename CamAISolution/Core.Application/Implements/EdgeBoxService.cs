@@ -1,17 +1,17 @@
+using Core.Application.Events;
 using Core.Application.Exceptions;
-using Core.Application.Specifications;
 using Core.Application.Specifications.Repositories;
 using Core.Domain;
 using Core.Domain.DTO;
 using Core.Domain.Entities;
 using Core.Domain.Enums;
+using Core.Domain.Events;
 using Core.Domain.Interfaces.Mappings;
 using Core.Domain.Interfaces.Services;
 using Core.Domain.Models;
 using Core.Domain.Models.Publishers;
 using Core.Domain.Repositories;
 using Core.Domain.Services;
-using Timer = System.Timers.Timer;
 
 namespace Core.Application.Implements;
 
@@ -22,14 +22,18 @@ public class EdgeBoxService(
     IBaseMapping mapping,
     IMessageQueueService messageQueueService,
     INotificationService notificationService,
-    IAppLogging<EdgeBoxService> logger
+    IAppLogging<EdgeBoxService> logger,
+    IApplicationDelayEventListener applicationDelayEventListener
 ) : IEdgeBoxService
 {
     public async Task<EdgeBox> GetEdgeBoxById(Guid id)
     {
         var foundEdgeBox = await unitOfWork.EdgeBoxes.GetAsync(new EdgeBoxByIdRepoSpec(id));
         if (foundEdgeBox.Values.Count == 0)
+        {
             throw new NotFoundException(typeof(EdgeBox), id);
+        }
+
         return foundEdgeBox.Values[0];
     }
 
@@ -40,15 +44,21 @@ public class EdgeBoxService(
             await unitOfWork.EdgeBoxes.GetAsync(crit, takeAll: true, includeProperties: [nameof(EdgeBox.EdgeBoxModel)])
         ).Values;
         if (searchRequest.BrandId.HasValue)
+        {
             edgeBoxes = edgeBoxes.IntersectBy(
                 (await GetEdgeBoxesByBrand(searchRequest.BrandId.Value)).Select(eb => eb.Id),
                 eb => eb.Id
             );
+        }
+
         if (searchRequest.ShopId.HasValue)
+        {
             edgeBoxes = edgeBoxes.IntersectBy(
                 (await GetEdgeBoxesByShop(searchRequest.ShopId.Value)).Select(eb => eb.Id),
                 eb => eb.Id
             );
+        }
+
         return new PaginationResult<EdgeBox>(edgeBoxes, searchRequest.PageIndex, searchRequest.Size);
     }
 
@@ -57,14 +67,14 @@ public class EdgeBoxService(
         // The edge box is currently installed in a shop if EdgeBoxLocation is neither Idle nor Disposed
         // The current shop that the edge box is installed in is the shop that has the latest installation record
         return (
-            await unitOfWork.EdgeBoxes.GetAsync(
-                eb => eb.EdgeBoxLocation != EdgeBoxLocation.Idle,
-                null,
-                [nameof(EdgeBox.Installs), nameof(EdgeBox.EdgeBoxModel)],
-                true,
-                true
+                await unitOfWork.EdgeBoxes.GetAsync(
+                    eb => eb.EdgeBoxLocation != EdgeBoxLocation.Idle,
+                    null,
+                    [nameof(EdgeBox.Installs), nameof(EdgeBox.EdgeBoxModel)],
+                    true,
+                    true
+                )
             )
-        )
             .Values.Where(eb => eb.Installs.MaxBy(i => i.CreatedDate)?.ShopId == shopId)
             .ToList();
     }
@@ -74,14 +84,14 @@ public class EdgeBoxService(
         // The edge box is currently installed in a Brand if EdgeBoxLocation is neither Idle nor Disposed
         // The current Brand that the edge box is installed in is the Brand that has the latest installation record
         return (
-            await unitOfWork.EdgeBoxes.GetAsync(
-                eb => eb.EdgeBoxLocation != EdgeBoxLocation.Idle,
-                null,
-                [$"{nameof(EdgeBox.Installs)}.{nameof(EdgeBoxInstall.Shop)}", nameof(EdgeBox.EdgeBoxModel)],
-                true,
-                true
+                await unitOfWork.EdgeBoxes.GetAsync(
+                    eb => eb.EdgeBoxLocation != EdgeBoxLocation.Idle,
+                    null,
+                    [$"{nameof(EdgeBox.Installs)}.{nameof(EdgeBoxInstall.Shop)}", nameof(EdgeBox.EdgeBoxModel)],
+                    true,
+                    true
+                )
             )
-        )
             .Values.Where(eb => eb.Installs.MaxBy(i => i.CreatedDate)?.Shop?.BrandId == brandId)
             .ToList();
     }
@@ -101,22 +111,20 @@ public class EdgeBoxService(
 
         // TODO[Dat]: validate activation code status
 
-        // SetTimer(edgeBoxId, edgeBoxInstall.Id, 5 * 60 * 1000);
-
         await messageQueueService.Publish(MessageType.ConfirmedActivated, new ConfirmedEdgeBoxActivation
         {
             EdgeBoxId = edgeBoxId,
             IsActivatedSuccessfully = true
         });
-
-        //Do Task latter
-        using var cancellationTokenSource = new CancellationTokenSource();
-        await Task.Run(
-            async () => await Task.Delay(1000, cancellationTokenSource.Token)
-                .ContinueWith(_ => CheckEdgeBoxStatus(edgeBoxId, edgeBoxInstall.Id), cancellationTokenSource.Token),
-            cancellationTokenSource.Token);
-        // Task.Delay(1000, cancellationTokenSource.Token)
-        //     .ContinueWith(_ => CheckEdgeBoxStatus(edgeBoxId, edgeBoxInstall.Id), cancellationTokenSource.Token);
+        var eventId = Guid.NewGuid();
+        await new TaskFactory().StartNew(() =>
+        {
+            applicationDelayEventListener.AddEvent(
+                eventId,
+                new FirstCheckEdgeBoxAfterActivationDelayEvent(TimeSpan.FromMinutes(5), edgeBoxId, edgeBoxInstall.Id),
+                true);
+        });
+        logger.Info("Complete task");
     }
 
     public async Task<EdgeBox> CreateEdgeBox(CreateEdgeBoxDto edgeBoxDto)
@@ -137,11 +145,16 @@ public class EdgeBoxService(
     {
         var foundEdgeBoxes = await unitOfWork.EdgeBoxes.GetAsync(new EdgeBoxByIdRepoSpec(id));
         if (foundEdgeBoxes.Values.Count == 0)
+        {
             throw new NotFoundException(typeof(EdgeBox), id);
+        }
+
         var foundEdgeBox = foundEdgeBoxes.Values[0];
         var currentAccount = accountService.GetCurrentAccount();
         if (foundEdgeBox.EdgeBoxStatus == EdgeBoxStatus.Inactive && currentAccount.Role != Role.Admin)
+        {
             throw new BadRequestException("Cannot modified inactive edgeBox");
+        }
 
         _ =
             await unitOfWork.EdgeBoxModels.GetByIdAsync(edgeBoxDto.EdgeBoxModelId)
@@ -159,13 +172,21 @@ public class EdgeBoxService(
         ).Values.FirstOrDefault();
 
         if (edgeBox == null)
+        {
             return;
+        }
+
         if (edgeBox.Installs.Count == 0)
+        {
             unitOfWork.EdgeBoxes.Delete(edgeBox);
+        }
         else
         {
             if (edgeBox.EdgeBoxLocation != EdgeBoxLocation.Idle)
+            {
                 throw new ConflictException($"Cannot delete edge box that is not idle, id {id}");
+            }
+
             edgeBox.EdgeBoxStatus = EdgeBoxStatus.Disposed;
             unitOfWork.EdgeBoxes.Update(edgeBox);
         }
@@ -177,7 +198,9 @@ public class EdgeBoxService(
     {
         var edgeBox = await unitOfWork.EdgeBoxes.GetByIdAsync(id) ?? throw new NotFoundException(typeof(EdgeBox), id);
         if (edgeBox.EdgeBoxStatus == status)
+        {
             return;
+        }
 
         await unitOfWork.BeginTransaction();
 
@@ -189,7 +212,9 @@ public class EdgeBoxService(
         )
         {
             if (await edgeBoxInstallService.GetLatestInstallingByEdgeBox(id) == null)
+            {
                 throw new BadRequestException("Cannot change status of edge box that is installing");
+            }
         }
 
         await unitOfWork
@@ -206,67 +231,5 @@ public class EdgeBoxService(
         edgeBox.EdgeBoxStatus = status;
         unitOfWork.EdgeBoxes.Update(edgeBox);
         await unitOfWork.CommitTransaction();
-    }
-
-    private void SetTimer(Guid edgeBoxId, Guid edgeBoxInstallId, long interval)
-    {
-        var timer = new Timer(interval);
-        timer.Elapsed += async (_, _) =>
-            await CheckEdgeBoxStatus(edgeBoxId, edgeBoxInstallId);
-        timer.AutoReset = false;
-        timer.Start();
-    }
-
-    private async Task CheckEdgeBoxStatus(Guid edgeBoxId, Guid edgeBoxInstallId)
-    {
-        try
-        {
-            var edgeBoxInstall = await unitOfWork.EdgeBoxInstalls.GetByIdAsync(edgeBoxInstallId) ??
-                                 throw new NotFoundException(typeof(EdgeBoxInstall), edgeBoxInstallId);
-            var edgeBox = await unitOfWork.EdgeBoxes.GetByIdAsync(edgeBoxId) ??
-                          throw new NotFoundException(typeof(EdgeBox), edgeBoxId);
-            var sentToAdmin =
-                (await unitOfWork.Accounts.GetAsync(new AccountByEmailSpec("admin").GetExpression(), takeAll: true))
-                .Values
-                .Select(a => a.Id);
-
-            // Edge box still disconnected from the server
-            if (edgeBox.EdgeBoxStatus != EdgeBoxStatus.Active)
-            {
-                await notificationService.CreateNotification(new CreateNotificationDto
-                {
-                    Content = $"Edge Box {edgeBoxId} is still disconnected from server",
-                    NotificationType = NotificationType.Urgent,
-                    Title = "Edge Box is disconnected from server",
-                    SentToId = sentToAdmin
-                }, true);
-                return;
-            }
-
-            // Edge box is activated but edge box install isn't working
-            if (edgeBoxInstall.EdgeBoxInstallStatus != EdgeBoxInstallStatus.Working)
-            {
-                await notificationService.CreateNotification(new CreateNotificationDto
-                {
-                    Content = $"Edge box is activated but edge box install-{edgeBoxInstallId} is not working",
-                    Title = "Edge box install is not working",
-                    NotificationType = NotificationType.Urgent,
-                    SentToId = sentToAdmin
-                }, true);
-                return;
-            }
-
-            await notificationService.CreateNotification(new CreateNotificationDto
-            {
-                Content = $"Edge box-{edgeBoxId} is successfully activated",
-                Title = "Edge box is activated",
-                NotificationType = NotificationType.Normal,
-                SentToId = sentToAdmin
-            }, true);
-        }
-        catch (Exception ex)
-        {
-            logger.Error(ex.Message, ex);
-        }
     }
 }
