@@ -4,18 +4,15 @@ using Core.Domain.Enums;
 
 namespace Core.Application.Specifications;
 
-public class AccountByIdSpec : Specification<Account>
+public class AccountNotAdminSpec : Specification<Account>
 {
-    private readonly Guid id;
-
-    public AccountByIdSpec(Guid id)
+    public AccountNotAdminSpec()
     {
-        this.id = id;
         Expr = GetExpression();
     }
 
     public override Expression<Func<Account, bool>> GetExpression()
     {
-        return a => a.Id == id;
+        return a => a.Role != Role.Admin;
     }
 }
