@@ -13,7 +13,7 @@ public class SyncDataRequestConsumer(SyncObserver syncObserver, IEdgeBoxInstallS
     public async Task Consume(ConsumeContext<SyncDataRequestMessage> context)
     {
         var edgeBoxId = context.Message.EdgeBoxId;
-        var ebInstall = (await edgeBoxInstallService.GetInstallingByEdgeBox(edgeBoxId))!;
+        var ebInstall = (await edgeBoxInstallService.GetLatestInstallingByEdgeBox(edgeBoxId))!;
 
         syncObserver.SyncBrand(ebInstall.Shop.Brand, edgeBoxId.ToString("N"));
         syncObserver.SyncShop(ebInstall.Shop, edgeBoxId.ToString("N"));
