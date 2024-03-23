@@ -11,42 +11,33 @@ public class SyncObserver(EventManager eventManager, IServiceProvider provider)
 {
     public void RegisterEvent()
     {
-        eventManager.BrandChangedEvent += SyncBrand;
-        eventManager.ShopChangedEvent += SyncShop;
+        eventManager.BrandChangedEvent += brand => SyncBrand(brand);
+        eventManager.ShopChangedEvent += shop => SyncShop(shop);
     }
 
-    private void SendMessage<T>(T message)
+    private async Task SendMessage<T>(T message)
         where T : class
     {
         using var scope = provider.CreateScope();
         var bus = scope.ServiceProvider.GetRequiredService<IPublishEndpoint>();
-        bus.Publish(message).Wait();
+        await bus.Publish(message);
     }
 
-    public void SyncBrand(Brand brand)
+    public async Task SyncBrand(Brand brand, string? routingKey = null)
     {
-        SyncBrand(brand, $"{brand.Id}.*");
-    }
-
-    public void SyncBrand(Brand brand, string? routingKey = null)
-    {
-        routingKey ??= $"{brand.Id}.*";
+        routingKey ??= $"{brand.Id:N}.*";
         var updateMessage = new BrandUpdateMessage
         {
+            Id = brand.Id,
             Name = brand.Name,
             Email = brand.Email,
             Phone = brand.Phone,
             RoutingKey = routingKey
         };
-        SendMessage(updateMessage);
+        await SendMessage(updateMessage);
     }
 
-    public void SyncShop(Shop shop)
-    {
-        SyncShop(shop, $"{shop.BrandId}.{shop.Id}");
-    }
-
-    public void SyncShop(Shop shop, string? routingKey = null)
+    public async Task SyncShop(Shop shop, string? routingKey = null)
     {
         routingKey ??= $"{shop.BrandId:N}.{shop.Id:N}";
         var updateMessage = new ShopUpdateMessage
@@ -59,16 +50,6 @@ public class SyncObserver(EventManager eventManager, IServiceProvider provider)
             CloseTime = shop.CloseTime,
             RoutingKey = routingKey
         };
-        SendMessage(updateMessage);
-    }
-
-    private void ActivateEdgeBox(Guid edgeBoxId)
-    {
-        var activateEdgeBoxMessage = new ActivatedEdgeBoxMessage
-        {
-            RoutingKey = $"{edgeBoxId.ToString("N")}"
-            // Token = "Hello"
-        };
-        SendMessage(activateEdgeBoxMessage);
+        await SendMessage(updateMessage);
     }
 }

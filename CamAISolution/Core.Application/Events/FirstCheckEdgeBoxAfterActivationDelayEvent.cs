@@ -31,7 +31,7 @@ public class FirstCheckEdgeBoxAfterActivationDelayEvent(TimeSpan delay, Guid edg
             var edgeBox = await UnitOfWork.EdgeBoxes.GetByIdAsync(edgeBoxId) ??
                           throw new NotFoundException(typeof(EdgeBox), edgeBoxId);
             var sentToAdmin =
-                (await UnitOfWork.Accounts.GetAsync(new AccountByEmailSpec("admin").GetExpression(), takeAll: true))
+                (await UnitOfWork.Accounts.GetAsync(new AccountByRoleSpec(Role.Admin).GetExpression(), takeAll: true))
                 .Values
                 .Select(a => a.Id);
 
@@ -48,8 +48,8 @@ public class FirstCheckEdgeBoxAfterActivationDelayEvent(TimeSpan delay, Guid edg
                 return;
             }
 
-            // Edge box is activated but edge box install isn't working
-            if (edgeBoxInstall.EdgeBoxInstallStatus != EdgeBoxInstallStatus.Working)
+            // Edge box is activated but edge box install isn't working or connected
+            if (edgeBoxInstall.EdgeBoxInstallStatus is not EdgeBoxInstallStatus.Working)
             {
                 await NotificationService.CreateNotification(new CreateNotificationDto
                 {

@@ -25,21 +25,24 @@ public class ApplicationDelayEventListener(IServiceProvider serviceProvider) : I
             return Task.CompletedTask;
         }
 
-        //Delay the task
-        return eventObj.UseDelay()
-            // Do something after delay
-            .ContinueWith(async t =>
-            {
-                using var scope = serviceProvider.CreateScope();
-                // Set service instance in event class
-                foreach (var prop in eventObj.GetType().GetProperties())
+        return new TaskFactory().StartNew(() =>
+        {
+            //Delay the task
+            return eventObj.UseDelay()
+                // Do something after delay
+                .ContinueWith(async t =>
                 {
-                    prop.SetValue(eventObj, scope.ServiceProvider.GetRequiredService(prop.PropertyType), null);
-                }
+                    using var scope = serviceProvider.CreateScope();
+                    // Set service instance in event class
+                    foreach (var prop in eventObj.GetType().GetProperties())
+                    {
+                        prop.SetValue(eventObj, scope.ServiceProvider.GetRequiredService(prop.PropertyType), null);
+                    }
 
-                events.TryRemove(eventId, out _);
-                // Trigger function
-                await eventObj.InvokeAsync();
-            });
+                    events.TryRemove(eventId, out _);
+                    // Trigger function
+                    await eventObj.InvokeAsync();
+                });
+        });
     }
 }

@@ -1,12 +1,15 @@
+using Core.Application.Events;
 using Core.Application.Exceptions;
 using Core.Application.Specifications.EdgeBoxInstalls.Repositories;
 using Core.Domain.DTO;
 using Core.Domain.Entities;
 using Core.Domain.Enums;
+using Core.Domain.Events;
 using Core.Domain.Interfaces.Emails;
 using Core.Domain.Interfaces.Mappings;
 using Core.Domain.Interfaces.Services;
 using Core.Domain.Models;
+using Core.Domain.Models.Publishers;
 using Core.Domain.Repositories;
 using Core.Domain.Utilities;
 
@@ -16,7 +19,9 @@ public class EdgeBoxInstallService(
     IUnitOfWork unitOfWork,
     IBaseMapping mapper,
     IAccountService accountService,
-    IEmailService emailService
+    IEmailService emailService,
+    IMessageQueueService messageQueueService,
+    IApplicationDelayEventListener applicationDelayEventListener
 ) : IEdgeBoxInstallService
 {
     private const int CodeLength = 16;
@@ -65,10 +70,12 @@ public class EdgeBoxInstallService(
         var ebInstall =
         (
             await unitOfWork.EdgeBoxInstalls.GetAsync(i =>
-                i.ActivationCode == dto.ActivationCode
-                && i.EdgeBoxInstallStatus != EdgeBoxInstallStatus.Disabled
-                && i.ShopId == dto.ShopId
-                && i.Shop.BrandId == user.BrandId
+                    i.ActivationCode == dto.ActivationCode
+                    && i.EdgeBoxInstallStatus != EdgeBoxInstallStatus.Disabled
+                    && i.ShopId == dto.ShopId
+                    && i.Shop.BrandId == user.BrandId,
+                includeProperties: [nameof(EdgeBoxInstall.EdgeBox)],
+                disableTracking: false
             )
         ).Values.FirstOrDefault() ?? throw new NotFoundException("Wrong activation code");
 
@@ -77,11 +84,26 @@ public class EdgeBoxInstallService(
             if (ebInstall.EdgeBoxInstallStatus != EdgeBoxInstallStatus.Working)
             {
                 ebInstall.ActivationStatus = EdgeBoxActivationStatus.Failed;
+                await unitOfWork.CompleteAsync();
             }
             else
             {
                 ebInstall.ActivationStatus = EdgeBoxActivationStatus.Pending;
-                // TODO: Send message to activate edge box
+                ebInstall.EdgeBox.EdgeBoxStatus = EdgeBoxStatus.Pending;
+                if (await unitOfWork.CompleteAsync() > 0)
+                {
+                    await messageQueueService.Publish(MessageType.ActivateEdgeBox, new ActivatedEdgeBoxMessage
+                    {
+                        Message = "Activate edge box",
+                        RoutingKey = ebInstall.EdgeBoxId.ToString("N")
+                    });
+                    var eventId = Guid.NewGuid();
+                    await applicationDelayEventListener.AddEvent(
+                        eventId,
+                        new FirstCheckEdgeBoxAfterActivationDelayEvent(TimeSpan.FromMinutes(5), ebInstall.EdgeBoxId,
+                            ebInstall.Id),
+                        true);
+                }
             }
         }
 

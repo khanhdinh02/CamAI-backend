@@ -66,12 +66,4 @@ public class EdgeBoxesController(IEdgeBoxService edgeBoxService, IBaseMapping ma
         await edgeBoxService.DeleteEdgeBox(id);
         return Accepted();
     }
-
-    [HttpPatch("{edgeBoxId}/activate/{activationCode}/")]
-    [AccessTokenGuard(Role.BrandManager)]
-    public async Task<IActionResult> ActivateEdgeBox(Guid edgeBoxId, string activationCode)
-    {
-        await edgeBoxService.ActivateEdgeBox(edgeBoxId, activationCode);
-        return Ok();
-    }
 }

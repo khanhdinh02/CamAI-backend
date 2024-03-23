@@ -109,9 +109,8 @@ public class Repository<T>(CamAIContext context, IRepositorySpecificationEvaluat
 
     public virtual T Update(T entity)
     {
-        if (Context.Entry(entity).State == EntityState.Detached)
+        if (context.Entry(entity).State == EntityState.Detached)
         {
-            Context.Attach(entity);
             Context.Entry(entity).State = EntityState.Modified;
         }
         return entity;

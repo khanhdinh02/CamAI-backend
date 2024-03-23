@@ -9,9 +9,5 @@ public enum EdgeBoxStatus
     Inactive = 2,
     Broken = 3,
     Disposed = 4,
-
-    /// <summary>
-    ///     Waiting for edge box service confirm.
-    /// </summary>
-    Activating = 5
+    Pending = 5
 }

@@ -1,15 +1,11 @@
-using Core.Application.Events;
 using Core.Application.Exceptions;
 using Core.Application.Specifications.Repositories;
-using Core.Domain;
 using Core.Domain.DTO;
 using Core.Domain.Entities;
 using Core.Domain.Enums;
-using Core.Domain.Events;
 using Core.Domain.Interfaces.Mappings;
 using Core.Domain.Interfaces.Services;
 using Core.Domain.Models;
-using Core.Domain.Models.Publishers;
 using Core.Domain.Repositories;
 using Core.Domain.Services;
 
@@ -19,11 +15,7 @@ public class EdgeBoxService(
     IUnitOfWork unitOfWork,
     IAccountService accountService,
     IEdgeBoxInstallService edgeBoxInstallService,
-    IBaseMapping mapping,
-    IMessageQueueService messageQueueService,
-    INotificationService notificationService,
-    IAppLogging<EdgeBoxService> logger,
-    IApplicationDelayEventListener applicationDelayEventListener
+    IBaseMapping mapping
 ) : IEdgeBoxService
 {
     public async Task<EdgeBox> GetEdgeBoxById(Guid id)
@@ -94,37 +86,6 @@ public class EdgeBoxService(
             )
             .Values.Where(eb => eb.Installs.MaxBy(i => i.CreatedDate)?.Shop?.BrandId == brandId)
             .ToList();
-    }
-
-    public async Task ActivateEdgeBox(Guid edgeBoxId, string activationCode)
-    {
-        var edgeBoxInstall = await edgeBoxInstallService.GetLatestInstallingByEdgeBox(edgeBoxId);
-        if (edgeBoxInstall == null)
-        {
-            throw new NotFoundException($"EdgeBoxInstall of EdgeBoxId: {edgeBoxId} was not found");
-        }
-
-        if (edgeBoxInstall.ActivationCode != activationCode)
-        {
-            throw new BadRequestException("Activation code is not matched");
-        }
-
-        // TODO[Dat]: validate activation code status
-
-        await messageQueueService.Publish(MessageType.ConfirmedActivated, new ConfirmedEdgeBoxActivation
-        {
-            EdgeBoxId = edgeBoxId,
-            IsActivatedSuccessfully = true
-        });
-        var eventId = Guid.NewGuid();
-        await new TaskFactory().StartNew(() =>
-        {
-            applicationDelayEventListener.AddEvent(
-                eventId,
-                new FirstCheckEdgeBoxAfterActivationDelayEvent(TimeSpan.FromMinutes(5), edgeBoxId, edgeBoxInstall.Id),
-                true);
-        });
-        logger.Info("Complete task");
     }
 
     public async Task<EdgeBox> CreateEdgeBox(CreateEdgeBoxDto edgeBoxDto)

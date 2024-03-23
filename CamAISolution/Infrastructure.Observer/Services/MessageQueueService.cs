@@ -17,12 +17,12 @@ public class MessageQueueService(IPublishEndpoint bus) : IMessageQueueService
     {
         return type switch
         {
-            MessageType.ConfirmedActivated => MapToObject<ConfirmedEdgeBoxActivationMessage>(instanceValue),
+            MessageType.ActivateEdgeBox => MapToMessageObject<ActivatedEdgeBoxMessage>(instanceValue),
             _ => throw new ArgumentException("No type is set")
         };
     }
 
-    private T MapToObject<T>(object instanceValue)
+    private T MapToMessageObject<T>(object instanceValue)
     {
         if (typeof(T).GetCustomAttribute<MessageUrnAttribute>() == null)
         {

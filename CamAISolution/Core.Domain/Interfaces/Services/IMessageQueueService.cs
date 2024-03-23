@@ -7,5 +7,5 @@ public interface IMessageQueueService
 
 public enum MessageType
 {
-    ConfirmedActivated
+    ActivateEdgeBox
 }
