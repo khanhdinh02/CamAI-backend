@@ -1,6 +1,6 @@
 using MassTransit;
 
-namespace Infrastructure.Observer.Messages;
+namespace Host.CamAI.API.Consumers.Contracts;
 
 [MessageUrn(nameof(ConfirmedEdgeBoxActivationMessage))]
 public class ConfirmedEdgeBoxActivationMessage

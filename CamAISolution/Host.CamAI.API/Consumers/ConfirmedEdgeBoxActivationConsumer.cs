@@ -1,50 +1,55 @@
-using Core.Application.Specifications;
 using Core.Domain;
 using Core.Domain.DTO;
 using Core.Domain.Enums;
 using Core.Domain.Interfaces.Services;
 using Core.Domain.Repositories;
+using Core.Domain.Services;
+using Host.CamAI.API.Consumers.Contracts;
 using Infrastructure.MessageQueue;
-using Infrastructure.Observer.Messages;
 using MassTransit;
 using RabbitMQ.Client;
 
-namespace Infrastructure.Observer;
+namespace Host.CamAI.API.Consumers;
 
-[Consumer(ConsumerConstant.ConfirmedActivation, ConsumerConstant.ConfirmedActivation,
-    exchangeType: ExchangeType.Fanout)]
+[Consumer(
+    ConsumerConstant.ConfirmedActivation,
+    ConsumerConstant.ConfirmedActivation,
+    exchangeType: ExchangeType.Fanout
+)]
 public class ConfirmedEdgeBoxActivationConsumer(
     IAppLogging<ConfirmedEdgeBoxActivationConsumer> logger,
     IEdgeBoxInstallService edgeBoxInstallService,
     IUnitOfWork unitOfWork,
-    INotificationService notificationService)
-    : IConsumer<ConfirmedEdgeBoxActivationMessage>
+    INotificationService notificationService,
+    IJwtService jwtService
+) : IConsumer<ConfirmedEdgeBoxActivationMessage>
 {
     public async Task Consume(ConsumeContext<ConfirmedEdgeBoxActivationMessage> context)
     {
         logger.Info($"Confirmed activation message from edge box ID: {context.Message.EdgeBoxId}.");
-
-        // Update edge box & edge box install status
-
         var edgeBoxInstall = (await edgeBoxInstallService.GetLatestInstallingByEdgeBox(context.Message.EdgeBoxId))!;
         edgeBoxInstall.ActivationStatus = EdgeBoxActivationStatus.Activated;
-        edgeBoxInstall.EdgeBoxInstallStatus = EdgeBoxInstallStatus.Working;
-        var edgeBox = (await unitOfWork.EdgeBoxes.GetByIdAsync(context.Message.EdgeBoxId))!;
-        edgeBox.EdgeBoxStatus = EdgeBoxStatus.Active;
+        unitOfWork.EdgeBoxInstalls.Update(edgeBoxInstall);
+        await jwtService.SetCurrentUserToSystemHandler();
         try
         {
-            unitOfWork.EdgeBoxInstalls.Update(edgeBoxInstall);
-            unitOfWork.EdgeBoxes.Update(edgeBox);
             if (await unitOfWork.CompleteAsync() > 0)
             {
-                // Send notification
-                // TODO[Dat]: Discuss what to do if activation is failed
-                var adminAccountIds =
-                    (await unitOfWork.Accounts.GetAsync(new AccountByRoleSpec(Role.Admin).GetExpression(),
-                        takeAll: true))
-                    .Values.Select(a => a.Id);
-                await SendNotification(context.Message.IsActivatedSuccessfully, context.Message.EdgeBoxId,
-                    adminAccountIds);
+                var brandManagerAccountIds = (
+                    await unitOfWork.Accounts.GetAsync(
+                        a =>
+                            a.Role == Role.BrandManager
+                            && a.ManagingShop != null
+                            && a.ManagingShop.Id == edgeBoxInstall.ShopId,
+                        takeAll: true
+                    )
+                ).Values.Select(a => a.Id);
+
+                await SendNotification(
+                    context.Message.IsActivatedSuccessfully,
+                    context.Message.EdgeBoxId,
+                    brandManagerAccountIds
+                );
             }
         }
         catch (Exception ex)
@@ -65,13 +70,16 @@ public class ConfirmedEdgeBoxActivationConsumer(
             notificationType = NotificationType.Urgent;
         }
 
-        notificationService.CreateNotification(new CreateNotificationDto
-        {
-            Content = content,
-            Title = title,
-            NotificationType = notificationType,
-            SentToId = sendToAccountIds
-        }, true);
+        notificationService.CreateNotification(
+            new CreateNotificationDto
+            {
+                Content = content,
+                Title = title,
+                NotificationType = notificationType,
+                SentToId = sendToAccountIds
+            },
+            true
+        );
         return Task.CompletedTask;
     }
 }

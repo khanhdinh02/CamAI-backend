@@ -89,10 +89,9 @@ public class EdgeBoxInstallService(
             else
             {
                 ebInstall.ActivationStatus = EdgeBoxActivationStatus.Pending;
-                ebInstall.EdgeBox.EdgeBoxStatus = EdgeBoxStatus.Pending;
                 if (await unitOfWork.CompleteAsync() > 0)
                 {
-                    await messageQueueService.Publish(MessageType.ActivateEdgeBox, new ActivatedEdgeBoxMessage
+                    await messageQueueService.Publish(new ActivatedEdgeBoxMessage
                     {
                         Message = "Activate edge box",
                         RoutingKey = ebInstall.EdgeBoxId.ToString("N")

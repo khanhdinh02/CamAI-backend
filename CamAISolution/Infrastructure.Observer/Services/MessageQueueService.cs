@@ -1,50 +1,33 @@
 using System.Reflection;
+using Core.Application.Exceptions;
+using Core.Domain;
+using Core.Domain.Interfaces.Mappings;
 using Core.Domain.Interfaces.Services;
+using Core.Domain.Models.Publishers;
+using Infrastructure.MessageQueue;
 using Infrastructure.Observer.Messages;
 using MassTransit;
 
 namespace Infrastructure.Observer.Services;
 
-public class MessageQueueService(IPublishEndpoint bus) : IMessageQueueService
+public class MessageQueueService(IPublishEndpoint bus, IBaseMapping mapping, IAppLogging<MessageQueueService> logging)
+    : IMessageQueueService
 {
-    public Task Publish(MessageType type, object instanceValue)
-    {
-        var messageObject = GetMessageObject(type, instanceValue);
-        return bus.Publish(messageObject);
-    }
+    private static readonly Dictionary<string, Type> messageTypes = Assembly
+        .GetExecutingAssembly()
+        .GetTypes()
+        .Where(t => t.IsClass && t.Namespace == typeof(PublisherMessage).Namespace)
+        .ToDictionary(t => t.Name, t => t);
 
-    private object GetMessageObject(MessageType type, object instanceValue)
-    {
-        return type switch
-        {
-            MessageType.ActivateEdgeBox => MapToMessageObject<ActivatedEdgeBoxMessage>(instanceValue),
-            _ => throw new ArgumentException("No type is set")
-        };
-    }
+    public Task Publish(object messageObject) => bus.Publish(GetPublisherMessageObject(messageObject));
 
-    private T MapToMessageObject<T>(object instanceValue)
+    private object GetPublisherMessageObject(object messageObject)
     {
-        if (typeof(T).GetCustomAttribute<MessageUrnAttribute>() == null)
+        if (messageTypes.TryGetValue(messageObject.GetType().Name, out var publisherType))
         {
-            throw new ArgumentException(
-                $"Class {nameof(T)} is not defined as a message. Please check whether class is annotated with [{nameof(MessageUrnAttribute)}]");
+            return mapping.Map(messageObject, Activator.CreateInstance(publisherType))!;
         }
-
-        var resultObject = Activator.CreateInstance<T>();
-        var fieldAndValueOfInstance = instanceValue
-            .GetType()
-            .GetProperties()
-            .ToDictionary(
-                src => src.Name,
-                src => instanceValue.GetType().GetProperties().Single(x => x.Name == src.Name)
-                    .GetValue(instanceValue, null)
-            );
-
-        foreach (var prop in resultObject!.GetType().GetProperties())
-        {
-            prop.SetValue(resultObject, fieldAndValueOfInstance[prop.Name], null);
-        }
-
-        return resultObject;
+        logging.Error("Mapping is failed");
+        throw new ServiceUnavailableException("Service unavailable");
     }
 }

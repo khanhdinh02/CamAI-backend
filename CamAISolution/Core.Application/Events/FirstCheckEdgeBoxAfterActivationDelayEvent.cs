@@ -22,52 +22,47 @@ public class FirstCheckEdgeBoxAfterActivationDelayEvent(TimeSpan delay, Guid edg
         return Task.Delay(delay);
     }
 
+    /// <summary>
+    /// This method will check edge box install status and only send notification to Admin,
+    /// because if activation is successful, the corresponding consumer will send notification brand manager.
+    /// Thus, don't need to send notification to brand manager here.
+    /// </summary>
     public async Task InvokeAsync()
     {
         try
         {
-            var edgeBoxInstall = await UnitOfWork.EdgeBoxInstalls.GetByIdAsync(edgeBoxInstallId) ??
-                                 throw new NotFoundException(typeof(EdgeBoxInstall), edgeBoxInstallId);
-            var edgeBox = await UnitOfWork.EdgeBoxes.GetByIdAsync(edgeBoxId) ??
-                          throw new NotFoundException(typeof(EdgeBox), edgeBoxId);
-            var sentToAdmin =
-                (await UnitOfWork.Accounts.GetAsync(new AccountByRoleSpec(Role.Admin).GetExpression(), takeAll: true))
-                .Values
-                .Select(a => a.Id);
+            var edgeBoxInstall =
+                await UnitOfWork.EdgeBoxInstalls.GetByIdAsync(edgeBoxInstallId)
+                ?? throw new NotFoundException(typeof(EdgeBoxInstall), edgeBoxInstallId);
+            var sentToAdmin = (
+                await UnitOfWork.Accounts.GetAsync(new AccountByRoleSpec(Role.Admin).GetExpression(), takeAll: true)
+            ).Values.Select(a => a.Id);
 
-            // Edge box still disconnected from the server
-            if (edgeBox.EdgeBoxStatus != EdgeBoxStatus.Active)
-            {
-                await NotificationService.CreateNotification(new CreateNotificationDto
-                {
-                    Content = $"Edge Box {edgeBoxId} is still disconnected from server",
-                    NotificationType = NotificationType.Urgent,
-                    Title = "Edge Box is disconnected from server",
-                    SentToId = sentToAdmin
-                }, true);
-                return;
-            }
-
-            // Edge box is activated but edge box install isn't working or connected
             if (edgeBoxInstall.EdgeBoxInstallStatus is not EdgeBoxInstallStatus.Working)
             {
-                await NotificationService.CreateNotification(new CreateNotificationDto
-                {
-                    Content = $"Edge box is activated but edge box install-{edgeBoxInstallId} is not working",
-                    Title = "Edge box install is not working",
-                    NotificationType = NotificationType.Urgent,
-                    SentToId = sentToAdmin
-                }, true);
+                await NotificationService.CreateNotification(
+                    new CreateNotificationDto
+                    {
+                        Content = $"Edge box is activated but edge box install-{edgeBoxInstallId} is not working",
+                        Title = "Edge box install is not working",
+                        NotificationType = NotificationType.Urgent,
+                        SentToId = sentToAdmin
+                    },
+                    true
+                );
                 return;
             }
 
-            await NotificationService.CreateNotification(new CreateNotificationDto
-            {
-                Content = $"Edge box-{edgeBoxId} is successfully activated",
-                Title = "Edge box is activated",
-                NotificationType = NotificationType.Normal,
-                SentToId = sentToAdmin
-            }, true);
+            await NotificationService.CreateNotification(
+                new CreateNotificationDto
+                {
+                    Content = $"Edge box-{edgeBoxId} is successfully activated",
+                    Title = "Edge box is activated",
+                    NotificationType = NotificationType.Normal,
+                    SentToId = sentToAdmin
+                },
+                true
+            );
         }
         catch (Exception ex)
         {

@@ -24,7 +24,15 @@ public class NotificationService(
     public async Task<Core.Domain.Entities.Notification> CreateNotification(CreateNotificationDto dto, bool willSend)
     {
         var notification = mapping.Map<CreateNotificationDto, Core.Domain.Entities.Notification>(dto);
-        notification.SentById = jwtService.GetCurrentUser().Id;
+        try
+        {
+            notification.SentById = jwtService.GetCurrentUser().Id;
+        }
+        catch (UnauthorizedException)
+        {
+            await jwtService.SetCurrentUserToSystemHandler();
+            notification.SentById = jwtService.GetCurrentUser().Id;
+        }
         try
         {
             await unitOfWork.BeginTransaction();

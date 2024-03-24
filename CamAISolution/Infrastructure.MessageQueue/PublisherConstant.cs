@@ -2,6 +2,6 @@
 
 public static class PublisherConstant
 {
-    public const string UpdateData = "UpdateData";
-    public const string ActivateEdgeBox = "ActivateEdgeBox";
+    public const string UpdateData = nameof(UpdateData);
+    public const string ActivateEdgeBox = nameof(ActivateEdgeBox);
 }
