@@ -76,6 +76,10 @@ public class ReportService(
     )
     {
         IEnumerable<HumanCountDto> result = [];
+
+        // Calculate EndDate and GroupByTime base on time range.
+        // GroupByTime is a Func to pass to GroupBy method.
+        // Each group is a column in the chart.
         var (endDate, groupByTime) = timeRange switch
         {
             ReportTimeRange.Day
@@ -85,7 +89,7 @@ public class ReportService(
                         m =>
                             new DateTime(
                                 DateOnly.FromDateTime(m.Time),
-                                new TimeOnly(m.Time.Hour, m.Time.Minute / 30 * 30),
+                                new TimeOnly(m.Time.Hour, m.Time.Minute / 30 * 30), // 30 min gap
                                 DateTimeKind.Utc
                             )
                     )
@@ -96,14 +100,19 @@ public class ReportService(
                     m =>
                         new DateTime(
                             DateOnly.FromDateTime(m.Time),
-                            new TimeOnly(m.Time.Hour / 12 * 12),
+                            new TimeOnly(m.Time.Hour / 12 * 12), // 1/2 day gap
                             DateTimeKind.Utc
                         )
                 ),
             ReportTimeRange.Month
                 => (
                     startDate.AddMonths(1),
-                    m => new DateTime(DateOnly.FromDateTime(m.Time), TimeOnly.MinValue, DateTimeKind.Utc)
+                    m =>
+                        new DateTime(
+                            DateOnly.FromDateTime(m.Time), // 1 day gap
+                            TimeOnly.MinValue,
+                            DateTimeKind.Utc
+                        )
                 ),
             _ => throw new ArgumentOutOfRangeException(nameof(timeRange), timeRange, null)
         };
@@ -122,6 +131,7 @@ public class ReportService(
                     .GroupBy(groupByTime)
                     .Select(group =>
                     {
+                        // Generate a column of the chart
                         var count = group.Count();
                         var orderedGroup = group.OrderBy(r => r.Total);
                         var median = int.IsEvenInteger(count)
