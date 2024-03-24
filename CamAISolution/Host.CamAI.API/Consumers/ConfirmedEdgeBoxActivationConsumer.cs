@@ -28,6 +28,8 @@ public class ConfirmedEdgeBoxActivationConsumer(
     {
         logger.Info($"Confirmed activation message from edge box ID: {context.Message.EdgeBoxId}.");
         var edgeBoxInstall = (await edgeBoxInstallService.GetLatestInstallingByEdgeBox(context.Message.EdgeBoxId))!;
+        if (edgeBoxInstall.ActivationStatus == EdgeBoxActivationStatus.Activated)
+            return;
         edgeBoxInstall.ActivationStatus = EdgeBoxActivationStatus.Activated;
         unitOfWork.EdgeBoxInstalls.Update(edgeBoxInstall);
         await jwtService.SetCurrentUserToSystemHandler();

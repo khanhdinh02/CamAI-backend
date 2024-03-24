@@ -38,39 +38,49 @@ public class EdgeBoxHealthCheckService(
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        while (!stoppingToken.IsCancellationRequested)
+        try
         {
-            // init service
-            var scope = provider.CreateScope();
-
-            var jwtService = scope.ServiceProvider.GetRequiredService<IJwtService>();
-            await jwtService.SetCurrentUserToSystemHandler();
-
-            uow = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
-            edgeBoxInstallService = scope.ServiceProvider.GetRequiredService<IEdgeBoxInstallService>();
-            notificationService = scope.ServiceProvider.GetRequiredService<INotificationService>();
-
-            // fetch 100 edge box install each
-            const int pageSize = 100;
-            var edgeBoxInstallsPagination = new PaginationResult<EdgeBoxInstall> { Values = [new EdgeBoxInstall()] };
-            var pageIndex = 0;
-            while (!edgeBoxInstallsPagination.IsValuesEmpty)
+            while (!stoppingToken.IsCancellationRequested)
             {
-                edgeBoxInstallsPagination = await uow.GetRepository<EdgeBoxInstall>()
-                    .GetAsync(
-                        x =>
-                            x.EdgeBoxInstallStatus == EdgeBoxInstallStatus.Working
-                            || x.EdgeBoxInstallStatus == EdgeBoxInstallStatus.Unhealthy,
-                        includeProperties: [nameof(EdgeBoxInstall.Shop)],
-                        pageIndex: pageIndex,
-                        pageSize: pageSize
-                    );
+                // init service
+                var scope = provider.CreateScope();
 
-                // await CheckEdgeBoxInstallHealth(edgeBoxInstallsPagination.Values, stoppingToken);
-                pageIndex++;
+                var jwtService = scope.ServiceProvider.GetRequiredService<IJwtService>();
+                await jwtService.SetCurrentUserToSystemHandler();
+
+                uow = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+                edgeBoxInstallService = scope.ServiceProvider.GetRequiredService<IEdgeBoxInstallService>();
+                notificationService = scope.ServiceProvider.GetRequiredService<INotificationService>();
+
+                // fetch 100 edge box install each
+                const int pageSize = 100;
+                var edgeBoxInstallsPagination = new PaginationResult<EdgeBoxInstall>
+                {
+                    Values = [new EdgeBoxInstall()]
+                };
+                var pageIndex = 0;
+                while (!edgeBoxInstallsPagination.IsValuesEmpty)
+                {
+                    edgeBoxInstallsPagination = await uow.GetRepository<EdgeBoxInstall>()
+                        .GetAsync(
+                            x =>
+                                x.EdgeBoxInstallStatus == EdgeBoxInstallStatus.Working
+                                || x.EdgeBoxInstallStatus == EdgeBoxInstallStatus.Unhealthy,
+                            includeProperties: [nameof(EdgeBoxInstall.Shop)],
+                            pageIndex: pageIndex,
+                            pageSize: pageSize
+                        );
+
+                    await CheckEdgeBoxInstallHealth(edgeBoxInstallsPagination.Values, stoppingToken);
+                    pageIndex++;
+                }
+
+                await Task.Delay(TimeSpan.FromSeconds(healthCheckConfiguration.EdgeBoxHealthCheckDelay), stoppingToken);
             }
-
-            await Task.Delay(TimeSpan.FromSeconds(healthCheckConfiguration.EdgeBoxHealthCheckDelay), stoppingToken);
+        }
+        catch (Exception ex)
+        {
+            logger.Error(ex.Message, ex);
         }
     }
 
@@ -84,21 +94,14 @@ public class EdgeBoxHealthCheckService(
             {
                 for (var numOfRetry = 0; numOfRetry < healthCheckConfiguration.MaxNumberOfRetry; numOfRetry++)
                 {
-                    try
+                    // call edge box endpoint
+                    var response = await SendRequest(GetEdgeBoxLink(edgeBoxInstall));
+                    if (response.IsSuccessStatusCode)
                     {
-                        // call edge box endpoint
-                        var response = await SendRequest(GetEdgeBoxLink(edgeBoxInstall));
-                        if (response.IsSuccessStatusCode)
-                        {
-                            await LockUpdateStatus(edgeBoxInstall, EdgeBoxInstallStatus.Working);
-                            return;
-                        }
+                        // TODO: reactivate edge box
+                        await LockUpdateStatus(edgeBoxInstall, EdgeBoxInstallStatus.Working);
+                        return;
                     }
-                    catch (Exception ex)
-                    {
-                        logger.Error(ex.Message, ex);
-                    }
-
                     await Task.Delay(TimeSpan.FromSeconds(healthCheckConfiguration.RetryDelay), cancel);
                 }
 

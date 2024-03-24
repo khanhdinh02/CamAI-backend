@@ -25,7 +25,8 @@ public class MessageQueueService(IPublishEndpoint bus, IBaseMapping mapping, IAp
     {
         if (messageTypes.TryGetValue(messageObject.GetType().Name, out var publisherType))
         {
-            return mapping.Map(messageObject, Activator.CreateInstance(publisherType))!;
+            var result = mapping.Map(messageObject, Activator.CreateInstance(publisherType))!;
+            return result;
         }
         logging.Error("Mapping is failed");
         throw new ServiceUnavailableException("Service unavailable");
