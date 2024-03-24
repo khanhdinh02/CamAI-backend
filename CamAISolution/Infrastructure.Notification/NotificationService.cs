@@ -21,7 +21,10 @@ public class NotificationService(
     FirebaseService firebaseService
 ) : INotificationService
 {
-    public async Task<Core.Domain.Entities.Notification> CreateNotification(CreateNotificationDto dto, bool willSend)
+    public async Task<Core.Domain.Entities.Notification> CreateNotification(
+        CreateNotificationDto dto,
+        bool willSend = true
+    )
     {
         var notification = mapping.Map<CreateNotificationDto, Core.Domain.Entities.Notification>(dto);
         try
