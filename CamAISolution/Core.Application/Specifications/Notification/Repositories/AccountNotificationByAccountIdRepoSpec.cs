@@ -8,6 +8,6 @@ public class AccountNotificationByAccountIdRepoSpec : RepositorySpec<AccountNoti
         : base(an => an.AccountId == id)
     {
         AddIncludes(a => a.Account);
-        AddIncludes(a => a.Notification.SentBy);
+        AddIncludes(a => a.Notification);
     }
 }

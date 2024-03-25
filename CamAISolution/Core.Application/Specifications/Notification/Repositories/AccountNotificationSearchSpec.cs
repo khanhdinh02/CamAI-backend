@@ -22,7 +22,7 @@ public class AccountNotificationSearchSpec : RepositorySpec<AccountNotification>
         : base(GetExpression(req))
     {
         AddIncludes(a => a.Account);
-        AddIncludes(a => a.Notification.SentBy);
+        AddIncludes(a => a.Notification);
         ApplyOrderByDescending(a => a.Notification.CreatedDate);
         ApplyingPaging(req);
     }
