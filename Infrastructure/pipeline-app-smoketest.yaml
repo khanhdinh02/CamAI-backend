@@ -10,7 +10,7 @@ stages:
       - job: job_run_test
         displayName: CamAI smoke test backend
         pool:
-          name: 'Camai-Agent'
+          name: 'Azure Pipelines'
         steps:
           - task: UseDotNet@2
             displayName: Use .NET 8 SDK
