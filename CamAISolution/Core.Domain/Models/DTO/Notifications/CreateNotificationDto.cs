@@ -10,6 +10,8 @@ public class CreateNotificationDto
 
     [Required]
     public string Content { get; set; } = null!;
-    public NotificationType NotificationType { get; set; }
+    public NotificationPriority Priority { get; set; }
+    public NotificationType Type { get; set; }
+    public Guid? RelatedEntityId { get; set; }
     public IEnumerable<Guid> SentToId { get; set; } = new HashSet<Guid>();
 }

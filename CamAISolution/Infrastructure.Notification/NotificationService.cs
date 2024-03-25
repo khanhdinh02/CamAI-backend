@@ -21,25 +21,20 @@ public class NotificationService(
     FirebaseService firebaseService
 ) : INotificationService
 {
-    public async Task<Core.Domain.Entities.Notification> CreateNotification(CreateNotificationDto dto, bool willSend)
+    public async Task<Core.Domain.Entities.Notification> CreateNotification(
+        CreateNotificationDto dto,
+        bool willSend = true
+    )
     {
         var notification = mapping.Map<CreateNotificationDto, Core.Domain.Entities.Notification>(dto);
-        try
-        {
-            notification.SentById = jwtService.GetCurrentUser().Id;
-        }
-        catch (UnauthorizedException)
-        {
-            await jwtService.SetCurrentUserToSystemHandler();
-            notification.SentById = jwtService.GetCurrentUser().Id;
-        }
         try
         {
             await unitOfWork.BeginTransaction();
             notification = await unitOfWork.GetRepository<Core.Domain.Entities.Notification>().AddAsync(notification);
             await unitOfWork.CompleteAsync();
+
             var sentToAccounts = (
-                await unitOfWork.Accounts.GetAsync(a => dto.SentToId.Contains(a.Id), disableTracking: false)
+                await unitOfWork.Accounts.GetAsync(expression: a => dto.SentToId.Contains(a.Id), disableTracking: false)
             ).Values;
             foreach (var acc in sentToAccounts)
             {
@@ -54,19 +49,15 @@ public class NotificationService(
                         }
                     );
             }
-
             await unitOfWork.CompleteAsync();
+
             await unitOfWork.CommitTransaction();
+
             if (willSend)
-            {
                 foreach (var acc in sentToAccounts.Where(a => !string.IsNullOrEmpty(a.FCMToken)))
-                {
                     await firebaseService.Messaging.SendAsync(
                         CreateMessage(notification.Title, notification.Content, token: acc.FCMToken)
                     );
-                }
-            }
-
             return notification;
         }
         catch (Exception ex)
@@ -74,8 +65,27 @@ public class NotificationService(
             logger.Error(ex.Message, ex);
             await unitOfWork.RollBack();
         }
-
         throw new ServiceUnavailableException("Cannot do action");
+    }
+
+    private static Message CreateMessage(
+        string title,
+        string body,
+        Dictionary<string, string>? data = null,
+        string? token = null,
+        string? topic = null
+    )
+    {
+        var message = new Message
+        {
+            Notification = new FirebaseAdmin.Messaging.Notification { Body = body, Title = title, },
+            Data = data,
+        };
+        if (!string.IsNullOrEmpty(topic))
+            message.Topic = topic;
+        if (!string.IsNullOrEmpty(token))
+            message.Token = token;
+        return message;
     }
 
     public async Task<PaginationResult<AccountNotification>> SearchNotification(SearchNotificationRequest req)
@@ -90,42 +100,13 @@ public class NotificationService(
             .GetRepository<AccountNotification>()
             .GetByIdAsync(jwtService.GetCurrentUser().Id, notificationId);
         if (accountNotification == null)
-        {
             throw new NotFoundException(
                 typeof(Core.Domain.Entities.Notification),
                 new { jwtService.GetCurrentUser().Id, notificationId }
             );
-        }
-
         accountNotification.Status = status;
         accountNotification = unitOfWork.GetRepository<AccountNotification>().Update(accountNotification);
         await unitOfWork.CompleteAsync();
         return accountNotification;
-    }
-
-    private Message CreateMessage(
-        string title,
-        string body,
-        Dictionary<string, string>? data = null,
-        string? token = null,
-        string? topic = null
-    )
-    {
-        var message = new Message
-        {
-            Notification = new FirebaseAdmin.Messaging.Notification { Body = body, Title = title },
-            Data = data
-        };
-        if (!string.IsNullOrEmpty(topic))
-        {
-            message.Topic = topic;
-        }
-
-        if (!string.IsNullOrEmpty(token))
-        {
-            message.Token = token;
-        }
-
-        return message;
     }
 }

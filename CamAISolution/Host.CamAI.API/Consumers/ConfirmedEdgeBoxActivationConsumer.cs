@@ -64,12 +64,13 @@ public class ConfirmedEdgeBoxActivationConsumer(
     {
         var content = $"Edge box {edgeBoxId} is activated";
         var title = "Edge box is activated";
-        var notificationType = NotificationType.Normal;
+        var notificationType = NotificationType.EdgeBoxInstallActivation;
+        var priority = NotificationPriority.Normal;
         if (!isActivatedSuccessfully)
         {
             content = $"Edge box {edgeBoxId} cannot be activated";
             title = "Edge box cannot be activated";
-            notificationType = NotificationType.Urgent;
+            priority = NotificationPriority.Urgent;
         }
 
         notificationService.CreateNotification(
@@ -77,7 +78,8 @@ public class ConfirmedEdgeBoxActivationConsumer(
             {
                 Content = content,
                 Title = title,
-                NotificationType = notificationType,
+                Type = notificationType,
+                Priority = priority,
                 SentToId = sendToAccountIds
             },
             true

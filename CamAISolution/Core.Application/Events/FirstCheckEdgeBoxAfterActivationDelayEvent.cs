@@ -45,8 +45,10 @@ public class FirstCheckEdgeBoxAfterActivationDelayEvent(TimeSpan delay, Guid edg
                     {
                         Content = $"Edge box is activated but edge box install-{edgeBoxInstallId} is not working",
                         Title = "Edge box install is not working",
-                        NotificationType = NotificationType.Urgent,
-                        SentToId = sentToAdmin
+                        SentToId = sentToAdmin,
+                        RelatedEntityId = edgeBoxInstallId,
+                        Priority = NotificationPriority.Urgent,
+                        Type = NotificationType.EdgeBoxInstallActivation
                     },
                     true
                 );
@@ -58,7 +60,9 @@ public class FirstCheckEdgeBoxAfterActivationDelayEvent(TimeSpan delay, Guid edg
                 {
                     Content = $"Edge box-{edgeBoxId} is successfully activated",
                     Title = "Edge box is activated",
-                    NotificationType = NotificationType.Normal,
+                    RelatedEntityId = edgeBoxInstallId,
+                    Priority = NotificationPriority.Normal,
+                    Type = NotificationType.EdgeBoxInstallActivation,
                     SentToId = sentToAdmin
                 },
                 true

@@ -21,6 +21,7 @@ public class LookupController : ControllerBase
     [LookupHttpGet("genders", typeof(Gender))]
     [LookupHttpGet("incident-types", typeof(IncidentType))]
     [LookupHttpGet("notification-statuses", typeof(NotificationStatus))]
+    [LookupHttpGet("notification-priorities", typeof(NotificationPriority))]
     [LookupHttpGet("notification-types", typeof(NotificationType))]
     [LookupHttpGet("request-statuses", typeof(RequestStatus))]
     [LookupHttpGet("request-types", typeof(RequestType))]

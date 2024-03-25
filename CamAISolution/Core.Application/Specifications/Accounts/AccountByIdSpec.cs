@@ -16,6 +16,6 @@ public class AccountByIdSpec : Specification<Account>
 
     public override Expression<Func<Account, bool>> GetExpression()
     {
-        return a => a.Id == id;
+        return a => a.Id == id && a.Role != Role.SystemHandler;
     }
 }

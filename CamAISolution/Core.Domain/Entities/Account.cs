@@ -35,11 +35,6 @@ public class Account : BusinessEntity
     public string? FCMToken { get; set; }
 
     public virtual Ward? Ward { get; set; }
-
-    /// <summary>
-    /// Notifications that sent by this account
-    /// </summary>
-    [InverseProperty(nameof(Notification.SentBy))]
     public virtual ICollection<Notification> SentNotifications { get; set; }
 
     /// <summary>

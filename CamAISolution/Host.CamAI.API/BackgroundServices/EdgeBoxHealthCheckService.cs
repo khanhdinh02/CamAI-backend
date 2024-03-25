@@ -139,7 +139,9 @@ public class EdgeBoxHealthCheckService(
         {
             Title = "Edge box failed",
             Content = $"Edge box install status has been changed to {EdgeBoxInstallStatus.Unhealthy}",
-            NotificationType = NotificationType.Urgent,
+            Priority = NotificationPriority.Urgent,
+            Type = NotificationType.EdgeBoxUnhealthy,
+            RelatedEntityId = edgeBoxInstall.Id,
             SentToId = sentTo
         };
         return dto;

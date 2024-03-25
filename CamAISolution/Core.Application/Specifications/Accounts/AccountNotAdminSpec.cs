@@ -13,6 +13,6 @@ public class AccountNotAdminSpec : Specification<Account>
 
     public override Expression<Func<Account, bool>> GetExpression()
     {
-        return a => a.Role != Role.Admin;
+        return a => a.Role != Role.Admin && a.Role != Role.SystemHandler;
     }
 }
