@@ -1,6 +1,7 @@
 using Core.Domain.DTO;
 using Core.Domain.Entities;
 using Core.Domain.Enums;
+using Core.Domain.Models;
 
 namespace Core.Domain.Interfaces.Services;
 
@@ -19,7 +20,8 @@ public interface IEdgeBoxInstallService
     /// </summary>
     Task<EdgeBoxInstall> UpdateStatus(EdgeBoxInstall edgeBoxInstall, EdgeBoxInstallStatus status);
 
-    Task<EdgeBoxInstall?> GetInstallingByEdgeBox(Guid edgeBoxId);
+    Task<EdgeBoxInstall?> GetLatestInstallingByEdgeBox(Guid edgeBoxId);
+    Task<PaginationResult<EdgeBoxInstall>> GetEdgeBoxInstall(SearchEdgeBoxInstallRequest searchRequest);
 
     /// <summary>
     /// Get all installs, that has been activated and not disabled by admin, of a shop.

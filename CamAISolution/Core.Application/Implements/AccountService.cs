@@ -23,10 +23,10 @@ public class AccountService(IUnitOfWork unitOfWork, IJwtService jwtService, IBas
         return accounts;
     }
 
-    public async Task<Account> GetAccountById(Guid id)
+    public async Task<Account> GetAccountById(Guid id, bool includeAdmin = false)
     {
         var foundAccounts = await unitOfWork.Accounts.GetAsync(new AccountByIdRepoSpec(id));
-        if (foundAccounts.Values.Count == 0)
+        if (foundAccounts.Values.Count == 0 || (!includeAdmin && foundAccounts.Values[0].Role == Role.Admin))
             throw new NotFoundException(typeof(Account), id);
         return foundAccounts.Values[0];
     }

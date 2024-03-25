@@ -15,15 +15,15 @@ public class SyncObserver(EventManager eventManager, IServiceProvider provider)
         eventManager.ShopChangedEvent += shop => SyncShop(shop);
     }
 
-    private void SendMessage<T>(T message)
+    private async Task SendMessage<T>(T message)
         where T : class
     {
         using var scope = provider.CreateScope();
         var bus = scope.ServiceProvider.GetRequiredService<IPublishEndpoint>();
-        bus.Publish(message).Wait();
+        await bus.Publish(message);
     }
 
-    public void SyncBrand(Brand brand, string? routingKey = null)
+    public async Task SyncBrand(Brand brand, string? routingKey = null)
     {
         routingKey ??= $"{brand.Id:N}.*";
         var updateMessage = new BrandUpdateMessage
@@ -34,10 +34,10 @@ public class SyncObserver(EventManager eventManager, IServiceProvider provider)
             Phone = brand.Phone,
             RoutingKey = routingKey
         };
-        SendMessage(updateMessage);
+        await SendMessage(updateMessage);
     }
 
-    public void SyncShop(Shop shop, string? routingKey = null)
+    public async Task SyncShop(Shop shop, string? routingKey = null)
     {
         routingKey ??= $"{shop.BrandId:N}.{shop.Id:N}";
         var updateMessage = new ShopUpdateMessage
@@ -50,6 +50,6 @@ public class SyncObserver(EventManager eventManager, IServiceProvider provider)
             CloseTime = shop.CloseTime,
             RoutingKey = routingKey
         };
-        SendMessage(updateMessage);
+        await SendMessage(updateMessage);
     }
 }
