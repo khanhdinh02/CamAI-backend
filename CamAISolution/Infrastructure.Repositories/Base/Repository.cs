@@ -28,9 +28,7 @@ public class Repository<T>(CamAIContext context, IRepositorySpecificationEvaluat
     public virtual T Delete(T entity)
     {
         if (Context.Entry(entity).State == EntityState.Detached)
-        {
             Context.Attach(entity);
-        }
 
         Context.Entry(entity).State = EntityState.Deleted;
         return entity;
@@ -49,21 +47,15 @@ public class Repository<T>(CamAIContext context, IRepositorySpecificationEvaluat
         IQueryable<T> query = Context.Set<T>();
         var paginationResult = new PaginationResult<T> { TotalCount = await CountAsync(expression) };
         if (expression != null)
-        {
             query = query.Where(expression);
-        }
 
         if (disableTracking)
-        {
             query = query.AsNoTracking();
-        }
 
         if (includeProperties is { Length: > 0 })
         {
             foreach (var includeItem in includeProperties)
-            {
                 query = query.Include(includeItem);
-            }
 
             query = query.AsSplitQuery();
         }
@@ -71,13 +63,9 @@ public class Repository<T>(CamAIContext context, IRepositorySpecificationEvaluat
         if (takeAll)
         {
             if (orderBy != null)
-            {
                 paginationResult.Values = await orderBy(query).ToListAsync();
-            }
             else
-            {
                 paginationResult.Values = await SetDefaultOrderBy(query).ToListAsync();
-            }
         }
         else
         {
@@ -88,9 +76,7 @@ public class Repository<T>(CamAIContext context, IRepositorySpecificationEvaluat
                 paginationResult.Values = await query.Skip(pageSize * pageIndex).Take(pageSize).ToListAsync();
             }
             else
-            {
                 paginationResult.Values = await orderBy(query).Skip(pageIndex * pageSize).Take(pageSize).ToListAsync();
-            }
         }
 
         paginationResult.PageIndex = pageIndex;
@@ -101,9 +87,7 @@ public class Repository<T>(CamAIContext context, IRepositorySpecificationEvaluat
     public async Task<PaginationResult<T>> GetAsync(IRepositorySpecification<T>? specification = null)
     {
         if (specification == null)
-        {
             return new PaginationResult<T>();
-        }
 
         var query = specificationEvaluator.GetQuery(context.Set<T>(), specification);
         var count = await CountAsync(specification.Criteria);
