@@ -1,5 +1,8 @@
 trigger: none
 
+pool:
+  name: 'Default'
+
 appendCommitMessageToRunName: false
 name: CamAI-backend-SmokeTest
 stages:
