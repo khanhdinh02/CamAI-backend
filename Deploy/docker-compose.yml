@@ -13,6 +13,11 @@ services:
       - "1434:1433"
     volumes:
       - data:/var/opt/mssql/data
+    healthcheck:
+      test: /opt/mssql-tools/bin/sqlcmd -U sa -P ${MS_SQL_PASS} -Q SELECT 1
+      interval: 30s
+      timeout: 10s
+      retries: 5
   web-api:
     user: root
     image: milease/camai-backend:camai-web-api
@@ -37,7 +42,7 @@ services:
       - ImageConfiguration__HostingUri=${HOST_URI}
     depends_on:
       mssqldb:
-        condition: service_started
+        condition: service_healthy
       camai-rabbitmq:
         condition: service_healthy
     volumes:
