@@ -39,7 +39,7 @@ steps:
 - task: CopyFilesOverSSH@0
   displayName: 'Copy files'
   inputs:
-    sshEndpoint: 'ssh-server'
+    sshEndpoint: 'khanh-vps'
     contents: |
       .env
       ./Deploy/docker-compose.yml
@@ -49,7 +49,7 @@ steps:
 - task: SSH@0
   displayName: 'Pull and run image'
   inputs:
-    sshEndpoint: 'ssh-server'
+    sshEndpoint: 'khanh-vps'
     runOptions: 'inline'
     inline: |
       cd backend
