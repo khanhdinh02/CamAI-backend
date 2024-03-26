@@ -2,7 +2,7 @@ trigger:
 - main
 
 pool:
-  name: 'Camai-Agent'
+  name: 'Default'
 
 variables:
 - group: docker
