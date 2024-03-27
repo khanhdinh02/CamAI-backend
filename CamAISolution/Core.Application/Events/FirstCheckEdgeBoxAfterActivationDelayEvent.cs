@@ -38,7 +38,7 @@ public class FirstCheckEdgeBoxAfterActivationDelayEvent(TimeSpan delay, Guid edg
                 await UnitOfWork.Accounts.GetAsync(new AccountByRoleSpec(Role.Admin).GetExpression(), takeAll: true)
             ).Values.Select(a => a.Id);
 
-            if (edgeBoxInstall.EdgeBoxInstallStatus is not EdgeBoxInstallStatus.Working)
+            if (edgeBoxInstall.ActivationStatus is not EdgeBoxActivationStatus.Activated)
             {
                 await NotificationService.CreateNotification(
                     new CreateNotificationDto

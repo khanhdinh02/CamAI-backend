@@ -32,7 +32,6 @@ public class ConfirmedEdgeBoxActivationConsumer(
             return;
         edgeBoxInstall.ActivationStatus = EdgeBoxActivationStatus.Activated;
         unitOfWork.EdgeBoxInstalls.Update(edgeBoxInstall);
-        await jwtService.SetCurrentUserToSystemHandler();
         try
         {
             if (await unitOfWork.CompleteAsync() > 0)
