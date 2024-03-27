@@ -9,7 +9,8 @@ public class ReceivedIncidentMessage
     public Guid EdgeBoxId { get; set; }
     public Guid Id { get; set; }
     public IncidentType IncidentType { get; set; }
-    public DateTime Time { get; set; }
+    public DateTime StartTime { get; set; }
+    public DateTime? EndTime { get; set; }
     public virtual ICollection<ReceivedEvidence> Evidences { get; set; } = new HashSet<ReceivedEvidence>();
 }
 
