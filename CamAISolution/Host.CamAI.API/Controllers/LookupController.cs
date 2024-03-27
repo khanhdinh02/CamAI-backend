@@ -33,7 +33,7 @@ public class LookupController : ControllerBase
         var lookupType = typeof(LookupController)
             .GetMethod(nameof(GetLookup))!
             .GetCustomAttributes<LookupHttpGetAttribute>(false)
-            .FirstOrDefault(x => path.ToString().Contains(x.Template!))
+            .FirstOrDefault(x => path.ToString().Contains(x.Template!, StringComparison.OrdinalIgnoreCase))
             ?.Type;
 
         if (lookupType != null)
