@@ -1,17 +1,26 @@
 using Core.Application.Exceptions;
+using Core.Application.Specifications.EdgeBoxInstalls.Repositories;
 using Core.Domain.DTO;
 using Core.Domain.Entities;
 using Core.Domain.Enums;
+using Core.Domain.Interfaces.Emails;
 using Core.Domain.Interfaces.Mappings;
 using Core.Domain.Interfaces.Services;
 using Core.Domain.Models;
 using Core.Domain.Repositories;
+using Core.Domain.Utilities;
 
 namespace Core.Application.Implements;
 
-public class EdgeBoxInstallService(IUnitOfWork unitOfWork, IBaseMapping mapper, IAccountService accountService)
-    : IEdgeBoxInstallService
+public class EdgeBoxInstallService(
+    IUnitOfWork unitOfWork,
+    IBaseMapping mapper,
+    IAccountService accountService,
+    IEmailService emailService
+) : IEdgeBoxInstallService
 {
+    private const int CodeLength = 16;
+
     public async Task<EdgeBoxInstall> LeaseEdgeBox(CreateEdgeBoxInstallDto dto)
     {
         var edgeBox =
@@ -20,10 +29,16 @@ public class EdgeBoxInstallService(IUnitOfWork unitOfWork, IBaseMapping mapper, 
         if (edgeBox.EdgeBoxStatus != EdgeBoxStatus.Active || edgeBox.EdgeBoxLocation != EdgeBoxLocation.Idle)
             throw new BadRequestException("Edge box is not active or idle");
 
-        if (dto.ValidFrom >= dto.ValidUntil)
-            throw new BadRequestException("ValidFrom must be smaller than ValidUntil");
+        var shop =
+            (
+                await unitOfWork.Shops.GetAsync(
+                    s => s.Id == dto.ShopId,
+                    includeProperties: [$"{nameof(Shop.Brand)}.{nameof(Brand.BrandManager)}"]
+                )
+            ).Values.FirstOrDefault() ?? throw new NotFoundException(typeof(Shop), dto.ShopId);
 
         var ebInstall = mapper.Map<CreateEdgeBoxInstallDto, EdgeBoxInstall>(dto);
+        ebInstall.ActivationCode = RandomGenerator.GetAlphanumericString(CodeLength);
         ebInstall.EdgeBoxInstallStatus = EdgeBoxInstallStatus.New;
         await unitOfWork.EdgeBoxInstalls.AddAsync(ebInstall);
 
@@ -31,6 +46,14 @@ public class EdgeBoxInstallService(IUnitOfWork unitOfWork, IBaseMapping mapper, 
         unitOfWork.EdgeBoxes.Update(edgeBox);
 
         await unitOfWork.CompleteAsync();
+
+        // Send Activation code to brand manager via email
+        _ = emailService.SendEmailAsync(
+            shop.Brand.BrandManager!.Email, // Because at lease 1 shop exists, Brand Manager should exist
+            "Your Edge Box activation code",
+            EmailGenerator.GenerateActivationCodeEmail(shop.Brand.BrandManager.Name, ebInstall.ActivationCode)
+        );
+
         return ebInstall;
     }
 
@@ -47,11 +70,15 @@ public class EdgeBoxInstallService(IUnitOfWork unitOfWork, IBaseMapping mapper, 
                 )
             ).Values.FirstOrDefault() ?? throw new NotFoundException("Wrong activation code");
 
-        if (ebInstall.EdgeBoxInstallStatus == EdgeBoxInstallStatus.Connected)
+        if (ebInstall.ActivationStatus == EdgeBoxActivationStatus.NotActivated)
         {
-            await UpdateStatus(ebInstall, EdgeBoxInstallStatus.Working);
-
-            // TODO: Send message to activate edge box
+            if (ebInstall.EdgeBoxInstallStatus != EdgeBoxInstallStatus.Working)
+                ebInstall.ActivationStatus = EdgeBoxActivationStatus.Failed;
+            else
+            {
+                ebInstall.ActivationStatus = EdgeBoxActivationStatus.Pending;
+                // TODO: Send message to activate edge box
+            }
         }
         return ebInstall;
     }
@@ -111,12 +138,12 @@ public class EdgeBoxInstallService(IUnitOfWork unitOfWork, IBaseMapping mapper, 
         return edgeBoxInstall;
     }
 
-    public async Task<EdgeBoxInstall?> GetInstallingByEdgeBox(Guid edgeBoxId)
+    public async Task<EdgeBoxInstall?> GetLatestInstallingByEdgeBox(Guid edgeBoxId)
     {
         return (
             await unitOfWork.EdgeBoxInstalls.GetAsync(
                 i => i.EdgeBoxId == edgeBoxId && i.EdgeBox.EdgeBoxLocation != EdgeBoxLocation.Idle,
-                o => o.OrderByDescending(i => i.ValidUntil),
+                o => o.OrderByDescending(i => i.CreatedDate),
                 [
                     nameof(EdgeBoxInstall.EdgeBox),
                     $"{nameof(EdgeBoxInstall.Shop)}.{nameof(Shop.Brand)}",
@@ -124,6 +151,11 @@ public class EdgeBoxInstallService(IUnitOfWork unitOfWork, IBaseMapping mapper, 
                 ]
             )
         ).Values.FirstOrDefault();
+    }
+
+    public Task<PaginationResult<EdgeBoxInstall>> GetEdgeBoxInstall(SearchEdgeBoxInstallRequest searchRequest)
+    {
+        return unitOfWork.EdgeBoxInstalls.GetAsync(new EdgeBoxInstallSearchSpec(searchRequest));
     }
 
     public async Task<IEnumerable<EdgeBoxInstall>> GetInstallingByShop(Guid shopId)
@@ -141,7 +173,7 @@ public class EdgeBoxInstallService(IUnitOfWork unitOfWork, IBaseMapping mapper, 
                 i => i.EdgeBoxInstallStatus != EdgeBoxInstallStatus.Disabled && i.ShopId == shopId,
                 includeProperties:
                 [
-                    nameof(EdgeBoxInstall.EdgeBox),
+                    $"{nameof(EdgeBoxInstall.EdgeBox)}.{nameof(EdgeBox.EdgeBoxModel)}",
                     $"{nameof(EdgeBoxInstall.Shop)}.{nameof(Shop.Brand)}",
                     $"{nameof(EdgeBoxInstall.Shop)}.{nameof(Shop.Ward)}.{nameof(Ward.District)}.{nameof(District.Province)}"
                 ],
@@ -163,7 +195,7 @@ public class EdgeBoxInstallService(IUnitOfWork unitOfWork, IBaseMapping mapper, 
                 i => i.EdgeBoxInstallStatus != EdgeBoxInstallStatus.Disabled && i.Shop.BrandId == brandId,
                 includeProperties:
                 [
-                    nameof(EdgeBoxInstall.EdgeBox),
+                    $"{nameof(EdgeBoxInstall.EdgeBox)}.{nameof(EdgeBox.EdgeBoxModel)}",
                     $"{nameof(EdgeBoxInstall.Shop)}.{nameof(Shop.Brand)}",
                     $"{nameof(EdgeBoxInstall.Shop)}.{nameof(Shop.Ward)}.{nameof(Ward.District)}.{nameof(District.Province)}"
                 ],

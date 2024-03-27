@@ -12,6 +12,7 @@ public class LookupController : ControllerBase
 {
     [LookupHttpGet("account-statuses", typeof(AccountStatus))]
     [LookupHttpGet("brand-statuses", typeof(BrandStatus))]
+    [LookupHttpGet("edgeBox-activation-status", typeof(EdgeBoxActivationStatus))]
     [LookupHttpGet("edgeBox-install-statuses", typeof(EdgeBoxInstallStatus))]
     [LookupHttpGet("edgeBox-locations", typeof(EdgeBoxLocation))]
     [LookupHttpGet("edgeBox-statuses", typeof(EdgeBoxStatus))]
@@ -20,6 +21,7 @@ public class LookupController : ControllerBase
     [LookupHttpGet("genders", typeof(Gender))]
     [LookupHttpGet("incident-types", typeof(IncidentType))]
     [LookupHttpGet("notification-statuses", typeof(NotificationStatus))]
+    [LookupHttpGet("notification-priorities", typeof(NotificationPriority))]
     [LookupHttpGet("notification-types", typeof(NotificationType))]
     [LookupHttpGet("request-statuses", typeof(RequestStatus))]
     [LookupHttpGet("request-types", typeof(RequestType))]

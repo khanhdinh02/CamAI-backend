@@ -1,5 +1,8 @@
 trigger: none
 
+pool:
+  name: 'Default'
+
 appendCommitMessageToRunName: false
 name: CamAI-backend-SmokeTest
 stages:
@@ -9,8 +12,6 @@ stages:
     jobs:
       - job: job_run_test
         displayName: CamAI smoke test backend
-        pool:
-          name: 'Camai-Agent'
         steps:
           - task: UseDotNet@2
             displayName: Use .NET 8 SDK

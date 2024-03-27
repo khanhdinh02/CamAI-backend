@@ -42,8 +42,6 @@ public class EdgeBoxInstallsController(IEdgeBoxInstallService edgeBoxInstallServ
         return edgeBoxInstalls.Select(mapper.Map<EdgeBoxInstall, EdgeBoxInstallDto>);
     }
 
-    // TODO: get all install of a edge box
-
     [HttpGet("{id}/activities")]
     [AccessTokenGuard(Role.Admin, Role.BrandManager, Role.ShopManager)]
     public async Task<PaginationResult<EdgeBoxInstallActivityDto>> GetEdgeBoxInstallActivity(
@@ -57,6 +55,30 @@ public class EdgeBoxInstallsController(IEdgeBoxInstallService edgeBoxInstallServ
         return mapper.Map<EdgeBoxInstallActivity, EdgeBoxInstallActivityDto>(result);
     }
 
+    /// <summary>
+    /// For admin: Get all install of a edge box
+    /// </summary>
+    /// <remarks>Use for Brand Manager.</remarks>
+    /// <param name="edgeBoxId"></param>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    [HttpGet("/api/edgeBoxes/{edgeBoxId}/installs")]
+    [AccessTokenGuard(Role.Admin)]
+    public async Task<PaginationResult<EdgeBoxInstallDto>> GetEdgeBoxInstallsByEdgeBox(
+        [FromRoute] Guid edgeBoxId,
+        [FromQuery] SearchEdgeBoxInstallRequest request
+    )
+    {
+        request.EdgeBoxId = edgeBoxId;
+        var edgeBoxInstalls = await edgeBoxInstallService.GetEdgeBoxInstall(request);
+        return mapper.Map<EdgeBoxInstall, EdgeBoxInstallDto>(edgeBoxInstalls);
+    }
+
+    /// <summary>
+    /// Admin leases an edge box to a shop
+    /// </summary>
+    /// <param name="dto"></param>
+    /// <returns></returns>
     [HttpPost]
     [AccessTokenGuard(Role.Admin)]
     public async Task<EdgeBoxInstallDto> LeaseEdgeBox(CreateEdgeBoxInstallDto dto)
@@ -65,6 +87,11 @@ public class EdgeBoxInstallsController(IEdgeBoxInstallService edgeBoxInstallServ
         return mapper.Map<EdgeBoxInstall, EdgeBoxInstallDto>(ebInstall);
     }
 
+    /// <summary>
+    /// Brand manager activates an edge box
+    /// </summary>
+    /// <param name="dto"></param>
+    /// <returns></returns>
     [HttpPut]
     [AccessTokenGuard(Role.BrandManager)]
     public async Task<EdgeBoxInstallDto> ActivateEdgeBox(ActivateEdgeBoxDto dto)

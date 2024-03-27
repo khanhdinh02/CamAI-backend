@@ -65,6 +65,6 @@ public class AuthService(IJwtService jwtService, IAccountService accountService,
         currentAccount.Password = Hasher.Hash(changePasswordDto.NewPassword);
         currentAccount.AccountStatus = AccountStatus.Active;
         unitOfWork.Accounts.Update(currentAccount);
-        unitOfWork.Complete();
+        await unitOfWork.CompleteAsync();
     }
 }

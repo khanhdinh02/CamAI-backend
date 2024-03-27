@@ -28,7 +28,7 @@ public class BrandService(
 {
     public async Task<PaginationResult<Brand>> GetBrands(SearchBrandRequest searchRequest)
     {
-        var currentAccount = await accountService.GetAccountById(accountService.GetCurrentAccount().Id);
+        var currentAccount = accountService.GetCurrentAccount();
         if (currentAccount.Role == Role.BrandManager)
             searchRequest.BrandId =
                 currentAccount.BrandId ?? throw new BadRequestException("Brand manager does not have brand yet");

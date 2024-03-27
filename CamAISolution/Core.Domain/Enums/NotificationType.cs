@@ -5,7 +5,5 @@ namespace Core.Domain.Enums;
 [Lookup]
 public enum NotificationType
 {
-    Normal = 1,
-    Warning = 2,
-    Urgent = 3
+    EdgeBoxUnhealthy = 0
 }

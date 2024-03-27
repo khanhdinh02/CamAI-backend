@@ -2,6 +2,8 @@ using Core.Application.Events;
 using Host.CamAI.API;
 using Host.CamAI.API.Middlewares;
 using Host.CamAI.API.Models;
+using Infrastructure.Cache;
+using Infrastructure.Email;
 using Infrastructure.Jwt;
 using Infrastructure.Logging;
 using Infrastructure.Mapping;
@@ -23,7 +25,6 @@ builder
                 builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader().WithExposedHeaders(HeaderNameConstant.Auto)
         )
     )
-    .AddMemoryCache()
     .AddRepository(builder.Configuration.GetConnectionString("Default"))
     .AddJwtService(builder.Configuration)
     .AddLoggingDependencyInjection()
@@ -34,6 +35,9 @@ builder
     .AddMapping()
     .AddObserver(builder.Configuration)
     .AddNotification(builder.Configuration.GetRequiredSection("GoogleSecret").Get<GoogleSecret>())
+    .AddBackgroundService()
+    .AddCacheService()
+    .AddEmailService(builder.Configuration)
     .AddBackgroundService();
 
 builder.Services.AddHttpClient();

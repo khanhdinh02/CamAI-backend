@@ -181,6 +181,9 @@ namespace Infrastructure.Repositories.Migrations
                     b.Property<Guid>("ShopId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
                     b.Property<byte[]>("Timestamp")
                         .IsConcurrencyToken()
                         .ValueGeneratedOnAddOrUpdate()
@@ -309,6 +312,9 @@ namespace Infrastructure.Repositories.Migrations
                     b.Property<string>("ActivationCode")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("ActivationStatus")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
 
@@ -335,12 +341,6 @@ namespace Infrastructure.Repositories.Migrations
                         .IsConcurrencyToken()
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("rowversion");
-
-                    b.Property<DateTime>("ValidFrom")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("ValidUntil")
-                        .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 
@@ -558,7 +558,7 @@ namespace Infrastructure.Repositories.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Image");
+                    b.ToTable("Images");
                 });
 
             modelBuilder.Entity("Core.Domain.Entities.Incident", b =>
@@ -613,6 +613,9 @@ namespace Infrastructure.Repositories.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid?>("AccountId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<string>("Content")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -623,10 +626,10 @@ namespace Infrastructure.Repositories.Migrations
                     b.Property<DateTime>("ModifiedDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("NotificationType")
+                    b.Property<int>("Priority")
                         .HasColumnType("int");
 
-                    b.Property<Guid>("SentById")
+                    b.Property<Guid?>("RelatedEntityId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<byte[]>("Timestamp")
@@ -639,9 +642,12 @@ namespace Infrastructure.Repositories.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
-                    b.HasIndex("SentById");
+                    b.HasIndex("AccountId");
 
                     b.ToTable("Notifications");
                 });
@@ -1041,13 +1047,9 @@ namespace Infrastructure.Repositories.Migrations
 
             modelBuilder.Entity("Core.Domain.Entities.Notification", b =>
                 {
-                    b.HasOne("Core.Domain.Entities.Account", "SentBy")
+                    b.HasOne("Core.Domain.Entities.Account", null)
                         .WithMany("SentNotifications")
-                        .HasForeignKey("SentById")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.Navigation("SentBy");
+                        .HasForeignKey("AccountId");
                 });
 
             modelBuilder.Entity("Core.Domain.Entities.Request", b =>
