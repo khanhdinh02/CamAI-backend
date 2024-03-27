@@ -15,6 +15,6 @@ public class IncidentByFromTimeSpec : Specification<Incident>
 
     public override Expression<Func<Incident, bool>> GetExpression()
     {
-        return x => x.Time >= fromTime;
+        return x => x.StartTime >= fromTime;
     }
 }
