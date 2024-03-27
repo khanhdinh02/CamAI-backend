@@ -5,7 +5,8 @@ namespace Core.Domain.DTO;
 public class IncidentDto : BaseDto
 {
     public IncidentType IncidentType { get; set; }
-    public DateTime Time { get; set; }
+    public DateTime StartTime { get; set; }
+    public DateTime? EndTime { get; set; }
     public Guid EdgeBoxId { get; set; }
     public Guid? EmployeeId { get; set; }
     public Guid? ShopId { get; set; }

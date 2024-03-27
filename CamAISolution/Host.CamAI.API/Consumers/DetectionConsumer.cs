@@ -22,7 +22,8 @@ public class DetectionConsumer(IIncidentService incidentService) : IConsumer<Rec
             EdgeBoxId = receivedIncidentMessage.EdgeBoxId,
             Id = receivedIncidentMessage.Id,
             IncidentType = receivedIncidentMessage.IncidentType,
-            Time = receivedIncidentMessage.Time,
+            StartTime = receivedIncidentMessage.StartTime,
+            EndTime = receivedIncidentMessage.EndTime,
             Evidences = receivedIncidentMessage.Evidences.Select(Map).ToList()
         };
     }

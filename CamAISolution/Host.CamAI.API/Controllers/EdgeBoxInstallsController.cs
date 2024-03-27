@@ -21,7 +21,7 @@ public class EdgeBoxInstallsController(IEdgeBoxInstallService edgeBoxInstallServ
     /// <param name="shopId"></param>
     /// <returns></returns>
     [HttpGet("/api/shops/{shopId}/installs")]
-    [AccessTokenGuard(Role.BrandManager, Role.ShopManager)]
+    [AccessTokenGuard(Role.Admin, Role.BrandManager, Role.ShopManager)]
     public async Task<IEnumerable<EdgeBoxInstallDto>> GetEdgeBoxInstallsByShop(Guid shopId)
     {
         var edgeBoxInstalls = await edgeBoxInstallService.GetInstallingByShop(shopId);
@@ -35,7 +35,7 @@ public class EdgeBoxInstallsController(IEdgeBoxInstallService edgeBoxInstallServ
     /// <param name="brandId"></param>
     /// <returns></returns>
     [HttpGet("/api/brands/{brandId}/installs")]
-    [AccessTokenGuard(Role.BrandManager)]
+    [AccessTokenGuard(Role.Admin, Role.BrandManager)]
     public async Task<IEnumerable<EdgeBoxInstallDto>> GetEdgeBoxInstallsByBrand(Guid brandId)
     {
         var edgeBoxInstalls = await edgeBoxInstallService.GetInstallingByBrand(brandId);

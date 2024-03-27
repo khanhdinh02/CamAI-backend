@@ -6,7 +6,8 @@ namespace Core.Domain.Entities;
 public class Incident : BusinessEntity
 {
     public IncidentType IncidentType { get; set; }
-    public DateTime Time { get; set; }
+    public DateTime StartTime { get; set; }
+    public DateTime? EndTime { get; set; }
     public Guid EdgeBoxId { get; set; }
     public IncidentStatus Status { get; set; } = IncidentStatus.New;
     public Guid ShopId { get; set; }
