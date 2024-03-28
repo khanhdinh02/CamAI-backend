@@ -4,7 +4,7 @@ namespace Core.Domain.DTO;
 
 public class CreateEvidenceDto
 {
-    public string FilePath { get; set; } = null!;
+    public byte[] Content { get; set; } = null!;
     public EvidenceType EvidenceType { get; set; }
     public Guid CameraId { get; set; }
 }

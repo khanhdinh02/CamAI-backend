@@ -13,7 +13,6 @@ using Core.Domain.Services;
 namespace Core.Application.Implements;
 
 public class IncidentService(
-    HttpClient httpClient,
     IBlobService blobService,
     IAccountService accountService,
     IEmployeeService employeeService,
@@ -86,80 +85,28 @@ public class IncidentService(
         foreach (var cameraId in incidentDto.Evidences.Select(x => x.CameraId))
             await cameraService.CreateCameraIfNotExist(cameraId, ebInstall!.ShopId);
 
-        List<Evidence> evidences;
         if (incident == null)
         {
             incident = mapping.Map<CreateIncidentDto, Incident>(incidentDto);
             incident.ShopId = ebInstall!.ShopId;
-            foreach (var evidence in incident.Evidences)
-                evidence.Status = EvidenceStatus.ToBeFetched;
-
+            incident.Evidences = [];
             incident = await unitOfWork.Incidents.AddAsync(incident);
-            evidences = incident.Evidences.ToList();
-        }
-        else
-        {
-            // add new evidence to existed
-            evidences = mapping.Map<ICollection<CreateEvidenceDto>, List<Evidence>>(incidentDto.Evidences);
-            foreach (var evidence in evidences)
-            {
-                evidence.IncidentId = incident.Id;
-                evidence.Status = EvidenceStatus.ToBeFetched;
-                await unitOfWork.Evidences.AddAsync(evidence);
-            }
         }
 
-        if (await unitOfWork.CompleteAsync() > 0)
-            await FetchEvidenceFromEdgeBox(incidentDto.EdgeBoxId, incidentDto.Id, evidences);
+        foreach (var evidenceDto in incidentDto.Evidences)
+        {
+            var evidence = mapping.Map<CreateEvidenceDto, Evidence>(evidenceDto);
+            evidence.IncidentId = incident.Id;
+            var imageDto = new CreateImageDto
+            {
+                ContentType = MediaTypeNames.Image.Png,
+                Filename = evidence.Id.ToString("N") + ".png",
+                ImageBytes = evidenceDto.Content
+            };
+            evidence.Image = await blobService.UploadImage(imageDto, nameof(Incident), incident.Id.ToString("N"));
+            await unitOfWork.Evidences.AddAsync(evidence);
+        }
 
         return incident;
     }
-
-    private async Task FetchEvidenceFromEdgeBox(Guid edgeBoxId, Guid incidentId, List<Evidence> evidences)
-    {
-        // TODO: [Duy] validate that eb install has port and ip address
-        evidences = evidences.Where(x => x.Status == EvidenceStatus.ToBeFetched).ToList();
-        if (evidences.Count == 0)
-            return;
-
-        // TODO: make this run in another thread
-        var ebInstall = (await edgeBoxInstallService.GetLatestInstallingByEdgeBox(edgeBoxId))!;
-        var uriBuilder = new UriBuilder
-        {
-            Host = ebInstall.IpAddress,
-            Port = ebInstall.Port!.Value,
-            Path = "/api/images"
-        };
-        foreach (var evidence in evidences)
-        {
-            // TODO: might create a background job to fetch evidence
-            try
-            {
-                uriBuilder.Query = EvidencePathQuery(evidence);
-                var response = await httpClient.GetAsync(uriBuilder.Uri);
-
-                response.EnsureSuccessStatusCode();
-
-                // TODO: get extension from content-type
-                var imageDto = new CreateImageDto
-                {
-                    ContentType = MediaTypeNames.Image.Png,
-                    Filename = evidence.Id.ToString("N") + ".png",
-                    ImageBytes = await response.Content.ReadAsByteArrayAsync()
-                };
-                evidence.Image = await blobService.UploadImage(imageDto, nameof(Incident), incidentId.ToString("N"));
-                evidence.Status = EvidenceStatus.Fetched;
-            }
-            catch (Exception)
-            {
-                evidence.Status = EvidenceStatus.NotFound;
-            }
-
-            unitOfWork.Evidences.Update(evidence);
-        }
-
-        await unitOfWork.CompleteAsync();
-    }
-
-    private static string EvidencePathQuery(Evidence evidence) => "path=" + evidence.EdgeBoxPath;
 }
