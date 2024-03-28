@@ -16,7 +16,7 @@ public class ReceivedIncidentMessage
 
 public class ReceivedEvidence
 {
-    public string? FilePath { get; set; }
+    public byte[] Content { get; set; }
     public EvidenceType EvidenceType { get; set; }
     public Guid CameraId { get; set; }
     public Guid EdgeBoxId { get; set; }

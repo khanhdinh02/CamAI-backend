@@ -8,11 +8,7 @@ public class EvidenceProfile : Profile
 {
     public EvidenceProfile()
     {
-        CreateMap<CreateEvidenceDto, Evidence>()
-            .ForMember(
-                x => x.EdgeBoxPath,
-                opts => opts.MapFrom((dto, evidence) => evidence.EdgeBoxPath = dto.FilePath)
-            );
+        CreateMap<CreateEvidenceDto, Evidence>();
         CreateMap<Evidence, EvidenceDto>()
             .ForMember(
                 x => x.Incident,

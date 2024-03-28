@@ -5,5 +5,5 @@ namespace Core.Domain.Interfaces.Events;
 public interface IHumanCountObserver
 {
     Guid ShopId { get; }
-    void ReceiveData(HumanCountModel model);
+    Task ReceiveData(HumanCountModel model);
 }
