@@ -1,6 +1,9 @@
 using Core.Domain;
+using Core.Domain.Constants;
 using Core.Domain.DTO;
+using Core.Domain.Entities;
 using Core.Domain.Enums;
+using Core.Domain.Events;
 using Core.Domain.Interfaces.Services;
 using Core.Domain.Repositories;
 using Core.Domain.Services;
@@ -19,21 +22,31 @@ namespace Host.CamAI.API.Consumers;
 public class ConfirmedEdgeBoxActivationConsumer(
     IAppLogging<ConfirmedEdgeBoxActivationConsumer> logger,
     IEdgeBoxInstallService edgeBoxInstallService,
+    IApplicationDelayEventListener applicationDelayEventListener,
     IUnitOfWork unitOfWork,
     INotificationService notificationService,
-    IJwtService jwtService
+    ICacheService cacheService
 ) : IConsumer<ConfirmedEdgeBoxActivationMessage>
 {
     public async Task Consume(ConsumeContext<ConfirmedEdgeBoxActivationMessage> context)
     {
         logger.Info($"Confirmed activation message from edge box ID: {context.Message.EdgeBoxId}.");
-        var edgeBoxInstall = (await edgeBoxInstallService.GetLatestInstallingByEdgeBox(context.Message.EdgeBoxId))!;
-        if (edgeBoxInstall.ActivationStatus == EdgeBoxActivationStatus.Activated)
-            return;
-        edgeBoxInstall.ActivationStatus = EdgeBoxActivationStatus.Activated;
-        unitOfWork.EdgeBoxInstalls.Update(edgeBoxInstall);
+
         try
         {
+            var edgeBoxInstall = (await edgeBoxInstallService.GetLatestInstallingByEdgeBox(context.Message.EdgeBoxId))!;
+            if (edgeBoxInstall.ActivationStatus == EdgeBoxActivationStatus.Activated)
+                return;
+
+            if (context.Message.IsActivatedSuccessfully is false)
+                edgeBoxInstall.ActivationStatus = EdgeBoxActivationStatus.Failed;
+            else
+            {
+                edgeBoxInstall.ActivationStatus = EdgeBoxActivationStatus.Activated;
+                await applicationDelayEventListener.StopEvent($"ActivateEdgeBox{edgeBoxInstall.Id:N}");
+            }
+
+            unitOfWork.EdgeBoxInstalls.Update(edgeBoxInstall);
             if (await unitOfWork.CompleteAsync() > 0)
             {
                 var brandManagerAccountIds = (
@@ -44,7 +57,9 @@ public class ConfirmedEdgeBoxActivationConsumer(
                             && a.ManagingShop.Id == edgeBoxInstall.ShopId,
                         takeAll: true
                     )
-                ).Values.Select(a => a.Id);
+                )
+                    .Values.Select(a => a.Id)
+                    .ToList();
 
                 await SendNotification(
                     context.Message.IsActivatedSuccessfully,
@@ -59,7 +74,7 @@ public class ConfirmedEdgeBoxActivationConsumer(
         }
     }
 
-    private Task SendNotification(bool isActivatedSuccessfully, Guid edgeBoxId, IEnumerable<Guid> sendToAccountIds)
+    private Task SendNotification(bool isActivatedSuccessfully, Guid edgeBoxId, IList<Guid> sendToAccountIds)
     {
         var content = $"Edge box {edgeBoxId} is activated";
         var title = "Edge box is activated";
@@ -67,6 +82,8 @@ public class ConfirmedEdgeBoxActivationConsumer(
         var priority = NotificationPriority.Normal;
         if (!isActivatedSuccessfully)
         {
+            var adminId = cacheService.Get<Account>(ApplicationCacheKey.Admin)!.Id;
+            sendToAccountIds.Add(adminId);
             content = $"Edge box {edgeBoxId} cannot be activated";
             title = "Edge box cannot be activated";
             priority = NotificationPriority.Urgent;

@@ -37,12 +37,12 @@ public class EdgeBoxInstallService(
         }
 
         var shop =
-        (
-            await unitOfWork.Shops.GetAsync(
-                s => s.Id == dto.ShopId,
-                includeProperties: [$"{nameof(Shop.Brand)}.{nameof(Brand.BrandManager)}"]
-            )
-        ).Values.FirstOrDefault() ?? throw new NotFoundException(typeof(Shop), dto.ShopId);
+            (
+                await unitOfWork.Shops.GetAsync(
+                    s => s.Id == dto.ShopId,
+                    includeProperties: [$"{nameof(Shop.Brand)}.{nameof(Brand.BrandManager)}"]
+                )
+            ).Values.FirstOrDefault() ?? throw new NotFoundException(typeof(Shop), dto.ShopId);
 
         var ebInstall = mapper.Map<CreateEdgeBoxInstallDto, EdgeBoxInstall>(dto);
         ebInstall.ActivationCode = RandomGenerator.GetAlphanumericString(CodeLength);
@@ -68,16 +68,17 @@ public class EdgeBoxInstallService(
     {
         var user = accountService.GetCurrentAccount();
         var ebInstall =
-        (
-            await unitOfWork.EdgeBoxInstalls.GetAsync(i =>
-                    i.ActivationCode == dto.ActivationCode
-                    && i.EdgeBoxInstallStatus != EdgeBoxInstallStatus.Disabled
-                    && i.ShopId == dto.ShopId
-                    && i.Shop.BrandId == user.BrandId,
-                includeProperties: [nameof(EdgeBoxInstall.EdgeBox)],
-                disableTracking: false
-            )
-        ).Values.FirstOrDefault() ?? throw new NotFoundException("Wrong activation code");
+            (
+                await unitOfWork.EdgeBoxInstalls.GetAsync(
+                    i =>
+                        i.ActivationCode == dto.ActivationCode
+                        && i.EdgeBoxInstallStatus != EdgeBoxInstallStatus.Disabled
+                        && i.ShopId == dto.ShopId
+                        && i.Shop.BrandId == user.BrandId,
+                    includeProperties: [nameof(EdgeBoxInstall.EdgeBox)],
+                    disableTracking: false
+                )
+            ).Values.FirstOrDefault() ?? throw new NotFoundException("Wrong activation code");
 
         if (ebInstall.ActivationStatus == EdgeBoxActivationStatus.NotActivated)
         {
@@ -91,17 +92,23 @@ public class EdgeBoxInstallService(
                 ebInstall.ActivationStatus = EdgeBoxActivationStatus.Pending;
                 if (await unitOfWork.CompleteAsync() > 0)
                 {
-                    await messageQueueService.Publish(new ActivatedEdgeBoxMessage
-                    {
-                        Message = "Activate edge box",
-                        RoutingKey = ebInstall.EdgeBoxId.ToString("N")
-                    });
-                    var eventId = Guid.NewGuid();
+                    await messageQueueService.Publish(
+                        new ActivatedEdgeBoxMessage
+                        {
+                            Message = "Activate edge box",
+                            RoutingKey = ebInstall.EdgeBoxId.ToString("N")
+                        }
+                    );
+
                     await applicationDelayEventListener.AddEvent(
-                        eventId,
-                        new FirstCheckEdgeBoxAfterActivationDelayEvent(TimeSpan.FromMinutes(5), ebInstall.EdgeBoxId,
-                            ebInstall.Id),
-                        true);
+                        $"ActivateEdgeBox{ebInstall.Id:N}",
+                        new EdgeBoxAfterActivationFailedDelayEvent(
+                            TimeSpan.FromMinutes(5),
+                            ebInstall.EdgeBoxId,
+                            ebInstall.Id
+                        ),
+                        true
+                    );
                 }
             }
         }

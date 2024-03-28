@@ -10,12 +10,12 @@ using Core.Domain.Repositories;
 
 namespace Core.Application.Events;
 
-public class FirstCheckEdgeBoxAfterActivationDelayEvent(TimeSpan delay, Guid edgeBoxId, Guid edgeBoxInstallId)
+public class EdgeBoxAfterActivationFailedDelayEvent(TimeSpan delay, Guid edgeBoxId, Guid edgeBoxInstallId)
     : IApplicationDelayEvent
 {
     public IUnitOfWork UnitOfWork { get; set; } = null!;
     public INotificationService NotificationService { get; set; } = null!;
-    public IAppLogging<FirstCheckEdgeBoxAfterActivationDelayEvent> Logger { get; set; } = null!;
+    public IAppLogging<EdgeBoxAfterActivationFailedDelayEvent> Logger { get; set; } = null!;
 
     public Task UseDelay()
     {
@@ -43,8 +43,9 @@ public class FirstCheckEdgeBoxAfterActivationDelayEvent(TimeSpan delay, Guid edg
                 await NotificationService.CreateNotification(
                     new CreateNotificationDto
                     {
-                        Content = $"Edge box is activated but edge box install-{edgeBoxInstallId} is not working",
-                        Title = "Edge box install is not working",
+                        Content =
+                            $"Edge box install-{edgeBoxInstallId} is {edgeBoxInstall.EdgeBoxInstallStatus.ToString()}",
+                        Title = $"Edge box install is {edgeBoxInstall.EdgeBoxInstallStatus.ToString()}",
                         SentToId = sentToAdmin,
                         RelatedEntityId = edgeBoxInstallId,
                         Priority = NotificationPriority.Urgent,
@@ -52,21 +53,7 @@ public class FirstCheckEdgeBoxAfterActivationDelayEvent(TimeSpan delay, Guid edg
                     },
                     true
                 );
-                return;
             }
-
-            await NotificationService.CreateNotification(
-                new CreateNotificationDto
-                {
-                    Content = $"Edge box-{edgeBoxId} is successfully activated",
-                    Title = "Edge box is activated",
-                    RelatedEntityId = edgeBoxInstallId,
-                    Priority = NotificationPriority.Normal,
-                    Type = NotificationType.EdgeBoxInstallActivation,
-                    SentToId = sentToAdmin
-                },
-                true
-            );
         }
         catch (Exception ex)
         {
