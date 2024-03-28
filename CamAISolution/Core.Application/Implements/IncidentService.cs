@@ -85,6 +85,7 @@ public class IncidentService(
         foreach (var cameraId in incidentDto.Evidences.Select(x => x.CameraId))
             await cameraService.CreateCameraIfNotExist(cameraId, ebInstall!.ShopId);
 
+        await unitOfWork.BeginTransaction();
         if (incident == null)
         {
             incident = mapping.Map<CreateIncidentDto, Incident>(incidentDto);
@@ -107,6 +108,7 @@ public class IncidentService(
             await unitOfWork.Evidences.AddAsync(evidence);
         }
 
+        await unitOfWork.CommitTransaction();
         return incident;
     }
 }

@@ -34,7 +34,6 @@ public class DetectionConsumer(IIncidentService incidentService) : IConsumer<Rec
         {
             Content = receivedEvidence.Content,
             EvidenceType = receivedEvidence.EvidenceType,
-            // TODO: sync camera data from edge box to server
             CameraId = receivedEvidence.CameraId
         };
     }
