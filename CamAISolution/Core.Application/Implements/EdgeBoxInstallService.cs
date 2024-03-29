@@ -31,15 +31,11 @@ public class EdgeBoxInstallService(
 
         var shop =
             (
-                await unitOfWork
-                    .Shops
-                    .GetAsync(
-                        s => s.Id == dto.ShopId,
-                        includeProperties: [$"{nameof(Shop.Brand)}.{nameof(Brand.BrandManager)}"]
-                    )
-            )
-                .Values
-                .FirstOrDefault() ?? throw new NotFoundException(typeof(Shop), dto.ShopId);
+                await unitOfWork.Shops.GetAsync(
+                    s => s.Id == dto.ShopId,
+                    includeProperties: [$"{nameof(Shop.Brand)}.{nameof(Brand.BrandManager)}"]
+                )
+            ).Values.FirstOrDefault() ?? throw new NotFoundException(typeof(Shop), dto.ShopId);
 
         var ebInstall = mapper.Map<CreateEdgeBoxInstallDto, EdgeBoxInstall>(dto);
         ebInstall.ActivationCode = RandomGenerator.GetAlphanumericString(CodeLength);
@@ -66,18 +62,13 @@ public class EdgeBoxInstallService(
         var user = accountService.GetCurrentAccount();
         var ebInstall =
             (
-                await unitOfWork
-                    .EdgeBoxInstalls
-                    .GetAsync(
-                        i =>
-                            i.ActivationCode == dto.ActivationCode
-                            && i.EdgeBoxInstallStatus != EdgeBoxInstallStatus.Disabled
-                            && i.ShopId == dto.ShopId
-                            && i.Shop.BrandId == user.BrandId
-                    )
-            )
-                .Values
-                .FirstOrDefault() ?? throw new NotFoundException("Wrong activation code");
+                await unitOfWork.EdgeBoxInstalls.GetAsync(i =>
+                    i.ActivationCode == dto.ActivationCode
+                    && i.EdgeBoxInstallStatus != EdgeBoxInstallStatus.Disabled
+                    && i.ShopId == dto.ShopId
+                    && i.Shop.BrandId == user.BrandId
+                )
+            ).Values.FirstOrDefault() ?? throw new NotFoundException("Wrong activation code");
 
         if (ebInstall.ActivationStatus == EdgeBoxActivationStatus.NotActivated)
         {
@@ -125,20 +116,16 @@ public class EdgeBoxInstallService(
     public async Task<EdgeBoxInstall?> GetLatestInstallingByEdgeBox(Guid edgeBoxId)
     {
         return (
-            await unitOfWork
-                .EdgeBoxInstalls
-                .GetAsync(
-                    i => i.EdgeBoxId == edgeBoxId && i.EdgeBox.EdgeBoxLocation != EdgeBoxLocation.Idle,
-                    o => o.OrderByDescending(i => i.CreatedDate),
-                    [
-                        nameof(EdgeBoxInstall.EdgeBox),
-                        $"{nameof(EdgeBoxInstall.Shop)}.{nameof(Shop.Brand)}",
-                        $"{nameof(EdgeBoxInstall.Shop)}.{nameof(Shop.Ward)}.{nameof(Ward.District)}.{nameof(District.Province)}"
-                    ]
-                )
-        )
-            .Values
-            .FirstOrDefault();
+            await unitOfWork.EdgeBoxInstalls.GetAsync(
+                i => i.EdgeBoxId == edgeBoxId && i.EdgeBox.EdgeBoxLocation != EdgeBoxLocation.Idle,
+                o => o.OrderByDescending(i => i.CreatedDate),
+                [
+                    nameof(EdgeBoxInstall.EdgeBox),
+                    $"{nameof(EdgeBoxInstall.Shop)}.{nameof(Shop.Brand)}",
+                    $"{nameof(EdgeBoxInstall.Shop)}.{nameof(Shop.Ward)}.{nameof(Ward.District)}.{nameof(District.Province)}"
+                ]
+            )
+        ).Values.FirstOrDefault();
     }
 
     public Task<PaginationResult<EdgeBoxInstall>> GetEdgeBoxInstall(SearchEdgeBoxInstallRequest searchRequest)
@@ -157,18 +144,16 @@ public class EdgeBoxInstallService(
             throw new ForbiddenException(user, shop);
 
         var installs = (
-            await unitOfWork
-                .EdgeBoxInstalls
-                .GetAsync(
-                    i => i.ShopId == shopId,
-                    includeProperties:
-                    [
-                        $"{nameof(EdgeBoxInstall.EdgeBox)}.{nameof(EdgeBox.EdgeBoxModel)}",
-                        $"{nameof(EdgeBoxInstall.Shop)}.{nameof(Shop.Brand)}",
-                        $"{nameof(EdgeBoxInstall.Shop)}.{nameof(Shop.Ward)}.{nameof(Ward.District)}.{nameof(District.Province)}"
-                    ],
-                    takeAll: true
-                )
+            await unitOfWork.EdgeBoxInstalls.GetAsync(
+                i => i.ShopId == shopId,
+                includeProperties:
+                [
+                    $"{nameof(EdgeBoxInstall.EdgeBox)}.{nameof(EdgeBox.EdgeBoxModel)}",
+                    $"{nameof(EdgeBoxInstall.Shop)}.{nameof(Shop.Brand)}",
+                    $"{nameof(EdgeBoxInstall.Shop)}.{nameof(Shop.Ward)}.{nameof(Ward.District)}.{nameof(District.Province)}"
+                ],
+                takeAll: true
+            )
         ).Values;
 
         return new PaginationResult<EdgeBoxInstall>
@@ -198,18 +183,16 @@ public class EdgeBoxInstallService(
             throw new ForbiddenException(user, brand);
 
         var installs = (
-            await unitOfWork
-                .EdgeBoxInstalls
-                .GetAsync(
-                    i => i.Shop.BrandId == brandId,
-                    includeProperties:
-                    [
-                        $"{nameof(EdgeBoxInstall.EdgeBox)}.{nameof(EdgeBox.EdgeBoxModel)}",
-                        $"{nameof(EdgeBoxInstall.Shop)}.{nameof(Shop.Brand)}",
-                        $"{nameof(EdgeBoxInstall.Shop)}.{nameof(Shop.Ward)}.{nameof(Ward.District)}.{nameof(District.Province)}"
-                    ],
-                    takeAll: true
-                )
+            await unitOfWork.EdgeBoxInstalls.GetAsync(
+                i => i.Shop.BrandId == brandId,
+                includeProperties:
+                [
+                    $"{nameof(EdgeBoxInstall.EdgeBox)}.{nameof(EdgeBox.EdgeBoxModel)}",
+                    $"{nameof(EdgeBoxInstall.Shop)}.{nameof(Shop.Brand)}",
+                    $"{nameof(EdgeBoxInstall.Shop)}.{nameof(Shop.Ward)}.{nameof(Ward.District)}.{nameof(District.Province)}"
+                ],
+                takeAll: true
+            )
         ).Values;
 
         return new PaginationResult<EdgeBoxInstall>
