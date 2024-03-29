@@ -71,7 +71,7 @@ public class EdgeBoxHealthCheckService(
                             pageSize: pageSize
                         );
 
-                    // await CheckEdgeBoxInstallHealth(edgeBoxInstallsPagination.Values, stoppingToken);
+                    await CheckEdgeBoxInstallHealth(edgeBoxInstallsPagination.Values, stoppingToken);
                     pageIndex++;
                 }
 
