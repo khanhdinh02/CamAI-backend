@@ -15,25 +15,25 @@ public class DetectionConsumer(IIncidentService incidentService) : IConsumer<Rec
         await incidentService.UpsertIncident(Map(receivedIncident));
     }
 
-    private CreateIncidentDto Map(ReceivedIncidentMessage receivedIncidentMessage)
+    private static CreateIncidentDto Map(ReceivedIncidentMessage receivedIncidentMessage)
     {
         return new CreateIncidentDto
         {
             EdgeBoxId = receivedIncidentMessage.EdgeBoxId,
             Id = receivedIncidentMessage.Id,
             IncidentType = receivedIncidentMessage.IncidentType,
-            Time = receivedIncidentMessage.Time,
+            StartTime = receivedIncidentMessage.StartTime,
+            EndTime = receivedIncidentMessage.EndTime,
             Evidences = receivedIncidentMessage.Evidences.Select(Map).ToList()
         };
     }
 
-    private CreateEvidenceDto Map(ReceivedEvidence receivedEvidence)
+    private static CreateEvidenceDto Map(ReceivedEvidence receivedEvidence)
     {
         return new CreateEvidenceDto
         {
-            FilePath = receivedEvidence.FilePath,
+            Content = receivedEvidence.Content,
             EvidenceType = receivedEvidence.EvidenceType,
-            // TODO: sync camera data from edge box to server
             CameraId = receivedEvidence.CameraId
         };
     }

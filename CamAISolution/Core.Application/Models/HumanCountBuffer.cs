@@ -15,7 +15,11 @@ public class HumanCountBuffer : CircularBuffer<HumanCountModel>, IHumanCountObse
 
     public Guid ShopId { get; }
 
-    public void ReceiveData(HumanCountModel model) => Write(model);
+    public Task ReceiveData(HumanCountModel model)
+    {
+        Write(model);
+        return Task.CompletedTask;
+    }
 
     // TODO [Duy]: Detach and dispose
 }

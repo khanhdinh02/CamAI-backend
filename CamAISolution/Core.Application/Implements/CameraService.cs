@@ -82,7 +82,12 @@ public class CameraService(IAccountService accountService, IShopService shopServ
         if (await unitOfWork.Cameras.IsExisted(id))
             return;
 
-        var camera = new Camera { Id = id, ShopId = shopId };
+        var camera = new Camera
+        {
+            Id = id,
+            ShopId = shopId,
+            Name = id.ToString("N")
+        };
         await unitOfWork.Cameras.AddAsync(camera);
         await unitOfWork.CompleteAsync();
     }

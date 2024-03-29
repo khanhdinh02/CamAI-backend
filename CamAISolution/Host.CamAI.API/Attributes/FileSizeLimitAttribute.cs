@@ -1,12 +1,11 @@
 using System.ComponentModel.DataAnnotations;
 using Core.Application.Exceptions;
-using Core.Domain.Models.Configurations;
 
 namespace Host.CamAI.API.Attributes;
+
 /// <summary>
-///
 /// </summary>
-/// <param name="size">Integer number dedicate file's size</param>
+/// <param name="maxSize">Integer number dedicate file's size</param>
 /// <param name="sizeUnit">Unit of size</param>
 [AttributeUsage(AttributeTargets.Property)]
 public class FileSizeLimitAttribute(int maxSize, SizeUnit sizeUnit = SizeUnit.KB) : ValidationAttribute

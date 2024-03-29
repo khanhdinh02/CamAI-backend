@@ -10,8 +10,6 @@ public class EvidenceDto : BaseDto
     public Guid CameraId { get; set; }
     public Guid? ImageId { get; set; }
 
-    public EvidenceStatus Status { get; set; }
-
     public virtual ImageDto? Image { get; set; }
     public virtual IncidentDto Incident { get; set; } = null!;
     // TODO [Duy]: Add camera dto

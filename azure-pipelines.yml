@@ -2,7 +2,7 @@ trigger:
 - main
 
 pool:
-  name: 'Default'
+  name: 'Azure Pipelines'
 
 variables:
 - group: docker
@@ -59,7 +59,6 @@ steps:
       echo $(docker.password) | docker login -u $(docker.username) --password-stdin 2>&1
       docker compose down web-api 2>&1
       docker rmi milease/camai-backend:camai-web-api 2>&1
-      docker rmi $(docker images | grep "none" | awk '{print $3}' )
       docker compose up -d --quiet-pull 2>&1
       docker logout
     readyTimeout: '20000'
