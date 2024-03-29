@@ -32,4 +32,31 @@ public static class ImageHelper
             throw new ServiceUnavailableException("Cannot resolve format of image");
         return image.Encode(format, 50).AsStream();
     }
+
+    /// <summary>
+    /// Try to reduce size as much as possible
+    /// </summary>
+    public static byte[] TryCompressImage(byte[] imageBytes)
+    {
+        var imgSkia = SKImage.FromEncodedData(imageBytes);
+        var bitmap = SKBitmap.FromImage(imgSkia);
+        var imageInfo = new SKImageInfo((int)Math.Floor(bitmap.Width * 0.3), (int)Math.Floor(bitmap.Height * 0.3));
+        using var resizedBitmap = bitmap.Resize(imageInfo, SKFilterQuality.Low);
+        using var image = SKImage.FromBitmap(resizedBitmap);
+        int quality = 50;
+        var encodedImage = image.Encode(SKEncodedImageFormat.Jpeg, quality);
+        while (quality > 1)
+        {
+            if (encodedImage.AsStream().Length <= 1024 * 100) // 100KB
+                break;
+            quality -= 10;
+            if (quality < 0)
+                quality = 1;
+            encodedImage = image.Encode(SKEncodedImageFormat.Jpeg, quality);
+        }
+
+        using var memoryStream = new MemoryStream();
+        encodedImage.AsStream().CopyTo(memoryStream);
+        return memoryStream.ToArray();
+    }
 }

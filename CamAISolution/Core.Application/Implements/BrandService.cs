@@ -143,8 +143,11 @@ public class BrandService(
         unitOfWork.Brands.Update(brand);
         try
         {
-            if (await unitOfWork.CompleteAsync() > 0 && oldImageId.HasValue)
-                await blobService.DeleteImageInFilesystem(oldImageId.Value);
+            if (await unitOfWork.CompleteAsync() > 0)
+            {
+                if (oldImageId.HasValue)
+                    await blobService.DeleteImageInFilesystem(oldImageId.Value);
+            }
             else
                 await blobService.DeleteImageInFilesystem(newLogo.Id);
         }
