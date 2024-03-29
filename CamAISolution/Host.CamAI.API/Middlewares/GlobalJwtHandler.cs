@@ -5,7 +5,6 @@ using Core.Domain.Enums;
 using Core.Domain.Interfaces.Services;
 using Core.Domain.Services;
 using Host.CamAI.API.Models;
-using Host.CamAI.API.Utils;
 
 namespace Host.CamAI.API.Middlewares;
 
@@ -19,10 +18,7 @@ public class GlobalJwtHandler(RequestDelegate next)
         {
             try
             {
-                TokenType tokenType = HttpUtilities.IsFromMobile(context.Request)
-                    ? TokenType.MobileAccessToken
-                    : TokenType.WebAccessToken;
-                var tokenDetails = jwtService.ValidateToken(token, tokenType, HttpUtilities.UserIp(context));
+                var tokenDetails = jwtService.ValidateToken(token, TokenType.AccessToken);
                 var account = await accountService.GetAccountById(tokenDetails.UserId, includeAdmin: true);
                 context.Items[nameof(Account)] = account;
             }

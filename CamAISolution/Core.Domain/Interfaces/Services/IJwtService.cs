@@ -7,13 +7,12 @@ namespace Core.Domain.Services;
 
 public interface IJwtService
 {
-    string GenerateToken(Guid userId, Role role, AccountStatus? status, TokenType tokenType, string userIp);
-    string GenerateToken(Guid userId, Role role, TokenType tokenType, string userIp);
+    string GenerateToken(Guid userId, Role role, AccountStatus? status, TokenType tokenType);
+    string GenerateToken(Guid userId, Role role, TokenType tokenType);
 
     TokenDetailDto ValidateToken(
         string token,
         TokenType tokenType,
-        string userIp,
         Role[]? acceptableRoles = null,
         bool isValidateTime = true
     );

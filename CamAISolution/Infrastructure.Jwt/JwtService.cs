@@ -27,16 +27,16 @@ public class JwtService(
     private readonly JwtConfiguration jwtConfiguration = configuration.Value;
     private Account? currentUser;
 
-    public string GenerateToken(Guid userId, Role role, TokenType tokenType, string userIp) =>
-        GenerateToken(userId, role, null, tokenType, userIp);
+    public string GenerateToken(Guid userId, Role role, TokenType tokenType) =>
+        GenerateToken(userId, role, null, tokenType);
 
-    public string GenerateToken(Guid userId, Role role, AccountStatus? status, TokenType tokenType, string userIp)
+    public string GenerateToken(Guid userId, Role role, AccountStatus? status, TokenType tokenType)
     {
         var claims = new List<Claim> { new("id", userId.ToString()), new("role", role.ToString()) };
 
         int tokenDurationInMinute;
         string jwtSecret;
-        if (tokenType is TokenType.WebAccessToken or TokenType.MobileAccessToken)
+        if (tokenType == TokenType.AccessToken)
         {
             jwtSecret = jwtConfiguration.AccessToken.Secret;
             tokenDurationInMinute = jwtConfiguration.AccessToken.Duration;
@@ -62,11 +62,7 @@ public class JwtService(
         using var scope = serviceProvider.CreateScope();
         var cacheService = scope.ServiceProvider.GetRequiredService<ICacheService>();
         var tokenStr = new JwtSecurityTokenHandler().WriteToken(token);
-        cacheService.Set(
-            $"{userIp}{GenerateCachedKey(tokenType, userId)}",
-            tokenStr,
-            TimeSpan.FromMinutes(tokenDurationInMinute)
-        );
+        cacheService.Set(GenerateCachedKey(tokenType, userId), tokenStr, TimeSpan.FromMinutes(tokenDurationInMinute));
         return tokenStr;
     }
 
@@ -78,9 +74,10 @@ public class JwtService(
             if (token.IsNullOrEmpty())
                 throw new UnauthorizedException("Unauthorized");
 
-            var secretKey = tokenType is TokenType.WebAccessToken or TokenType.MobileAccessToken
-                ? jwtConfiguration.AccessToken.Secret
-                : jwtConfiguration.RefreshToken.Secret;
+            var secretKey =
+                tokenType == TokenType.AccessToken
+                    ? jwtConfiguration.AccessToken.Secret
+                    : jwtConfiguration.RefreshToken.Secret;
             var validationParameters = new TokenValidationParameters
             {
                 ValidateIssuer = true,
@@ -132,7 +129,6 @@ public class JwtService(
     public TokenDetailDto ValidateToken(
         string token,
         TokenType tokenType,
-        string userIp,
         Role[]? acceptableRoles = null,
         bool isValidateTime = true
     )
@@ -143,7 +139,7 @@ public class JwtService(
         if (string.IsNullOrEmpty(userId))
             throw new BadRequestException("Cannot get user id from jwt");
 
-        ValidateTokenInCacheMemory(token, tokenType, Guid.Parse(userId), userIp);
+        ValidateTokenInCacheMemory(token, tokenType, Guid.Parse(userId));
 
         var userRoleString = tokenClaims.FirstOrDefault(c => c.Type == "role")?.Value;
 
@@ -164,11 +160,12 @@ public class JwtService(
         };
     }
 
-    private void ValidateTokenInCacheMemory(string token, TokenType tokenType, Guid userId, string userIp)
+    private void ValidateTokenInCacheMemory(string token, TokenType tokenType, Guid userId)
     {
         using var scope = serviceProvider.CreateScope();
         var cacheService = scope.ServiceProvider.GetRequiredService<ICacheService>();
-        string key = $"{userIp}{GenerateCachedKey(tokenType, userId)}";
+        // TODO[Dat]: Consider to separate checking with user login with mobile application
+        string key = GenerateCachedKey(tokenType, userId);
         var cacheToken = cacheService.Get<string>(key);
         if (cacheToken == null || (cacheToken != null && cacheToken != token))
             throw new BadRequestException("Token is invalid");
