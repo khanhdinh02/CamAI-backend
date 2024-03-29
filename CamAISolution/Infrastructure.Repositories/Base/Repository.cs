@@ -28,9 +28,8 @@ public class Repository<T>(CamAIContext context, IRepositorySpecificationEvaluat
     public virtual T Delete(T entity)
     {
         if (Context.Entry(entity).State == EntityState.Detached)
-        {
             Context.Attach(entity);
-        }
+
         Context.Entry(entity).State = EntityState.Deleted;
         return entity;
     }
@@ -49,14 +48,18 @@ public class Repository<T>(CamAIContext context, IRepositorySpecificationEvaluat
         var paginationResult = new PaginationResult<T> { TotalCount = await CountAsync(expression) };
         if (expression != null)
             query = query.Where(expression);
+
         if (disableTracking)
             query = query.AsNoTracking();
+
         if (includeProperties is { Length: > 0 })
         {
             foreach (var includeItem in includeProperties)
                 query = query.Include(includeItem);
+
             query = query.AsSplitQuery();
         }
+
         if (takeAll)
         {
             if (orderBy != null)
@@ -75,6 +78,7 @@ public class Repository<T>(CamAIContext context, IRepositorySpecificationEvaluat
             else
                 paginationResult.Values = await orderBy(query).Skip(pageIndex * pageSize).Take(pageSize).ToListAsync();
         }
+
         paginationResult.PageIndex = pageIndex;
         paginationResult.PageSize = pageSize;
         return paginationResult;
@@ -84,6 +88,7 @@ public class Repository<T>(CamAIContext context, IRepositorySpecificationEvaluat
     {
         if (specification == null)
             return new PaginationResult<T>();
+
         var query = specificationEvaluator.GetQuery(context.Set<T>(), specification);
         var count = await CountAsync(specification.Criteria);
         var data = await query.ToListAsync();
@@ -92,7 +97,7 @@ public class Repository<T>(CamAIContext context, IRepositorySpecificationEvaluat
             PageIndex = specification.Skip / specification.Take,
             PageSize = data.Count,
             TotalCount = count,
-            Values = data,
+            Values = data
         };
     }
 
@@ -114,6 +119,7 @@ public class Repository<T>(CamAIContext context, IRepositorySpecificationEvaluat
             Context.Attach(entity);
             Context.Entry(entity).State = EntityState.Modified;
         }
+
         return entity;
     }
 }
