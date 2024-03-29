@@ -65,7 +65,10 @@ public class AuthService(IJwtService jwtService, IAccountService accountService,
         if (accessTokenDetail.Token == null)
             throw new UnauthorizedException("Invalid Tokens");
 
-        var account = await accountService.GetAccountById(accessTokenDetail.UserId);
+        var account = await accountService.GetAccountById(
+            accessTokenDetail.UserId,
+            includeAdmin: accountService.GetCurrentAccount().Role == Role.Admin
+        );
         return jwtService.GenerateToken(account.Id, account.Role, account.AccountStatus, accessTokenType, userIp);
     }
 
