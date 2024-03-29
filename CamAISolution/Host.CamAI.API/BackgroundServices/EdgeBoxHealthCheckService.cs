@@ -24,6 +24,7 @@ public class EdgeBoxHealthCheckService(
     private INotificationService? notificationService;
     private IUnitOfWork? uow;
     private readonly Mutex mutex = new();
+    private readonly Mutex cacheMutex = new();
 
     private static HttpClient CreateHttpClient()
     {
@@ -146,6 +147,7 @@ public class EdgeBoxHealthCheckService(
 
     private async Task<Guid> GetAdminAccount()
     {
+        cacheMutex.WaitOne();
         var adminAccount = await cache.GetOrCreateAsync(
             "AdminAccounts",
             async entry =>
@@ -154,6 +156,7 @@ public class EdgeBoxHealthCheckService(
                 return (await uow!.Accounts.GetAsync(expression: a => a.Role == Role.Admin, takeAll: true)).Values[0];
             }
         );
+        cacheMutex.ReleaseMutex();
 
         return adminAccount!.Id;
     }
