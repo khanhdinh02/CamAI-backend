@@ -156,21 +156,16 @@ public class EdgeBoxInstallService(
             )
         ).Values;
 
+        if (user.Role != Role.Admin)
+            foreach (var i in installs)
+                i.ActivationCode = null;
+
         return new PaginationResult<EdgeBoxInstall>
         {
             PageIndex = 0,
             PageSize = installs.Count,
             TotalCount = installs.Count,
-            Values =
-                user.Role == Role.Admin
-                    ? installs
-                    : installs
-                        .Select(i =>
-                        {
-                            i.ActivationCode = null;
-                            return i;
-                        })
-                        .ToList()
+            Values = installs
         };
     }
 
@@ -195,21 +190,16 @@ public class EdgeBoxInstallService(
             )
         ).Values;
 
+        if (user.Role != Role.Admin)
+            foreach (var i in installs)
+                i.ActivationCode = null;
+
         return new PaginationResult<EdgeBoxInstall>
         {
             PageIndex = 0,
             PageSize = installs.Count,
             TotalCount = installs.Count,
-            Values =
-                user.Role == Role.Admin
-                    ? installs
-                    : installs
-                        .Select(i =>
-                        {
-                            i.ActivationCode = null;
-                            return i;
-                        })
-                        .ToList()
+            Values = installs
         };
     }
 }
