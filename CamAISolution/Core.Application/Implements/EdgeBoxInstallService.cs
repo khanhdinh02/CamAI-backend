@@ -80,6 +80,7 @@ public class EdgeBoxInstallService(
                 )
             ).Values.FirstOrDefault() ?? throw new NotFoundException("Wrong activation code");
 
+        // TODO: check edge box location occupied
         if (ebInstall.ActivationStatus == EdgeBoxActivationStatus.NotActivated)
         {
             if (ebInstall.EdgeBoxInstallStatus != EdgeBoxInstallStatus.Working)

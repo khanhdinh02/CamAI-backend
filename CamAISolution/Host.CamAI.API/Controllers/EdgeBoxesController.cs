@@ -59,6 +59,15 @@ public class EdgeBoxesController(IEdgeBoxService edgeBoxService, IBaseMapping ma
         return Ok(mapping.Map<EdgeBox, EdgeBoxDto>(updatedEdgeBox));
     }
 
+    // TODO: update edge box status
+
+    [HttpPut("{id}/occupied")]
+    [AccessTokenGuard(Role.Admin)]
+    public async Task UpdateEdgeBoxLocationToOccupied([FromRoute] Guid id)
+    {
+        await edgeBoxService.UpdateLocationStatus(id, EdgeBoxLocation.Occupied);
+    }
+
     [HttpDelete("{id}")]
     [AccessTokenGuard(Role.Admin)]
     public async Task<IActionResult> DeleteEdgeBox([FromRoute] Guid id)
