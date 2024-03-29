@@ -116,6 +116,35 @@ public class EdgeBoxInstallService(
         return ebInstall;
     }
 
+    public async Task<PaginationResult<EdgeBoxInstallActivity>> GetEdgeBoxInstallActivities(
+        EdgeBoxActivityByIdSearchRequest searchRequest
+    )
+    {
+        return await unitOfWork.EdgeBoxInstallActivities.GetAsync(
+            x => x.EdgeBoxInstallId == searchRequest.EdgeBoxInstallId,
+            pageIndex: searchRequest.PageIndex,
+            pageSize: searchRequest.Size
+        );
+    }
+
+    public async Task<PaginationResult<EdgeBoxInstallActivity>> GetCurrentEdgeBoxInstallActivities(
+        EdgeBoxActivityByEdgeBoxIdSearchRequest searchRequest
+    )
+    {
+        var ebInstalls =
+            (
+                await unitOfWork.EdgeBoxInstalls.GetAsync(x =>
+                    x.EdgeBoxId == searchRequest.EdgeBoxId && x.EdgeBoxInstallStatus != EdgeBoxInstallStatus.Disabled
+                )
+            ).Values.FirstOrDefault() ?? throw new NotFoundException("No current install found");
+        return await unitOfWork.EdgeBoxInstallActivities.GetAsync(
+            x => x.EdgeBoxInstallId == ebInstalls.Id,
+            orderBy: x => x.OrderBy(a => a.ModifiedTime),
+            pageIndex: searchRequest.PageIndex,
+            pageSize: searchRequest.Size
+        );
+    }
+
     public async Task<EdgeBoxInstall> UpdateStatus(Guid edgeBoxInstallId, EdgeBoxInstallStatus status)
     {
         var ebInstall =

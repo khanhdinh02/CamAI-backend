@@ -13,6 +13,7 @@ public interface IUnitOfWork : IDisposable, IAsyncDisposable
     ICustomEmployeeRepository Employees { get; }
     IRepository<EdgeBox> EdgeBoxes { get; }
     IRepository<EdgeBoxInstall> EdgeBoxInstalls { get; }
+    IRepository<EdgeBoxInstallActivity> EdgeBoxInstallActivities { get; }
     IRepository<EdgeBoxModel> EdgeBoxModels { get; }
     IRepository<Incident> Incidents { get; }
     IRepository<Evidence> Evidences { get; }
