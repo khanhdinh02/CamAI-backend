@@ -17,6 +17,7 @@
       <PackageReference Include="MassTransit.AspNetCore" />
       <PackageReference Include="MassTransit.Extensions.DependencyInjection" />
       <PackageReference Include="MassTransit.RabbitMQ" />
+      <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" />
       <PackageReference Include="Microsoft.Extensions.Configuration" />
       <PackageReference Include="Microsoft.Extensions.Configuration.Binder" />
       <PackageReference Include="RabbitMQ.Client" />

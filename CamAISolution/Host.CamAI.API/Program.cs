@@ -39,14 +39,12 @@ builder
     .AddBackgroundService()
     .AddCacheService()
     .AddEmailService(builder.Configuration)
-    .AddStreaming()
+    .AddStreaming(builder.Configuration)
     .AddBackgroundService();
 
 builder.Services.AddHttpClient();
 
 builder.ConfigureMassTransit();
-
-WebsocketRelayProcess.Configuration = builder.Configuration.GetSection("Streaming").Get<StreamingConfiguration>()!;
 
 builder.Services.Configure<RouteOptions>(opts =>
 {

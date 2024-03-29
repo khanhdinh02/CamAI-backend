@@ -1,15 +1,19 @@
 ﻿using Core.Application.Exceptions;
 using Core.Domain.Interfaces.Services;
 using MassTransit;
+using Microsoft.Extensions.Options;
 
 namespace Infrastructure.Streaming;
 
 public class StreamingService(
     ICameraService cameraService,
     IEdgeBoxInstallService edgeBoxInstallService,
-    IPublishEndpoint bus
+    IPublishEndpoint bus,
+    IOptions<StreamingConfiguration> confOpt
 ) : IStreamingService
 {
+    private readonly StreamingConfiguration configuration = confOpt.Value;
+
     public async Task<Uri> StreamCamera(Guid id)
     {
         var camera = await cameraService.GetCameraById(id);
@@ -30,9 +34,9 @@ public class StreamingService(
         return GetWebsocketUri(relayPort);
     }
 
-    private static Uri GetHttpUri(RelayInformation relayInformation) =>
-        new($"http://localhost:{relayInformation.HttpPort}/{relayInformation.Secret}");
+    private Uri GetHttpUri(RelayInformation relayInformation) =>
+        new($"http://{configuration.StreamingReceiveDomain}:{relayInformation.HttpPort}/{relayInformation.Secret}");
 
-    private static Uri GetWebsocketUri(RelayInformation relayInformation) =>
-        new($"ws://localhost:{relayInformation.WebsocketPort}");
+    private Uri GetWebsocketUri(RelayInformation relayInformation) =>
+        new($"wss://{configuration.StreamingDomain}/{relayInformation.WebsocketPort}");
 }
