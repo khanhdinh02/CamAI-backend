@@ -186,7 +186,8 @@ public class EdgeBoxInstallService(
                     nameof(EdgeBoxInstall.EdgeBox),
                     $"{nameof(EdgeBoxInstall.Shop)}.{nameof(Shop.Brand)}",
                     $"{nameof(EdgeBoxInstall.Shop)}.{nameof(Shop.Ward)}.{nameof(Ward.District)}.{nameof(District.Province)}"
-                ]
+                ],
+                pageSize: 1
             )
         ).Values.FirstOrDefault();
     }
@@ -196,7 +197,7 @@ public class EdgeBoxInstallService(
         return unitOfWork.EdgeBoxInstalls.GetAsync(new EdgeBoxInstallSearchSpec(searchRequest));
     }
 
-    public async Task<IEnumerable<EdgeBoxInstall>> GetInstallingByShop(Guid shopId)
+    public async Task<PaginationResult<EdgeBoxInstall>> GetInstallingByShop(Guid shopId)
     {
         var user = accountService.GetCurrentAccount();
         var shop = await unitOfWork.Shops.GetByIdAsync(shopId) ?? throw new NotFoundException(typeof(Shop), shopId);
@@ -208,9 +209,9 @@ public class EdgeBoxInstallService(
             throw new ForbiddenException(user, shop);
         }
 
-        return (
+        var installs = (
             await unitOfWork.EdgeBoxInstalls.GetAsync(
-                i => i.EdgeBoxInstallStatus != EdgeBoxInstallStatus.Disabled && i.ShopId == shopId,
+                i => i.ShopId == shopId,
                 includeProperties:
                 [
                     $"{nameof(EdgeBoxInstall.EdgeBox)}.{nameof(EdgeBox.EdgeBoxModel)}",
@@ -220,9 +221,21 @@ public class EdgeBoxInstallService(
                 takeAll: true
             )
         ).Values;
+
+        if (user.Role != Role.Admin)
+            foreach (var i in installs)
+                i.ActivationCode = null;
+
+        return new PaginationResult<EdgeBoxInstall>
+        {
+            PageIndex = 0,
+            PageSize = installs.Count,
+            TotalCount = installs.Count,
+            Values = installs
+        };
     }
 
-    public async Task<IEnumerable<EdgeBoxInstall>> GetInstallingByBrand(Guid brandId)
+    public async Task<PaginationResult<EdgeBoxInstall>> GetInstallingByBrand(Guid brandId)
     {
         var user = accountService.GetCurrentAccount();
         var brand =
@@ -232,9 +245,9 @@ public class EdgeBoxInstallService(
             throw new ForbiddenException(user, brand);
         }
 
-        return (
+        var installs = (
             await unitOfWork.EdgeBoxInstalls.GetAsync(
-                i => i.EdgeBoxInstallStatus != EdgeBoxInstallStatus.Disabled && i.Shop.BrandId == brandId,
+                i => i.Shop.BrandId == brandId,
                 includeProperties:
                 [
                     $"{nameof(EdgeBoxInstall.EdgeBox)}.{nameof(EdgeBox.EdgeBoxModel)}",
@@ -244,5 +257,17 @@ public class EdgeBoxInstallService(
                 takeAll: true
             )
         ).Values;
+
+        if (user.Role != Role.Admin)
+            foreach (var i in installs)
+                i.ActivationCode = null;
+
+        return new PaginationResult<EdgeBoxInstall>
+        {
+            PageIndex = 0,
+            PageSize = installs.Count,
+            TotalCount = installs.Count,
+            Values = installs
+        };
     }
 }

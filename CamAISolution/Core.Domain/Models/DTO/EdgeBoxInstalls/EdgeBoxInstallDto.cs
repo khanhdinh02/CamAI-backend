@@ -8,6 +8,9 @@ public class EdgeBoxInstallDto : BaseDto
     public Guid ShopId { get; set; }
     public string? IpAddress { get; set; }
     public int? Port { get; set; }
+    public string? ActivationCode { get; set; }
+    public DateTime? UninstalledTime { get; set; }
+    public EdgeBoxActivationStatus ActivationStatus { get; set; }
     public EdgeBoxInstallStatus EdgeBoxInstallStatus { get; set; }
 
     public EdgeBoxDto EdgeBox { get; set; } = null!;
