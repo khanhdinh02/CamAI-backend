@@ -8,7 +8,7 @@ namespace Host.CamAI.API.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class AuthController(IAuthService authService) : ControllerBase
+public class AuthController(IAuthService authService, ILogger<AuthController> logger) : ControllerBase
 {
     /// <summary>
     /// Set User-Agent header to Mobile if login with <c>Mobile</c> (Case sensitive)
@@ -16,6 +16,7 @@ public class AuthController(IAuthService authService) : ControllerBase
     [HttpPost]
     public async Task<ActionResult<TokenResponseDto>> Login(LoginDto loginDto)
     {
+        logger.LogInformation($"Request's IP: {HttpContext.Connection.RemoteIpAddress} for login");
         var tokenResponseDto = await authService.GetTokensByUsernameAndPassword(
             loginDto.Username,
             loginDto.Password,
@@ -31,6 +32,8 @@ public class AuthController(IAuthService authService) : ControllerBase
     [HttpPost("refresh")]
     public async Task<ActionResult<string>> RenewToken(RenewTokenDto renewTokenDto)
     {
+        logger.LogInformation($"Request's IP: {HttpContext.Connection.RemoteIpAddress} for refresh token");
+
         return Ok(
             await authService.RenewToken(
                 renewTokenDto.AccessToken,
