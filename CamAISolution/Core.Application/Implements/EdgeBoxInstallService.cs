@@ -1,12 +1,15 @@
+using Core.Application.Events;
 using Core.Application.Exceptions;
 using Core.Application.Specifications.EdgeBoxInstalls.Repositories;
 using Core.Domain.DTO;
 using Core.Domain.Entities;
 using Core.Domain.Enums;
+using Core.Domain.Events;
 using Core.Domain.Interfaces.Emails;
 using Core.Domain.Interfaces.Mappings;
 using Core.Domain.Interfaces.Services;
 using Core.Domain.Models;
+using Core.Domain.Models.Publishers;
 using Core.Domain.Repositories;
 using Core.Domain.Utilities;
 
@@ -16,7 +19,9 @@ public class EdgeBoxInstallService(
     IUnitOfWork unitOfWork,
     IBaseMapping mapper,
     IAccountService accountService,
-    IEmailService emailService
+    IEmailService emailService,
+    IMessageQueueService messageQueueService,
+    IApplicationDelayEventListener applicationDelayEventListener
 ) : IEdgeBoxInstallService
 {
     private const int CodeLength = 16;
@@ -27,7 +32,9 @@ public class EdgeBoxInstallService(
             await unitOfWork.EdgeBoxes.GetByIdAsync(dto.EdgeBoxId)
             ?? throw new NotFoundException(typeof(EdgeBox), dto.EdgeBoxId);
         if (edgeBox.EdgeBoxStatus != EdgeBoxStatus.Active || edgeBox.EdgeBoxLocation != EdgeBoxLocation.Idle)
+        {
             throw new BadRequestException("Edge box is not active or idle");
+        }
 
         var shop =
             (
@@ -62,25 +69,80 @@ public class EdgeBoxInstallService(
         var user = accountService.GetCurrentAccount();
         var ebInstall =
             (
-                await unitOfWork.EdgeBoxInstalls.GetAsync(i =>
-                    i.ActivationCode == dto.ActivationCode
-                    && i.EdgeBoxInstallStatus != EdgeBoxInstallStatus.Disabled
-                    && i.ShopId == dto.ShopId
-                    && i.Shop.BrandId == user.BrandId
+                await unitOfWork.EdgeBoxInstalls.GetAsync(
+                    i =>
+                        i.ActivationCode == dto.ActivationCode
+                        && i.EdgeBoxInstallStatus != EdgeBoxInstallStatus.Disabled
+                        && i.ShopId == dto.ShopId
+                        && i.Shop.BrandId == user.BrandId,
+                    includeProperties: [nameof(EdgeBoxInstall.EdgeBox)],
+                    disableTracking: false
                 )
             ).Values.FirstOrDefault() ?? throw new NotFoundException("Wrong activation code");
 
         if (ebInstall.ActivationStatus == EdgeBoxActivationStatus.NotActivated)
         {
             if (ebInstall.EdgeBoxInstallStatus != EdgeBoxInstallStatus.Working)
+            {
                 ebInstall.ActivationStatus = EdgeBoxActivationStatus.Failed;
+                await unitOfWork.CompleteAsync();
+            }
             else
             {
                 ebInstall.ActivationStatus = EdgeBoxActivationStatus.Pending;
-                // TODO: Send message to activate edge box
+                if (await unitOfWork.CompleteAsync() > 0)
+                {
+                    await messageQueueService.Publish(
+                        new ActivatedEdgeBoxMessage
+                        {
+                            Message = "Activate edge box",
+                            RoutingKey = ebInstall.EdgeBoxId.ToString("N")
+                        }
+                    );
+
+                    await applicationDelayEventListener.AddEvent(
+                        $"ActivateEdgeBox{ebInstall.Id:N}",
+                        new EdgeBoxAfterActivationFailedDelayEvent(
+                            TimeSpan.FromMinutes(5),
+                            ebInstall.EdgeBoxId,
+                            ebInstall.Id
+                        ),
+                        true
+                    );
+                }
             }
         }
+
         return ebInstall;
+    }
+
+    public async Task<PaginationResult<EdgeBoxInstallActivity>> GetEdgeBoxInstallActivities(
+        EdgeBoxActivityByIdSearchRequest searchRequest
+    )
+    {
+        return await unitOfWork.EdgeBoxInstallActivities.GetAsync(
+            x => x.EdgeBoxInstallId == searchRequest.EdgeBoxInstallId,
+            pageIndex: searchRequest.PageIndex,
+            pageSize: searchRequest.Size
+        );
+    }
+
+    public async Task<PaginationResult<EdgeBoxInstallActivity>> GetCurrentEdgeBoxInstallActivities(
+        EdgeBoxActivityByEdgeBoxIdSearchRequest searchRequest
+    )
+    {
+        var ebInstalls =
+            (
+                await unitOfWork.EdgeBoxInstalls.GetAsync(x =>
+                    x.EdgeBoxId == searchRequest.EdgeBoxId && x.EdgeBoxInstallStatus != EdgeBoxInstallStatus.Disabled
+                )
+            ).Values.FirstOrDefault() ?? throw new NotFoundException("No current install found");
+        return await unitOfWork.EdgeBoxInstallActivities.GetAsync(
+            x => x.EdgeBoxInstallId == ebInstalls.Id,
+            orderBy: x => x.OrderBy(a => a.ModifiedTime),
+            pageIndex: searchRequest.PageIndex,
+            pageSize: searchRequest.Size
+        );
     }
 
     public async Task<EdgeBoxInstall> UpdateStatus(Guid edgeBoxInstallId, EdgeBoxInstallStatus status)
@@ -103,13 +165,14 @@ public class EdgeBoxInstallService(
                         Description = $"Update status from {edgeBoxInstall.EdgeBoxInstallStatus} to {status}",
                         NewStatus = status,
                         OldStatus = edgeBoxInstall.EdgeBoxInstallStatus,
-                        EdgeBoxInstallId = edgeBoxInstall.Id,
+                        EdgeBoxInstallId = edgeBoxInstall.Id
                     }
                 );
             edgeBoxInstall.EdgeBoxInstallStatus = status;
             unitOfWork.EdgeBoxInstalls.Update(edgeBoxInstall);
             await unitOfWork.CompleteAsync();
         }
+
         return edgeBoxInstall;
     }
 
@@ -123,7 +186,8 @@ public class EdgeBoxInstallService(
                     nameof(EdgeBoxInstall.EdgeBox),
                     $"{nameof(EdgeBoxInstall.Shop)}.{nameof(Shop.Brand)}",
                     $"{nameof(EdgeBoxInstall.Shop)}.{nameof(Shop.Ward)}.{nameof(Ward.District)}.{nameof(District.Province)}"
-                ]
+                ],
+                pageSize: 1
             )
         ).Values.FirstOrDefault();
     }
@@ -133,7 +197,7 @@ public class EdgeBoxInstallService(
         return unitOfWork.EdgeBoxInstalls.GetAsync(new EdgeBoxInstallSearchSpec(searchRequest));
     }
 
-    public async Task<IEnumerable<EdgeBoxInstall>> GetInstallingByShop(Guid shopId)
+    public async Task<PaginationResult<EdgeBoxInstall>> GetInstallingByShop(Guid shopId)
     {
         var user = accountService.GetCurrentAccount();
         var shop = await unitOfWork.Shops.GetByIdAsync(shopId) ?? throw new NotFoundException(typeof(Shop), shopId);
@@ -141,11 +205,13 @@ public class EdgeBoxInstallService(
             (user.Role == Role.BrandManager && shop.BrandId != user.BrandId)
             || (user.Role == Role.ShopManager && shop.ShopManagerId != user.Id)
         )
+        {
             throw new ForbiddenException(user, shop);
+        }
 
-        return (
+        var installs = (
             await unitOfWork.EdgeBoxInstalls.GetAsync(
-                i => i.EdgeBoxInstallStatus != EdgeBoxInstallStatus.Disabled && i.ShopId == shopId,
+                i => i.ShopId == shopId,
                 includeProperties:
                 [
                     $"{nameof(EdgeBoxInstall.EdgeBox)}.{nameof(EdgeBox.EdgeBoxModel)}",
@@ -155,19 +221,33 @@ public class EdgeBoxInstallService(
                 takeAll: true
             )
         ).Values;
+
+        if (user.Role != Role.Admin)
+            foreach (var i in installs)
+                i.ActivationCode = null;
+
+        return new PaginationResult<EdgeBoxInstall>
+        {
+            PageIndex = 0,
+            PageSize = installs.Count,
+            TotalCount = installs.Count,
+            Values = installs
+        };
     }
 
-    public async Task<IEnumerable<EdgeBoxInstall>> GetInstallingByBrand(Guid brandId)
+    public async Task<PaginationResult<EdgeBoxInstall>> GetInstallingByBrand(Guid brandId)
     {
         var user = accountService.GetCurrentAccount();
         var brand =
             await unitOfWork.Brands.GetByIdAsync(brandId) ?? throw new NotFoundException(typeof(Brand), brandId);
         if (user.Role == Role.BrandManager && brandId != user.BrandId)
+        {
             throw new ForbiddenException(user, brand);
+        }
 
-        return (
+        var installs = (
             await unitOfWork.EdgeBoxInstalls.GetAsync(
-                i => i.EdgeBoxInstallStatus != EdgeBoxInstallStatus.Disabled && i.Shop.BrandId == brandId,
+                i => i.Shop.BrandId == brandId,
                 includeProperties:
                 [
                     $"{nameof(EdgeBoxInstall.EdgeBox)}.{nameof(EdgeBox.EdgeBoxModel)}",
@@ -177,5 +257,17 @@ public class EdgeBoxInstallService(
                 takeAll: true
             )
         ).Values;
+
+        if (user.Role != Role.Admin)
+            foreach (var i in installs)
+                i.ActivationCode = null;
+
+        return new PaginationResult<EdgeBoxInstall>
+        {
+            PageIndex = 0,
+            PageSize = installs.Count,
+            TotalCount = installs.Count,
+            Values = installs
+        };
     }
 }

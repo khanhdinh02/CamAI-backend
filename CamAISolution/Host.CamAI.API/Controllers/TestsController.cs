@@ -10,7 +10,11 @@ namespace Host.CamAI.API.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class TestsController(IBaseMapping mapping, IIncidentService incidentService, EventManager eventManager)
+public class TestsController(
+    IBaseMapping mapping,
+    IIncidentService incidentService,
+    EventManager eventManager
+)
     : ControllerBase
 {
     [HttpGet]
@@ -26,7 +30,7 @@ public class TestsController(IBaseMapping mapping, IIncidentService incidentServ
         {
             Name = message.Name,
             Email = message.Email,
-            Phone = message.Phone,
+            Phone = message.Phone
         };
         eventManager.NotifyBrandChanged(brand);
     }
@@ -38,7 +42,7 @@ public class TestsController(IBaseMapping mapping, IIncidentService incidentServ
         {
             Name = message.Name,
             AddressLine = message.Address,
-            Phone = message.Phone,
+            Phone = message.Phone
         };
         eventManager.NotifyShopChanged(shop);
     }

@@ -106,6 +106,7 @@ public class JwtService(
 
     public async Task SetCurrentUserToSystemHandler()
     {
+        //TODO[Dat] : get system handler by role
         using var scope = serviceProvider.CreateScope();
         currentUser = (
             await scope

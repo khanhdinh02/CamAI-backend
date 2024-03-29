@@ -3,16 +3,24 @@ using System.Text.Json.Serialization;
 using Core.Application.Events;
 using Core.Application.Exceptions;
 using Core.Application.Implements;
+using Core.Domain.Events;
 using Core.Domain.Interfaces.Services;
 using Core.Domain.Models.Configurations;
 using Core.Domain.Services;
 using Host.CamAI.API.BackgroundServices;
+using Host.CamAI.API.Events;
 using Microsoft.OpenApi.Models;
 
 namespace Host.CamAI.API;
 
 public static class ApiDependencyInjection
 {
+    public static IServiceCollection AddEventListener(this IServiceCollection services)
+    {
+        services.AddSingleton<IApplicationDelayEventListener, ApplicationDelayEventListener>();
+        return services;
+    }
+
     public static IServiceCollection AddServices(this IServiceCollection services)
     {
         services.AddScoped<IAccountService, AccountService>();
@@ -55,10 +63,7 @@ public static class ApiDependencyInjection
     {
         services
             .AddControllers()
-            .AddJsonOptions(config =>
-            {
-                config.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
-            });
+            .AddJsonOptions(config => { config.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()); });
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen(option =>
         {

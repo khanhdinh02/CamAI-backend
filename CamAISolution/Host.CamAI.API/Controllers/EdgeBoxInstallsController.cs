@@ -22,10 +22,10 @@ public class EdgeBoxInstallsController(IEdgeBoxInstallService edgeBoxInstallServ
     /// <returns></returns>
     [HttpGet("/api/shops/{shopId}/installs")]
     [AccessTokenGuard(Role.Admin, Role.BrandManager, Role.ShopManager)]
-    public async Task<IEnumerable<EdgeBoxInstallDto>> GetEdgeBoxInstallsByShop(Guid shopId)
+    public async Task<PaginationResult<EdgeBoxInstallDto>> GetEdgeBoxInstallsByShop(Guid shopId)
     {
         var edgeBoxInstalls = await edgeBoxInstallService.GetInstallingByShop(shopId);
-        return edgeBoxInstalls.Select(mapper.Map<EdgeBoxInstall, EdgeBoxInstallDto>);
+        return mapper.Map<EdgeBoxInstall, EdgeBoxInstallDto>(edgeBoxInstalls);
     }
 
     /// <summary>
@@ -36,10 +36,23 @@ public class EdgeBoxInstallsController(IEdgeBoxInstallService edgeBoxInstallServ
     /// <returns></returns>
     [HttpGet("/api/brands/{brandId}/installs")]
     [AccessTokenGuard(Role.Admin, Role.BrandManager)]
-    public async Task<IEnumerable<EdgeBoxInstallDto>> GetEdgeBoxInstallsByBrand(Guid brandId)
+    public async Task<PaginationResult<EdgeBoxInstallDto>> GetEdgeBoxInstallsByBrand(Guid brandId)
     {
         var edgeBoxInstalls = await edgeBoxInstallService.GetInstallingByBrand(brandId);
-        return edgeBoxInstalls.Select(mapper.Map<EdgeBoxInstall, EdgeBoxInstallDto>);
+        return mapper.Map<EdgeBoxInstall, EdgeBoxInstallDto>(edgeBoxInstalls);
+    }
+
+    [HttpGet("{id}/activities")]
+    [AccessTokenGuard(Role.Admin, Role.BrandManager, Role.ShopManager)]
+    public async Task<PaginationResult<EdgeBoxInstallActivityDto>> GetEdgeBoxInstallActivity(
+        [FromRoute] Guid id,
+        BaseSearchRequest searchRequest
+    )
+    {
+        var request = mapper.Map<BaseSearchRequest, EdgeBoxActivityByIdSearchRequest>(searchRequest);
+        request.EdgeBoxInstallId = id;
+        var result = await edgeBoxInstallService.GetEdgeBoxInstallActivities(request);
+        return mapper.Map<EdgeBoxInstallActivity, EdgeBoxInstallActivityDto>(result);
     }
 
     /// <summary>
@@ -84,6 +97,8 @@ public class EdgeBoxInstallsController(IEdgeBoxInstallService edgeBoxInstallServ
     public async Task<EdgeBoxInstallDto> ActivateEdgeBox(ActivateEdgeBoxDto dto)
     {
         var ebInstall = await edgeBoxInstallService.ActivateEdgeBox(dto);
-        return mapper.Map<EdgeBoxInstall, EdgeBoxInstallDto>(ebInstall);
+        var res = mapper.Map<EdgeBoxInstall, EdgeBoxInstallDto>(ebInstall);
+        res.ActivationCode = null;
+        return res;
     }
 }

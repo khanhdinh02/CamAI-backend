@@ -5,5 +5,6 @@ namespace Core.Domain.Enums;
 [Lookup]
 public enum NotificationType
 {
-    EdgeBoxUnhealthy = 0
+    EdgeBoxUnhealthy = 0,
+    EdgeBoxInstallActivation = 1
 }
