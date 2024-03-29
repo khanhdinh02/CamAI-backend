@@ -3,4 +3,5 @@
 public static class PublisherConstant
 {
     public const string UpdateData = "UpdateData";
+    public const string Streaming = "Streaming";
 }

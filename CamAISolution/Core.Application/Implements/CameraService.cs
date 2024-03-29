@@ -27,7 +27,7 @@ public class CameraService(IAccountService accountService, IShopService shopServ
             (
                 await unitOfWork.Cameras.GetAsync(
                     x => x.Id == id && x.Status == CameraStatus.Active,
-                    includeProperties: ["shop"]
+                    includeProperties: ["Shop"]
                 )
             ).Values.FirstOrDefault() ?? throw new NotFoundException(typeof(Camera), id);
 

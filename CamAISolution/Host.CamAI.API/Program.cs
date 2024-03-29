@@ -11,6 +11,7 @@ using Infrastructure.Notification;
 using Infrastructure.Notification.Models;
 using Infrastructure.Observer;
 using Infrastructure.Repositories;
+using Infrastructure.Streaming;
 
 var builder = WebApplication.CreateBuilder(args).ConfigureSerilog();
 
@@ -38,11 +39,14 @@ builder
     .AddBackgroundService()
     .AddCacheService()
     .AddEmailService(builder.Configuration)
+    .AddStreaming()
     .AddBackgroundService();
 
 builder.Services.AddHttpClient();
 
 builder.ConfigureMassTransit();
+
+WebsocketRelayProcess.Configuration = builder.Configuration.GetSection("Streaming").Get<StreamingConfiguration>()!;
 
 builder.Services.Configure<RouteOptions>(opts =>
 {
