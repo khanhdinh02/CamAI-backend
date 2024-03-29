@@ -123,7 +123,8 @@ public class EdgeBoxInstallService(
                     nameof(EdgeBoxInstall.EdgeBox),
                     $"{nameof(EdgeBoxInstall.Shop)}.{nameof(Shop.Brand)}",
                     $"{nameof(EdgeBoxInstall.Shop)}.{nameof(Shop.Ward)}.{nameof(Ward.District)}.{nameof(District.Province)}"
-                ]
+                ],
+                pageSize: 1
             )
         ).Values.FirstOrDefault();
     }
