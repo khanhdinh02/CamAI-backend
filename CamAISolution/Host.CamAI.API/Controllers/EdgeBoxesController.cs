@@ -45,16 +45,15 @@ public class EdgeBoxesController(
         return Ok(mapping.Map<EdgeBox, EdgeBoxDto>(edgeBox));
     }
 
-    [HttpGet("{id}/activities")]
+    [HttpGet("{edgeBoxId}/activities")]
     [AccessTokenGuard(Role.Admin, Role.BrandManager, Role.ShopManager)]
     public async Task<PaginationResult<EdgeBoxInstallActivityDto>> GetEdgeBoxActivity(
-        Guid id,
-        BaseSearchRequest searchRequest
+        [FromRoute] Guid edgeBoxId,
+        [FromQuery] EdgeBoxActivityByEdgeBoxIdSearchRequest searchRequest
     )
     {
-        var request = mapping.Map<BaseSearchRequest, EdgeBoxActivityByEdgeBoxIdSearchRequest>(searchRequest);
-        request.EdgeBoxId = id;
-        var result = await edgeBoxInstallService.GetCurrentEdgeBoxInstallActivities(request);
+        searchRequest.EdgeBoxId = edgeBoxId;
+        var result = await edgeBoxInstallService.GetCurrentEdgeBoxInstallActivities(searchRequest);
         return mapping.Map<EdgeBoxInstallActivity, EdgeBoxInstallActivityDto>(result);
     }
 
