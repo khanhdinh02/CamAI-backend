@@ -4,8 +4,13 @@ namespace Core.Domain.Services;
 
 public interface IAuthService
 {
-    Task<TokenResponseDto> GetTokensByUsernameAndPassword(string email, string password);
-    public Task<string> RenewToken(string oldAccessToken, string refreshToken);
+    Task<TokenResponseDto> GetTokensByUsernameAndPassword(
+        string email,
+        string password,
+        bool isFromMobile,
+        string userIp
+    );
+    public Task<string> RenewToken(string oldAccessToken, string refreshToken, bool isFromMobile, string userIp);
 
     Task ChangePassword(ChangePasswordDto changePasswordDto);
 }
