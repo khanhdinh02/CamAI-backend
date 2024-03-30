@@ -1,4 +1,3 @@
-using System.ComponentModel.DataAnnotations;
 using Core.Domain.DTO;
 using Core.Domain.Entities;
 using Core.Domain.Enums;
