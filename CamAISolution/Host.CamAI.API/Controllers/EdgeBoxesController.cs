@@ -59,13 +59,33 @@ public class EdgeBoxesController(IEdgeBoxService edgeBoxService, IBaseMapping ma
         return Ok(mapping.Map<EdgeBox, EdgeBoxDto>(updatedEdgeBox));
     }
 
-    // TODO: update edge box status
-
-    [HttpPut("{id}/occupied")]
+    /// <summary>
+    /// Allow admin to update the status of edge box (hardware)
+    /// Active -> Broken: allow for all
+    /// Active -> Inactive/Disposed, Broken -> Disposed: the latest eb install must be disabled
+    /// </summary>
+    /// <param name="id"></param>
+    /// <param name="dto"></param>
+    [HttpPut("{id}/status")]
     [AccessTokenGuard(Role.Admin)]
-    public async Task UpdateEdgeBoxLocationToOccupied([FromRoute] Guid id)
+    public async Task UpdateEdgeBoxStatus([FromRoute] Guid id, [FromBody] UpdateEdgeBoxStatusDto dto)
     {
-        await edgeBoxService.UpdateLocationStatus(id, EdgeBoxLocation.Occupied);
+        await edgeBoxService.UpdateStatus(id, dto.Status);
+    }
+
+    /// <summary>
+    /// Allow admin to update location of edge box
+    /// Only 2 cases are allowed
+    /// 1. Installing -> Occupied
+    /// 2. Uninstalling -> Idle
+    /// </summary>
+    /// <param name="id"></param>
+    /// <param name="dto"></param>
+    [HttpPut("{id}/location")]
+    [AccessTokenGuard(Role.Admin)]
+    public async Task UpdateEdgeBoxLocation([FromRoute] Guid id, [FromBody] UpdateEdgeBoxLocationDto dto)
+    {
+        await edgeBoxService.UpdateEdgeBoxLocation(id, dto.Location);
     }
 
     [HttpDelete("{id}")]

@@ -159,11 +159,7 @@ public class EdgeBoxService(
     {
         var edgeBox = await unitOfWork.EdgeBoxes.GetByIdAsync(id) ?? throw new NotFoundException(typeof(EdgeBox), id);
         if (edgeBox.EdgeBoxStatus == status)
-        {
             return;
-        }
-
-        await unitOfWork.BeginTransaction();
 
         // Active -> *, broken -> disposed: check no edge box install valid
         // Active -> broken: allow
@@ -172,7 +168,8 @@ public class EdgeBoxService(
             || (edgeBox.EdgeBoxStatus == EdgeBoxStatus.Broken && status == EdgeBoxStatus.Disposed)
         )
         {
-            if (await edgeBoxInstallService.GetLatestInstallingByEdgeBox(id) == null)
+            var latestInstallingByEdgeBox = await edgeBoxInstallService.GetLatestInstallingByEdgeBox(id);
+            if (latestInstallingByEdgeBox is not { EdgeBoxInstallStatus: EdgeBoxInstallStatus.Disabled })
             {
                 throw new BadRequestException("Cannot change status of edge box that is installing");
             }
@@ -191,26 +188,30 @@ public class EdgeBoxService(
             );
         edgeBox.EdgeBoxStatus = status;
         unitOfWork.EdgeBoxes.Update(edgeBox);
-        await unitOfWork.CommitTransaction();
+        await unitOfWork.CompleteAsync();
     }
 
-    public async Task UpdateLocationStatus(Guid id, EdgeBoxLocation location)
+    public async Task UpdateEdgeBoxLocation(Guid id, EdgeBoxLocation location)
     {
         var edgeBox = await unitOfWork.EdgeBoxes.GetByIdAsync(id) ?? throw new NotFoundException(typeof(EdgeBox), id);
         if (edgeBox.EdgeBoxLocation == location)
             return;
 
-        // TODO: uninstalling -> idle
-        await unitOfWork.BeginTransaction();
-        if (edgeBox.EdgeBoxLocation == EdgeBoxLocation.Installing && location == EdgeBoxLocation.Occupied)
-            edgeBox.EdgeBoxLocation = location;
-        else
-            throw new ForbiddenException(
-                $"Cannot update current location {edgeBox.EdgeBoxLocation} to location to location {location}"
-            );
+        switch (edgeBox.EdgeBoxLocation)
+        {
+            // installing -> occupied
+            case EdgeBoxLocation.Installing when location == EdgeBoxLocation.Occupied:
+            //uninstalling -> idle
+            case EdgeBoxLocation.Uninstalling when location == EdgeBoxLocation.Idle:
+                edgeBox.EdgeBoxLocation = location;
+                break;
+            default:
+                throw new ForbiddenException(
+                    $"Cannot update current location {edgeBox.EdgeBoxLocation} to location to location {location}"
+                );
+        }
 
         unitOfWork.EdgeBoxes.Update(edgeBox);
         await unitOfWork.CompleteAsync();
-        await unitOfWork.CommitTransaction();
     }
 }
