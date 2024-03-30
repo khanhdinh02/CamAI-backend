@@ -49,34 +49,113 @@ public class ReportService(
 
     private HumanCountBuffer CreateHumanCountBufferResult(Guid shopId) => new(subject, shopId);
 
-    public async Task<List<HumanCountModel>> GetHumanCountDataForDate(DateOnly date)
+    public async Task<IEnumerable<HumanCountDto>> GetHumanCountData(DateOnly date, ReportTimeRange timeRange)
     {
         var account = accountService.GetCurrentAccount();
         CheckAuthority(account);
         var shopId = account.ManagingShop!.Id;
 
-        return await GetHumanCountDataForShop(date, shopId);
+        return await GetHumanCountDataInTimeRange(shopId, date, ReportTimeRange.Day);
     }
 
-    public async Task<List<HumanCountModel>> GetHumanCountDataForDate(Guid shopId, DateOnly date)
+    public async Task<IEnumerable<HumanCountDto>> GetHumanCountData(
+        Guid shopId,
+        DateOnly date,
+        ReportTimeRange timeRange
+    )
     {
         // validation is already in shop service
         await shopService.GetShopById(shopId);
-        return await GetHumanCountDataForShop(date, shopId);
+        return await GetHumanCountDataInTimeRange(shopId, date, ReportTimeRange.Day);
     }
 
-    private async Task<List<HumanCountModel>> GetHumanCountDataForShop(DateOnly date, Guid shopId)
+    private async Task<IEnumerable<HumanCountDto>> GetHumanCountDataInTimeRange(
+        Guid shopId,
+        DateOnly startDate,
+        ReportTimeRange timeRange
+    )
     {
-        // shopId -> date -> time
-        var outputPath = Path.Combine(baseOutputDir, shopId.ToString("N"), date.ToFilePath());
-        try
+        IEnumerable<HumanCountDto> result = [];
+
+        // Calculate EndDate and GroupByTime base on time range.
+        // GroupByTime is a Func to pass to GroupBy method.
+        // Each group is a column in the chart.
+        var (endDate, groupByTime) = timeRange switch
         {
-            var lines = await File.ReadAllLinesAsync(outputPath);
-            return lines.Select(l => JsonSerializer.Deserialize<HumanCountModel>(l)!).ToList();
-        }
-        catch (Exception)
+            ReportTimeRange.Day
+                => (
+                    startDate.AddDays(1),
+                    (Func<HumanCountModel, DateTime>)(
+                        m =>
+                            new DateTime(
+                                DateOnly.FromDateTime(m.Time),
+                                new TimeOnly(m.Time.Hour, m.Time.Minute / 30 * 30), // 30 min gap
+                                DateTimeKind.Utc
+                            )
+                    )
+                ),
+            ReportTimeRange.Week
+                => (
+                    startDate.AddDays(7),
+                    m =>
+                        new DateTime(
+                            DateOnly.FromDateTime(m.Time),
+                            new TimeOnly(m.Time.Hour / 12 * 12), // 1/2 day gap
+                            DateTimeKind.Utc
+                        )
+                ),
+            ReportTimeRange.Month
+                => (
+                    startDate.AddMonths(1),
+                    m =>
+                        new DateTime(
+                            DateOnly.FromDateTime(m.Time), // 1 day gap
+                            TimeOnly.MinValue,
+                            DateTimeKind.Utc
+                        )
+                ),
+            _ => throw new ArgumentOutOfRangeException(nameof(timeRange), timeRange, null)
+        };
+
+        for (var date = startDate; date < endDate; date = date.AddDays(1))
         {
-            throw new NotFoundException($"Cannot find human count data for date {date} and shop {shopId}");
+            // shopId -> date -> time
+            var outputPath = Path.Combine(baseOutputDir, shopId.ToString("N"), date.ToFilePath());
+            try
+            {
+                var lines = await File.ReadAllLinesAsync(outputPath);
+
+                var resultForDate = lines
+                    .Select(l => JsonSerializer.Deserialize<HumanCountModel>(l)!)
+                    .OrderBy(r => r.Time)
+                    .GroupBy(groupByTime)
+                    .Select(group =>
+                    {
+                        // Generate a column of the chart
+                        var count = group.Count();
+                        var orderedGroup = group.OrderBy(r => r.Total);
+                        var median = int.IsEvenInteger(count)
+                            ? (orderedGroup.ElementAt(count / 2).Total + orderedGroup.ElementAt(count / 2 - 1).Total)
+                                / 2.0f
+                            : orderedGroup.ElementAt(count / 2).Total;
+                        return new HumanCountDto
+                        {
+                            ShopId = shopId,
+                            Time = group.Key,
+                            Low = group.Min(r => r.Total),
+                            High = group.Max(r => r.Total),
+                            Open = group.First().Total,
+                            Close = group.Last().Total,
+                            Median = median
+                        };
+                    });
+                result = result.Concat(resultForDate);
+            }
+            catch (Exception)
+            {
+                throw new NotFoundException($"Cannot find human count data for date {date} and shop {shopId}");
+            }
         }
+        return result;
     }
 }

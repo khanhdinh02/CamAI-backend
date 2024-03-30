@@ -1,6 +1,6 @@
+using Core.Domain.DTO;
 using Core.Domain.Enums;
 using Core.Domain.Interfaces.Services;
-using Core.Domain.Models.Consumers;
 using Infrastructure.Jwt.Attribute;
 using Microsoft.AspNetCore.Mvc;
 
@@ -51,15 +51,19 @@ public class ReportsController(IReportService reportService) : ControllerBase
     /// </summary>
     [HttpGet("customer")]
     // [AccessTokenGuard(Role.ShopManager)]
-    public async Task<List<HumanCountModel>> GetHumanCountData([FromQuery] DateOnly date)
+    public async Task<IEnumerable<HumanCountDto>> GetHumanCountData(DateOnly date, ReportTimeRange timeRange)
     {
-        return await reportService.GetHumanCountDataForDate(date);
+        return await reportService.GetHumanCountData(date, timeRange);
     }
 
     [HttpGet("{shopId}/customer")]
     // [AccessTokenGuard(Role.ShopManager, Role.BrandManager)]
-    public async Task<List<HumanCountModel>> GetHumanCountData([FromRoute] Guid shopId, [FromQuery] DateOnly date)
+    public async Task<IEnumerable<HumanCountDto>> GetHumanCountData(
+        [FromRoute] Guid shopId,
+        [FromQuery] DateOnly date,
+        [FromQuery] ReportTimeRange timeRange
+    )
     {
-        return await reportService.GetHumanCountDataForDate(shopId, date);
+        return await reportService.GetHumanCountData(shopId, date, timeRange);
     }
 }
