@@ -9,6 +9,12 @@ public interface IEdgeBoxInstallService
 {
     Task<EdgeBoxInstall> LeaseEdgeBox(CreateEdgeBoxInstallDto dto);
     Task<EdgeBoxInstall> ActivateEdgeBox(ActivateEdgeBoxDto dto);
+    Task<PaginationResult<EdgeBoxInstallActivity>> GetEdgeBoxInstallActivities(
+        EdgeBoxActivityByIdSearchRequest searchRequest
+    );
+    Task<PaginationResult<EdgeBoxInstallActivity>> GetCurrentEdgeBoxInstallActivities(
+        EdgeBoxActivityByEdgeBoxIdSearchRequest searchRequest
+    );
 
     /// <summary>
     /// If <c>edgeBoxInstall</c> has been fetched, use <see cref="UpdateStatus(EdgeBoxInstall, EdgeBoxInstallStatus)"/> to avoid fetching again.
@@ -28,7 +34,7 @@ public interface IEdgeBoxInstallService
     /// </summary>
     /// <param name="shopId"></param>
     /// <returns></returns>
-    Task<IEnumerable<EdgeBoxInstall>> GetInstallingByShop(Guid shopId);
+    Task<PaginationResult<EdgeBoxInstall>> GetInstallingByShop(Guid shopId);
 
     Task<EdgeBoxInstall?> GetCurrentInstallationByShop(Guid shopId);
 
@@ -37,5 +43,5 @@ public interface IEdgeBoxInstallService
     /// </summary>
     /// <param name="brandId"></param>
     /// <returns></returns>
-    Task<IEnumerable<EdgeBoxInstall>> GetInstallingByBrand(Guid brandId);
+    Task<PaginationResult<EdgeBoxInstall>> GetInstallingByBrand(Guid brandId);
 }

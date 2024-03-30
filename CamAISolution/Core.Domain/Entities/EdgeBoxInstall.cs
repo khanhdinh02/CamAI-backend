@@ -13,6 +13,7 @@ public class EdgeBoxInstall : BusinessEntity
     public string? IpAddress { get; set; } = null!;
     public int? Port { get; set; }
     public string? ActivationCode { get; set; }
+    public DateTime? UninstalledTime { get; set; }
     public EdgeBoxActivationStatus ActivationStatus { get; set; }
     public EdgeBoxInstallStatus EdgeBoxInstallStatus { get; set; }
 

@@ -10,16 +10,18 @@ namespace Core.Application.Implements;
 
 public class AuthService(IJwtService jwtService, IAccountService accountService, IUnitOfWork unitOfWork) : IAuthService
 {
-    public async Task<TokenResponseDto> GetTokensByUsernameAndPassword(string email, string password)
+    public async Task<TokenResponseDto> GetTokensByUsernameAndPassword(
+        string email,
+        string password,
+        bool isFromMobile,
+        string userIp
+    )
     {
-        var foundAccount = await unitOfWork
-            .Accounts
-            .GetAsync(
-                expression: a =>
-                    a.Email == email
-                    && (a.AccountStatus == AccountStatus.Active || a.AccountStatus == AccountStatus.New),
-                orderBy: e => e.OrderBy(a => a.Id)
-            );
+        var foundAccount = await unitOfWork.Accounts.GetAsync(
+            expression: a =>
+                a.Email == email && (a.AccountStatus == AccountStatus.Active || a.AccountStatus == AccountStatus.New),
+            orderBy: e => e.OrderBy(a => a.Id)
+        );
         if (foundAccount.Values.Count == 0)
             throw new UnauthorizedException("Wrong email or password");
 
@@ -27,27 +29,47 @@ public class AuthService(IJwtService jwtService, IAccountService accountService,
         var isHashedCorrect = Hasher.Verify(password, account.Password);
         if (!isHashedCorrect)
             throw new UnauthorizedException("Wrong email or password");
-
+        TokenType accessTokenType = TokenType.WebAccessToken;
+        TokenType refreshTokenType = TokenType.WebRefreshToken;
+        if (isFromMobile)
+        {
+            accessTokenType = TokenType.MobileAccessToken;
+            refreshTokenType = TokenType.MobileRefreshToken;
+        }
         var role = account.Role;
-        var accessToken = jwtService.GenerateToken(account.Id, role, account.AccountStatus, TokenType.AccessToken);
-        var refreshToken = jwtService.GenerateToken(account.Id, role, TokenType.RefreshToken);
+        var accessToken = jwtService.GenerateToken(account.Id, role, account.AccountStatus, accessTokenType, userIp);
+        var refreshToken = jwtService.GenerateToken(account.Id, role, refreshTokenType, userIp);
         return new TokenResponseDto { AccessToken = accessToken, RefreshToken = refreshToken };
     }
 
     // TODO [Huy]: check account status before renew token
-    // TODO [Huy]: check refreshToken in storage (redis)
-    public async Task<string> RenewToken(string oldAccessToken, string refreshToken)
+    public async Task<string> RenewToken(string oldAccessToken, string refreshToken, bool isFromMobile, string userIp)
     {
-        var accessTokenDetail = jwtService.ValidateToken(oldAccessToken, TokenType.AccessToken, isValidateTime: false);
-        var refreshTokenDetail = jwtService.ValidateToken(refreshToken, TokenType.RefreshToken);
+        TokenType accessTokenType = TokenType.WebAccessToken;
+        TokenType refreshTokenType = TokenType.WebRefreshToken;
+        if (isFromMobile)
+        {
+            accessTokenType = TokenType.MobileAccessToken;
+            refreshTokenType = TokenType.MobileRefreshToken;
+        }
+        var accessTokenDetail = jwtService.ValidateToken(
+            oldAccessToken,
+            accessTokenType,
+            userIp,
+            isValidateTime: false
+        );
+        var refreshTokenDetail = jwtService.ValidateToken(refreshToken, refreshTokenType, userIp);
 
         if (accessTokenDetail.UserId != refreshTokenDetail.UserId)
             throw new UnauthorizedException("Invalid Tokens");
         if (accessTokenDetail.Token == null)
             throw new UnauthorizedException("Invalid Tokens");
 
-        var account = await accountService.GetAccountById(accessTokenDetail.UserId);
-        return jwtService.GenerateToken(account.Id, account.Role, account.AccountStatus, TokenType.AccessToken);
+        var account = await accountService.GetAccountById(
+            accessTokenDetail.UserId,
+            includeAdmin: accountService.GetCurrentAccount().Role == Role.Admin
+        );
+        return jwtService.GenerateToken(account.Id, account.Role, account.AccountStatus, accessTokenType, userIp);
     }
 
     public async Task ChangePassword(ChangePasswordDto changePasswordDto)

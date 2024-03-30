@@ -1,4 +1,9 @@
 using Core.Application.Events;
+using Core.Application.Specifications;
+using Core.Domain.Constants;
+using Core.Domain.Entities;
+using Core.Domain.Enums;
+using Core.Domain.Repositories;
 using Host.CamAI.API;
 using Host.CamAI.API.Middlewares;
 using Host.CamAI.API.Models;
@@ -11,6 +16,7 @@ using Infrastructure.Notification;
 using Infrastructure.Notification.Models;
 using Infrastructure.Observer;
 using Infrastructure.Repositories;
+using Microsoft.Extensions.Caching.Memory;
 using Infrastructure.Streaming;
 
 var builder = WebApplication.CreateBuilder(args).ConfigureSerilog();
@@ -21,7 +27,7 @@ const string allowPolicy = "AllowAll";
 builder
     .Services.AddCors(opts =>
         opts.AddPolicy(
-            name: allowPolicy,
+            allowPolicy,
             builder =>
                 builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader().WithExposedHeaders(HeaderNameConstant.Auto)
         )
@@ -39,6 +45,7 @@ builder
     .AddBackgroundService()
     .AddCacheService()
     .AddEmailService(builder.Configuration)
+    .AddEventListener()
     .AddStreaming(builder.Configuration)
     .AddBackgroundService();
 
@@ -80,6 +87,9 @@ app.MapControllers();
 
 RegisterSyncObserver();
 AttachHumanCountFileSave();
+InitiateEssentialCacheData(app.Services).GetAwaiter().GetResult();
+
+app.MapGet("/", () => "Hello word");
 
 app.Run();
 return;
@@ -95,4 +105,17 @@ void AttachHumanCountFileSave()
     var humanCount = app.Services.GetRequiredService<HumanCountFileSaverObserver>();
     var subject = app.Services.GetRequiredService<HumanCountSubject>();
     subject.Attach(humanCount);
+}
+
+async Task InitiateEssentialCacheData(IServiceProvider provider)
+{
+    using var scope = provider.CreateScope();
+    var accRepo = scope.ServiceProvider.GetRequiredService<IRepository<Account>>();
+    var cache = scope.ServiceProvider.GetRequiredService<IMemoryCache>();
+    var admin = (await accRepo.GetAsync(new AccountByRoleSpec(Role.Admin).GetExpression())).Values[0];
+    cache.Set(
+        ApplicationCacheKey.Admin,
+        admin,
+        new MemoryCacheEntryOptions { Priority = CacheItemPriority.NeverRemove }
+    );
 }
