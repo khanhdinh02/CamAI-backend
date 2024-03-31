@@ -67,7 +67,7 @@ public class AuthService(IJwtService jwtService, IAccountService accountService,
 
         var account = await accountService.GetAccountById(
             accessTokenDetail.UserId,
-            includeAdmin: accountService.GetCurrentAccount().Role == Role.Admin
+            includeAdmin: refreshTokenDetail.UserRole == Role.Admin
         );
         return jwtService.GenerateToken(account.Id, account.Role, account.AccountStatus, accessTokenType, userIp);
     }
