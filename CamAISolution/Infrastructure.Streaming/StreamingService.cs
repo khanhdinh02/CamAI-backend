@@ -38,5 +38,5 @@ public class StreamingService(
         new($"http://{configuration.StreamingReceiveDomain}:{relayInformation.HttpPort}/{relayInformation.Secret}");
 
     private Uri GetWebsocketUri(RelayInformation relayInformation) =>
-        new($"wss://{configuration.StreamingDomain}/{relayInformation.WebsocketPort}");
+        new($"wss://{configuration.StreamingDomain}/{relayInformation.WebsocketPort}/{relayInformation.Secret}");
 }

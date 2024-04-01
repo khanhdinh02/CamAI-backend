@@ -27,6 +27,7 @@ public class WebsocketRelayProcess
         process.StartInfo.FileName = Configuration.Filename;
         var strBuilder = new StringBuilder(Configuration.Arguments);
         strBuilder.Replace("{Secret}", Secret);
+        strBuilder.Replace("{WebsocketPort}", Secret);
         strBuilder.Replace("{HttpPort}", HttpPort.ToString());
         strBuilder.Replace("{WebsocketPort}", WebsocketPort.ToString());
         process.StartInfo.Arguments = strBuilder.ToString();
