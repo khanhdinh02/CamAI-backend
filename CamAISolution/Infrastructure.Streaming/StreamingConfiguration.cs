@@ -6,4 +6,5 @@ public class StreamingConfiguration
     public string Arguments { get; set; } = null!;
     public string StreamingDomain { get; set; } = null!;
     public string StreamingReceiveDomain { get; set; } = null!;
+    public int Interval { get; set; }
 }
