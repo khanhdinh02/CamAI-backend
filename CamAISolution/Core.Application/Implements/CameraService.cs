@@ -16,7 +16,7 @@ public class CameraService(IAccountService accountService, IShopService shopServ
         // get shop to validate role
         await shopService.GetShopById(shopId);
         return await unitOfWork.Cameras.GetAsync(
-            x => x.ShopId == shopId && x.Status == CameraStatus.Active,
+            x => x.ShopId == shopId && x.Status != CameraStatus.Disabled,
             takeAll: true
         );
     }
@@ -26,7 +26,7 @@ public class CameraService(IAccountService accountService, IShopService shopServ
         var camera =
             (
                 await unitOfWork.Cameras.GetAsync(
-                    x => x.Id == id && x.Status == CameraStatus.Active,
+                    x => x.Id == id && x.Status != CameraStatus.Disabled,
                     includeProperties: ["shop"]
                 )
             ).Values.FirstOrDefault() ?? throw new NotFoundException(typeof(Camera), id);
@@ -68,7 +68,7 @@ public class CameraService(IAccountService accountService, IShopService shopServ
         var hasRelatedEntity = (await unitOfWork.Evidences.GetAsync(x => x.CameraId == id)).IsValuesEmpty;
         if (hasRelatedEntity)
         {
-            camera.Status = CameraStatus.Inactive;
+            camera.Status = CameraStatus.Disabled;
             unitOfWork.Cameras.Update(camera);
         }
         else
