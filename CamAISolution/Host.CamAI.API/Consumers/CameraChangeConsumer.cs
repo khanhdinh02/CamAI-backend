@@ -16,10 +16,10 @@ public class CameraChangeConsumer(ICameraService cameraService) : IConsumer<Came
         switch (message.Action)
         {
             case Action.Upsert:
-                await cameraService.UpsertCameraForRoleEdgeBox(ToCamera(message.Camera));
+                await cameraService.UpsertCamera(ToCamera(message.Camera));
                 break;
             case Action.Delete:
-                await cameraService.DeleteCameraForRoleEdgeBox(message.Camera.Id);
+                await cameraService.DeleteCamera(message.Camera.Id);
                 break;
         }
     }

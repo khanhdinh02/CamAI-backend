@@ -28,6 +28,7 @@
         <ProjectReference Include="..\Infrastructure.Notification\Infrastructure.Notification.csproj" />
         <ProjectReference Include="..\Infrastructure.Repositories\Infrastructure.Repositories.csproj" />
         <ProjectReference Include="..\Infrastructure.Logging\Infrastructure.Logging.csproj" />
+        <ProjectReference Include="..\Infrastructure.Streaming\Infrastructure.Streaming.csproj" />
     </ItemGroup>
 
 </Project>
