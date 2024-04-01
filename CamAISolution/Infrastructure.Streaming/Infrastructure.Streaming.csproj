@@ -13,6 +13,13 @@
     </ItemGroup>
 
     <ItemGroup>
+      <Content Include="websocket-relay/**">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+          <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </Content>
+    </ItemGroup>
+
+    <ItemGroup>
       <PackageReference Include="MassTransit" />
       <PackageReference Include="MassTransit.AspNetCore" />
       <PackageReference Include="MassTransit.Extensions.DependencyInjection" />
