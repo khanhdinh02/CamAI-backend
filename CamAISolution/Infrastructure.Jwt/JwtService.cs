@@ -143,7 +143,7 @@ public class JwtService(
         if (string.IsNullOrEmpty(userId))
             throw new BadRequestException("Cannot get user id from jwt");
 
-        ValidateTokenInCacheMemory(token, tokenType, Guid.Parse(userId), userIp);
+        // ValidateTokenInCacheMemory(token, tokenType, Guid.Parse(userId), userIp);
 
         var userRoleString = tokenClaims.FirstOrDefault(c => c.Type == "role")?.Value;
 

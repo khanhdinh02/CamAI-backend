@@ -27,7 +27,7 @@ public class CameraService(IAccountService accountService, IShopService shopServ
             (
                 await unitOfWork.Cameras.GetAsync(
                     x => x.Id == id && x.Status == CameraStatus.Active,
-                    includeProperties: ["shop"]
+                    includeProperties: ["Shop"]
                 )
             ).Values.FirstOrDefault() ?? throw new NotFoundException(typeof(Camera), id);
 
@@ -42,7 +42,7 @@ public class CameraService(IAccountService accountService, IShopService shopServ
         return camera;
     }
 
-    public async Task<Camera> UpsertCameraForRoleEdgeBox(Camera camera)
+    public async Task<Camera> UpsertCamera(Camera camera)
     {
         var foundCamera = await unitOfWork.Cameras.GetByIdAsync(camera.Id);
 
@@ -59,7 +59,7 @@ public class CameraService(IAccountService accountService, IShopService shopServ
         return camera;
     }
 
-    public async Task DeleteCameraForRoleEdgeBox(Guid id)
+    public async Task DeleteCamera(Guid id)
     {
         var camera = await unitOfWork.Cameras.GetByIdAsync(id);
         if (camera == null)
