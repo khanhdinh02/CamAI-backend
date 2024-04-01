@@ -35,7 +35,7 @@ public class WebsocketRelayProcess
         process.StartInfo.RedirectStandardOutput = true;
         process.OutputDataReceived += CheckOutputForConnection;
 
-        timer = new System.Timers.Timer(TimeSpan.FromSeconds(30));
+        timer = new System.Timers.Timer(TimeSpan.FromSeconds(Configuration.Interval));
         timer.Elapsed += (_, _) => WebsocketRelayProcessManager.Kill(name);
         timer.AutoReset = false;
     }
