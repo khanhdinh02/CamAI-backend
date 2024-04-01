@@ -38,6 +38,5 @@ RUN dotnet publish "./Host.CamAI.API.csproj" -c Release -o /app/publish /p:UseAp
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-RUN mkdir -p /app/websocket-relay/node_modules
-RUN npm install --prefix /app/websocket-relay/node_modules ws
+RUN npm install ws
 ENTRYPOINT ["dotnet", "Host.CamAI.API.dll"]
