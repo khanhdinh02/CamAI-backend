@@ -1,4 +1,4 @@
-using System.Net.Http.Headers;
+using System.Collections.Concurrent;
 using Core.Domain;
 using Core.Domain.DTO;
 using Core.Domain.Entities;
@@ -8,6 +8,7 @@ using Core.Domain.Models;
 using Core.Domain.Models.Configurations;
 using Core.Domain.Repositories;
 using Core.Domain.Services;
+using MassTransit;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace Host.CamAI.API.BackgroundServices;
@@ -19,23 +20,13 @@ public class EdgeBoxHealthCheckService(
     HealthCheckConfiguration healthCheckConfiguration
 ) : BackgroundService
 {
-    private readonly HttpClient httpClient = CreateHttpClient();
-    private IEdgeBoxInstallService? edgeBoxInstallService;
-    private INotificationService? notificationService;
+    private const int PageSize = 100;
+    private static readonly ConcurrentBag<Guid> EdgeBoxIdThatResponse = [];
+    private bool firstRun = true;
     private IUnitOfWork? uow;
-    private readonly Mutex mutex = new();
     private readonly Mutex cacheMutex = new();
 
-    private static HttpClient CreateHttpClient()
-    {
-        // disable ssl
-        var handler = new HttpClientHandler();
-        handler.ClientCertificateOptions = ClientCertificateOption.Manual;
-        handler.ServerCertificateCustomValidationCallback = (_, _, _, _) => true;
-        var client = new HttpClient(handler);
-        client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-        return client;
-    }
+    public static void ReceivedEdgeBoxHealthResponse(Guid edgeBoxId) => EdgeBoxIdThatResponse?.Add(edgeBoxId);
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -46,35 +37,11 @@ public class EdgeBoxHealthCheckService(
                 // init service
                 var scope = provider.CreateScope();
 
-                var jwtService = scope.ServiceProvider.GetRequiredService<IJwtService>();
-                await jwtService.SetCurrentUserToSystemHandler();
+                // update edge box install that did not send the health check response back
+                await UpdateEdgeBoxInstallStatusFromLastCheck(scope);
 
-                uow = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
-                edgeBoxInstallService = scope.ServiceProvider.GetRequiredService<IEdgeBoxInstallService>();
-                notificationService = scope.ServiceProvider.GetRequiredService<INotificationService>();
-
-                // fetch 100 edge box install each
-                const int pageSize = 100;
-                var edgeBoxInstallsPagination = new PaginationResult<EdgeBoxInstall>
-                {
-                    Values = [new EdgeBoxInstall()]
-                };
-                var pageIndex = 0;
-                while (!edgeBoxInstallsPagination.IsValuesEmpty)
-                {
-                    edgeBoxInstallsPagination = await uow.GetRepository<EdgeBoxInstall>()
-                        .GetAsync(
-                            x =>
-                                x.EdgeBoxInstallStatus == EdgeBoxInstallStatus.Working
-                                || x.EdgeBoxInstallStatus == EdgeBoxInstallStatus.Unhealthy,
-                            includeProperties: [nameof(EdgeBoxInstall.Shop)],
-                            pageIndex: pageIndex,
-                            pageSize: pageSize
-                        );
-
-                    await CheckEdgeBoxInstallHealth(edgeBoxInstallsPagination.Values, stoppingToken);
-                    pageIndex++;
-                }
+                // send health check message to bus
+                await SendNextHealthCheckRequestMessage(scope, stoppingToken);
 
                 await Task.Delay(TimeSpan.FromSeconds(healthCheckConfiguration.EdgeBoxHealthCheckDelay), stoppingToken);
             }
@@ -85,49 +52,57 @@ public class EdgeBoxHealthCheckService(
         }
     }
 
-    private async Task CheckEdgeBoxInstallHealth(IList<EdgeBoxInstall> edgeBoxInstalls, CancellationToken cancellation)
+    private async Task UpdateEdgeBoxInstallStatusFromLastCheck(IServiceScope scope)
     {
-        var notificationDto = new List<CreateNotificationDto>();
-        await Parallel.ForEachAsync(
-            edgeBoxInstalls,
-            new ParallelOptions { MaxDegreeOfParallelism = 8 },
-            async (edgeBoxInstall, cancel) =>
+        // if this is first run, we won't update the status of eb install
+        if (firstRun)
+        {
+            firstRun = false;
+            return;
+        }
+
+        var responses = EdgeBoxIdThatResponse.ToList();
+        EdgeBoxIdThatResponse.Clear();
+
+        uow = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+        var notificationService = scope.ServiceProvider.GetRequiredService<INotificationService>();
+        var edgeBoxInstallService = scope.ServiceProvider.GetRequiredService<IEdgeBoxInstallService>();
+
+        var jwtService = scope.ServiceProvider.GetRequiredService<IJwtService>();
+        await jwtService.SetCurrentUserToSystemHandler();
+
+        var edgeBoxInstallsPagination = new PaginationResult<EdgeBoxInstall> { Values = [new EdgeBoxInstall()] };
+        var pageIndex = 0;
+        while (!edgeBoxInstallsPagination.IsValuesEmpty)
+        {
+            edgeBoxInstallsPagination = await GetWorkingEdgeBoxInstall(pageIndex, responses);
+
+            foreach (var edgeBoxInstall in edgeBoxInstallsPagination.Values)
             {
-                for (var numOfRetry = 0; numOfRetry < healthCheckConfiguration.MaxNumberOfRetry; numOfRetry++)
-                {
-                    // call edge box endpoint
-                    var response = await SendRequest(GetEdgeBoxLink(edgeBoxInstall));
-                    if (response.IsSuccessStatusCode)
-                    {
-                        // TODO: reactivate edge box
-                        await LockUpdateStatus(edgeBoxInstall, EdgeBoxInstallStatus.Working);
-                        return;
-                    }
-                    await Task.Delay(TimeSpan.FromSeconds(healthCheckConfiguration.RetryDelay), cancel);
-                }
-
-                // failed after max retry
-                // this will update status and send notification
-                // TODO: only update notified if update status
-                await LockUpdateStatus(edgeBoxInstall, EdgeBoxInstallStatus.Unhealthy);
-
-                notificationDto.Add(await CreateNotification(edgeBoxInstall));
+                await edgeBoxInstallService.UpdateStatus(edgeBoxInstall, EdgeBoxInstallStatus.Unhealthy);
+                await notificationService.CreateNotification(await CreateNotification(edgeBoxInstall));
             }
-        );
-        foreach (var dto in notificationDto)
-            await notificationService!.CreateNotification(dto, true);
+
+            pageIndex++;
+        }
     }
 
-    private async Task LockUpdateStatus(EdgeBoxInstall edgeBoxInstall, EdgeBoxInstallStatus status)
+    private async Task<PaginationResult<EdgeBoxInstall>> GetWorkingEdgeBoxInstall(int pageIndex, List<Guid> responses)
     {
-        mutex.WaitOne();
-        await edgeBoxInstallService!.UpdateStatus(edgeBoxInstall, status);
-        mutex.ReleaseMutex();
+        return await uow!
+            .GetRepository<EdgeBoxInstall>()
+            .GetAsync(
+                x => x.EdgeBoxInstallStatus == EdgeBoxInstallStatus.Working && !responses.Contains(x.EdgeBoxId),
+                includeProperties: [nameof(EdgeBoxInstall.Shop)],
+                pageIndex: pageIndex,
+                pageSize: PageSize
+            );
     }
 
-    private static string GetEdgeBoxLink(EdgeBoxInstall edgeBoxInstall)
+    private static async Task SendNextHealthCheckRequestMessage(IServiceScope scope, CancellationToken stoppingToken)
     {
-        return $"http://{edgeBoxInstall.IpAddress}:{edgeBoxInstall.Port}/api/test/{edgeBoxInstall.Id}";
+        var bus = scope.ServiceProvider.GetRequiredService<IPublishEndpoint>();
+        await bus.Publish(new HealthCheckRequestMessage(), stoppingToken);
     }
 
     private async Task<CreateNotificationDto> CreateNotification(EdgeBoxInstall edgeBoxInstall)
@@ -163,6 +138,4 @@ public class EdgeBoxHealthCheckService(
 
         return adminAccount!.Id;
     }
-
-    private Task<HttpResponseMessage> SendRequest(string uri) => httpClient.GetAsync(new Uri(uri));
 }
