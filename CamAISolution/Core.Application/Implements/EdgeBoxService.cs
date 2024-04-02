@@ -59,14 +59,14 @@ public class EdgeBoxService(
         // The edge box is currently installed in a shop if EdgeBoxLocation is neither Idle nor Disposed
         // The current shop that the edge box is installed in is the shop that has the latest installation record
         return (
-                await unitOfWork.EdgeBoxes.GetAsync(
-                    eb => eb.EdgeBoxLocation != EdgeBoxLocation.Idle,
-                    null,
-                    [nameof(EdgeBox.Installs), nameof(EdgeBox.EdgeBoxModel)],
-                    true,
-                    true
-                )
+            await unitOfWork.EdgeBoxes.GetAsync(
+                eb => eb.EdgeBoxLocation != EdgeBoxLocation.Idle,
+                null,
+                [nameof(EdgeBox.Installs), nameof(EdgeBox.EdgeBoxModel)],
+                true,
+                true
             )
+        )
             .Values.Where(eb => eb.Installs.MaxBy(i => i.CreatedDate)?.ShopId == shopId)
             .ToList();
     }
@@ -76,14 +76,14 @@ public class EdgeBoxService(
         // The edge box is currently installed in a Brand if EdgeBoxLocation is neither Idle nor Disposed
         // The current Brand that the edge box is installed in is the Brand that has the latest installation record
         return (
-                await unitOfWork.EdgeBoxes.GetAsync(
-                    eb => eb.EdgeBoxLocation != EdgeBoxLocation.Idle,
-                    null,
-                    [$"{nameof(EdgeBox.Installs)}.{nameof(EdgeBoxInstall.Shop)}", nameof(EdgeBox.EdgeBoxModel)],
-                    true,
-                    true
-                )
+            await unitOfWork.EdgeBoxes.GetAsync(
+                eb => eb.EdgeBoxLocation != EdgeBoxLocation.Idle,
+                null,
+                [$"{nameof(EdgeBox.Installs)}.{nameof(EdgeBoxInstall.Shop)}", nameof(EdgeBox.EdgeBoxModel)],
+                true,
+                true
             )
+        )
             .Values.Where(eb => eb.Installs.MaxBy(i => i.CreatedDate)?.Shop?.BrandId == brandId)
             .ToList();
     }
@@ -159,9 +159,7 @@ public class EdgeBoxService(
     {
         var edgeBox = await unitOfWork.EdgeBoxes.GetByIdAsync(id) ?? throw new NotFoundException(typeof(EdgeBox), id);
         if (edgeBox.EdgeBoxStatus == status)
-        {
             return;
-        }
 
         await unitOfWork.BeginTransaction();
 
@@ -183,14 +181,27 @@ public class EdgeBoxService(
             .AddAsync(
                 new EdgeBoxActivity
                 {
+                    Type = EdgeBoxActivityType.EdgeBoxStatus,
                     Description = $"Update status from {edgeBox.EdgeBoxStatus} to {status}",
-                    OldStatus = edgeBox.EdgeBoxStatus,
-                    EdgeBoxId = edgeBox.Id,
-                    NewStatus = status
+                    EdgeBoxId = edgeBox.Id
                 }
             );
         edgeBox.EdgeBoxStatus = status;
         unitOfWork.EdgeBoxes.Update(edgeBox);
         await unitOfWork.CommitTransaction();
+    }
+
+    public async Task<PaginationResult<EdgeBoxActivity>> GetActivitiesByEdgeBoxId(
+        Guid edgeBoxId,
+        SearchEdgeBoxActivityRequest req
+    )
+    {
+        return await unitOfWork.EdgeBoxActivities.GetAsync(
+            a => a.EdgeBoxId == edgeBoxId || a.EdgeBoxInstall!.EdgeBoxId == edgeBoxId,
+            orderBy: q => q.OrderByDescending(a => a.ModifiedTime),
+            includeProperties: [nameof(EdgeBoxActivity.ModifiedBy)],
+            pageSize: req.Size,
+            pageIndex: req.PageIndex
+        );
     }
 }

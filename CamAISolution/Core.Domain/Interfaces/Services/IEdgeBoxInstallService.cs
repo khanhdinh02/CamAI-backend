@@ -9,12 +9,6 @@ public interface IEdgeBoxInstallService
 {
     Task<EdgeBoxInstall> LeaseEdgeBox(CreateEdgeBoxInstallDto dto);
     Task<EdgeBoxInstall> ActivateEdgeBox(ActivateEdgeBoxDto dto);
-    Task<PaginationResult<EdgeBoxInstallActivity>> GetEdgeBoxInstallActivities(
-        EdgeBoxActivityByIdSearchRequest searchRequest
-    );
-    Task<PaginationResult<EdgeBoxInstallActivity>> GetCurrentEdgeBoxInstallActivities(
-        EdgeBoxActivityByEdgeBoxIdSearchRequest searchRequest
-    );
 
     /// <summary>
     /// If <c>edgeBoxInstall</c> has been fetched, use <see cref="UpdateStatus(EdgeBoxInstall, EdgeBoxInstallStatus)"/> to avoid fetching again.

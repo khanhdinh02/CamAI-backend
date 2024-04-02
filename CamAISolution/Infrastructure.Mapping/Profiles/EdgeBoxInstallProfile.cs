@@ -10,8 +10,5 @@ public class EdgeBoxInstallProfile : Profile
     {
         CreateMap<CreateEdgeBoxInstallDto, EdgeBoxInstall>();
         CreateMap<EdgeBoxInstall, EdgeBoxInstallDto>();
-        CreateMap<EdgeBoxInstallActivity, EdgeBoxInstallActivityDto>();
-        CreateMap<BaseSearchRequest, EdgeBoxActivityByIdSearchRequest>();
-        CreateMap<BaseSearchRequest, EdgeBoxActivityByEdgeBoxIdSearchRequest>();
     }
 }
