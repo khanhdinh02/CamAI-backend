@@ -39,10 +39,28 @@ public class ConfirmedEdgeBoxActivationConsumer(
                 return;
 
             if (context.Message.IsActivatedSuccessfully is false)
+            {
                 edgeBoxInstall.ActivationStatus = EdgeBoxActivationStatus.Failed;
+                await unitOfWork.EdgeBoxActivities.AddAsync(
+                    new EdgeBoxActivity
+                    {
+                        Description = "Edge box activation failed",
+                        EdgeBoxInstallId = edgeBoxInstall.Id,
+                        Type = EdgeBoxActivityType.EdgeBoxActivation
+                    }
+                );
+            }
             else
             {
                 edgeBoxInstall.ActivationStatus = EdgeBoxActivationStatus.Activated;
+                await unitOfWork.EdgeBoxActivities.AddAsync(
+                    new EdgeBoxActivity
+                    {
+                        Description = "Edge box activated",
+                        EdgeBoxInstallId = edgeBoxInstall.Id,
+                        Type = EdgeBoxActivityType.EdgeBoxActivation
+                    }
+                );
                 await applicationDelayEventListener.StopEvent($"ActivateEdgeBox{edgeBoxInstall.Id:N}");
             }
 

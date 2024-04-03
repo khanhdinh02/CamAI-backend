@@ -51,6 +51,14 @@ public class EdgeBoxInstallService(
 
         edgeBox.EdgeBoxLocation = EdgeBoxLocation.Installing;
         unitOfWork.EdgeBoxes.Update(edgeBox);
+        await unitOfWork.EdgeBoxActivities.AddAsync(
+            new EdgeBoxActivity
+            {
+                Type = EdgeBoxActivityType.EdgeBoxLocation,
+                EdgeBoxId = edgeBox.Id,
+                Description = $"Lease edge box to Shop#{shop.Id}"
+            }
+        );
 
         await unitOfWork.CompleteAsync();
 
@@ -85,11 +93,27 @@ public class EdgeBoxInstallService(
             if (ebInstall.EdgeBoxInstallStatus != EdgeBoxInstallStatus.Working)
             {
                 ebInstall.ActivationStatus = EdgeBoxActivationStatus.Failed;
+                await unitOfWork.EdgeBoxActivities.AddAsync(
+                    new EdgeBoxActivity
+                    {
+                        Type = EdgeBoxActivityType.EdgeBoxActivation,
+                        EdgeBoxInstallId = ebInstall.Id,
+                        Description = "Postpone activation due to unhealthy status"
+                    }
+                );
                 await unitOfWork.CompleteAsync();
             }
             else
             {
                 ebInstall.ActivationStatus = EdgeBoxActivationStatus.Pending;
+                await unitOfWork.EdgeBoxActivities.AddAsync(
+                    new EdgeBoxActivity
+                    {
+                        Type = EdgeBoxActivityType.EdgeBoxActivation,
+                        EdgeBoxInstallId = ebInstall.Id,
+                        Description = "Waiting for edge box to confirm activation"
+                    }
+                );
                 if (await unitOfWork.CompleteAsync() > 0)
                 {
                     await messageQueueService.Publish(
@@ -140,6 +164,14 @@ public class EdgeBoxInstallService(
                 );
             edgeBoxInstall.EdgeBoxInstallStatus = status;
             unitOfWork.EdgeBoxInstalls.Update(edgeBoxInstall);
+            await unitOfWork.EdgeBoxActivities.AddAsync(
+                new EdgeBoxActivity
+                {
+                    Type = EdgeBoxActivityType.EdgeBoxHealth,
+                    EdgeBoxInstallId = edgeBoxInstall.Id,
+                    Description = $"Update status from {edgeBoxInstall.EdgeBoxInstallStatus} to {status}"
+                }
+            );
             await unitOfWork.CompleteAsync();
         }
 

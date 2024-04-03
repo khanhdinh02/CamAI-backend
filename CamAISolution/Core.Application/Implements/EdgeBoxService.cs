@@ -150,6 +150,14 @@ public class EdgeBoxService(
 
             edgeBox.EdgeBoxStatus = EdgeBoxStatus.Disposed;
             unitOfWork.EdgeBoxes.Update(edgeBox);
+            await unitOfWork.EdgeBoxActivities.AddAsync(
+                new EdgeBoxActivity
+                {
+                    EdgeBoxId = edgeBox.Id,
+                    Type = EdgeBoxActivityType.EdgeBoxStatus,
+                    Description = "Dispose edge box"
+                }
+            );
         }
 
         await unitOfWork.CompleteAsync();
