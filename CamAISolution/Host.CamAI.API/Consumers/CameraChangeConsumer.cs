@@ -18,10 +18,10 @@ public class CameraChangeConsumer(ICameraService cameraService, IBaseMapping map
         switch (message.Action)
         {
             case Action.Upsert:
-                await cameraService.UpsertCameraForRoleEdgeBox(mapper.Map<EdgeBoxCameraDto, Camera>(message.Camera));
+                await cameraService.UpsertCamera(mapper.Map<EdgeBoxCameraDto, Camera>(message.Camera));
                 break;
             case Action.Delete:
-                await cameraService.DeleteCameraForRoleEdgeBox(message.Camera.Id);
+                await cameraService.DeleteCamera(message.Camera.Id);
                 break;
         }
     }

@@ -17,6 +17,7 @@ using Infrastructure.Notification.Models;
 using Infrastructure.Observer;
 using Infrastructure.Repositories;
 using Microsoft.Extensions.Caching.Memory;
+using Infrastructure.Streaming;
 
 var builder = WebApplication.CreateBuilder(args).ConfigureSerilog();
 
@@ -44,8 +45,9 @@ builder
     .AddBackgroundService()
     .AddCacheService()
     .AddEmailService(builder.Configuration)
-    .AddBackgroundService()
-    .AddEventListener();
+    .AddEventListener()
+    .AddStreaming(builder.Configuration)
+    .AddBackgroundService();
 
 builder.Services.AddHttpClient();
 
