@@ -109,7 +109,11 @@ public class Repository<T>(CamAIContext context, IRepositorySpecificationEvaluat
     public async Task<bool> IsExisted(object key)
     {
         var data = await context.Set<T>().FindAsync(key);
-        return data != null;
+        if (data == null)
+            return false;
+
+        Context.Entry(data).State = EntityState.Detached;
+        return true;
     }
 
     public virtual T Update(T entity)

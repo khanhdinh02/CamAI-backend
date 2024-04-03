@@ -1,24 +1,15 @@
-using System.ComponentModel.DataAnnotations;
-using Core.Domain.Entities.Base;
 using Core.Domain.Enums;
 
-namespace Core.Domain.Entities;
+namespace Infrastructure.Observer.Messages;
 
-public class Camera : BusinessEntity
+public class EdgeBoxCameraDto
 {
-    // TODO: Run migration after merge health check
-    [StringLength(255)]
-    public string Name { get; set; } = null!;
+    public Guid Id { get; set; }
     public Guid ShopId { get; set; }
+    public string Name { get; set; } = null!;
     public Zone Zone { get; set; }
-
-    [StringLength(255)]
     public string Username { get; set; } = null!;
-
-    [StringLength(255)]
     public string Password { get; set; } = null!;
-
-    [StringLength(10)]
     public string Protocol { get; set; } = null!;
     public int Port { get; set; }
     public string Host { get; set; } = null!;
@@ -26,5 +17,4 @@ public class Camera : BusinessEntity
     public bool WillRunAI { get; set; }
 
     public CameraStatus Status { get; set; } = CameraStatus.New;
-    public virtual Shop Shop { get; set; } = null!;
 }
