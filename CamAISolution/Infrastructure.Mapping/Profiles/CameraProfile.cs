@@ -10,6 +10,7 @@ public class CameraProfile : Profile
     public CameraProfile()
     {
         CreateMap<Camera, CameraDto>();
+        CreateMap<Camera, Camera>();
         CreateMap<Camera, EdgeBoxCameraDto>().ReverseMap();
     }
 }

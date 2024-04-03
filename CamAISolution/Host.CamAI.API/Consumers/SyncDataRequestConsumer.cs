@@ -17,7 +17,7 @@ public class SyncDataRequestConsumer(
     {
         var edgeBoxId = context.Message.EdgeBoxId;
         var ebInstall = (await edgeBoxInstallService.GetLatestInstallingByEdgeBox(edgeBoxId))!;
-        var cameras = await cameraService.GetCameras(ebInstall.ShopId);
+        var cameras = await cameraService.GetCamerasForEdgeBox(ebInstall.ShopId);
 
         syncObserver.SyncBrand(ebInstall.Shop.Brand, edgeBoxId.ToString("N"));
         syncObserver.SyncShop(ebInstall.Shop, edgeBoxId.ToString("N"));

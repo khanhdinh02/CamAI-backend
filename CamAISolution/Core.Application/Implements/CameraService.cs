@@ -1,6 +1,7 @@
 using Core.Application.Exceptions;
 using Core.Domain.Entities;
 using Core.Domain.Enums;
+using Core.Domain.Interfaces.Mappings;
 using Core.Domain.Interfaces.Services;
 using Core.Domain.Models;
 using Core.Domain.Repositories;
@@ -8,13 +9,26 @@ using Core.Domain.Services;
 
 namespace Core.Application.Implements;
 
-public class CameraService(IAccountService accountService, IShopService shopService, IUnitOfWork unitOfWork)
-    : ICameraService
+public class CameraService(
+    IAccountService accountService,
+    IShopService shopService,
+    IUnitOfWork unitOfWork,
+    IBaseMapping mapper
+) : ICameraService
 {
     public async Task<PaginationResult<Camera>> GetCameras(Guid shopId)
     {
         // get shop to validate role
         await shopService.GetShopById(shopId);
+        return await unitOfWork.Cameras.GetAsync(
+            x => x.ShopId == shopId && x.Status != CameraStatus.Disabled,
+            takeAll: true
+        );
+    }
+
+    public async Task<PaginationResult<Camera>> GetCamerasForEdgeBox(Guid shopId)
+    {
+        // get shop to validate role
         return await unitOfWork.Cameras.GetAsync(
             x => x.ShopId == shopId && x.Status != CameraStatus.Disabled,
             takeAll: true
@@ -50,8 +64,7 @@ public class CameraService(IAccountService accountService, IShopService shopServ
             await unitOfWork.Cameras.AddAsync(camera);
         else
         {
-            foundCamera.Name = camera.Name;
-            foundCamera.Zone = camera.Zone;
+            mapper.Map(camera, foundCamera);
             unitOfWork.Cameras.Update(foundCamera);
         }
 
