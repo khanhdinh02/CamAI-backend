@@ -56,14 +56,14 @@ public class JwtService(
             issuer: jwtConfiguration.Issuer,
             audience: jwtConfiguration.Audience,
             claims: claims,
-            expires: DateTime.UtcNow.AddSeconds(tokenDurationInMinute),
+            expires: DateTime.UtcNow.AddMinutes(tokenDurationInMinute),
             signingCredentials: credentials
         );
         using var scope = serviceProvider.CreateScope();
         var cacheService = scope.ServiceProvider.GetRequiredService<ICacheService>();
         var tokenStr = new JwtSecurityTokenHandler().WriteToken(token);
         cacheService.Set(
-            GenerateAuthCachedKey(userIp, tokenType, userId),
+            $"{userIp}{GenerateCachedKey(tokenType, userId)}",
             tokenStr,
             TimeSpan.FromMinutes(tokenDurationInMinute)
         );
@@ -134,8 +134,7 @@ public class JwtService(
         TokenType tokenType,
         string userIp,
         Role[]? acceptableRoles = null,
-        bool isValidateTime = true,
-        bool isValidateCache = true
+        bool isValidateTime = true
     )
     {
         IEnumerable<Claim> tokenClaims = GetClaims(token, tokenType, isValidateTime);
@@ -144,8 +143,7 @@ public class JwtService(
         if (string.IsNullOrEmpty(userId))
             throw new BadRequestException("Cannot get user id from jwt");
 
-        if (isValidateCache)
-            ValidateTokenInCacheMemory(token, tokenType, Guid.Parse(userId), userIp);
+        // ValidateTokenInCacheMemory(token, tokenType, Guid.Parse(userId), userIp);
 
         var userRoleString = tokenClaims.FirstOrDefault(c => c.Type == "role")?.Value;
 
@@ -170,7 +168,7 @@ public class JwtService(
     {
         using var scope = serviceProvider.CreateScope();
         var cacheService = scope.ServiceProvider.GetRequiredService<ICacheService>();
-        string key = GenerateAuthCachedKey(userIp, tokenType, userId);
+        string key = $"{userIp}{GenerateCachedKey(tokenType, userId)}";
         var cacheToken = cacheService.Get<string>(key);
         if (cacheToken == null || (cacheToken != null && cacheToken != token))
             throw new BadRequestException("Token is invalid");

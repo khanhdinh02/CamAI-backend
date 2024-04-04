@@ -27,7 +27,7 @@ public class AuthController(IAuthService authService, ILogger<AuthController> lo
     }
 
     /// <summary>
-    /// Set User-Agent header to Mobile if refresh with <c>Mobile</c> (Case sensitive)
+    /// Set User-Agent header to Mobile if login with <c>Mobile</c> (Case sensitive)
     /// </summary>
     [HttpPost("refresh")]
     public async Task<ActionResult<string>> RenewToken(RenewTokenDto renewTokenDto)

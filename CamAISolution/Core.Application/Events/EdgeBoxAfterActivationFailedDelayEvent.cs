@@ -40,6 +40,9 @@ public class EdgeBoxAfterActivationFailedDelayEvent(TimeSpan delay, Guid edgeBox
 
             if (edgeBoxInstall.ActivationStatus is not EdgeBoxActivationStatus.Activated)
             {
+                edgeBoxInstall.ActivationStatus = EdgeBoxActivationStatus.Failed;
+                UnitOfWork.EdgeBoxInstalls.Update(edgeBoxInstall);
+                await UnitOfWork.CompleteAsync();
                 await NotificationService.CreateNotification(
                     new CreateNotificationDto
                     {
