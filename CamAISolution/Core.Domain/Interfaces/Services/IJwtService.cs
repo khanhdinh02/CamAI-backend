@@ -9,13 +9,13 @@ public interface IJwtService
 {
     string GenerateToken(Guid userId, Role role, AccountStatus? status, TokenType tokenType, string userIp);
     string GenerateToken(Guid userId, Role role, TokenType tokenType, string userIp);
-
     TokenDetailDto ValidateToken(
         string token,
         TokenType tokenType,
         string userIp,
         Role[]? acceptableRoles = null,
-        bool isValidateTime = true
+        bool isValidateTime = true,
+        bool isValidateCache = true
     );
 
     IEnumerable<Claim> GetClaims(string token, TokenType tokenType, bool isValidateTime = true);
