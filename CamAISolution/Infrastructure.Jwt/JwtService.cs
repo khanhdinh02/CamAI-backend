@@ -56,7 +56,7 @@ public class JwtService(
             issuer: jwtConfiguration.Issuer,
             audience: jwtConfiguration.Audience,
             claims: claims,
-            expires: DateTime.UtcNow.AddMinutes(tokenDurationInMinute),
+            expires: DateTime.UtcNow.AddSeconds(tokenDurationInMinute),
             signingCredentials: credentials
         );
         using var scope = serviceProvider.CreateScope();
