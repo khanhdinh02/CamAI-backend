@@ -30,6 +30,8 @@ public interface IEdgeBoxInstallService
     /// <returns></returns>
     Task<PaginationResult<EdgeBoxInstall>> GetInstallingByShop(Guid shopId);
 
+    Task<EdgeBoxInstall?> GetCurrentInstallationByShop(Guid shopId);
+
     /// <summary>
     /// Get all installs, that has been activated and not disabled by admin, of a brand.
     /// </summary>

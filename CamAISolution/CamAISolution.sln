@@ -27,6 +27,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Infrastructure.Email", "Inf
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Infrastructure.Cache", "Infrastructure.Cache\Infrastructure.Cache.csproj", "{89AB2068-0CAA-4B0C-B84F-00AAAC4DBCC1}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Infrastructure.Streaming", "Infrastructure.Streaming\Infrastructure.Streaming.csproj", "{9026910D-362D-4E1D-93B9-3F485D1A12EF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -81,6 +83,10 @@ Global
 		{89AB2068-0CAA-4B0C-B84F-00AAAC4DBCC1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{89AB2068-0CAA-4B0C-B84F-00AAAC4DBCC1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{89AB2068-0CAA-4B0C-B84F-00AAAC4DBCC1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9026910D-362D-4E1D-93B9-3F485D1A12EF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9026910D-362D-4E1D-93B9-3F485D1A12EF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9026910D-362D-4E1D-93B9-3F485D1A12EF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9026910D-362D-4E1D-93B9-3F485D1A12EF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

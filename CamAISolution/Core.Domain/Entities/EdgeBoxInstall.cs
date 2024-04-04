@@ -8,10 +8,6 @@ public class EdgeBoxInstall : BusinessEntity
 {
     public Guid EdgeBoxId { get; set; }
     public Guid ShopId { get; set; }
-
-    [StringLength(50)]
-    public string? IpAddress { get; set; } = null!;
-    public int? Port { get; set; }
     public string? ActivationCode { get; set; }
     public DateTime? UninstalledTime { get; set; }
     public EdgeBoxActivationStatus ActivationStatus { get; set; }

@@ -1,5 +1,6 @@
 using Core.Application.Events;
 using Core.Domain.Entities;
+using Core.Domain.Interfaces.Mappings;
 using Core.Domain.Utilities;
 using Infrastructure.Observer.Messages;
 using MassTransit;
@@ -49,6 +50,18 @@ public class SyncObserver(EventManager eventManager, IServiceProvider provider)
             OpenTime = shop.OpenTime,
             CloseTime = shop.CloseTime,
             RoutingKey = routingKey
+        };
+        await SendMessage(updateMessage);
+    }
+
+    public async Task SyncCamera(IList<Camera> cameras, string routingKey)
+    {
+        using var scope = provider.CreateScope();
+        var mapper = scope.ServiceProvider.GetRequiredService<IBaseMapping>();
+        var updateMessage = new CameraUpdateMessage
+        {
+            RoutingKey = routingKey,
+            Cameras = cameras.Select(mapper.Map<Camera, EdgeBoxCameraDto>).ToList()
         };
         await SendMessage(updateMessage);
     }

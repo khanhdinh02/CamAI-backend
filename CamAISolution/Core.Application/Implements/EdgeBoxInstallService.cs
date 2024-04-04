@@ -88,6 +88,7 @@ public class EdgeBoxInstallService(
                 )
             ).Values.FirstOrDefault() ?? throw new NotFoundException("Wrong activation code");
 
+        // TODO: check edge box location occupied
         if (ebInstall.ActivationStatus == EdgeBoxActivationStatus.NotActivated)
         {
             if (ebInstall.EdgeBoxInstallStatus != EdgeBoxInstallStatus.Working)
@@ -197,6 +198,30 @@ public class EdgeBoxInstallService(
     public Task<PaginationResult<EdgeBoxInstall>> GetEdgeBoxInstall(SearchEdgeBoxInstallRequest searchRequest)
     {
         return unitOfWork.EdgeBoxInstalls.GetAsync(new EdgeBoxInstallSearchSpec(searchRequest));
+    }
+
+    public async Task<EdgeBoxInstall?> GetCurrentInstallationByShop(Guid shopId)
+    {
+        var user = accountService.GetCurrentAccount();
+        var shop = await unitOfWork.Shops.GetByIdAsync(shopId) ?? throw new NotFoundException(typeof(Shop), shopId);
+        if (
+            (user.Role == Role.BrandManager && shop.BrandId != user.BrandId)
+            || (user.Role == Role.ShopManager && shop.ShopManagerId != user.Id)
+        )
+            throw new ForbiddenException(user, shop);
+
+        return (
+            await unitOfWork.EdgeBoxInstalls.GetAsync(
+                i => i.EdgeBoxInstallStatus != EdgeBoxInstallStatus.Disabled && i.ShopId == shopId,
+                includeProperties:
+                [
+                    $"{nameof(EdgeBoxInstall.EdgeBox)}.{nameof(EdgeBox.EdgeBoxModel)}",
+                    $"{nameof(EdgeBoxInstall.Shop)}.{nameof(Shop.Brand)}",
+                    $"{nameof(EdgeBoxInstall.Shop)}.{nameof(Shop.Ward)}.{nameof(Ward.District)}.{nameof(District.Province)}"
+                ],
+                takeAll: true
+            )
+        ).Values.FirstOrDefault();
     }
 
     public async Task<PaginationResult<EdgeBoxInstall>> GetInstallingByShop(Guid shopId)

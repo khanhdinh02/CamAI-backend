@@ -1,6 +1,7 @@
 using Core.Application.Exceptions;
 using Core.Domain.Entities;
 using Core.Domain.Enums;
+using Core.Domain.Interfaces.Mappings;
 using Core.Domain.Interfaces.Services;
 using Core.Domain.Models;
 using Core.Domain.Repositories;
@@ -8,15 +9,28 @@ using Core.Domain.Services;
 
 namespace Core.Application.Implements;
 
-public class CameraService(IAccountService accountService, IShopService shopService, IUnitOfWork unitOfWork)
-    : ICameraService
+public class CameraService(
+    IAccountService accountService,
+    IShopService shopService,
+    IUnitOfWork unitOfWork,
+    IBaseMapping mapper
+) : ICameraService
 {
     public async Task<PaginationResult<Camera>> GetCameras(Guid shopId)
     {
         // get shop to validate role
         await shopService.GetShopById(shopId);
         return await unitOfWork.Cameras.GetAsync(
-            x => x.ShopId == shopId && x.Status == CameraStatus.Active,
+            x => x.ShopId == shopId && x.Status != CameraStatus.Disabled,
+            takeAll: true
+        );
+    }
+
+    public async Task<PaginationResult<Camera>> GetCamerasForEdgeBox(Guid shopId)
+    {
+        // get shop to validate role
+        return await unitOfWork.Cameras.GetAsync(
+            x => x.ShopId == shopId && x.Status != CameraStatus.Disabled,
             takeAll: true
         );
     }
@@ -26,8 +40,8 @@ public class CameraService(IAccountService accountService, IShopService shopServ
         var camera =
             (
                 await unitOfWork.Cameras.GetAsync(
-                    x => x.Id == id && x.Status == CameraStatus.Active,
-                    includeProperties: ["shop"]
+                    x => x.Id == id && x.Status != CameraStatus.Disabled,
+                    includeProperties: ["Shop"]
                 )
             ).Values.FirstOrDefault() ?? throw new NotFoundException(typeof(Camera), id);
 
@@ -42,7 +56,7 @@ public class CameraService(IAccountService accountService, IShopService shopServ
         return camera;
     }
 
-    public async Task<Camera> UpsertCameraForRoleEdgeBox(Camera camera)
+    public async Task<Camera> UpsertCamera(Camera camera)
     {
         var foundCamera = await unitOfWork.Cameras.GetByIdAsync(camera.Id);
 
@@ -50,8 +64,7 @@ public class CameraService(IAccountService accountService, IShopService shopServ
             await unitOfWork.Cameras.AddAsync(camera);
         else
         {
-            foundCamera.Name = camera.Name;
-            foundCamera.Zone = camera.Zone;
+            mapper.Map(camera, foundCamera);
             unitOfWork.Cameras.Update(foundCamera);
         }
 
@@ -59,7 +72,7 @@ public class CameraService(IAccountService accountService, IShopService shopServ
         return camera;
     }
 
-    public async Task DeleteCameraForRoleEdgeBox(Guid id)
+    public async Task DeleteCamera(Guid id)
     {
         var camera = await unitOfWork.Cameras.GetByIdAsync(id);
         if (camera == null)
@@ -68,7 +81,7 @@ public class CameraService(IAccountService accountService, IShopService shopServ
         var hasRelatedEntity = (await unitOfWork.Evidences.GetAsync(x => x.CameraId == id)).IsValuesEmpty;
         if (hasRelatedEntity)
         {
-            camera.Status = CameraStatus.Inactive;
+            camera.Status = CameraStatus.Disabled;
             unitOfWork.Cameras.Update(camera);
         }
         else
