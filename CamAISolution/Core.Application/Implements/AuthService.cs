@@ -56,10 +56,8 @@ public class AuthService(IJwtService jwtService, IAccountService accountService,
             oldAccessToken,
             accessTokenType,
             userIp,
-            isValidateTime: false,
-            isValidateCache: false
+            isValidateTime: false
         );
-
         var refreshTokenDetail = jwtService.ValidateToken(refreshToken, refreshTokenType, userIp);
 
         if (accessTokenDetail.UserId != refreshTokenDetail.UserId)
