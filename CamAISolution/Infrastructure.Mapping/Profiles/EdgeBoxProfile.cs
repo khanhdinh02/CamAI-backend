@@ -12,5 +12,6 @@ public class EdgeBoxProfile : Profile
         CreateMap<CreateEdgeBoxDto, EdgeBox>();
         CreateMap<UpdateEdgeBoxDto, EdgeBox>();
         CreateMap<EdgeBoxModel, EdgeBoxModelDto>();
+        CreateMap<EdgeBoxActivity, EdgeBoxActivityDto>();
     }
 }

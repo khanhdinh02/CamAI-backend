@@ -11,6 +11,7 @@ using Core.Domain.Interfaces.Services;
 using Core.Domain.Models;
 using Core.Domain.Models.Publishers;
 using Core.Domain.Repositories;
+using Core.Domain.Services;
 using Core.Domain.Utilities;
 
 namespace Core.Application.Implements;
@@ -21,7 +22,8 @@ public class EdgeBoxInstallService(
     IAccountService accountService,
     IEmailService emailService,
     IMessageQueueService messageQueueService,
-    IApplicationDelayEventListener applicationDelayEventListener
+    IApplicationDelayEventListener applicationDelayEventListener,
+    IEdgeBoxService edgeBoxService
 ) : IEdgeBoxInstallService
 {
     private const int CodeLength = 16;
@@ -47,12 +49,14 @@ public class EdgeBoxInstallService(
         var ebInstall = mapper.Map<CreateEdgeBoxInstallDto, EdgeBoxInstall>(dto);
         ebInstall.ActivationCode = RandomGenerator.GetAlphanumericString(CodeLength);
         ebInstall.EdgeBoxInstallStatus = EdgeBoxInstallStatus.New;
+        ebInstall.ActivationStatus = EdgeBoxActivationStatus.NotActivated;
         await unitOfWork.EdgeBoxInstalls.AddAsync(ebInstall);
 
-        edgeBox.EdgeBoxLocation = EdgeBoxLocation.Installing;
-        unitOfWork.EdgeBoxes.Update(edgeBox);
-
-        await unitOfWork.CompleteAsync();
+        await edgeBoxService.UpdateLocation(
+            edgeBox.Id,
+            EdgeBoxLocation.Installing,
+            $"Lease edge box to Shop#{shop.Id}"
+        );
 
         // Send Activation code to brand manager via email
         _ = emailService.SendEmailAsync(
@@ -83,14 +87,30 @@ public class EdgeBoxInstallService(
         // TODO: check edge box location occupied
         if (ebInstall.ActivationStatus == EdgeBoxActivationStatus.NotActivated)
         {
+            await unitOfWork.EdgeBoxActivities.AddAsync(
+                new EdgeBoxActivity
+                {
+                    Type = EdgeBoxActivityType.EdgeBoxActivation,
+                    EdgeBoxInstallId = ebInstall.Id,
+                    Description = $"Manager activates edge box #{ebInstall.EdgeBoxId}"
+                }
+            );
+
             if (ebInstall.EdgeBoxInstallStatus != EdgeBoxInstallStatus.Working)
             {
-                ebInstall.ActivationStatus = EdgeBoxActivationStatus.Failed;
-                await unitOfWork.CompleteAsync();
+                await UpdateActivationStatus(
+                    ebInstall.Id,
+                    EdgeBoxActivationStatus.Failed,
+                    "Postpone activation due to unhealthy status"
+                );
             }
             else
             {
-                ebInstall.ActivationStatus = EdgeBoxActivationStatus.Pending;
+                await UpdateActivationStatus(
+                    ebInstall.Id,
+                    EdgeBoxActivationStatus.Activated,
+                    "Waiting for edge box to confirm activation"
+                );
                 if (await unitOfWork.CompleteAsync() > 0)
                 {
                     await messageQueueService.Publish(
@@ -117,36 +137,11 @@ public class EdgeBoxInstallService(
         return ebInstall;
     }
 
-    public async Task<PaginationResult<EdgeBoxInstallActivity>> GetEdgeBoxInstallActivities(
-        EdgeBoxActivityByIdSearchRequest searchRequest
+    public async Task<EdgeBoxInstall> UpdateStatus(
+        Guid edgeBoxInstallId,
+        EdgeBoxInstallStatus status,
+        string? description = null
     )
-    {
-        return await unitOfWork.EdgeBoxInstallActivities.GetAsync(
-            x => x.EdgeBoxInstallId == searchRequest.EdgeBoxInstallId,
-            pageIndex: searchRequest.PageIndex,
-            pageSize: searchRequest.Size
-        );
-    }
-
-    public async Task<PaginationResult<EdgeBoxInstallActivity>> GetCurrentEdgeBoxInstallActivities(
-        EdgeBoxActivityByEdgeBoxIdSearchRequest searchRequest
-    )
-    {
-        var ebInstalls =
-            (
-                await unitOfWork.EdgeBoxInstalls.GetAsync(x =>
-                    x.EdgeBoxId == searchRequest.EdgeBoxId && x.EdgeBoxInstallStatus != EdgeBoxInstallStatus.Disabled
-                )
-            ).Values.FirstOrDefault() ?? throw new NotFoundException("No current install found");
-        return await unitOfWork.EdgeBoxInstallActivities.GetAsync(
-            x => x.EdgeBoxInstallId == ebInstalls.Id,
-            orderBy: x => x.OrderBy(a => a.ModifiedTime),
-            pageIndex: searchRequest.PageIndex,
-            pageSize: searchRequest.Size
-        );
-    }
-
-    public async Task<EdgeBoxInstall> UpdateStatus(Guid edgeBoxInstallId, EdgeBoxInstallStatus status)
     {
         var ebInstall =
             await unitOfWork.EdgeBoxInstalls.GetByIdAsync(edgeBoxInstallId)
@@ -154,27 +149,57 @@ public class EdgeBoxInstallService(
         return await UpdateStatus(ebInstall, status);
     }
 
-    public async Task<EdgeBoxInstall> UpdateStatus(EdgeBoxInstall edgeBoxInstall, EdgeBoxInstallStatus status)
+    public async Task<EdgeBoxInstall> UpdateStatus(
+        EdgeBoxInstall edgeBoxInstall,
+        EdgeBoxInstallStatus status,
+        string? description = null
+    )
     {
-        if (edgeBoxInstall.EdgeBoxInstallStatus != status)
-        {
-            await unitOfWork
-                .GetRepository<EdgeBoxInstallActivity>()
-                .AddAsync(
-                    new EdgeBoxInstallActivity
-                    {
-                        Description = $"Update status from {edgeBoxInstall.EdgeBoxInstallStatus} to {status}",
-                        NewStatus = status,
-                        OldStatus = edgeBoxInstall.EdgeBoxInstallStatus,
-                        EdgeBoxInstallId = edgeBoxInstall.Id
-                    }
-                );
-            edgeBoxInstall.EdgeBoxInstallStatus = status;
-            unitOfWork.EdgeBoxInstalls.Update(edgeBoxInstall);
-            await unitOfWork.CompleteAsync();
-        }
+        if (edgeBoxInstall.EdgeBoxInstallStatus == status)
+            return edgeBoxInstall;
+
+        await unitOfWork.EdgeBoxActivities.AddAsync(
+            new EdgeBoxActivity
+            {
+                Type = EdgeBoxActivityType.EdgeBoxHealth,
+                Description = description ?? $"Update status from {edgeBoxInstall.EdgeBoxInstallStatus} to {status}",
+                EdgeBoxInstallId = edgeBoxInstall.Id
+            }
+        );
+        edgeBoxInstall.EdgeBoxInstallStatus = status;
+        unitOfWork.EdgeBoxInstalls.Update(edgeBoxInstall);
+        await unitOfWork.CompleteAsync();
 
         return edgeBoxInstall;
+    }
+
+    public async Task<EdgeBoxInstall> UpdateActivationStatus(
+        Guid edgeBoxInstallId,
+        EdgeBoxActivationStatus status,
+        string? description = null
+    )
+    {
+        var ebInstall =
+            await unitOfWork.EdgeBoxInstalls.GetByIdAsync(edgeBoxInstallId)
+            ?? throw new NotFoundException(typeof(EdgeBoxInstall), edgeBoxInstallId);
+
+        if (ebInstall.ActivationStatus == status)
+            return ebInstall;
+
+        await unitOfWork.EdgeBoxActivities.AddAsync(
+            new EdgeBoxActivity
+            {
+                Type = EdgeBoxActivityType.EdgeBoxActivation,
+                Description = description ?? $"Update activation status from {ebInstall.ActivationStatus} to {status}",
+                EdgeBoxInstallId = ebInstall.Id
+            }
+        );
+
+        ebInstall.ActivationStatus = status;
+        unitOfWork.EdgeBoxInstalls.Update(ebInstall);
+
+        await unitOfWork.CompleteAsync();
+        return ebInstall;
     }
 
     public async Task<EdgeBoxInstall?> GetLatestInstallingByEdgeBox(Guid edgeBoxId)

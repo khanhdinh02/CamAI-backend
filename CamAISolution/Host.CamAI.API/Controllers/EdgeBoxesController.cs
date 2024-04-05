@@ -47,14 +47,13 @@ public class EdgeBoxesController(
 
     [HttpGet("{edgeBoxId}/activities")]
     [AccessTokenGuard(Role.Admin, Role.BrandManager, Role.ShopManager)]
-    public async Task<PaginationResult<EdgeBoxInstallActivityDto>> GetEdgeBoxActivity(
+    public async Task<PaginationResult<EdgeBoxActivityDto>> GetEdgeBoxActivity(
         [FromRoute] Guid edgeBoxId,
-        [FromQuery] EdgeBoxActivityByEdgeBoxIdSearchRequest searchRequest
+        [FromQuery] SearchEdgeBoxActivityRequest searchRequest
     )
     {
-        searchRequest.EdgeBoxId = edgeBoxId;
-        var result = await edgeBoxInstallService.GetCurrentEdgeBoxInstallActivities(searchRequest);
-        return mapping.Map<EdgeBoxInstallActivity, EdgeBoxInstallActivityDto>(result);
+        var result = await edgeBoxService.GetActivitiesByEdgeBoxId(edgeBoxId, searchRequest);
+        return mapping.Map<EdgeBoxActivity, EdgeBoxActivityDto>(result);
     }
 
     [HttpPost]
@@ -102,7 +101,7 @@ public class EdgeBoxesController(
     [AccessTokenGuard(Role.Admin)]
     public async Task UpdateEdgeBoxLocation([FromRoute] Guid id, [FromBody] UpdateEdgeBoxLocationDto dto)
     {
-        await edgeBoxService.UpdateEdgeBoxLocation(id, dto.Location);
+        await edgeBoxService.UpdateLocation(id, dto.Location);
     }
 
     [HttpDelete("{id}")]

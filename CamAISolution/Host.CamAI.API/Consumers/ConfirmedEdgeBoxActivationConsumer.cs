@@ -44,16 +44,24 @@ public class ConfirmedEdgeBoxActivationConsumer(
             if (context.Message.IsActivatedSuccessfully is false)
             {
                 logger.Info($"Edge box id {context.Message.EdgeBoxId} activated failed");
-                edgeBoxInstall.ActivationStatus = EdgeBoxActivationStatus.Failed;
+                await edgeBoxInstallService.UpdateActivationStatus(
+                    edgeBoxInstall.Id,
+                    EdgeBoxActivationStatus.Failed,
+                    "Edge box activation failed"
+                );
             }
             else
             {
-                edgeBoxInstall.ActivationStatus = EdgeBoxActivationStatus.Activated;
                 logger.Info($"Edge box id {context.Message.EdgeBoxId} activated successfully, stopping delay event");
+                await edgeBoxInstallService.UpdateActivationStatus(
+                    edgeBoxInstall.Id,
+                    EdgeBoxActivationStatus.Activated,
+                    "Edge box activated"
+                );
+                await applicationDelayEventListener.StopEvent($"ActivateEdgeBox{edgeBoxInstall.Id:N}");
             }
             await applicationDelayEventListener.StopEvent($"ActivateEdgeBox{edgeBoxInstall.Id:N}");
 
-            unitOfWork.EdgeBoxInstalls.Update(edgeBoxInstall);
             if (await unitOfWork.CompleteAsync() > 0)
             {
                 var brandManagerAccountIds = (

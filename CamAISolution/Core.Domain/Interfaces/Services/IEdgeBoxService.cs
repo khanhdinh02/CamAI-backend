@@ -12,8 +12,9 @@ public interface IEdgeBoxService
     Task<EdgeBox> CreateEdgeBox(CreateEdgeBoxDto edgeBoxDto);
     Task<EdgeBox> UpdateEdgeBox(Guid id, UpdateEdgeBoxDto edgeBoxDto);
     Task DeleteEdgeBox(Guid id);
-    Task UpdateStatus(Guid id, EdgeBoxStatus status);
-    Task UpdateEdgeBoxLocation(Guid id, EdgeBoxLocation location);
+    Task UpdateStatus(Guid id, EdgeBoxStatus status, string? description = null);
+    Task UpdateLocation(Guid id, EdgeBoxLocation location, string? description = null);
     Task<IEnumerable<EdgeBox>> GetEdgeBoxesByShop(Guid shopId);
     Task<IEnumerable<EdgeBox>> GetEdgeBoxesByBrand(Guid brandId);
+    Task<PaginationResult<EdgeBoxActivity>> GetActivitiesByEdgeBoxId(Guid edgeBoxId, SearchEdgeBoxActivityRequest req);
 }

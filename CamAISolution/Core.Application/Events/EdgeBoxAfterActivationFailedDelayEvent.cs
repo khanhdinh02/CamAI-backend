@@ -14,6 +14,7 @@ public class EdgeBoxAfterActivationFailedDelayEvent(TimeSpan delay, Guid edgeBox
     : IApplicationDelayEvent
 {
     public IUnitOfWork UnitOfWork { get; set; } = null!;
+    public IEdgeBoxInstallService EdgeBoxInstallService { get; set; } = null!;
     public INotificationService NotificationService { get; set; } = null!;
     public IAppLogging<EdgeBoxAfterActivationFailedDelayEvent> Logger { get; set; } = null!;
 
@@ -40,15 +41,18 @@ public class EdgeBoxAfterActivationFailedDelayEvent(TimeSpan delay, Guid edgeBox
 
             if (edgeBoxInstall.ActivationStatus is not EdgeBoxActivationStatus.Activated)
             {
-                edgeBoxInstall.ActivationStatus = EdgeBoxActivationStatus.Failed;
-                UnitOfWork.EdgeBoxInstalls.Update(edgeBoxInstall);
-                await UnitOfWork.CompleteAsync();
+                await EdgeBoxInstallService.UpdateActivationStatus(
+                    edgeBoxInstall.Id,
+                    EdgeBoxActivationStatus.Failed,
+                    "Edge box activation failed due to not receiving any response from edge box."
+                );
+
                 await NotificationService.CreateNotification(
                     new CreateNotificationDto
                     {
                         Content =
-                            $"Edge box install-{edgeBoxInstallId} is {edgeBoxInstall.EdgeBoxInstallStatus.ToString()}",
-                        Title = $"Edge box install is {edgeBoxInstall.EdgeBoxInstallStatus.ToString()}",
+                            $"Edge box install #{edgeBoxInstallId} activation was failed due to not receiving any response from edge box.",
+                        Title = "Edge box install activation was failed",
                         SentToId = sentToAdmin,
                         RelatedEntityId = edgeBoxInstallId,
                         Priority = NotificationPriority.Urgent,

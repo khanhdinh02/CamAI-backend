@@ -13,12 +13,12 @@ public interface IUnitOfWork : IDisposable, IAsyncDisposable
     ICustomEmployeeRepository Employees { get; }
     IRepository<EdgeBox> EdgeBoxes { get; }
     IRepository<EdgeBoxInstall> EdgeBoxInstalls { get; }
-    IRepository<EdgeBoxInstallActivity> EdgeBoxInstallActivities { get; }
     IRepository<EdgeBoxModel> EdgeBoxModels { get; }
     IRepository<Incident> Incidents { get; }
     IRepository<Evidence> Evidences { get; }
     IRepository<Request> Requests { get; }
     IRepository<Camera> Cameras { get; }
+    IRepository<EdgeBoxActivity> EdgeBoxActivities { get; }
     Task BeginTransaction();
     Task CommitTransaction();
     Task RollBack();

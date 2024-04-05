@@ -9,22 +9,20 @@ public interface IEdgeBoxInstallService
 {
     Task<EdgeBoxInstall> LeaseEdgeBox(CreateEdgeBoxInstallDto dto);
     Task<EdgeBoxInstall> ActivateEdgeBox(ActivateEdgeBoxDto dto);
-    Task<PaginationResult<EdgeBoxInstallActivity>> GetEdgeBoxInstallActivities(
-        EdgeBoxActivityByIdSearchRequest searchRequest
-    );
-    Task<PaginationResult<EdgeBoxInstallActivity>> GetCurrentEdgeBoxInstallActivities(
-        EdgeBoxActivityByEdgeBoxIdSearchRequest searchRequest
-    );
 
     /// <summary>
-    /// If <c>edgeBoxInstall</c> has been fetched, use <see cref="UpdateStatus(EdgeBoxInstall, EdgeBoxInstallStatus)"/> to avoid fetching again.
+    /// If <c>edgeBoxInstall</c> has been fetched, use <see cref="UpdateStatus(Core.Domain.Entities.EdgeBoxInstall,Core.Domain.Enums.EdgeBoxInstallStatus,string?)"/> to avoid fetching again.
     /// </summary>
-    Task<EdgeBoxInstall> UpdateStatus(Guid edgeBoxInstallId, EdgeBoxInstallStatus status);
+    Task<EdgeBoxInstall> UpdateStatus(Guid edgeBoxInstallId, EdgeBoxInstallStatus status, string? description = null);
 
     /// <summary>
-    /// Use this method if <c>edgeBoxInstall</c> have been fetched to avoid fetching again, otherwise use <see cref="UpdateStatus(Guid, EdgeBoxInstallStatus)"/>.
+    /// Use this method if <c>edgeBoxInstall</c> have been fetched to avoid fetching again, otherwise use <see cref="UpdateStatus(System.Guid,Core.Domain.Enums.EdgeBoxInstallStatus,string?)"/>.
     /// </summary>
-    Task<EdgeBoxInstall> UpdateStatus(EdgeBoxInstall edgeBoxInstall, EdgeBoxInstallStatus status);
+    Task<EdgeBoxInstall> UpdateStatus(
+        EdgeBoxInstall edgeBoxInstall,
+        EdgeBoxInstallStatus status,
+        string? description = null
+    );
 
     Task<EdgeBoxInstall?> GetLatestInstallingByEdgeBox(Guid edgeBoxId);
     Task<PaginationResult<EdgeBoxInstall>> GetEdgeBoxInstall(SearchEdgeBoxInstallRequest searchRequest);
@@ -44,4 +42,10 @@ public interface IEdgeBoxInstallService
     /// <param name="brandId"></param>
     /// <returns></returns>
     Task<PaginationResult<EdgeBoxInstall>> GetInstallingByBrand(Guid brandId);
+
+    Task<EdgeBoxInstall> UpdateActivationStatus(
+        Guid edgeBoxInstallId,
+        EdgeBoxActivationStatus status,
+        string? description = null
+    );
 }
