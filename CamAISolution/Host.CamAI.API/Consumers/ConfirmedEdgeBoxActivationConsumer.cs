@@ -36,15 +36,22 @@ public class ConfirmedEdgeBoxActivationConsumer(
         {
             var edgeBoxInstall = (await edgeBoxInstallService.GetLatestInstallingByEdgeBox(context.Message.EdgeBoxId))!;
             if (edgeBoxInstall.ActivationStatus == EdgeBoxActivationStatus.Activated)
+            {
+                logger.Info($"Edge box id {context.Message.EdgeBoxId} is already activated");
                 return;
+            }
 
             if (context.Message.IsActivatedSuccessfully is false)
+            {
+                logger.Info($"Edge box id {context.Message.EdgeBoxId} activated failed");
                 edgeBoxInstall.ActivationStatus = EdgeBoxActivationStatus.Failed;
+            }
             else
             {
                 edgeBoxInstall.ActivationStatus = EdgeBoxActivationStatus.Activated;
-                await applicationDelayEventListener.StopEvent($"ActivateEdgeBox{edgeBoxInstall.Id:N}");
+                logger.Info($"Edge box id {context.Message.EdgeBoxId} activated successfully, stopping delay event");
             }
+            await applicationDelayEventListener.StopEvent($"ActivateEdgeBox{edgeBoxInstall.Id:N}");
 
             unitOfWork.EdgeBoxInstalls.Update(edgeBoxInstall);
             if (await unitOfWork.CompleteAsync() > 0)
@@ -88,6 +95,7 @@ public class ConfirmedEdgeBoxActivationConsumer(
             title = "Edge box cannot be activated";
             priority = NotificationPriority.Urgent;
         }
+        logger.Info($"Send notification to admin and manager {string.Join(", ", sendToAccountIds)}");
 
         notificationService.CreateNotification(
             new CreateNotificationDto

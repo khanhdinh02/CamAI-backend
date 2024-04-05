@@ -1,3 +1,5 @@
+using Serilog;
+
 namespace Infrastructure.Streaming;
 
 public static class WebsocketRelayProcessManager
@@ -6,9 +8,17 @@ public static class WebsocketRelayProcessManager
 
     public static RelayInformation Run(string processName)
     {
+        Log.Information("Receive websocket relay run request for process {ProcessName}", processName);
         var process = Processes.Find(x => x.Name == processName);
         if (process != null)
+        {
+            Log.Information(
+                "Found running websocket relay, {HttpPort}, {WebSocketPort}",
+                process.HttpPort,
+                process.WebsocketPort
+            );
             return RelayInformation.FromProcess(process);
+        }
         process = new WebsocketRelayProcess(processName);
         process.Run();
         Processes.Add(process);
@@ -17,9 +27,14 @@ public static class WebsocketRelayProcessManager
 
     public static void Kill(string processName)
     {
+        Log.Information("Receive websocket relay kill request for process {ProcessName}", processName);
         var process = Processes.Find(x => x.Name == processName);
         if (process == null)
+        {
+            Log.Information("Websocket relay not found");
             return;
+        }
+        Log.Information("Killing websocket relay");
         process.Stop();
         Processes.Remove(process);
     }
