@@ -3,7 +3,6 @@ using Core.Domain.Entities.Base;
 using Core.Domain.Repositories;
 using Core.Domain.Services;
 using Core.Domain.Utilities;
-using Infrastructure.Repositories.Base;
 using Infrastructure.Repositories.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;

@@ -11,12 +11,8 @@ using Core.Domain.Services;
 
 namespace Core.Application.Implements;
 
-public class EdgeBoxService(
-    IUnitOfWork unitOfWork,
-    IAccountService accountService,
-    IEdgeBoxInstallService edgeBoxInstallService,
-    IBaseMapping mapping
-) : IEdgeBoxService
+public class EdgeBoxService(IUnitOfWork unitOfWork, IAccountService accountService, IBaseMapping mapping)
+    : IEdgeBoxService
 {
     public async Task<EdgeBox> GetEdgeBoxById(Guid id)
     {
@@ -33,11 +29,7 @@ public class EdgeBoxService(
     {
         var crit = new EdgeBoxSearchSpec(searchRequest).Criteria;
         IEnumerable<EdgeBox> edgeBoxes = (
-            await unitOfWork.EdgeBoxes.GetAsync(
-                crit,
-                takeAll: true,
-                includeProperties: [nameof(EdgeBox.EdgeBoxModel)]
-            )
+            await unitOfWork.EdgeBoxes.GetAsync(crit, takeAll: true, includeProperties: [nameof(EdgeBox.EdgeBoxModel)])
         ).Values;
         if (searchRequest.BrandId.HasValue)
         {
@@ -55,11 +47,7 @@ public class EdgeBoxService(
             );
         }
 
-        return new PaginationResult<EdgeBox>(
-            edgeBoxes,
-            searchRequest.PageIndex,
-            searchRequest.Size
-        );
+        return new PaginationResult<EdgeBox>(edgeBoxes, searchRequest.PageIndex, searchRequest.Size);
     }
 
     public async Task<IEnumerable<EdgeBox>> GetEdgeBoxesByShop(Guid shopId)
@@ -87,10 +75,7 @@ public class EdgeBoxService(
             await unitOfWork.EdgeBoxes.GetAsync(
                 eb => eb.EdgeBoxLocation != EdgeBoxLocation.Idle,
                 null,
-                [
-                    $"{nameof(EdgeBox.Installs)}.{nameof(EdgeBoxInstall.Shop)}",
-                    nameof(EdgeBox.EdgeBoxModel)
-                ],
+                [$"{nameof(EdgeBox.Installs)}.{nameof(EdgeBoxInstall.Shop)}", nameof(EdgeBox.EdgeBoxModel)],
                 true,
                 true
             )
@@ -117,19 +102,12 @@ public class EdgeBoxService(
     {
         var foundEdgeBoxes = await unitOfWork.EdgeBoxes.GetAsync(new EdgeBoxByIdRepoSpec(id));
         if (foundEdgeBoxes.Values.Count == 0)
-        {
             throw new NotFoundException(typeof(EdgeBox), id);
-        }
 
         var foundEdgeBox = foundEdgeBoxes.Values[0];
         var currentAccount = accountService.GetCurrentAccount();
-        if (
-            foundEdgeBox.EdgeBoxStatus == EdgeBoxStatus.Inactive
-            && currentAccount.Role != Role.Admin
-        )
-        {
+        if (foundEdgeBox.EdgeBoxStatus == EdgeBoxStatus.Inactive && currentAccount.Role != Role.Admin)
             throw new BadRequestException("Cannot modified inactive edgeBox");
-        }
 
         _ =
             await unitOfWork.EdgeBoxModels.GetByIdAsync(edgeBoxDto.EdgeBoxModelId)
@@ -143,48 +121,28 @@ public class EdgeBoxService(
     public async Task DeleteEdgeBox(Guid id)
     {
         var edgeBox = (
-            await unitOfWork.EdgeBoxes.GetAsync(
-                eb => eb.Id == id,
-                includeProperties: [nameof(EdgeBox.Installs)]
-            )
+            await unitOfWork.EdgeBoxes.GetAsync(eb => eb.Id == id, includeProperties: [nameof(EdgeBox.Installs)])
         ).Values.FirstOrDefault();
 
         if (edgeBox == null)
-        {
             return;
-        }
 
         if (edgeBox.Installs.Count == 0)
         {
             unitOfWork.EdgeBoxes.Delete(edgeBox);
+            await unitOfWork.CompleteAsync();
         }
         else
         {
             if (edgeBox.EdgeBoxLocation != EdgeBoxLocation.Idle)
-            {
                 throw new ConflictException($"Cannot delete edge box that is not idle, id {id}");
-            }
-
-            edgeBox.EdgeBoxStatus = EdgeBoxStatus.Disposed;
-            unitOfWork.EdgeBoxes.Update(edgeBox);
-            await unitOfWork.EdgeBoxActivities.AddAsync(
-                new EdgeBoxActivity
-                {
-                    EdgeBoxId = edgeBox.Id,
-                    Type = EdgeBoxActivityType.EdgeBoxStatus,
-                    Description = "Dispose edge box"
-                }
-            );
+            await UpdateStatus(edgeBox.Id, EdgeBoxStatus.Disposed, "Dispose edge box");
         }
-
-        await unitOfWork.CompleteAsync();
     }
 
-    public async Task UpdateStatus(Guid id, EdgeBoxStatus status)
+    public async Task UpdateStatus(Guid id, EdgeBoxStatus status, string? description = null)
     {
-        var edgeBox =
-            await unitOfWork.EdgeBoxes.GetByIdAsync(id)
-            ?? throw new NotFoundException(typeof(EdgeBox), id);
+        var edgeBox = await unitOfWork.EdgeBoxes.GetByIdAsync(id) ?? throw new NotFoundException(typeof(EdgeBox), id);
         if (edgeBox.EdgeBoxStatus == status)
             return;
 
@@ -195,39 +153,39 @@ public class EdgeBoxService(
             || (edgeBox.EdgeBoxStatus == EdgeBoxStatus.Broken && status == EdgeBoxStatus.Disposed)
         )
         {
-            var latestInstallingByEdgeBox =
-                await edgeBoxInstallService.GetLatestInstallingByEdgeBox(id);
+            // Temporary fix for circular dependency
+            var latestInstallingByEdgeBox = (
+                await unitOfWork.EdgeBoxInstalls.GetAsync(
+                    i => i.EdgeBoxId == edgeBox.Id && i.EdgeBox.EdgeBoxLocation != EdgeBoxLocation.Idle,
+                    o => o.OrderByDescending(i => i.CreatedDate),
+                    pageSize: 1
+                )
+            ).Values.FirstOrDefault();
             if (
-                latestInstallingByEdgeBox
-                is not { EdgeBoxInstallStatus: EdgeBoxInstallStatus.Disabled }
+                latestInstallingByEdgeBox != null
+                && latestInstallingByEdgeBox.EdgeBoxInstallStatus != EdgeBoxInstallStatus.Disabled
             )
-            {
-                throw new BadRequestException(
-                    "Cannot change status of edge box that is installing"
-                );
-            }
+                throw new BadRequestException("Cannot change status of edge box that is installing");
         }
 
-        await unitOfWork
-            .GetRepository<EdgeBoxActivity>()
-            .AddAsync(
-                new EdgeBoxActivity
-                {
-                    Type = EdgeBoxActivityType.EdgeBoxStatus,
-                    Description = $"Update status from {edgeBox.EdgeBoxStatus} to {status}",
-                    EdgeBoxId = edgeBox.Id
-                }
-            );
+        await unitOfWork.EdgeBoxActivities.AddAsync(
+            new EdgeBoxActivity
+            {
+                Type = EdgeBoxActivityType.EdgeBoxStatus,
+                Description = description ?? $"Update status from {edgeBox.EdgeBoxStatus} to {status}",
+                EdgeBoxId = edgeBox.Id
+            }
+        );
+
         edgeBox.EdgeBoxStatus = status;
         unitOfWork.EdgeBoxes.Update(edgeBox);
+
         await unitOfWork.CompleteAsync();
     }
 
-    public async Task UpdateEdgeBoxLocation(Guid id, EdgeBoxLocation location)
+    public async Task UpdateLocation(Guid id, EdgeBoxLocation location, string? description = null)
     {
-        var edgeBox =
-            await unitOfWork.EdgeBoxes.GetByIdAsync(id)
-            ?? throw new NotFoundException(typeof(EdgeBox), id);
+        var edgeBox = await unitOfWork.EdgeBoxes.GetByIdAsync(id) ?? throw new NotFoundException(typeof(EdgeBox), id);
         if (edgeBox.EdgeBoxLocation == location)
             return;
 
@@ -235,18 +193,27 @@ public class EdgeBoxService(
         {
             // installing -> occupied
             case EdgeBoxLocation.Installing when location == EdgeBoxLocation.Occupied:
-            //uninstalling -> idle
+            // uninstalling -> idle
             case EdgeBoxLocation.Uninstalling when location == EdgeBoxLocation.Idle:
+                await unitOfWork.EdgeBoxActivities.AddAsync(
+                    new EdgeBoxActivity
+                    {
+                        Type = EdgeBoxActivityType.EdgeBoxLocation,
+                        EdgeBoxId = edgeBox.Id,
+                        Description = description ?? $"Update location from {edgeBox.EdgeBoxLocation} to {location}"
+                    }
+                );
+
                 edgeBox.EdgeBoxLocation = location;
+                unitOfWork.EdgeBoxes.Update(edgeBox);
+
+                await unitOfWork.CompleteAsync();
                 break;
             default:
                 throw new ForbiddenException(
                     $"Cannot update current location {edgeBox.EdgeBoxLocation} to location to location {location}"
                 );
         }
-
-        unitOfWork.EdgeBoxes.Update(edgeBox);
-        await unitOfWork.CompleteAsync();
     }
 
     public async Task<PaginationResult<EdgeBoxActivity>> GetActivitiesByEdgeBoxId(
