@@ -1,3 +1,4 @@
+using Core.Domain;
 using Core.Domain.Entities;
 using Core.Domain.Interfaces.Mappings;
 using Core.Domain.Interfaces.Services;
@@ -10,7 +11,11 @@ using Action = Host.CamAI.API.Consumers.Contracts.Action;
 namespace Host.CamAI.API.Consumers;
 
 [Consumer("{MachineName}_Camera", ConsumerConstant.CameraChange)]
-public class CameraChangeConsumer(ICameraService cameraService, IBaseMapping mapper) : IConsumer<CameraChangeMessage>
+public class CameraChangeConsumer(
+    ICameraService cameraService,
+    IBaseMapping mapper,
+    IAppLogging<CameraChangeConsumer> logger
+) : IConsumer<CameraChangeMessage>
 {
     public async Task Consume(ConsumeContext<CameraChangeMessage> context)
     {
@@ -18,9 +23,11 @@ public class CameraChangeConsumer(ICameraService cameraService, IBaseMapping map
         switch (message.Action)
         {
             case Action.Upsert:
+                logger.Info($"Receive upsert camera change for shop {message.Camera.ShopId}");
                 await cameraService.UpsertCamera(mapper.Map<EdgeBoxCameraDto, Camera>(message.Camera));
                 break;
             case Action.Delete:
+                logger.Info($"Receive delete camera change for shop {message.Camera.ShopId}");
                 await cameraService.DeleteCamera(message.Camera.Id);
                 break;
         }

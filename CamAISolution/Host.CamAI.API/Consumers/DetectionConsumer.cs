@@ -1,3 +1,4 @@
+using Core.Domain;
 using Core.Domain.DTO;
 using Core.Domain.Interfaces.Services;
 using Host.CamAI.API.Consumers.Contracts;
@@ -7,11 +8,15 @@ using MassTransit;
 namespace Host.CamAI.API.Consumers;
 
 [Consumer("{MachineName}_Detection", ConsumerConstant.Detection)]
-public class DetectionConsumer(IIncidentService incidentService) : IConsumer<ReceivedIncidentMessage>
+public class DetectionConsumer(IAppLogging<DetectionConsumer> logger, IIncidentService incidentService)
+    : IConsumer<ReceivedIncidentMessage>
 {
     public async Task Consume(ConsumeContext<ReceivedIncidentMessage> context)
     {
         var receivedIncident = context.Message;
+        logger.Info(
+            $"Receive new detection type {receivedIncident.IncidentType} from edge box {receivedIncident.EdgeBoxId}"
+        );
         await incidentService.UpsertIncident(Map(receivedIncident));
     }
 
