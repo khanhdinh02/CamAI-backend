@@ -87,6 +87,15 @@ public class EdgeBoxInstallService(
         // TODO: check edge box location occupied
         if (ebInstall.ActivationStatus == EdgeBoxActivationStatus.NotActivated)
         {
+            await unitOfWork.EdgeBoxActivities.AddAsync(
+                new EdgeBoxActivity
+                {
+                    Type = EdgeBoxActivityType.EdgeBoxActivation,
+                    EdgeBoxInstallId = ebInstall.Id,
+                    Description = $"Manager activates edge box #{ebInstall.EdgeBoxId}"
+                }
+            );
+
             if (ebInstall.EdgeBoxInstallStatus != EdgeBoxInstallStatus.Working)
             {
                 await UpdateActivationStatus(
