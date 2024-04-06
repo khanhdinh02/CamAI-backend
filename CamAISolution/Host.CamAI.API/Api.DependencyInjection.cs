@@ -1,7 +1,6 @@
 using System.Reflection;
 using System.Text.Json.Serialization;
 using Core.Application.Events;
-using Core.Application.Events.Observers;
 using Core.Application.Exceptions;
 using Core.Application.Implements;
 using Core.Domain.Events;

@@ -13,9 +13,9 @@ namespace Host.CamAI.API.Controllers;
 public class TestsController(
     IBaseMapping mapping,
     IIncidentService incidentService,
-    EventManager eventManager
-)
-    : ControllerBase
+    EventManager eventManager,
+    AccountNotificationSubject accountNotificationSubject
+) : ControllerBase
 {
     [HttpGet]
     public ActionResult<string> TestEndpoint()
@@ -52,5 +52,12 @@ public class TestsController(
     {
         var incident = await incidentService.UpsertIncident(dto);
         return mapping.Map<Incident, IncidentDto>(incident);
+    }
+
+    [HttpGet("notifcation-test")]
+    public Task<IActionResult> TestNotification()
+    {
+        accountNotificationSubject.AccountNotification = new AccountNotification();
+        return Task.FromResult<IActionResult>(Ok());
     }
 }

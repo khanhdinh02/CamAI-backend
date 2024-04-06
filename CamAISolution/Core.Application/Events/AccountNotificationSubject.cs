@@ -1,11 +1,11 @@
 using Core.Application.Events.Args;
-using Core.Application.Events.Observers;
 using Core.Domain.Entities;
 using Core.Domain.Events;
 
 namespace Core.Application.Events;
 
-public class AccountNotificationSubject : ISubject<AccountNotificationObserver, CreatedAccountNotificationArgs>
+public class AccountNotificationSubject
+    : ISubject<Domain.Events.IObserver<CreatedAccountNotificationArgs>, CreatedAccountNotificationArgs>
 {
     public event EventHandler<CreatedAccountNotificationArgs> Created = null!;
 
@@ -25,12 +25,12 @@ public class AccountNotificationSubject : ISubject<AccountNotificationObserver, 
         Created.Invoke(this, e);
     }
 
-    public void Attach(AccountNotificationObserver observer)
+    public void Attach(Domain.Events.IObserver<CreatedAccountNotificationArgs> observer)
     {
         Created += observer.Update;
     }
 
-    public void Detach(AccountNotificationObserver observer)
+    public void Detach(Domain.Events.IObserver<CreatedAccountNotificationArgs> observer)
     {
         Created -= observer.Update;
     }

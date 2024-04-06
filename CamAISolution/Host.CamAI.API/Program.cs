@@ -1,3 +1,4 @@
+using System.Net.WebSockets;
 using Core.Application.Events;
 using Core.Application.Specifications;
 using Core.Domain.Constants;
@@ -16,8 +17,8 @@ using Infrastructure.Notification;
 using Infrastructure.Notification.Models;
 using Infrastructure.Observer;
 using Infrastructure.Repositories;
-using Microsoft.Extensions.Caching.Memory;
 using Infrastructure.Streaming;
+using Microsoft.Extensions.Caching.Memory;
 
 var builder = WebApplication.CreateBuilder(args).ConfigureSerilog();
 
@@ -69,7 +70,6 @@ app.UseCors(allowPolicy);
 app.UseMiddleware<GlobalJwtHandler>();
 
 app.Migration(args);
-
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -80,6 +80,8 @@ if (app.Environment.IsDevelopment())
         config.SpecUrl = "/swagger/v1/swagger.json";
     });
 }
+
+app.UseMiddleware<NotificationSocket>();
 
 app.UseHttpsRedirection();
 

@@ -11,4 +11,8 @@
         <ProjectReference Include="..\Core.Domain\Core.Domain.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Events\Observers\" />
+    </ItemGroup>
+
 </Project>
