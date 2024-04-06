@@ -1,3 +1,4 @@
+using Core.Application.Exceptions;
 using Core.Domain.DTO;
 using Core.Domain.Entities;
 using Core.Domain.Enums;
@@ -101,7 +102,19 @@ public class EdgeBoxesController(
     [AccessTokenGuard(Role.Admin)]
     public async Task UpdateEdgeBoxLocation([FromRoute] Guid id, [FromBody] UpdateEdgeBoxLocationDto dto)
     {
-        await edgeBoxService.UpdateLocation(id, dto.Location);
+        var edgebox = await edgeBoxService.GetEdgeBoxById(id);
+        switch (edgebox.EdgeBoxLocation)
+        {
+            // installing -> occupied
+            case EdgeBoxLocation.Installing when dto.Location == EdgeBoxLocation.Occupied:
+            // uninstalling -> idle
+            case EdgeBoxLocation.Uninstalling when dto.Location == EdgeBoxLocation.Idle:
+                await edgeBoxService.UpdateLocation(id, dto.Location);
+                break;
+        }
+        throw new ForbiddenException(
+            $"Cannot update current location {edgebox.EdgeBoxLocation} to location {dto.Location}"
+        );
     }
 
     [HttpDelete("{id}")]
