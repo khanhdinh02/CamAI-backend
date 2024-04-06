@@ -106,13 +106,10 @@ public class EdgeBoxInstallService(
             }
             else
             {
-                await unitOfWork.EdgeBoxActivities.AddAsync(
-                    new EdgeBoxActivity
-                    {
-                        Type = EdgeBoxActivityType.EdgeBoxActivation,
-                        Description = "Waiting for edge box to confirm activation",
-                        EdgeBoxInstallId = ebInstall.Id
-                    }
+                await UpdateActivationStatus(
+                    ebInstall.Id,
+                    EdgeBoxActivationStatus.Pending,
+                    "Waiting for edge box to confirm activation"
                 );
 
                 await messageQueueService.Publish(
