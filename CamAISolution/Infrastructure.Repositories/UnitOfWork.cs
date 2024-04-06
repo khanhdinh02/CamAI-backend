@@ -78,7 +78,14 @@ public class UnitOfWork(CamAIContext context, IServiceProvider serviceProvider) 
             if (entry.State is EntityState.Added or EntityState.Modified)
             {
                 entry.Entity.ModifiedTime = DateTimeHelper.VNDateTime;
-                entry.Entity.ModifiedById = serviceProvider.GetRequiredService<IJwtService>().GetCurrentUser().Id;
+                try
+                {
+                    entry.Entity.ModifiedById = serviceProvider.GetRequiredService<IJwtService>().GetCurrentUser().Id;
+                }
+                catch (Exception)
+                {
+                    entry.Entity.ModifiedById = null;
+                }
             }
         }
         return await context.SaveChangesAsync();
