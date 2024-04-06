@@ -96,17 +96,26 @@ public class NotificationService(
 
     public async Task<AccountNotification> UpdateStatus(Guid notificationId, NotificationStatus status)
     {
-        var accountNotification = await unitOfWork
-            .GetRepository<AccountNotification>()
-            .GetByIdAsync(jwtService.GetCurrentUser().Id, notificationId);
+        var accountNotification = (
+            await unitOfWork
+                .GetRepository<AccountNotification>()
+                .GetAsync(
+                    expression: an =>
+                        an.NotificationId == notificationId && an.AccountId == jwtService.GetCurrentUser().Id,
+                    includeProperties: [nameof(AccountNotification.Notification)]
+                )
+        ).Values.First();
         if (accountNotification == null)
             throw new NotFoundException(
                 typeof(Core.Domain.Entities.Notification),
                 new { jwtService.GetCurrentUser().Id, notificationId }
             );
-        accountNotification.Status = status;
-        accountNotification = unitOfWork.GetRepository<AccountNotification>().Update(accountNotification);
-        await unitOfWork.CompleteAsync();
+        if (accountNotification.Status != status)
+        {
+            accountNotification.Status = status;
+            accountNotification = unitOfWork.GetRepository<AccountNotification>().Update(accountNotification);
+            await unitOfWork.CompleteAsync();
+        }
         return accountNotification;
     }
 }

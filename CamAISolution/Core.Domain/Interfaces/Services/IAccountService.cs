@@ -13,4 +13,5 @@ public interface IAccountService
     Task DeleteAccount(Guid id);
     Account GetCurrentAccount();
     Task<Account> UpdateProfile(UpdateProfileDto dto);
+    Task UpdateAccountFcmToken(string token);
 }

@@ -25,11 +25,12 @@ public class NotificationProfile : Profile
                     )
             );
         CreateMap<AccountNotification, NotificationDto>()
+            .ForMember(des => des.Status, opts => opts.Ignore())
             .ConstructUsing(
                 (src, ctx) =>
                 {
                     var result = ctx.Mapper.Map<Notification, NotificationDto>(src.Notification);
-                    // TODO: how about status
+                    result.Status = src.Status;
                     return result;
                 }
             );
