@@ -55,7 +55,7 @@ public class ReportService(
         CheckAuthority(account);
         var shopId = account.ManagingShop!.Id;
 
-        return await GetHumanCountDataInTimeRange(shopId, date, ReportTimeRange.Day);
+        return await GetHumanCountDataInTimeRange(shopId, date, timeRange);
     }
 
     public async Task<IEnumerable<HumanCountDto>> GetHumanCountData(
@@ -66,7 +66,7 @@ public class ReportService(
     {
         // validation is already in shop service
         await shopService.GetShopById(shopId);
-        return await GetHumanCountDataInTimeRange(shopId, date, ReportTimeRange.Day);
+        return await GetHumanCountDataInTimeRange(shopId, date, timeRange);
     }
 
     private async Task<IEnumerable<HumanCountDto>> GetHumanCountDataInTimeRange(
@@ -86,33 +86,30 @@ public class ReportService(
                 => (
                     startDate.AddDays(1),
                     (Func<HumanCountModel, DateTime>)(
-                        m =>
-                            new DateTime(
-                                DateOnly.FromDateTime(m.Time),
-                                new TimeOnly(m.Time.Hour, m.Time.Minute / 30 * 30), // 30 min gap
-                                DateTimeKind.Utc
-                            )
+                        m => new DateTime(
+                            DateOnly.FromDateTime(m.Time),
+                            new TimeOnly(m.Time.Hour, m.Time.Minute / 30 * 30), // 30 min gap
+                            DateTimeKind.Utc
+                        )
                     )
                 ),
             ReportTimeRange.Week
                 => (
                     startDate.AddDays(7),
-                    m =>
-                        new DateTime(
-                            DateOnly.FromDateTime(m.Time),
-                            new TimeOnly(m.Time.Hour / 12 * 12), // 1/2 day gap
-                            DateTimeKind.Utc
-                        )
+                    m => new DateTime(
+                        DateOnly.FromDateTime(m.Time),
+                        new TimeOnly(m.Time.Hour / 12 * 12), // 1/2 day gap
+                        DateTimeKind.Utc
+                    )
                 ),
             ReportTimeRange.Month
                 => (
                     startDate.AddMonths(1),
-                    m =>
-                        new DateTime(
-                            DateOnly.FromDateTime(m.Time), // 1 day gap
-                            TimeOnly.MinValue,
-                            DateTimeKind.Utc
-                        )
+                    m => new DateTime(
+                        DateOnly.FromDateTime(m.Time), // 1 day gap
+                        TimeOnly.MinValue,
+                        DateTimeKind.Utc
+                    )
                 ),
             _ => throw new ArgumentOutOfRangeException(nameof(timeRange), timeRange, null)
         };
