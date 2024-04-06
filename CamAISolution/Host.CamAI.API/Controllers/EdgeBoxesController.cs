@@ -110,8 +110,9 @@ public class EdgeBoxesController(
             // uninstalling -> idle
             case EdgeBoxLocation.Uninstalling when dto.Location == EdgeBoxLocation.Idle:
                 await edgeBoxService.UpdateLocation(id, dto.Location);
-                break;
+                return;
         }
+
         throw new ForbiddenException(
             $"Cannot update current location {edgebox.EdgeBoxLocation} to location {dto.Location}"
         );
