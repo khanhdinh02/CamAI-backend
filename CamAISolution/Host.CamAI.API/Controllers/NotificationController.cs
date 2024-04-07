@@ -14,9 +14,9 @@ namespace Host.CamAI.API.Controllers;
 [AccessTokenGuard]
 public class NotificationsController(INotificationService notificationService, IBaseMapping mapping) : ControllerBase
 {
-    [HttpPost]
-    public async Task<NotificationDto> CreateNotification(CreateNotificationDto dto) =>
-        mapping.Map<Notification, NotificationDto>(await notificationService.CreateNotification(dto, true));
+    // [HttpPost]
+    // public async Task<NotificationDto> CreateNotification(CreateNotificationDto dto) =>
+    //     mapping.Map<Notification, NotificationDto>(await notificationService.CreateNotification(dto));
 
     [HttpGet]
     public async Task<PaginationResult<NotificationDto>> SearchNotification(

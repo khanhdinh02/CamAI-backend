@@ -9,6 +9,7 @@ using Core.Domain.Models.Configurations;
 using Core.Domain.Services;
 using Host.CamAI.API.BackgroundServices;
 using Host.CamAI.API.Events;
+using Host.CamAI.API.Sockets;
 using Microsoft.OpenApi.Models;
 
 namespace Host.CamAI.API;
@@ -45,7 +46,9 @@ public static class ApiDependencyInjection
         services.AddScoped<IRequestService, RequestService>();
         services.AddSingleton<EventManager>();
         services.AddScoped<IReportService, ReportService>();
+        services.AddScoped<INotificationService, NotificationService>();
         services.AddSingleton<EventManager>().AddSingleton<HumanCountSubject>();
+        services.AddSingleton<NotificationSocketManager>();
         return services;
     }
 

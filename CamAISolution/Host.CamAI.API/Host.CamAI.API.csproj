@@ -25,7 +25,6 @@
         <ProjectReference Include="..\Infrastructure.Mapping\Infrastructure.Mapping.csproj" />
         <ProjectReference Include="..\Infrastructure.MessageQueue\Infrastructure.MessageQueue.csproj" />
         <ProjectReference Include="..\Infrastructure.Observer\Infrastructure.Observer.csproj" />
-        <ProjectReference Include="..\Infrastructure.Notification\Infrastructure.Notification.csproj" />
         <ProjectReference Include="..\Infrastructure.Repositories\Infrastructure.Repositories.csproj" />
         <ProjectReference Include="..\Infrastructure.Logging\Infrastructure.Logging.csproj" />
         <ProjectReference Include="..\Infrastructure.Streaming\Infrastructure.Streaming.csproj" />

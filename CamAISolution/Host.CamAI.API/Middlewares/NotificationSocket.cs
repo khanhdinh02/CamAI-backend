@@ -1,13 +1,11 @@
 using System.Net.WebSockets;
-using Core.Application.Events;
-using Core.Application.Events.Args;
+using Core.Domain.Entities;
+using Host.CamAI.API.Sockets;
 
 namespace Host.CamAI.API.Middlewares;
 
-public class NotificationSocket(RequestDelegate next) : Core.Domain.Events.IObserver<CreatedAccountNotificationArgs>
+public class NotificationSocket(RequestDelegate next, NotificationSocketManager notificationSocketManager)
 {
-    private WebSocket webSocket = null!;
-
     public async Task InvokeAsync(HttpContext context)
     {
         if (
@@ -16,25 +14,30 @@ public class NotificationSocket(RequestDelegate next) : Core.Domain.Events.IObse
             && context.Request.Path.Value.Contains("notification")
         )
         {
-            using var scope = context.RequestServices.CreateScope();
-            var accountNotificationSubject = scope.ServiceProvider.GetRequiredService<AccountNotificationSubject>();
-            accountNotificationSubject.Attach(this);
-
-            webSocket = await context.WebSockets.AcceptWebSocketAsync();
-            while (webSocket.State == WebSocketState.Open)
-            {
-                // keep connection alive
-            }
+            var account = (Account)context.Items[nameof(Account)]!;
+            var socket = await context.WebSockets.AcceptWebSocketAsync();
+            notificationSocketManager.AddSocket(account.Id, socket);
+            await ReadMessageAsync(socket, account.Id);
         }
         else
             await next(context);
     }
 
-    // This method will triggered when notification is created
-    public void Update(object? sender, CreatedAccountNotificationArgs args)
+    private async Task ReadMessageAsync(WebSocket webSocket, Guid accountId)
     {
-        var jsonObject = System.Text.Json.JsonSerializer.Serialize(args.AccountNotification);
-        var data = System.Text.Encoding.UTF8.GetBytes(jsonObject);
-        webSocket.SendAsync(data, WebSocketMessageType.Text, true, CancellationToken.None);
+        var buffer = new byte[1024 * 4];
+        var result = await webSocket.ReceiveAsync(
+            new ArraySegment<byte>(buffer, 0, buffer.Length),
+            CancellationToken.None
+        );
+        // wait until have close message
+        while (result.MessageType != WebSocketMessageType.Close)
+        {
+            result = await webSocket.ReceiveAsync(
+                new ArraySegment<byte>(buffer, 0, buffer.Length),
+                CancellationToken.None
+            );
+        }
+        notificationSocketManager.RemoveSocket(accountId);
     }
 }

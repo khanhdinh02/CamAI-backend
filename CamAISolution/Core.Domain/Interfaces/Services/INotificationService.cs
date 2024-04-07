@@ -7,13 +7,7 @@ namespace Core.Domain.Interfaces.Services;
 
 public interface INotificationService
 {
-    /// <summary>
-    ///     Create notification
-    /// </summary>
-    /// <param name="dto"></param>
-    /// <param name="willSend">Whether Created Notification send to user (Push notification to FCM)</param>
-    /// <returns></returns>
-    Task<Notification> CreateNotification(CreateNotificationDto dto, bool willSend = true);
+    Task<Notification> CreateNotification(CreateNotificationDto dto);
     Task<PaginationResult<AccountNotification>> SearchNotification(SearchNotificationRequest req);
     Task<AccountNotification> UpdateStatus(Guid notificationId, NotificationStatus status);
 }

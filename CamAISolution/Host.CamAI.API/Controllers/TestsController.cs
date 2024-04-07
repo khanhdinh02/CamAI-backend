@@ -54,10 +54,16 @@ public class TestsController(
         return mapping.Map<Incident, IncidentDto>(incident);
     }
 
-    [HttpGet("notifcation-test")]
-    public Task<IActionResult> TestNotification()
+    [HttpGet("notifcation-test/{sentTo}")]
+    public Task<IActionResult> TestNotification(int sentTo)
     {
-        accountNotificationSubject.AccountNotification = new AccountNotification();
+        accountNotificationSubject.AccountNotification = new AccountNotification
+        {
+            AccountId =
+                sentTo == 0
+                    ? Guid.Parse("685F7180-E55D-4675-947E-225EE06BD74A")
+                    : Guid.Parse("DCC08170-A966-486A-80F9-93DD15BFAFC6")
+        };
         return Task.FromResult<IActionResult>(Ok());
     }
 }

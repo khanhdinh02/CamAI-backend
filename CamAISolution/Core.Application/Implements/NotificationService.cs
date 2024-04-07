@@ -1,4 +1,4 @@
-using Core.Application;
+using Core.Application.Events;
 using Core.Application.Exceptions;
 using Core.Domain;
 using Core.Domain.DTO;
@@ -10,42 +10,48 @@ using Core.Domain.Models;
 using Core.Domain.Repositories;
 using Core.Domain.Services;
 
-namespace Infrastructure.Notification;
+namespace Core.Application.Implements;
 
 public class NotificationService(
     IBaseMapping mapping,
     IUnitOfWork unitOfWork,
     IJwtService jwtService,
-    IAppLogging<NotificationService> logger
+    IAppLogging<NotificationService> logger,
+    AccountNotificationSubject accountNotificationSubject
 ) : INotificationService
 {
-    public async Task<Core.Domain.Entities.Notification> CreateNotification(CreateNotificationDto dto)
+    public async Task<Notification> CreateNotification(CreateNotificationDto dto)
     {
-        var notification = mapping.Map<CreateNotificationDto, Core.Domain.Entities.Notification>(dto);
+        var notification = mapping.Map<CreateNotificationDto, Notification>(dto);
         try
         {
             await unitOfWork.BeginTransaction();
-            notification = await unitOfWork.GetRepository<Core.Domain.Entities.Notification>().AddAsync(notification);
+            notification = await unitOfWork.GetRepository<Notification>().AddAsync(notification);
             await unitOfWork.CompleteAsync();
 
             var sentToAccounts = (
                 await unitOfWork.Accounts.GetAsync(expression: a => dto.SentToId.Contains(a.Id), disableTracking: false)
             ).Values;
+            HashSet<AccountNotification> createdAccountNotifications = new();
             foreach (var acc in sentToAccounts)
             {
-                await unitOfWork
-                    .GetRepository<AccountNotification>()
-                    .AddAsync(
-                        new AccountNotification
-                        {
-                            AccountId = acc.Id,
-                            NotificationId = notification.Id,
-                            Status = NotificationStatus.Unread
-                        }
-                    );
+                createdAccountNotifications.Add(
+                    await unitOfWork
+                        .GetRepository<AccountNotification>()
+                        .AddAsync(
+                            new AccountNotification
+                            {
+                                AccountId = acc.Id,
+                                NotificationId = notification.Id,
+                                Status = NotificationStatus.Unread
+                            }
+                        )
+                );
             }
             await unitOfWork.CompleteAsync();
             await unitOfWork.CommitTransaction();
+            foreach (var createdAccountNotification in createdAccountNotifications)
+                accountNotificationSubject.AccountNotification = createdAccountNotification;
             return notification;
         }
         catch (Exception ex)
@@ -53,7 +59,7 @@ public class NotificationService(
             logger.Error(ex.Message, ex);
             await unitOfWork.RollBack();
         }
-        throw new ServiceUnavailableException("Cannot do action");
+        throw new ServiceUnavailableException("");
     }
 
     public async Task<PaginationResult<AccountNotification>> SearchNotification(SearchNotificationRequest req)

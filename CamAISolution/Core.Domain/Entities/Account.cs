@@ -29,11 +29,6 @@ public class Account : BusinessEntity
     public Role Role { get; set; }
     public AccountStatus AccountStatus { get; set; }
 
-    /// <summary>
-    /// Token which registered in Firebase Cloud Messaging is used for receiving notification
-    /// </summary>
-    public string? FCMToken { get; set; }
-
     public virtual Ward? Ward { get; set; }
     public virtual ICollection<Notification> SentNotifications { get; set; }
 

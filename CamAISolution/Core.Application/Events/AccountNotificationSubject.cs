@@ -7,7 +7,7 @@ namespace Core.Application.Events;
 public class AccountNotificationSubject
     : ISubject<Domain.Events.IObserver<CreatedAccountNotificationArgs>, CreatedAccountNotificationArgs>
 {
-    public event EventHandler<CreatedAccountNotificationArgs> Created = null!;
+    public event EventHandler<CreatedAccountNotificationArgs>? Created;
 
     private AccountNotification accountNotification = null!;
     public AccountNotification AccountNotification
@@ -22,7 +22,7 @@ public class AccountNotificationSubject
 
     public void OnChange(CreatedAccountNotificationArgs e)
     {
-        Created.Invoke(this, e);
+        Created?.Invoke(this, e);
     }
 
     public void Attach(Domain.Events.IObserver<CreatedAccountNotificationArgs> observer)

@@ -1,4 +1,3 @@
-using System.Net.WebSockets;
 using Core.Application.Events;
 using Core.Application.Specifications;
 using Core.Domain.Constants;
@@ -13,8 +12,6 @@ using Infrastructure.Email;
 using Infrastructure.Jwt;
 using Infrastructure.Logging;
 using Infrastructure.Mapping;
-using Infrastructure.Notification;
-using Infrastructure.Notification.Models;
 using Infrastructure.Observer;
 using Infrastructure.Repositories;
 using Infrastructure.Streaming;
@@ -42,7 +39,6 @@ builder
     .AddServices(builder.Configuration)
     .AddMapping()
     .AddObserver(builder.Configuration)
-    .AddNotification(builder.Configuration.GetRequiredSection("GoogleSecret").Get<GoogleSecret>())
     .AddBackgroundService()
     .AddCacheService()
     .AddEmailService(builder.Configuration)

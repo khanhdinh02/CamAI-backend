@@ -113,8 +113,7 @@ public class ConfirmedEdgeBoxActivationConsumer(
                 Type = notificationType,
                 Priority = priority,
                 SentToId = sendToAccountIds
-            },
-            true
+            }
         );
         return Task.CompletedTask;
     }
