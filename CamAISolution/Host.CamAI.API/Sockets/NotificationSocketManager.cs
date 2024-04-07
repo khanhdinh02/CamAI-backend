@@ -12,7 +12,7 @@ public class NotificationSocketManager : Core.Domain.Events.IObserver<CreatedAcc
 {
     // user id and websocket object
     private readonly ConcurrentDictionary<Guid, WebSocket> sockets = new();
-    private IServiceProvider serviceProvider;
+    private readonly IServiceProvider serviceProvider;
 
     public NotificationSocketManager(IServiceProvider serviceProvider)
     {
