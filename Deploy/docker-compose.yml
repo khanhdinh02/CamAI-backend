@@ -29,7 +29,6 @@ services:
     environment:
       - TZ=Antarctica/Davis
       - ConnectionStrings__Default=${MS_SQL_CONN}
-      - GoogleSecret__PrivateKey=${GOOGLE_SERVICE_PRIVATE_KEY}
       - RabbitMq__HostName=${RABBITMQ_HOST}
       - RabbitMq__Username=${RABBITMQ_USER}
       - RabbitMq__Password=${RABBITMQ_PASS}
