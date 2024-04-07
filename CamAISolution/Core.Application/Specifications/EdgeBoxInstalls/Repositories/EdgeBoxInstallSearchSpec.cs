@@ -22,6 +22,7 @@ public class EdgeBoxInstallSearchSpec : RepositorySpec<EdgeBoxInstall>
     {
         ApplyingPaging(search);
         AddIncludes(x => x.Shop);
+        AddIncludes(x => x.EdgeBox);
         ApplyOrderByDescending(s => s.CreatedDate);
     }
 }
