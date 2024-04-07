@@ -191,10 +191,14 @@ public class EdgeBoxService(IUnitOfWork unitOfWork, IAccountService accountServi
 
         switch (edgeBox.EdgeBoxLocation)
         {
-            // installing -> occupied
-            case EdgeBoxLocation.Installing when location == EdgeBoxLocation.Occupied:
+            // installing -> occupied and installing --> idle
+            case EdgeBoxLocation.Installing when location is EdgeBoxLocation.Occupied or EdgeBoxLocation.Idle:
+            // occupied --> uninstalling
+            case EdgeBoxLocation.Occupied when location == EdgeBoxLocation.Uninstalling:
             // uninstalling -> idle
             case EdgeBoxLocation.Uninstalling when location == EdgeBoxLocation.Idle:
+            // idle --> installing
+            case EdgeBoxLocation.Idle when location == EdgeBoxLocation.Installing:
                 await unitOfWork.EdgeBoxActivities.AddAsync(
                     new EdgeBoxActivity
                     {
@@ -211,7 +215,7 @@ public class EdgeBoxService(IUnitOfWork unitOfWork, IAccountService accountServi
                 break;
             default:
                 throw new ForbiddenException(
-                    $"Cannot update current location {edgeBox.EdgeBoxLocation} to location to location {location}"
+                    $"Cannot update current location {edgeBox.EdgeBoxLocation} to location {location}"
                 );
         }
     }

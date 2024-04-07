@@ -108,29 +108,27 @@ public class EdgeBoxInstallService(
             {
                 await UpdateActivationStatus(
                     ebInstall.Id,
-                    EdgeBoxActivationStatus.Activated,
+                    EdgeBoxActivationStatus.Pending,
                     "Waiting for edge box to confirm activation"
                 );
-                if (await unitOfWork.CompleteAsync() > 0)
-                {
-                    await messageQueueService.Publish(
-                        new ActivatedEdgeBoxMessage
-                        {
-                            Message = "Activate edge box",
-                            RoutingKey = ebInstall.EdgeBoxId.ToString("N")
-                        }
-                    );
 
-                    await applicationDelayEventListener.AddEvent(
-                        $"ActivateEdgeBox{ebInstall.Id:N}",
-                        new EdgeBoxAfterActivationFailedDelayEvent(
-                            TimeSpan.FromMinutes(5),
-                            ebInstall.EdgeBoxId,
-                            ebInstall.Id
-                        ),
-                        true
-                    );
-                }
+                await messageQueueService.Publish(
+                    new ActivatedEdgeBoxMessage
+                    {
+                        Message = "Activate edge box",
+                        RoutingKey = ebInstall.EdgeBoxId.ToString("N")
+                    }
+                );
+
+                await applicationDelayEventListener.AddEvent(
+                    $"ActivateEdgeBox{ebInstall.Id:N}",
+                    new EdgeBoxAfterActivationFailedDelayEvent(
+                        TimeSpan.FromMinutes(5),
+                        ebInstall.EdgeBoxId,
+                        ebInstall.Id
+                    ),
+                    true
+                );
             }
         }
 
