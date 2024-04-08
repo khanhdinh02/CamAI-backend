@@ -88,4 +88,17 @@ public class EdgeBoxInstallsController(IEdgeBoxInstallService edgeBoxInstallServ
         res.ActivationCode = null;
         return res;
     }
+
+    /// <summary>
+    /// Admin install an edge box
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    [HttpPut("{id}/uninstall")]
+    [AccessTokenGuard(Role.Admin)]
+    public async Task<IActionResult> UninstallEdgeBox(Guid id)
+    {
+        await edgeBoxInstallService.UninstallEdgeBox(id);
+        return NoContent();
+    }
 }

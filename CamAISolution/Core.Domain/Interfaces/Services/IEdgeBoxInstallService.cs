@@ -48,4 +48,6 @@ public interface IEdgeBoxInstallService
         EdgeBoxActivationStatus status,
         string? description = null
     );
+
+    Task UninstallEdgeBox(Guid installId);
 }

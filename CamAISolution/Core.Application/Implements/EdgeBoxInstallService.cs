@@ -144,7 +144,7 @@ public class EdgeBoxInstallService(
         var ebInstall =
             await unitOfWork.EdgeBoxInstalls.GetByIdAsync(edgeBoxInstallId)
             ?? throw new NotFoundException(typeof(EdgeBoxInstall), edgeBoxInstallId);
-        return await UpdateStatus(ebInstall, status);
+        return await UpdateStatus(ebInstall, status, description);
     }
 
     public async Task<EdgeBoxInstall> UpdateStatus(
@@ -317,5 +317,39 @@ public class EdgeBoxInstallService(
             TotalCount = installs.Count,
             Values = installs
         };
+    }
+
+    public async Task UninstallEdgeBox(Guid installId)
+    {
+        var install = (
+            await unitOfWork.EdgeBoxInstalls.GetAsync(
+                i => i.Id == installId,
+                includeProperties: [nameof(EdgeBoxInstall.EdgeBox)],
+                pageSize: 1
+            )
+        ).Values.FirstOrDefault();
+
+        if (install == null)
+            return;
+
+        // Make sure that the edge box is being assigned for a shop
+        if ((await GetLatestInstallingByEdgeBox(install.EdgeBoxId))?.Id != installId)
+            return;
+
+        await unitOfWork.BeginTransaction();
+        if (install.EdgeBoxInstallStatus == EdgeBoxInstallStatus.New)
+        {
+            // If edge box is not installed yet, just cancel the installation
+            const string description = "Cancel edge box installation";
+            await UpdateStatus(installId, EdgeBoxInstallStatus.Disabled, description);
+            await edgeBoxService.UpdateLocation(install.EdgeBoxId, EdgeBoxLocation.Idle, description);
+        }
+        else
+        {
+            const string description = "Uninstall edge box";
+            await UpdateStatus(installId, EdgeBoxInstallStatus.Disabled, description);
+            await edgeBoxService.UpdateLocation(install.EdgeBoxId, EdgeBoxLocation.Uninstalling, description);
+        }
+        await unitOfWork.CommitTransaction();
     }
 }
