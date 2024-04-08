@@ -8,6 +8,5 @@ public enum EdgeBoxInstallStatus
     Working = 1,
     Unhealthy = 2,
     Disabled = 3,
-    New = 4,
-    Connected = 5
+    New = 4
 }

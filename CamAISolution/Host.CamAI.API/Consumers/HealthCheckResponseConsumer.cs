@@ -1,6 +1,8 @@
 using Core.Domain;
+using Core.Domain.DTO;
 using Core.Domain.Enums;
 using Core.Domain.Interfaces.Services;
+using Core.Domain.Models.Publishers;
 using Core.Domain.Services;
 using Host.CamAI.API.BackgroundServices;
 using Host.CamAI.API.Consumers.Contracts;
@@ -12,8 +14,10 @@ namespace Host.CamAI.API.Consumers;
 [Consumer("{MachineName}_HealthCheckResponse", ConsumerConstant.HealthCheckResponse)]
 public class HealthCheckResponseConsumer(
     IAppLogging<HealthCheckResponseConsumer> logger,
+    ICacheService cache,
     IEdgeBoxInstallService edgeBoxInstallService,
-    IJwtService jwtService
+    INotificationService notificationService,
+    IMessageQueueService messageQueueService
 ) : IConsumer<HealthCheckResponseMessage>
 {
     public async Task Consume(ConsumeContext<HealthCheckResponseMessage> context)
@@ -27,25 +31,61 @@ public class HealthCheckResponseConsumer(
             logger.Info($"Edge box install not found for {message.EdgeBoxId}");
             return;
         }
+
+        if (
+            ebInstall.ActivationStatus == EdgeBoxActivationStatus.Failed
+            && message.Status == EdgeBoxInstallStatus.Working
+        )
+        {
+            await messageQueueService.Publish(
+                new ActivatedEdgeBoxMessage
+                {
+                    Message = "Activate edge box",
+                    RoutingKey = ebInstall.EdgeBoxId.ToString("N")
+                }
+            );
+        }
+
         if (ebInstall.EdgeBoxInstallStatus == message.Status)
         {
             logger.Info($"Edge box install status not change {message.Status}");
             return;
         }
 
-        // TODO: remove jwt service after remove modified by in activity
-        await jwtService.SetCurrentUserToSystemHandler();
-        // TODO: add reason after refactor activity
         await edgeBoxInstallService.UpdateStatus(ebInstall, message.Status, message.Reason);
 
+        CreateNotificationDto dto;
         if (message.Status == EdgeBoxInstallStatus.Unhealthy)
         {
-            // TODO: notify admin and manager
+            dto = new CreateNotificationDto
+            {
+                Title = "Edge box is unhealthy failed",
+                Content = $"Edge box does not response. Status changed to {EdgeBoxInstallStatus.Unhealthy}",
+                Priority = NotificationPriority.Urgent,
+                Type = NotificationType.EdgeBoxUnhealthy,
+                RelatedEntityId = ebInstall.Id,
+            };
         }
         else
         {
+            // for healthy case
+            dto = new CreateNotificationDto
+            {
+                // TODO: add retrying message
+                Title = "Edge box is now connected to server",
+                Content = "Edge box is now connected to server",
+                Priority = NotificationPriority.Urgent,
+                Type = NotificationType.EdgeBoxHealthy,
+                RelatedEntityId = ebInstall.Id,
+            };
             // TODO: try to reactivate edge box
-            // TODO: notify admin and manager as well
         }
+
+        var sentTo = new List<Guid> { await cache.GetAdminAccount() };
+        if (ebInstall.Shop.ShopManagerId.HasValue)
+            sentTo.Add(ebInstall.Shop.ShopManagerId.Value);
+        dto.SentToId = sentTo;
+
+        await notificationService.CreateNotification(dto);
     }
 }

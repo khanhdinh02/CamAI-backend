@@ -9,13 +9,11 @@ using Core.Domain.Models.Configurations;
 using Core.Domain.Repositories;
 using Core.Domain.Services;
 using MassTransit;
-using Microsoft.Extensions.Caching.Memory;
 
 namespace Host.CamAI.API.BackgroundServices;
 
 public class EdgeBoxHealthCheckService(
     IAppLogging<EdgeBoxHealthCheckService> logger,
-    IMemoryCache cache,
     IServiceProvider provider,
     HealthCheckConfiguration healthCheckConfiguration
 ) : BackgroundService
@@ -24,9 +22,9 @@ public class EdgeBoxHealthCheckService(
     private static readonly ConcurrentBag<Guid> EdgeBoxIdThatResponse = [];
     private bool firstRun = true;
     private IUnitOfWork? uow;
-    private readonly Mutex cacheMutex = new();
+    private ICacheService? cacheService;
 
-    public static void ReceivedEdgeBoxHealthResponse(Guid edgeBoxId) => EdgeBoxIdThatResponse?.Add(edgeBoxId);
+    public static void ReceivedEdgeBoxHealthResponse(Guid edgeBoxId) => EdgeBoxIdThatResponse.Add(edgeBoxId);
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -65,6 +63,7 @@ public class EdgeBoxHealthCheckService(
         EdgeBoxIdThatResponse.Clear();
 
         uow = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+        cacheService = scope.ServiceProvider.GetRequiredService<ICacheService>();
         var notificationService = scope.ServiceProvider.GetRequiredService<INotificationService>();
         var edgeBoxInstallService = scope.ServiceProvider.GetRequiredService<IEdgeBoxInstallService>();
 
@@ -107,35 +106,19 @@ public class EdgeBoxHealthCheckService(
 
     private async Task<CreateNotificationDto> CreateNotification(EdgeBoxInstall edgeBoxInstall)
     {
-        var sentTo = new List<Guid> { await GetAdminAccount() };
+        var sentTo = new List<Guid> { await cacheService!.GetAdminAccount() };
         if (edgeBoxInstall.Shop.ShopManagerId.HasValue)
             sentTo.Add(edgeBoxInstall.Shop.ShopManagerId.Value);
 
         var dto = new CreateNotificationDto
         {
-            Title = "Edge box failed",
-            Content = $"Edge box install status has been changed to {EdgeBoxInstallStatus.Unhealthy}",
+            Title = "Edge box is unhealthy failed",
+            Content = $"Edge box does not response. Status changed to {EdgeBoxInstallStatus.Unhealthy}",
             Priority = NotificationPriority.Urgent,
             Type = NotificationType.EdgeBoxUnhealthy,
             RelatedEntityId = edgeBoxInstall.Id,
             SentToId = sentTo
         };
         return dto;
-    }
-
-    private async Task<Guid> GetAdminAccount()
-    {
-        cacheMutex.WaitOne();
-        var adminAccount = await cache.GetOrCreateAsync(
-            "AdminAccounts",
-            async entry =>
-            {
-                entry.SlidingExpiration = TimeSpan.FromHours(1);
-                return (await uow!.Accounts.GetAsync(expression: a => a.Role == Role.Admin, takeAll: true)).Values[0];
-            }
-        );
-        cacheMutex.ReleaseMutex();
-
-        return adminAccount!.Id;
     }
 }

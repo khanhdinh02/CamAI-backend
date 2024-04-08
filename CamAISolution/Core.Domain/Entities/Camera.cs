@@ -6,7 +6,6 @@ namespace Core.Domain.Entities;
 
 public class Camera : BusinessEntity
 {
-    // TODO: Run migration after merge health check
     [StringLength(255)]
     public string Name { get; set; } = null!;
     public Guid ShopId { get; set; }

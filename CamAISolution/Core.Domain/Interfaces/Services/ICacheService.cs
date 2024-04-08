@@ -1,4 +1,3 @@
-
 namespace Core.Domain.Services;
 
 public interface ICacheService
@@ -11,4 +10,5 @@ public interface ICacheService
     /// <returns></returns>
     T? Get<T>(string key);
     T Set<T>(string key, T value, TimeSpan expired);
+    public Task<Guid> GetAdminAccount();
 }

@@ -8,7 +8,7 @@ public static class CachingDependencyInjection
     public static IServiceCollection AddCacheService(this IServiceCollection services)
     {
         services.AddMemoryCache();
-        services.AddScoped<ICacheService, CacheService>();
+        services.AddSingleton<ICacheService, CacheService>();
         return services;
     }
 }
