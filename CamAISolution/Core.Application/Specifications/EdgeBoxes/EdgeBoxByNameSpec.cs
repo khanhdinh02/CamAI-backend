@@ -13,6 +13,5 @@ public class EdgeBoxByNameSpec : Specification<EdgeBox>
         Expr = GetExpression();
     }
 
-    public override Expression<Func<EdgeBox, bool>> GetExpression() =>
-        x => string.Equals(x.Name, model, StringComparison.OrdinalIgnoreCase);
+    public override Expression<Func<EdgeBox, bool>> GetExpression() => x => x.Name == model;
 }

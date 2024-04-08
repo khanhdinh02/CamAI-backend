@@ -96,40 +96,25 @@ public class EdgeBoxInstallService(
                 }
             );
 
-            if (ebInstall.EdgeBoxInstallStatus != EdgeBoxInstallStatus.Working)
-            {
-                await UpdateActivationStatus(
-                    ebInstall.Id,
-                    EdgeBoxActivationStatus.Failed,
-                    "Postpone activation due to unhealthy status"
-                );
-            }
-            else
-            {
-                await UpdateActivationStatus(
-                    ebInstall.Id,
-                    EdgeBoxActivationStatus.Pending,
-                    "Waiting for edge box to confirm activation"
-                );
+            await UpdateActivationStatus(
+                ebInstall.Id,
+                EdgeBoxActivationStatus.Pending,
+                "Waiting for edge box to confirm activation"
+            );
 
-                await messageQueueService.Publish(
-                    new ActivatedEdgeBoxMessage
-                    {
-                        Message = "Activate edge box",
-                        RoutingKey = ebInstall.EdgeBoxId.ToString("N")
-                    }
-                );
+            await messageQueueService.Publish(
+                new ActivatedEdgeBoxMessage
+                {
+                    Message = "Activate edge box",
+                    RoutingKey = ebInstall.EdgeBoxId.ToString("N")
+                }
+            );
 
-                await applicationDelayEventListener.AddEvent(
-                    $"ActivateEdgeBox{ebInstall.Id:N}",
-                    new EdgeBoxAfterActivationFailedDelayEvent(
-                        TimeSpan.FromMinutes(5),
-                        ebInstall.EdgeBoxId,
-                        ebInstall.Id
-                    ),
-                    true
-                );
-            }
+            await applicationDelayEventListener.AddEvent(
+                $"ActivateEdgeBox{ebInstall.Id:N}",
+                new EdgeBoxAfterActivationFailedDelayEvent(TimeSpan.FromMinutes(5), ebInstall.EdgeBoxId, ebInstall.Id),
+                true
+            );
         }
 
         return ebInstall;

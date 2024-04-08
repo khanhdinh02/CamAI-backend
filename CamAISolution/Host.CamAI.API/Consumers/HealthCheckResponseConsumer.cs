@@ -36,7 +36,7 @@ public class HealthCheckResponseConsumer(
         // TODO: remove jwt service after remove modified by in activity
         await jwtService.SetCurrentUserToSystemHandler();
         // TODO: add reason after refactor activity
-        await edgeBoxInstallService.UpdateStatus(ebInstall, message.Status);
+        await edgeBoxInstallService.UpdateStatus(ebInstall, message.Status, message.Reason);
 
         if (message.Status == EdgeBoxInstallStatus.Unhealthy)
         {
