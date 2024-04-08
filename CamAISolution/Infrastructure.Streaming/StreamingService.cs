@@ -1,5 +1,6 @@
 ﻿using Core.Application.Exceptions;
 using Core.Domain;
+using Core.Domain.Enums;
 using Core.Domain.Interfaces.Services;
 using MassTransit;
 using Microsoft.Extensions.Options;
@@ -23,6 +24,14 @@ public class StreamingService(
         var ebInstall =
             await edgeBoxInstallService.GetCurrentInstallationByShop(camera.ShopId)
             ?? throw new BadRequestException("There is not edge box installed in shop");
+
+        switch (camera.Status)
+        {
+            case CameraStatus.Disabled:
+                throw new BadRequestException("Camera is disabled");
+            case CameraStatus.Disconnected:
+                throw new BadRequestException("Camera is disconnected. Please contact admin for support");
+        }
 
         var relayPort = WebsocketRelayProcessManager.Run(camera.Id.ToString("N"));
 
