@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using System.Net.WebSockets;
+using System.Text.Json;
 using Core.Application.Events;
 using Core.Application.Events.Args;
 using Core.Domain.DTO;
@@ -14,6 +15,8 @@ public class NotificationSocketManager : Core.Domain.Events.IObserver<CreatedAcc
     private readonly ConcurrentDictionary<Guid, WebSocket> sockets = new();
     private readonly IServiceProvider serviceProvider;
     private readonly AccountNotificationSubject accountNotificationSubject;
+
+    private readonly JsonSerializerOptions options = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
 
     public NotificationSocketManager(
         IServiceProvider serviceProvider,
@@ -37,8 +40,9 @@ public class NotificationSocketManager : Core.Domain.Events.IObserver<CreatedAcc
         {
             if (sockets.TryGetValue(userId, out var socket))
             {
-                var jsonObj = System.Text.Json.JsonSerializer.Serialize(
-                    mapper.Map<Notification, NotificationDto>(args.Notification)
+                var jsonObj = JsonSerializer.Serialize(
+                    mapper.Map<Notification, NotificationDto>(args.Notification),
+                    options
                 );
                 var sentData = System.Text.Encoding.UTF8.GetBytes(jsonObj);
                 socket.SendAsync(sentData, WebSocketMessageType.Text, true, CancellationToken.None);
