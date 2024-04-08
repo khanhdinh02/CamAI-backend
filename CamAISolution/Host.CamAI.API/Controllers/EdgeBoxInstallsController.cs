@@ -15,9 +15,9 @@ public class EdgeBoxInstallsController(IEdgeBoxInstallService edgeBoxInstallServ
     : ControllerBase
 {
     /// <summary>
-    /// Get all installs, that has been activated and not disabled by admin, of a shop.
+    /// Get all installs of a shop.
     /// </summary>
-    /// <remarks>Use for Brand Manager and Shop Manager.</remarks>
+    /// <remarks>Use for admin, Brand Manager and Shop Manager.</remarks>
     /// <param name="shopId"></param>
     /// <returns></returns>
     [HttpGet("/api/shops/{shopId}/installs")]
@@ -29,9 +29,9 @@ public class EdgeBoxInstallsController(IEdgeBoxInstallService edgeBoxInstallServ
     }
 
     /// <summary>
-    /// Get all installs, that has been activated and not disabled by admin, of a brand.
+    /// Get all installs of a brand.
     /// </summary>
-    /// <remarks>Use for Brand Manager.</remarks>
+    /// <remarks>Use for Admin and Brand Manager.</remarks>
     /// <param name="brandId"></param>
     /// <returns></returns>
     [HttpGet("/api/brands/{brandId}/installs")]
@@ -43,7 +43,7 @@ public class EdgeBoxInstallsController(IEdgeBoxInstallService edgeBoxInstallServ
     }
 
     /// <summary>
-    /// For admin: Get all install of a edge box
+    /// For admin: Get all install of an edge box
     /// </summary>
     /// <remarks>Use for Brand Manager.</remarks>
     /// <param name="edgeBoxId"></param>
@@ -87,5 +87,18 @@ public class EdgeBoxInstallsController(IEdgeBoxInstallService edgeBoxInstallServ
         var res = mapper.Map<EdgeBoxInstall, EdgeBoxInstallDto>(ebInstall);
         res.ActivationCode = null;
         return res;
+    }
+
+    /// <summary>
+    /// Admin install an edge box
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    [HttpPut("{id}/uninstall")]
+    [AccessTokenGuard(Role.Admin)]
+    public async Task<IActionResult> UninstallEdgeBox(Guid id)
+    {
+        await edgeBoxInstallService.UninstallEdgeBox(id);
+        return NoContent();
     }
 }
