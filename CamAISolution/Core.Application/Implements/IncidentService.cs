@@ -1,4 +1,5 @@
 using System.Net.Mime;
+using Core.Application.Events;
 using Core.Application.Exceptions;
 using Core.Application.Specifications.Incidents.Repositories;
 using Core.Domain.DTO;
@@ -19,7 +20,8 @@ public class IncidentService(
     ICameraService cameraService,
     IEdgeBoxInstallService edgeBoxInstallService,
     IUnitOfWork unitOfWork,
-    IBaseMapping mapping
+    IBaseMapping mapping,
+    IncidentSubject incidentSubject
 ) : IIncidentService
 {
     public async Task<Incident> GetIncidentById(Guid id, bool includeAll = false)
@@ -81,6 +83,8 @@ public class IncidentService(
     {
         var incident = await unitOfWork.Incidents.GetByIdAsync(incidentDto.Id);
 
+        bool isNewIncident = incident == null;
+
         var ebInstall = await edgeBoxInstallService.GetLatestInstallingByEdgeBox(incidentDto.EdgeBoxId);
         foreach (var cameraId in incidentDto.Evidences.Select(x => x.CameraId))
             await cameraService.CreateCameraIfNotExist(cameraId, ebInstall!.ShopId);
@@ -110,6 +114,7 @@ public class IncidentService(
 
         await unitOfWork.CompleteAsync();
         await unitOfWork.CommitTransaction();
+        incidentSubject.Notify(new(incident, isNewIncident));
         return incident;
     }
 }
