@@ -9,15 +9,23 @@ using Core.Domain.Models.Configurations;
 using Core.Domain.Services;
 using Host.CamAI.API.BackgroundServices;
 using Host.CamAI.API.Events;
+using Host.CamAI.API.Sockets;
 using Microsoft.OpenApi.Models;
 
 namespace Host.CamAI.API;
 
 public static class ApiDependencyInjection
 {
+    private static IServiceCollection AddObservers(this IServiceCollection services)
+    {
+        services.AddSingleton<AccountNotificationSubject>();
+        return services;
+    }
+
     public static IServiceCollection AddEventListener(this IServiceCollection services)
     {
         services.AddSingleton<IApplicationDelayEventListener, ApplicationDelayEventListener>();
+        services.AddObservers();
         return services;
     }
 
@@ -37,7 +45,9 @@ public static class ApiDependencyInjection
         services.AddScoped<IEdgeBoxInstallService, EdgeBoxInstallService>();
         services.AddSingleton<EventManager>();
         services.AddScoped<IReportService, ReportService>();
+        services.AddScoped<INotificationService, NotificationService>();
         services.AddSingleton<EventManager>().AddSingleton<HumanCountSubject>();
+        services.AddSingleton<NotificationSocketManager>();
         return services;
     }
 

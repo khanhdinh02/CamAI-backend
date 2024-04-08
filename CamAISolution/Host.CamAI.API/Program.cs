@@ -12,12 +12,10 @@ using Infrastructure.Email;
 using Infrastructure.Jwt;
 using Infrastructure.Logging;
 using Infrastructure.Mapping;
-using Infrastructure.Notification;
-using Infrastructure.Notification.Models;
 using Infrastructure.Observer;
 using Infrastructure.Repositories;
-using Microsoft.Extensions.Caching.Memory;
 using Infrastructure.Streaming;
+using Microsoft.Extensions.Caching.Memory;
 
 var builder = WebApplication.CreateBuilder(args).ConfigureSerilog();
 
@@ -41,7 +39,6 @@ builder
     .AddServices(builder.Configuration)
     .AddMapping()
     .AddObserver(builder.Configuration)
-    .AddNotification(builder.Configuration.GetRequiredSection("GoogleSecret").Get<GoogleSecret>())
     .AddBackgroundService()
     .AddCacheService()
     .AddEmailService(builder.Configuration)
@@ -69,7 +66,6 @@ app.UseCors(allowPolicy);
 app.UseMiddleware<GlobalJwtHandler>();
 
 app.Migration(args);
-
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

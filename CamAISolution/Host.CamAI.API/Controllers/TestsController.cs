@@ -13,9 +13,9 @@ namespace Host.CamAI.API.Controllers;
 public class TestsController(
     IBaseMapping mapping,
     IIncidentService incidentService,
-    EventManager eventManager
-)
-    : ControllerBase
+    EventManager eventManager,
+    AccountNotificationSubject accountNotificationSubject
+) : ControllerBase
 {
     [HttpGet]
     public ActionResult<string> TestEndpoint()

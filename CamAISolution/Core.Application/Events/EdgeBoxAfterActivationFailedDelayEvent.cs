@@ -57,8 +57,7 @@ public class EdgeBoxAfterActivationFailedDelayEvent(TimeSpan delay, Guid edgeBox
                         RelatedEntityId = edgeBoxInstallId,
                         Priority = NotificationPriority.Urgent,
                         Type = NotificationType.EdgeBoxInstallActivation
-                    },
-                    true
+                    }
                 );
             }
         }

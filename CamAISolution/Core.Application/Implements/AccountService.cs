@@ -149,14 +149,6 @@ public class AccountService(IUnitOfWork unitOfWork, IJwtService jwtService, IBas
         return account;
     }
 
-    public async Task UpdateAccountFcmToken(string token)
-    {
-        var account = await GetAccountById(GetCurrentAccount().Id, true);
-        account.FCMToken = token;
-        unitOfWork.Accounts.Update(account);
-        await unitOfWork.CompleteAsync();
-    }
-
     private async Task<Account> CreateBrandManager(Account newAccount)
     {
         if (newAccount.BrandId == null)

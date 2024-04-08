@@ -1,4 +1,4 @@
-using Core.Application;
+using Core.Application.Events;
 using Core.Application.Exceptions;
 using Core.Domain;
 using Core.Domain.DTO;
@@ -9,28 +9,24 @@ using Core.Domain.Interfaces.Services;
 using Core.Domain.Models;
 using Core.Domain.Repositories;
 using Core.Domain.Services;
-using FirebaseAdmin.Messaging;
 
-namespace Infrastructure.Notification;
+namespace Core.Application.Implements;
 
 public class NotificationService(
     IBaseMapping mapping,
     IUnitOfWork unitOfWork,
     IJwtService jwtService,
     IAppLogging<NotificationService> logger,
-    FirebaseService firebaseService
+    AccountNotificationSubject accountNotificationSubject
 ) : INotificationService
 {
-    public async Task<Core.Domain.Entities.Notification> CreateNotification(
-        CreateNotificationDto dto,
-        bool willSend = true
-    )
+    public async Task<Notification> CreateNotification(CreateNotificationDto dto)
     {
-        var notification = mapping.Map<CreateNotificationDto, Core.Domain.Entities.Notification>(dto);
+        var notification = mapping.Map<CreateNotificationDto, Notification>(dto);
         try
         {
             await unitOfWork.BeginTransaction();
-            notification = await unitOfWork.GetRepository<Core.Domain.Entities.Notification>().AddAsync(notification);
+            notification = await unitOfWork.GetRepository<Notification>().AddAsync(notification);
             await unitOfWork.CompleteAsync();
 
             var sentToAccounts = (
@@ -50,14 +46,8 @@ public class NotificationService(
                     );
             }
             await unitOfWork.CompleteAsync();
-
             await unitOfWork.CommitTransaction();
-
-            if (willSend)
-                foreach (var acc in sentToAccounts.Where(a => !string.IsNullOrEmpty(a.FCMToken)))
-                    await firebaseService.Messaging.SendAsync(
-                        CreateMessage(notification.Title, notification.Content, token: acc.FCMToken)
-                    );
+            accountNotificationSubject.Notify(new(notification, sentToAccounts.Select(a => a.Id)));
             return notification;
         }
         catch (Exception ex)
@@ -65,27 +55,7 @@ public class NotificationService(
             logger.Error(ex.Message, ex);
             await unitOfWork.RollBack();
         }
-        throw new ServiceUnavailableException("Cannot do action");
-    }
-
-    private static Message CreateMessage(
-        string title,
-        string body,
-        Dictionary<string, string>? data = null,
-        string? token = null,
-        string? topic = null
-    )
-    {
-        var message = new Message
-        {
-            Notification = new FirebaseAdmin.Messaging.Notification { Body = body, Title = title, },
-            Data = data,
-        };
-        if (!string.IsNullOrEmpty(topic))
-            message.Topic = topic;
-        if (!string.IsNullOrEmpty(token))
-            message.Token = token;
-        return message;
+        throw new ServiceUnavailableException("");
     }
 
     public async Task<PaginationResult<AccountNotification>> SearchNotification(SearchNotificationRequest req)
@@ -106,10 +76,7 @@ public class NotificationService(
                 )
         ).Values.First();
         if (accountNotification == null)
-            throw new NotFoundException(
-                typeof(Core.Domain.Entities.Notification),
-                new { jwtService.GetCurrentUser().Id, notificationId }
-            );
+            throw new NotFoundException(typeof(Notification), new { jwtService.GetCurrentUser().Id, notificationId });
         if (accountNotification.Status != status)
         {
             accountNotification.Status = status;
