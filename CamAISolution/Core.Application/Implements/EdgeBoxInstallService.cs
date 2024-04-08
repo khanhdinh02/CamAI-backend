@@ -321,35 +321,36 @@ public class EdgeBoxInstallService(
 
     public async Task UninstallEdgeBox(Guid installId)
     {
-        var install = (
-            await unitOfWork.EdgeBoxInstalls.GetAsync(
-                i => i.Id == installId,
-                includeProperties: [nameof(EdgeBoxInstall.EdgeBox)],
-                pageSize: 1
-            )
-        ).Values.FirstOrDefault();
-
-        if (install == null)
-            return;
+        var install =
+            await unitOfWork.EdgeBoxInstalls.GetByIdAsync(installId)
+            ?? throw new NotFoundException(typeof(EdgeBoxInstall), installId);
+        var edgeBox =
+            await unitOfWork.EdgeBoxes.GetByIdAsync(install.EdgeBoxId)
+            ?? throw new NotFoundException(typeof(EdgeBox), install.EdgeBoxId);
 
         // Make sure that the edge box is being assigned for a shop
         if ((await GetLatestInstallingByEdgeBox(install.EdgeBoxId))?.Id != installId)
             return;
 
-        await unitOfWork.BeginTransaction();
-        if (install.EdgeBoxInstallStatus == EdgeBoxInstallStatus.New)
+        (var description, edgeBox.EdgeBoxLocation) = install.EdgeBoxInstallStatus switch
         {
             // If edge box is not installed yet, just cancel the installation
-            const string description = "Cancel edge box installation";
-            await UpdateStatus(installId, EdgeBoxInstallStatus.Disabled, description);
-            await edgeBoxService.UpdateLocation(install.EdgeBoxId, EdgeBoxLocation.Idle, description);
-        }
-        else
-        {
-            const string description = "Uninstall edge box";
-            await UpdateStatus(installId, EdgeBoxInstallStatus.Disabled, description);
-            await edgeBoxService.UpdateLocation(install.EdgeBoxId, EdgeBoxLocation.Uninstalling, description);
-        }
-        await unitOfWork.CommitTransaction();
+            EdgeBoxInstallStatus.New
+                => ("Cancel edge box installation", EdgeBoxLocation.Idle),
+            _ => ("Uninstall edge box", EdgeBoxLocation.Uninstalling)
+        };
+        install.EdgeBoxInstallStatus = EdgeBoxInstallStatus.Disabled;
+        unitOfWork.EdgeBoxInstalls.Update(install);
+        unitOfWork.EdgeBoxes.Update(edgeBox);
+        await unitOfWork.EdgeBoxActivities.AddAsync(
+            new EdgeBoxActivity
+            {
+                Type = EdgeBoxActivityType.EdgeBoxUninstall,
+                EdgeBoxId = install.EdgeBoxId,
+                EdgeBoxInstallId = installId,
+                Description = description
+            }
+        );
+        await unitOfWork.CompleteAsync();
     }
 }

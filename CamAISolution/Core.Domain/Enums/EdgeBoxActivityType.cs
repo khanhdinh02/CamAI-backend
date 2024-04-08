@@ -5,5 +5,6 @@ public enum EdgeBoxActivityType
     EdgeBoxStatus = 0,
     EdgeBoxLocation = 1,
     EdgeBoxHealth = 2,
-    EdgeBoxActivation = 3
+    EdgeBoxActivation = 3,
+    EdgeBoxUninstall = 4
 }
