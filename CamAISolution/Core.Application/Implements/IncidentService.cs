@@ -108,6 +108,7 @@ public class IncidentService(
             await unitOfWork.Evidences.AddAsync(evidence);
         }
 
+        await unitOfWork.CompleteAsync();
         await unitOfWork.CommitTransaction();
         return incident;
     }
