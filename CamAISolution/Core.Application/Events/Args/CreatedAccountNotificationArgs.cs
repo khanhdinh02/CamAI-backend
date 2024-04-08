@@ -2,7 +2,8 @@ using Core.Domain.Entities;
 
 namespace Core.Application.Events.Args;
 
-public class CreatedAccountNotificationArgs(AccountNotification accountNotification) : EventArgs
+public class CreatedAccountNotificationArgs(Notification notification, IEnumerable<Guid> sentToIds) : EventArgs
 {
-    public AccountNotification AccountNotification => accountNotification;
+    public IEnumerable<Guid> SentToIds => sentToIds;
+    public Notification Notification => notification;
 }

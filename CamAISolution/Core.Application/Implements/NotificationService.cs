@@ -32,26 +32,22 @@ public class NotificationService(
             var sentToAccounts = (
                 await unitOfWork.Accounts.GetAsync(expression: a => dto.SentToId.Contains(a.Id), disableTracking: false)
             ).Values;
-            HashSet<AccountNotification> createdAccountNotifications = new();
             foreach (var acc in sentToAccounts)
             {
-                createdAccountNotifications.Add(
-                    await unitOfWork
-                        .GetRepository<AccountNotification>()
-                        .AddAsync(
-                            new AccountNotification
-                            {
-                                AccountId = acc.Id,
-                                NotificationId = notification.Id,
-                                Status = NotificationStatus.Unread
-                            }
-                        )
-                );
+                await unitOfWork
+                    .GetRepository<AccountNotification>()
+                    .AddAsync(
+                        new AccountNotification
+                        {
+                            AccountId = acc.Id,
+                            NotificationId = notification.Id,
+                            Status = NotificationStatus.Unread
+                        }
+                    );
             }
             await unitOfWork.CompleteAsync();
             await unitOfWork.CommitTransaction();
-            foreach (var createdAccountNotification in createdAccountNotifications)
-                accountNotificationSubject.AccountNotification = createdAccountNotification;
+            accountNotificationSubject.Notify(new(notification, sentToAccounts.Select(a => a.Id)));
             return notification;
         }
         catch (Exception ex)
@@ -80,10 +76,7 @@ public class NotificationService(
                 )
         ).Values.First();
         if (accountNotification == null)
-            throw new NotFoundException(
-                typeof(Core.Domain.Entities.Notification),
-                new { jwtService.GetCurrentUser().Id, notificationId }
-            );
+            throw new NotFoundException(typeof(Notification), new { jwtService.GetCurrentUser().Id, notificationId });
         if (accountNotification.Status != status)
         {
             accountNotification.Status = status;

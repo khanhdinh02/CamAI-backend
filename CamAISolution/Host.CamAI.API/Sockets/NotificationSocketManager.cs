@@ -13,11 +13,16 @@ public class NotificationSocketManager : Core.Domain.Events.IObserver<CreatedAcc
     // user id and websocket object
     private readonly ConcurrentDictionary<Guid, WebSocket> sockets = new();
     private readonly IServiceProvider serviceProvider;
+    private readonly AccountNotificationSubject accountNotificationSubject;
 
-    public NotificationSocketManager(IServiceProvider serviceProvider)
+    public NotificationSocketManager(
+        IServiceProvider serviceProvider,
+        AccountNotificationSubject accountNotificationSubject
+    )
     {
         this.serviceProvider = serviceProvider;
-        serviceProvider.GetRequiredService<AccountNotificationSubject>().Attach(this);
+        this.accountNotificationSubject = accountNotificationSubject;
+        this.accountNotificationSubject.Attach(this);
     }
 
     public bool AddSocket(Guid accountId, WebSocket socket) => sockets.TryAdd(accountId, socket);
@@ -28,13 +33,21 @@ public class NotificationSocketManager : Core.Domain.Events.IObserver<CreatedAcc
     {
         using var scope = serviceProvider.CreateScope();
         var mapper = scope.ServiceProvider.GetRequiredService<IBaseMapping>();
-        if (sockets.TryGetValue(args.AccountNotification.AccountId, out var socket))
+        foreach (var userId in args.SentToIds)
         {
-            var jsonObj = System.Text.Json.JsonSerializer.Serialize(
-                mapper.Map<AccountNotification, NotificationDto>(args.AccountNotification)
-            );
-            var sentData = System.Text.Encoding.UTF8.GetBytes(jsonObj);
-            socket.SendAsync(sentData, WebSocketMessageType.Text, true, CancellationToken.None);
+            if (sockets.TryGetValue(userId, out var socket))
+            {
+                var jsonObj = System.Text.Json.JsonSerializer.Serialize(
+                    mapper.Map<Notification, NotificationDto>(args.Notification)
+                );
+                var sentData = System.Text.Encoding.UTF8.GetBytes(jsonObj);
+                socket.SendAsync(sentData, WebSocketMessageType.Text, true, CancellationToken.None);
+            }
         }
+    }
+
+    ~NotificationSocketManager()
+    {
+        accountNotificationSubject.Detach(this);
     }
 }

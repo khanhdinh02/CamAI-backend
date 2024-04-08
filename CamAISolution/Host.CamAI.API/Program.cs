@@ -77,8 +77,6 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-app.UseMiddleware<NotificationSocket>();
-
 app.UseHttpsRedirection();
 
 app.MapControllers();

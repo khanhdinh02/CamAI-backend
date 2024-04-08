@@ -9,18 +9,7 @@ public class AccountNotificationSubject
 {
     public event EventHandler<CreatedAccountNotificationArgs>? Created;
 
-    private AccountNotification accountNotification = null!;
-    public AccountNotification AccountNotification
-    {
-        get { return accountNotification; }
-        set
-        {
-            accountNotification = value;
-            OnChange(new CreatedAccountNotificationArgs(value));
-        }
-    }
-
-    public void OnChange(CreatedAccountNotificationArgs e)
+    public void Notify(CreatedAccountNotificationArgs e)
     {
         Created?.Invoke(this, e);
     }
