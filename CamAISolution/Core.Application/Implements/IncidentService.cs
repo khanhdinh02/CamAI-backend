@@ -112,4 +112,61 @@ public class IncidentService(
         await unitOfWork.CommitTransaction();
         return incident;
     }
+
+    public async Task<IncidentCountDto> CountIncidentsByShop(
+        Guid? shopId,
+        DateOnly startDate,
+        ReportTimeRange timeRange
+    )
+    {
+        var user = accountService.GetCurrentAccount();
+        shopId = user.Role switch
+        {
+            Role.BrandManager when shopId == null => throw new BadRequestException("Please specify a shop id"),
+            Role.ShopManager => user.ManagingShop?.Id,
+            _ => shopId
+        };
+
+        var shop = await unitOfWork.Shops.GetByIdAsync(shopId) ?? throw new NotFoundException(typeof(Shop), shopId);
+        if (
+            (user.Role == Role.BrandManager && user.BrandId != shop.BrandId)
+            || (user.Role == Role.ShopManager && user.ManagingShop?.Id != shopId)
+        )
+            throw new ForbiddenException(user, shop);
+
+        var (endDate, interval, groupByKey) = timeRange switch
+        {
+            ReportTimeRange.Day
+                => (
+                    startDate.AddDays(1),
+                    ReportInterval.Hour,
+                    (Func<Incident, DateTime>)(
+                        i => new DateTime(DateOnly.FromDateTime(i.StartTime), new TimeOnly(i.StartTime.Hour))
+                    )
+                ),
+            ReportTimeRange.Week => (startDate.AddDays(7), ReportInterval.Day, i => i.StartTime.Date),
+            ReportTimeRange.Month => (startDate.AddDays(30), ReportInterval.Day, i => i.StartTime.Date),
+            _ => throw new ArgumentOutOfRangeException(nameof(timeRange), timeRange, null)
+        };
+
+        var items = (
+            await unitOfWork.Incidents.GetAsync(i =>
+                i.ShopId == shopId
+                && i.StartTime >= startDate.ToDateTime(TimeOnly.MinValue)
+                && i.EndTime < endDate.ToDateTime(TimeOnly.MinValue)
+            )
+        )
+            .Values.GroupBy(groupByKey)
+            .Select(group => new IncidentCountItemDto(group.Key, group.Count()))
+            .ToList();
+
+        return new IncidentCountDto
+        {
+            Total = items.Sum(i => i.Count),
+            StartDate = startDate,
+            EndDate = endDate.AddDays(-1),
+            Interval = interval,
+            Data = items
+        };
+    }
 }

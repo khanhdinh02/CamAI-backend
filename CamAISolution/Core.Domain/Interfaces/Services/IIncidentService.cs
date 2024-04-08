@@ -1,5 +1,6 @@
 using Core.Domain.DTO;
 using Core.Domain.Entities;
+using Core.Domain.Enums;
 using Core.Domain.Models;
 
 namespace Core.Domain.Interfaces.Services;
@@ -12,4 +13,6 @@ public interface IIncidentService
 
     Task AssignIncidentToEmployee(Guid id, Guid employeeId);
     Task RejectIncident(Guid id);
+
+    Task<IncidentCountDto> CountIncidentsByShop(Guid? shopId, DateOnly startDate, ReportTimeRange timeRange);
 }

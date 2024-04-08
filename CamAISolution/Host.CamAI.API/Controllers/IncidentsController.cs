@@ -78,4 +78,23 @@ public class IncidentsController(IBaseMapping mapping, IIncidentService incident
     {
         await incidentService.RejectIncident(id);
     }
+
+    /// <summary>
+    /// For Manager to get the count of incidents for a shop.
+    /// Shop manager does not need to specify shopId.
+    /// </summary>
+    /// <param name="shopId"></param>
+    /// <param name="startDate"></param>
+    /// <param name="timeRange"></param>
+    /// <returns></returns>
+    [HttpGet("count")]
+    [AccessTokenGuard(Role.ShopManager, Role.BrandManager)]
+    public async Task<IncidentCountDto> CountIncidentsByShop(
+        Guid? shopId,
+        DateOnly startDate,
+        ReportTimeRange timeRange
+    )
+    {
+        return await incidentService.CountIncidentsByShop(shopId, startDate, timeRange);
+    }
 }
