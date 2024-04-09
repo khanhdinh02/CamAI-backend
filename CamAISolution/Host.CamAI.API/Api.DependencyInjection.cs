@@ -16,16 +16,21 @@ namespace Host.CamAI.API;
 
 public static class ApiDependencyInjection
 {
-    private static IServiceCollection AddObservers(this IServiceCollection services)
+    private static IServiceCollection AddObserverPattern(this IServiceCollection services)
     {
+        //Subject
         services.AddSingleton<AccountNotificationSubject>();
+        services.AddSingleton<IncidentSubject>();
+
+        //Observer
+        services.AddSingleton<NotificationSocketManager>();
+        services.AddSingleton<IncidentSocketManager>();
         return services;
     }
 
     public static IServiceCollection AddEventListener(this IServiceCollection services)
     {
         services.AddSingleton<IApplicationDelayEventListener, ApplicationDelayEventListener>();
-        services.AddObservers();
         return services;
     }
 
@@ -47,7 +52,7 @@ public static class ApiDependencyInjection
         services.AddScoped<IReportService, ReportService>();
         services.AddScoped<INotificationService, NotificationService>();
         services.AddSingleton<EventManager>().AddSingleton<HumanCountSubject>();
-        services.AddSingleton<NotificationSocketManager>();
+        services.AddObserverPattern();
         return services;
     }
 

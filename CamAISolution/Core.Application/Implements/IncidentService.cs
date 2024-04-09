@@ -1,4 +1,6 @@
 using System.Net.Mime;
+using Core.Application.Events;
+using Core.Application.Events.Args;
 using Core.Application.Exceptions;
 using Core.Application.Specifications.Incidents.Repositories;
 using Core.Domain.DTO;
@@ -19,7 +21,8 @@ public class IncidentService(
     ICameraService cameraService,
     IEdgeBoxInstallService edgeBoxInstallService,
     IUnitOfWork unitOfWork,
-    IBaseMapping mapping
+    IBaseMapping mapping,
+    IncidentSubject incidentSubject
 ) : IIncidentService
 {
     public async Task<Incident> GetIncidentById(Guid id, bool includeAll = false)
@@ -81,6 +84,8 @@ public class IncidentService(
     {
         var incident = await unitOfWork.Incidents.GetByIdAsync(incidentDto.Id);
 
+        bool isNewIncident = incident == null;
+
         var ebInstall = await edgeBoxInstallService.GetLatestInstallingByEdgeBox(incidentDto.EdgeBoxId);
         foreach (var cameraId in incidentDto.Evidences.Select(x => x.CameraId))
             await cameraService.CreateCameraIfNotExist(cameraId, ebInstall!.ShopId);
@@ -94,6 +99,7 @@ public class IncidentService(
             incident = await unitOfWork.Incidents.AddAsync(incident);
         }
 
+        HashSet<Evidence> newEvidences = new();
         foreach (var evidenceDto in incidentDto.Evidences)
         {
             var evidence = mapping.Map<CreateEvidenceDto, Evidence>(evidenceDto);
@@ -106,10 +112,24 @@ public class IncidentService(
             };
             evidence.Image = await blobService.UploadImage(imageDto, nameof(Incident), incident.Id.ToString("N"));
             await unitOfWork.Evidences.AddAsync(evidence);
+            newEvidences.Add(evidence);
         }
 
         await unitOfWork.CompleteAsync();
         await unitOfWork.CommitTransaction();
+
+        var eventType = isNewIncident ? IncidentEventType.NewIncident : IncidentEventType.MoreEvidence;
+
+        if (isNewIncident is false)
+            incident.Evidences = newEvidences;
+
+        var shopManager =
+            (
+                await unitOfWork.Accounts.GetAsync(expression: a =>
+                    a.ManagingShop != null && a.ManagingShop.Id == incident.ShopId
+                )
+            ).Values.FirstOrDefault() ?? throw new NotFoundException("Couldn't find shop manager");
+        incidentSubject.Notify(new(incident, eventType, shopManager.Id));
         return incident;
     }
 }

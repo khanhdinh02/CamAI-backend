@@ -1,4 +1,5 @@
 using Core.Application.Events;
+using Core.Application.Events.Args;
 using Core.Domain.DTO;
 using Core.Domain.Entities;
 using Core.Domain.Interfaces.Mappings;
@@ -14,7 +15,8 @@ public class TestsController(
     IBaseMapping mapping,
     IIncidentService incidentService,
     EventManager eventManager,
-    AccountNotificationSubject accountNotificationSubject
+    AccountNotificationSubject accountNotificationSubject,
+    IncidentSubject incidentSubject
 ) : ControllerBase
 {
     [HttpGet]
@@ -52,5 +54,18 @@ public class TestsController(
     {
         var incident = await incidentService.UpsertIncident(dto);
         return mapping.Map<Incident, IncidentDto>(incident);
+    }
+
+    [HttpGet("test-incident")]
+    public ActionResult TestRealTimeIncident()
+    {
+        incidentSubject.Notify(
+            new CreatedOrUpdatedIncidentArgs(
+                new Incident(),
+                IncidentEventType.NewIncident,
+                Guid.Parse("8A6E9252-E300-4546-9BDB-E01144266B0F")
+            )
+        );
+        return Ok();
     }
 }

@@ -32,7 +32,7 @@ public class NotificationSocketManager : Core.Domain.Events.IObserver<CreatedAcc
 
     public bool RemoveSocket(Guid accountId) => sockets.TryRemove(accountId, out _);
 
-    public void Update(object? sender, CreatedAccountNotificationArgs args)
+    public async void Update(object? sender, CreatedAccountNotificationArgs args)
     {
         using var scope = serviceProvider.CreateScope();
         var mapper = scope.ServiceProvider.GetRequiredService<IBaseMapping>();
@@ -45,7 +45,7 @@ public class NotificationSocketManager : Core.Domain.Events.IObserver<CreatedAcc
                     options
                 );
                 var sentData = System.Text.Encoding.UTF8.GetBytes(jsonObj);
-                socket.SendAsync(sentData, WebSocketMessageType.Text, true, CancellationToken.None);
+                await socket.SendAsync(sentData, WebSocketMessageType.Text, true, CancellationToken.None);
             }
         }
     }
