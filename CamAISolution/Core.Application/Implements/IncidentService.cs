@@ -56,11 +56,14 @@ public class IncidentService(
 
     public async Task AssignIncidentToEmployee(Guid id, Guid employeeId)
     {
-        // TODO: should we limit the time or have some rule when assigning incident
         var incident = await GetIncidentById(id);
         var employee = await employeeService.GetEmployeeById(employeeId);
         if (incident.ShopId != employee.ShopId)
             throw new BadRequestException("Incident and employee are not in the same shop");
+
+        if (incident.IncidentType == IncidentType.Interaction)
+            throw new BadRequestException("Cannot assign employee for interaction #{id}");
+
         incident.EmployeeId = employee.Id;
         incident.Status = IncidentStatus.Accepted;
         unitOfWork.Incidents.Update(incident);
