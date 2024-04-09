@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using System.Dynamic;
 using System.Net.WebSockets;
+using System.Text.Json;
 using Core.Application.Events;
 using Core.Application.Events.Args;
 using Core.Domain.DTO;
@@ -15,6 +16,7 @@ public class IncidentSocketManager : Core.Domain.Events.IObserver<CreatedOrUpdat
     private readonly ConcurrentDictionary<Guid, WebSocket> sockets = new();
     private readonly IncidentSubject incidentSubject;
     private readonly IServiceProvider serviceProvider;
+    private readonly JsonSerializerOptions options = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
 
     public IncidentSocketManager(IncidentSubject incidentSubject, IServiceProvider serviceProvider)
     {
@@ -34,7 +36,7 @@ public class IncidentSocketManager : Core.Domain.Events.IObserver<CreatedOrUpdat
         dynamic messageToSend = new ExpandoObject();
         messageToSend.EventType = args.EventType;
         messageToSend.Incident = mapper.Map<Incident, IncidentDto>(args.Incident);
-        var jsonObjStr = System.Text.Json.JsonSerializer.Serialize(messageToSend);
+        var jsonObjStr = JsonSerializer.Serialize(messageToSend, options);
         var data = System.Text.Encoding.UTF8.GetBytes(jsonObjStr);
         if (sockets.TryGetValue(args.SentTo, out var socket))
         {

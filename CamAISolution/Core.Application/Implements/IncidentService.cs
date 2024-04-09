@@ -99,6 +99,7 @@ public class IncidentService(
             incident = await unitOfWork.Incidents.AddAsync(incident);
         }
 
+        HashSet<Evidence> newEvidences = new();
         foreach (var evidenceDto in incidentDto.Evidences)
         {
             var evidence = mapping.Map<CreateEvidenceDto, Evidence>(evidenceDto);
@@ -111,11 +112,17 @@ public class IncidentService(
             };
             evidence.Image = await blobService.UploadImage(imageDto, nameof(Incident), incident.Id.ToString("N"));
             await unitOfWork.Evidences.AddAsync(evidence);
+            newEvidences.Add(evidence);
         }
 
         await unitOfWork.CompleteAsync();
         await unitOfWork.CommitTransaction();
+
         var eventType = isNewIncident ? IncidentEventType.NewIncident : IncidentEventType.MoreEvidence;
+
+        if (isNewIncident is false)
+            incident.Evidences = newEvidences;
+
         var shopManager =
             (
                 await unitOfWork.Accounts.GetAsync(expression: a =>
