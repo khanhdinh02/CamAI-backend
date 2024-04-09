@@ -14,5 +14,10 @@ public interface IIncidentService
     Task AssignIncidentToEmployee(Guid id, Guid employeeId);
     Task RejectIncident(Guid id);
 
-    Task<IncidentCountDto> CountIncidentsByShop(Guid? shopId, DateOnly startDate, ReportTimeRange timeRange);
+    Task<IncidentCountDto> CountIncidentsByShop(
+        Guid? shopId,
+        DateOnly startDate,
+        DateOnly endDate,
+        ReportInterval interval
+    );
 }

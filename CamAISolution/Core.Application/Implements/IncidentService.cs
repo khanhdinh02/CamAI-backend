@@ -9,6 +9,7 @@ using Core.Domain.Interfaces.Services;
 using Core.Domain.Models;
 using Core.Domain.Repositories;
 using Core.Domain.Services;
+using Core.Domain.Utilities;
 
 namespace Core.Application.Implements;
 
@@ -116,9 +117,20 @@ public class IncidentService(
     public async Task<IncidentCountDto> CountIncidentsByShop(
         Guid? shopId,
         DateOnly startDate,
-        ReportTimeRange timeRange
+        DateOnly endDate,
+        ReportInterval interval
     )
     {
+        if (startDate > endDate)
+            return new IncidentCountDto
+            {
+                Total = 0,
+                StartDate = startDate,
+                EndDate = endDate,
+                Interval = interval,
+                Data = []
+            };
+
         var user = accountService.GetCurrentAccount();
         shopId = user.Role switch
         {
@@ -134,29 +146,16 @@ public class IncidentService(
         )
             throw new ForbiddenException(user, shop);
 
-        var (endDate, interval, groupByKey) = timeRange switch
-        {
-            ReportTimeRange.Day
-                => (
-                    startDate.AddDays(1),
-                    ReportInterval.Hour,
-                    (Func<Incident, DateTime>)(
-                        i => new DateTime(DateOnly.FromDateTime(i.StartTime), new TimeOnly(i.StartTime.Hour))
-                    )
-                ),
-            ReportTimeRange.Week => (startDate.AddDays(7), ReportInterval.Day, i => i.StartTime.Date),
-            ReportTimeRange.Month => (startDate.AddDays(30), ReportInterval.Day, i => i.StartTime.Date),
-            _ => throw new ArgumentOutOfRangeException(nameof(timeRange), timeRange, null)
-        };
-
         var items = (
             await unitOfWork.Incidents.GetAsync(i =>
                 i.ShopId == shopId
                 && i.StartTime >= startDate.ToDateTime(TimeOnly.MinValue)
-                && i.EndTime < endDate.ToDateTime(TimeOnly.MinValue)
+                && i.EndTime < endDate.AddDays(1).ToDateTime(TimeOnly.MinValue)
             )
         )
-            .Values.GroupBy(groupByKey)
+            .Values.GroupBy(i =>
+                DateTimeHelper.CalculateTimeForInterval(i.StartTime, interval, startDate.ToDateTime(TimeOnly.MinValue))
+            )
             .Select(group => new IncidentCountItemDto(group.Key, group.Count()))
             .ToList();
 

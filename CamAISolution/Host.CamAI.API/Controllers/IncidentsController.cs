@@ -85,16 +85,18 @@ public class IncidentsController(IBaseMapping mapping, IIncidentService incident
     /// </summary>
     /// <param name="shopId"></param>
     /// <param name="startDate"></param>
-    /// <param name="timeRange"></param>
+    /// <param name="endDate"></param>
+    /// <param name="interval"></param>
     /// <returns></returns>
     [HttpGet("count")]
     [AccessTokenGuard(Role.ShopManager, Role.BrandManager)]
     public async Task<IncidentCountDto> CountIncidentsByShop(
         Guid? shopId,
         DateOnly startDate,
-        ReportTimeRange timeRange
+        DateOnly endDate,
+        ReportInterval interval
     )
     {
-        return await incidentService.CountIncidentsByShop(shopId, startDate, timeRange);
+        return await incidentService.CountIncidentsByShop(shopId, startDate, endDate, interval);
     }
 }
