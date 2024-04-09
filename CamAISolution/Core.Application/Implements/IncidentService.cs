@@ -1,5 +1,6 @@
 using System.Net.Mime;
 using Core.Application.Events;
+using Core.Application.Events.Args;
 using Core.Application.Exceptions;
 using Core.Application.Specifications.Incidents.Repositories;
 using Core.Domain.DTO;
@@ -114,7 +115,14 @@ public class IncidentService(
 
         await unitOfWork.CompleteAsync();
         await unitOfWork.CommitTransaction();
-        incidentSubject.Notify(new(incident, isNewIncident));
+        var eventType = isNewIncident ? IncidentEventType.NewIncident : IncidentEventType.MoreEvidence;
+        var shopManager =
+            (
+                await unitOfWork.Accounts.GetAsync(expression: a =>
+                    a.ManagingShop != null && a.ManagingShop.Id == incident.ShopId
+                )
+            ).Values.FirstOrDefault() ?? throw new NotFoundException("Couldn't find shop manager");
+        incidentSubject.Notify(new(incident, eventType, shopManager.Id));
         return incident;
     }
 }
