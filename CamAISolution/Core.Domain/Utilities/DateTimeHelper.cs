@@ -26,9 +26,9 @@ public static class DateTimeHelper
                     DateOnly.FromDateTime(dateTime),
                     new TimeOnly(dateTime.Hour, dateTime.Minute / 30 * 30)
                 ),
-            ReportInterval.Hour => new DateTime(DateOnly.FromDateTime(dateTime), new TimeOnly(dateTime.Hour)),
+            ReportInterval.Hour => new DateTime(DateOnly.FromDateTime(dateTime), new TimeOnly(dateTime.Hour, 0)),
             ReportInterval.HalfDay
-                => new DateTime(DateOnly.FromDateTime(dateTime), new TimeOnly(dateTime.Hour / 12 * 12)),
+                => new DateTime(DateOnly.FromDateTime(dateTime), new TimeOnly(dateTime.Hour / 12 * 12, 0)),
             ReportInterval.Day => dateTime.Date,
             _ => throw new ArgumentOutOfRangeException(nameof(interval), interval, null)
         };
