@@ -24,6 +24,8 @@ public class LookupController : ControllerBase
     [LookupHttpGet("notification-statuses", typeof(NotificationStatus))]
     [LookupHttpGet("notification-priorities", typeof(NotificationPriority))]
     [LookupHttpGet("notification-types", typeof(NotificationType))]
+    [LookupHttpGet("report-intervals", typeof(ReportInterval))]
+    [LookupHttpGet("report-time-range", typeof(ReportTimeRange))]
     [LookupHttpGet("request-statuses", typeof(RequestStatus))]
     [LookupHttpGet("request-types", typeof(RequestType))]
     [LookupHttpGet("roles", typeof(Role))]

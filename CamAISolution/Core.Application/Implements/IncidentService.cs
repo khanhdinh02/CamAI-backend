@@ -11,6 +11,7 @@ using Core.Domain.Interfaces.Services;
 using Core.Domain.Models;
 using Core.Domain.Repositories;
 using Core.Domain.Services;
+using Core.Domain.Utilities;
 
 namespace Core.Application.Implements;
 
@@ -131,5 +132,65 @@ public class IncidentService(
             ).Values.FirstOrDefault() ?? throw new NotFoundException("Couldn't find shop manager");
         incidentSubject.Notify(new(incident, eventType, shopManager.Id));
         return incident;
+    }
+
+    public async Task<IncidentCountDto> CountIncidentsByShop(
+        Guid? shopId,
+        DateOnly startDate,
+        DateOnly endDate,
+        ReportInterval interval
+    )
+    {
+        var user = accountService.GetCurrentAccount();
+        shopId = user.Role switch
+        {
+            Role.BrandManager when shopId == null => throw new BadRequestException("Please specify a shop id"),
+            Role.ShopManager => user.ManagingShop?.Id,
+            _ => shopId
+        };
+
+        var shop = await unitOfWork.Shops.GetByIdAsync(shopId) ?? throw new NotFoundException(typeof(Shop), shopId);
+        if (
+            (user.Role == Role.BrandManager && user.BrandId != shop.BrandId)
+            || (user.Role == Role.ShopManager && user.ManagingShop?.Id != shopId)
+        )
+            throw new ForbiddenException(user, shop);
+
+        if (startDate > endDate)
+            return new IncidentCountDto
+            {
+                ShopId = shopId.Value,
+                Total = 0,
+                StartDate = startDate,
+                EndDate = endDate,
+                Interval = interval,
+                Data = []
+            };
+
+        var items = (
+            await unitOfWork.Incidents.GetAsync(
+                i =>
+                    i.ShopId == shopId
+                    && i.StartTime >= startDate.ToDateTime(TimeOnly.MinValue)
+                    && i.StartTime < endDate.AddDays(1).ToDateTime(TimeOnly.MinValue),
+                orderBy: o => o.OrderBy(i => i.StartTime),
+                takeAll: true
+            )
+        )
+            .Values.GroupBy(i =>
+                DateTimeHelper.CalculateTimeForInterval(i.StartTime, interval, startDate.ToDateTime(TimeOnly.MinValue))
+            )
+            .Select(group => new IncidentCountItemDto(group.Key, group.Count()))
+            .ToList();
+
+        return new IncidentCountDto
+        {
+            ShopId = shopId.Value,
+            Total = items.Sum(i => i.Count),
+            StartDate = startDate,
+            EndDate = endDate,
+            Interval = interval,
+            Data = items
+        };
     }
 }
