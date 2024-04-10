@@ -1,4 +1,5 @@
 using System.Reflection;
+using Core.Application.Events.Args;
 using Core.Application.Implements;
 using Core.Domain.Enums;
 using Host.CamAI.API.Attributes;
@@ -30,6 +31,7 @@ public class LookupController : ControllerBase
     [LookupHttpGet("roles", typeof(Role))]
     [LookupHttpGet("shop-statuses", typeof(ShopStatus))]
     [LookupHttpGet("zones", typeof(Zone))]
+    [LookupHttpGet("incident-event", typeof(IncidentEventType))]
     public ActionResult<Dictionary<int, string>> GetLookup()
     {
         var path = HttpContext.Request.Path;
