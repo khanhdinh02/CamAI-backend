@@ -4,6 +4,7 @@ namespace Core.Domain.DTO;
 
 public class IncidentCountDto
 {
+    public Guid ShopId { get; set; }
     public int Total { get; set; }
     public DateOnly StartDate { get; set; }
     public DateOnly EndDate { get; set; }

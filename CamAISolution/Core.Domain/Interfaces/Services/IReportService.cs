@@ -9,12 +9,8 @@ public interface IReportService
 {
     public Task<ICircularBuffer<HumanCountModel>> GetHumanCountStream();
     public Task<ICircularBuffer<HumanCountModel>> GetHumanCountStream(Guid shopId);
-    public Task<IEnumerable<HumanCountDto>> GetHumanCountData(
-        DateOnly startDate,
-        DateOnly endDate,
-        ReportInterval interval
-    );
-    public Task<IEnumerable<HumanCountDto>> GetHumanCountData(
+    public Task<HumanCountDto> GetHumanCountData(DateOnly startDate, DateOnly endDate, ReportInterval interval);
+    public Task<HumanCountDto> GetHumanCountData(
         Guid shopId,
         DateOnly startDate,
         DateOnly endDate,

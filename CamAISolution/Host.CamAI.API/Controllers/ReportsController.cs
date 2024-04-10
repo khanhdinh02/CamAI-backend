@@ -51,11 +51,7 @@ public class ReportsController(IReportService reportService) : ControllerBase
     /// </summary>
     [HttpGet("customer")]
     [AccessTokenGuard(Role.ShopManager)]
-    public async Task<IEnumerable<HumanCountDto>> GetHumanCountData(
-        DateOnly startDate,
-        DateOnly endDate,
-        ReportInterval interval
-    )
+    public async Task<HumanCountDto> GetHumanCountData(DateOnly startDate, DateOnly endDate, ReportInterval interval)
     {
         return await reportService.GetHumanCountData(startDate, endDate, interval);
     }
@@ -65,7 +61,7 @@ public class ReportsController(IReportService reportService) : ControllerBase
     /// </summary>
     [HttpGet("{shopId}/customer")]
     [AccessTokenGuard(Role.ShopManager, Role.BrandManager)]
-    public async Task<IEnumerable<HumanCountDto>> GetHumanCountData(
+    public async Task<HumanCountDto> GetHumanCountData(
         [FromRoute] Guid shopId,
         [FromQuery] DateOnly startDate,
         [FromQuery] DateOnly endDate,

@@ -121,16 +121,6 @@ public class IncidentService(
         ReportInterval interval
     )
     {
-        if (startDate > endDate)
-            return new IncidentCountDto
-            {
-                Total = 0,
-                StartDate = startDate,
-                EndDate = endDate,
-                Interval = interval,
-                Data = []
-            };
-
         var user = accountService.GetCurrentAccount();
         shopId = user.Role switch
         {
@@ -145,6 +135,17 @@ public class IncidentService(
             || (user.Role == Role.ShopManager && user.ManagingShop?.Id != shopId)
         )
             throw new ForbiddenException(user, shop);
+
+        if (startDate > endDate)
+            return new IncidentCountDto
+            {
+                ShopId = shopId.Value,
+                Total = 0,
+                StartDate = startDate,
+                EndDate = endDate,
+                Interval = interval,
+                Data = []
+            };
 
         var items = (
             await unitOfWork.Incidents.GetAsync(i =>
@@ -161,6 +162,7 @@ public class IncidentService(
 
         return new IncidentCountDto
         {
+            ShopId = shopId.Value,
             Total = items.Sum(i => i.Count),
             StartDate = startDate,
             EndDate = endDate.AddDays(-1),

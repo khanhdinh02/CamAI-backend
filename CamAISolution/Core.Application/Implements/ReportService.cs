@@ -2,6 +2,7 @@ using System.Text.Json;
 using Core.Application.Events;
 using Core.Application.Exceptions;
 using Core.Application.Models;
+using Core.Domain;
 using Core.Domain.DTO;
 using Core.Domain.Entities;
 using Core.Domain.Enums;
@@ -18,7 +19,8 @@ public class ReportService(
     IAccountService accountService,
     IShopService shopService,
     HumanCountSubject subject,
-    AiConfiguration configuration
+    AiConfiguration configuration,
+    IAppLogging<ReportService> logger
 ) : IReportService
 {
     private readonly string baseOutputDir = configuration.OutputDirectory;
@@ -49,11 +51,7 @@ public class ReportService(
 
     private HumanCountBuffer CreateHumanCountBufferResult(Guid shopId) => new(subject, shopId);
 
-    public async Task<IEnumerable<HumanCountDto>> GetHumanCountData(
-        DateOnly startDate,
-        DateOnly endDate,
-        ReportInterval interval
-    )
+    public async Task<HumanCountDto> GetHumanCountData(DateOnly startDate, DateOnly endDate, ReportInterval interval)
     {
         var account = accountService.GetCurrentAccount();
         CheckAuthority(account);
@@ -62,7 +60,7 @@ public class ReportService(
         return await GetHumanCountDataInTimeRange(shopId, startDate, endDate, interval);
     }
 
-    public async Task<IEnumerable<HumanCountDto>> GetHumanCountData(
+    public async Task<HumanCountDto> GetHumanCountData(
         Guid shopId,
         DateOnly startDate,
         DateOnly endDate,
@@ -74,14 +72,14 @@ public class ReportService(
         return await GetHumanCountDataInTimeRange(shopId, startDate, endDate, interval);
     }
 
-    private async Task<IEnumerable<HumanCountDto>> GetHumanCountDataInTimeRange(
+    private async Task<HumanCountDto> GetHumanCountDataInTimeRange(
         Guid shopId,
         DateOnly startDate,
         DateOnly endDate,
         ReportInterval interval
     )
     {
-        IEnumerable<HumanCountDto> result = [];
+        List<HumanCountItemDto> columns = [];
 
         for (var date = startDate; date <= endDate; date = date.AddDays(1))
         {
@@ -110,9 +108,8 @@ public class ReportService(
                             ? (orderedGroup.ElementAt(count / 2).Total + orderedGroup.ElementAt(count / 2 - 1).Total)
                                 / 2.0f
                             : orderedGroup.ElementAt(count / 2).Total;
-                        return new HumanCountDto
+                        return new HumanCountItemDto
                         {
-                            ShopId = shopId,
                             Time = group.Key,
                             Low = group.Min(r => r.Total),
                             High = group.Max(r => r.Total),
@@ -121,14 +118,21 @@ public class ReportService(
                             Median = median
                         };
                     });
-                result = result.Concat(resultForDate);
+                columns.AddRange(resultForDate);
             }
             catch (Exception ex)
             {
-                // TODO: Log exception
-                // throw new NotFoundException($"Cannot find human count data for date {date} and shop {shopId}");
+                logger.Error($"Cannot find human count data for date {date} and shop {shopId}", ex);
             }
         }
-        return result;
+
+        return new HumanCountDto
+        {
+            ShopId = shopId,
+            StartDate = startDate,
+            EndDate = endDate,
+            Interval = interval,
+            Data = columns
+        };
     }
 }
