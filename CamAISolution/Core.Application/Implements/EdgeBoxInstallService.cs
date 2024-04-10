@@ -324,6 +324,7 @@ public class EdgeBoxInstallService(
                 => ("Cancel edge box installation", EdgeBoxLocation.Idle),
             _ => ("Uninstall edge box", EdgeBoxLocation.Uninstalling)
         };
+        install.UninstalledTime = DateTimeHelper.VNDateTime;
         install.EdgeBoxInstallStatus = EdgeBoxInstallStatus.Disabled;
         unitOfWork.EdgeBoxInstalls.Update(install);
         unitOfWork.EdgeBoxes.Update(edgeBox);
