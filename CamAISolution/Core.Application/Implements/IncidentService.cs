@@ -173,7 +173,8 @@ public class IncidentService(
         var items = (
             await unitOfWork.Incidents.GetAsync(
                 i =>
-                    i.ShopId == shopId
+                    i.IncidentType != IncidentType.Interaction
+                    && i.ShopId == shopId
                     && i.StartTime >= startDate.ToDateTime(TimeOnly.MinValue)
                     && i.StartTime < endDate.AddDays(1).ToDateTime(TimeOnly.MinValue),
                 orderBy: o => o.OrderBy(i => i.StartTime),
