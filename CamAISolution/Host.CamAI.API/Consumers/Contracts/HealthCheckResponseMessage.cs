@@ -9,4 +9,5 @@ public class HealthCheckResponseMessage
     public Guid EdgeBoxId { get; set; }
     public EdgeBoxInstallStatus Status { get; set; }
     public string? Reason { get; set; }
+    public string IpAddress { get; set; } = null!;
 }

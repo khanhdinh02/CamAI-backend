@@ -303,4 +303,16 @@ public class EdgeBoxInstallService(
             Values = installs
         };
     }
+
+    public async Task<EdgeBoxInstall> UpdateIpAddress(EdgeBoxInstall edgeBoxInstall, string ipAddress)
+    {
+        if (edgeBoxInstall.IpAddress == ipAddress)
+            return edgeBoxInstall;
+
+        edgeBoxInstall.IpAddress = ipAddress;
+        unitOfWork.EdgeBoxInstalls.Update(edgeBoxInstall);
+        await unitOfWork.CompleteAsync();
+
+        return edgeBoxInstall;
+    }
 }

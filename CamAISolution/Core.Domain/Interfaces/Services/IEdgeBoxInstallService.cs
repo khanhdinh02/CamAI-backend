@@ -48,4 +48,6 @@ public interface IEdgeBoxInstallService
         EdgeBoxActivationStatus status,
         string? description = null
     );
+
+    Task<EdgeBoxInstall> UpdateIpAddress(EdgeBoxInstall edgeBoxInstall, string ipAddress);
 }

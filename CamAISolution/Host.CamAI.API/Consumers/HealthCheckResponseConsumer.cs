@@ -1,5 +1,6 @@
 using Core.Domain;
 using Core.Domain.DTO;
+using Core.Domain.Entities;
 using Core.Domain.Enums;
 using Core.Domain.Interfaces.Services;
 using Core.Domain.Models.Publishers;
@@ -32,11 +33,13 @@ public class HealthCheckResponseConsumer(
             return;
         }
 
+        // Reactivate edge box
         if (
             ebInstall.ActivationStatus == EdgeBoxActivationStatus.Failed
             && message.Status == EdgeBoxInstallStatus.Working
         )
         {
+            // TODO: verify should we only reactivate if it is timeout failed
             await messageQueueService.Publish(
                 new ActivatedEdgeBoxMessage
                 {
@@ -46,14 +49,22 @@ public class HealthCheckResponseConsumer(
             );
         }
 
-        if (ebInstall.EdgeBoxInstallStatus == message.Status)
+        if (ebInstall.EdgeBoxInstallStatus == message.Status && ebInstall.IpAddress == message.IpAddress)
         {
-            logger.Info($"Edge box install status not change {message.Status}");
+            logger.Info($"Edge box install status {message.Status} and ip address {message.IpAddress} not change");
             return;
         }
 
+        var willSendNotif = ebInstall.EdgeBoxInstallStatus != message.Status;
         await edgeBoxInstallService.UpdateStatus(ebInstall, message.Status, message.Reason);
+        await edgeBoxInstallService.UpdateIpAddress(ebInstall, message.IpAddress);
 
+        if (willSendNotif)
+            await SendNotificationToAdminAndManager(message, ebInstall);
+    }
+
+    private async Task SendNotificationToAdminAndManager(HealthCheckResponseMessage message, EdgeBoxInstall ebInstall)
+    {
         CreateNotificationDto dto;
         if (message.Status == EdgeBoxInstallStatus.Unhealthy)
         {
@@ -78,7 +89,6 @@ public class HealthCheckResponseConsumer(
                 Type = NotificationType.EdgeBoxHealthy,
                 RelatedEntityId = ebInstall.Id,
             };
-            // TODO: try to reactivate edge box
         }
 
         var sentTo = new List<Guid> { await cache.GetAdminAccount() };
