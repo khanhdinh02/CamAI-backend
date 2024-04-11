@@ -32,15 +32,23 @@ public class IncidentSocketManager : Core.Domain.Events.IObserver<CreatedOrUpdat
     public async void Update(object? sender, CreatedOrUpdatedIncidentArgs args)
     {
         using var scope = serviceProvider.CreateScope();
-        var mapper = scope.ServiceProvider.GetRequiredService<IBaseMapping>();
-        dynamic messageToSend = new ExpandoObject();
-        messageToSend.EventType = args.EventType;
-        messageToSend.Incident = mapper.Map<Incident, IncidentDto>(args.Incident);
-        var jsonObjStr = JsonSerializer.Serialize(messageToSend, options);
-        var data = System.Text.Encoding.UTF8.GetBytes(jsonObjStr);
-        if (sockets.TryGetValue(args.SentTo, out var socket))
+        try
         {
-            await socket.SendAsync(data, WebSocketMessageType.Text, true, CancellationToken.None);
+            var mapper = scope.ServiceProvider.GetRequiredService<IBaseMapping>();
+            dynamic messageToSend = new ExpandoObject();
+            messageToSend.EventType = args.EventType;
+            messageToSend.Incident = mapper.Map<Incident, IncidentDto>(args.Incident);
+            var jsonObjStr = JsonSerializer.Serialize(messageToSend, options);
+            var data = System.Text.Encoding.UTF8.GetBytes(jsonObjStr);
+            if (sockets.TryGetValue(args.SentTo, out var socket))
+            {
+                await socket.SendAsync(data, WebSocketMessageType.Text, true, CancellationToken.None);
+            }
+        }
+        catch (Exception ex)
+        {
+            var logger = scope.ServiceProvider.GetRequiredService<ILogger<IncidentSocketManager>>();
+            logger.LogError(ex, ex.Message);
         }
     }
 

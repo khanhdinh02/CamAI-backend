@@ -35,18 +35,26 @@ public class NotificationSocketManager : Core.Domain.Events.IObserver<CreatedAcc
     public async void Update(object? sender, CreatedAccountNotificationArgs args)
     {
         using var scope = serviceProvider.CreateScope();
-        var mapper = scope.ServiceProvider.GetRequiredService<IBaseMapping>();
-        foreach (var userId in args.SentToIds)
+        try
         {
-            if (sockets.TryGetValue(userId, out var socket))
+            var mapper = scope.ServiceProvider.GetRequiredService<IBaseMapping>();
+            foreach (var userId in args.SentToIds)
             {
-                var jsonObj = JsonSerializer.Serialize(
-                    mapper.Map<Notification, NotificationDto>(args.Notification),
-                    options
-                );
-                var sentData = System.Text.Encoding.UTF8.GetBytes(jsonObj);
-                await socket.SendAsync(sentData, WebSocketMessageType.Text, true, CancellationToken.None);
+                if (sockets.TryGetValue(userId, out var socket))
+                {
+                    var jsonObj = JsonSerializer.Serialize(
+                        mapper.Map<Notification, NotificationDto>(args.Notification),
+                        options
+                    );
+                    var sentData = System.Text.Encoding.UTF8.GetBytes(jsonObj);
+                    await socket.SendAsync(sentData, WebSocketMessageType.Text, true, CancellationToken.None);
+                }
             }
+        }
+        catch (Exception ex)
+        {
+            var logger = scope.ServiceProvider.GetRequiredService<ILogger<NotificationSocketManager>>();
+            logger.LogError(ex, ex.Message);
         }
     }
 
