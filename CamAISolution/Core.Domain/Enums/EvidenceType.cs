@@ -5,5 +5,5 @@ namespace Core.Domain.Enums;
 [Lookup]
 public enum EvidenceType
 {
-    Image = 1
+    Image = 0
 }
