@@ -103,6 +103,9 @@ public class IncidentService(
             incident = await unitOfWork.Incidents.AddAsync(incident);
         }
 
+        if (incidentDto.EndTime != null)
+            incident.EndTime = incidentDto.EndTime;
+
         HashSet<Evidence> newEvidences = new();
         foreach (var evidenceDto in incidentDto.Evidences)
         {
