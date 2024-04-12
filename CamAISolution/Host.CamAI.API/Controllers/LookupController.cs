@@ -1,6 +1,7 @@
 using System.Reflection;
 using Core.Application.Events.Args;
 using Core.Application.Implements;
+using Core.Domain.DTO;
 using Core.Domain.Enums;
 using Host.CamAI.API.Attributes;
 using Microsoft.AspNetCore.Mvc;
@@ -20,7 +21,9 @@ public class LookupController : ControllerBase
     [LookupHttpGet("employee-statuses", typeof(EmployeeStatus))]
     [LookupHttpGet("evidence-types", typeof(EvidenceType))]
     [LookupHttpGet("genders", typeof(Gender))]
+    [LookupHttpGet("incident-event", typeof(IncidentEventType))]
     [LookupHttpGet("incident-types", typeof(IncidentType))]
+    [LookupHttpGet("incident-type-request-options", typeof(IncidentTypeRequestOption))]
     [LookupHttpGet("notification-statuses", typeof(NotificationStatus))]
     [LookupHttpGet("notification-priorities", typeof(NotificationPriority))]
     [LookupHttpGet("notification-types", typeof(NotificationType))]
@@ -31,7 +34,6 @@ public class LookupController : ControllerBase
     [LookupHttpGet("roles", typeof(Role))]
     [LookupHttpGet("shop-statuses", typeof(ShopStatus))]
     [LookupHttpGet("zones", typeof(Zone))]
-    [LookupHttpGet("incident-event", typeof(IncidentEventType))]
     public ActionResult<Dictionary<int, string>> GetLookup()
     {
         var path = HttpContext.Request.Path;
