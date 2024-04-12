@@ -12,8 +12,9 @@ public class IncidentCountDto
     public List<IncidentCountItemDto> Data { get; set; } = [];
 }
 
-public class IncidentCountItemDto(DateTime time, int count)
+public class IncidentCountItemDto(DateTime time, int count, double? averageDuration = null)
 {
     public DateTime Time { get; set; } = time;
     public int Count { get; set; } = count;
+    public double? AverageDuration { get; set; } = averageDuration;
 }
