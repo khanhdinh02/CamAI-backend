@@ -66,7 +66,7 @@ public class IncidentService(
             throw new BadRequestException("Incident and employee are not in the same shop");
 
         if (incident.IncidentType == IncidentType.Interaction)
-            throw new BadRequestException("Cannot assign employee for interaction #{id}");
+            throw new BadRequestException($"Cannot assign employee for interaction #{incident.Id}");
 
         incident.EmployeeId = employee.Id;
         incident.Status = IncidentStatus.Accepted;
@@ -77,6 +77,9 @@ public class IncidentService(
     public async Task RejectIncident(Guid id)
     {
         var incident = await GetIncidentById(id);
+        if (incident.IncidentType == IncidentType.Interaction)
+            throw new BadRequestException($"Cannot assign employee for interaction #{incident.Id}");
+
         // if previously accepted then remove employee id
         incident.Status = IncidentStatus.Rejected;
         incident.EmployeeId = null;
