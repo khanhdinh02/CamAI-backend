@@ -48,7 +48,7 @@ public class EmployeeService(IUnitOfWork unitOfWork, IAccountService accountServ
         var user = accountService.GetCurrentAccount();
         var oldEmp = (await unitOfWork.Employees.GetAsync(e => e.Email == dto.Email)).Values.FirstOrDefault();
 
-        if (oldEmp != null)
+        if (oldEmp != null && dto.Email != null)
         {
             if (oldEmp.EmployeeStatus != EmployeeStatus.Inactive)
                 throw new BadRequestException($"Email {dto.Email} is already taken");
