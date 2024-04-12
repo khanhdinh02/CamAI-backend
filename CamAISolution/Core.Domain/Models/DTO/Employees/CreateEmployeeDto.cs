@@ -10,7 +10,7 @@ public class CreateEmployeeDto
     public string Name { get; set; } = null!;
 
     [EmailAddress]
-    public string Email { get; set; } = null!;
+    public string? Email { get; set; }
 
     [JsonConverter(typeof(JsonStringEnumConverter))]
     public Gender Gender { get; set; }
