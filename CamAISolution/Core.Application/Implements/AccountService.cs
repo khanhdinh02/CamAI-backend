@@ -69,8 +69,6 @@ public class AccountService(IUnitOfWork unitOfWork, IJwtService jwtService, IBas
         {
             if (dto.Role == Role.BrandManager)
                 newAccount = await CreateBrandManager(newAccount);
-            else if (dto.Role == Role.Technician)
-                newAccount = CreateTechnician(newAccount);
             else
                 throw new ForbiddenException(currentUser, typeof(Account));
         }
@@ -107,7 +105,7 @@ public class AccountService(IUnitOfWork unitOfWork, IJwtService jwtService, IBas
         var user = GetCurrentAccount();
         switch (user.Role)
         {
-            case Role.Admin when account.Role is Role.BrandManager or Role.Technician:
+            case Role.Admin when account.Role is Role.BrandManager:
             case Role.BrandManager when account.Role == Role.ShopManager:
                 unitOfWork.Accounts.Update(account);
                 break;
@@ -176,6 +174,7 @@ public class AccountService(IUnitOfWork unitOfWork, IJwtService jwtService, IBas
         return newAccount;
     }
 
+    [Obsolete]
     private Account CreateTechnician(Account newAccount)
     {
         newAccount.Role = Role.Technician;
