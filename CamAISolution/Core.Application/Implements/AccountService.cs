@@ -125,13 +125,18 @@ public class AccountService(IUnitOfWork unitOfWork, IJwtService jwtService, IBas
         var account = await GetAccountById(id);
         switch (user.Role)
         {
-            case Role.Admin when account.Role != Role.BrandManager && account.Role != Role.Technician:
+            case Role.Admin when account.Role is not Role.BrandManager and not Role.ShopManager:
             case Role.BrandManager when account.Role != Role.ShopManager:
                 throw new ForbiddenException(user, account);
         }
 
-        account.AccountStatus = AccountStatus.Inactive;
-        unitOfWork.Accounts.Update(account);
+        if (account is { Role: Role.ShopManager, AccountStatus: AccountStatus.New })
+            unitOfWork.Accounts.Delete(account);
+        else
+        {
+            account.AccountStatus = AccountStatus.Inactive;
+            unitOfWork.Accounts.Update(account);
+        }
         await unitOfWork.CompleteAsync();
     }
 
