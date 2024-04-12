@@ -36,7 +36,7 @@ public class IncidentSocketManager : Core.Domain.Events.IObserver<CreatedOrUpdat
         {
             var mapper = scope.ServiceProvider.GetRequiredService<IBaseMapping>();
             dynamic messageToSend = new ExpandoObject();
-            messageToSend.EventType = args.EventType;
+            messageToSend.EventType = args.EventType.ToString();
             messageToSend.Incident = mapper.Map<Incident, IncidentDto>(args.Incident);
             var jsonObjStr = JsonSerializer.Serialize(messageToSend, options);
             var data = System.Text.Encoding.UTF8.GetBytes(jsonObjStr);
