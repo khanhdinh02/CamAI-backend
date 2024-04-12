@@ -34,12 +34,12 @@ public class HealthCheckResponseConsumer(
         }
 
         // Reactivate edge box
+        var retryActivateEdgeBox = false;
         if (
             ebInstall.ActivationStatus == EdgeBoxActivationStatus.Failed
             && message.Status == EdgeBoxInstallStatus.Working
         )
         {
-            // TODO: verify should we only reactivate if it is timeout failed
             await messageQueueService.Publish(
                 new ActivatedEdgeBoxMessage
                 {
@@ -47,6 +47,7 @@ public class HealthCheckResponseConsumer(
                     RoutingKey = ebInstall.EdgeBoxId.ToString("N")
                 }
             );
+            retryActivateEdgeBox = true;
         }
 
         if (ebInstall.EdgeBoxInstallStatus == message.Status && ebInstall.IpAddress == message.IpAddress)
@@ -60,10 +61,14 @@ public class HealthCheckResponseConsumer(
         await edgeBoxInstallService.UpdateIpAddress(ebInstall, message.IpAddress);
 
         if (willSendNotif)
-            await SendNotificationToAdminAndManager(message, ebInstall);
+            await SendNotificationToAdminAndManager(message, ebInstall, retryActivateEdgeBox);
     }
 
-    private async Task SendNotificationToAdminAndManager(HealthCheckResponseMessage message, EdgeBoxInstall ebInstall)
+    private async Task SendNotificationToAdminAndManager(
+        HealthCheckResponseMessage message,
+        EdgeBoxInstall ebInstall,
+        bool retryActivateEdgeBox = false
+    )
     {
         CreateNotificationDto dto;
         if (message.Status == EdgeBoxInstallStatus.Unhealthy)
@@ -80,11 +85,13 @@ public class HealthCheckResponseConsumer(
         else
         {
             // for healthy case
+            var content = "Edge box is now connected to server";
+            if (retryActivateEdgeBox)
+                content += "Retrying to activate edge box";
             dto = new CreateNotificationDto
             {
-                // TODO: add retrying message
                 Title = "Edge box is now connected to server",
-                Content = "Edge box is now connected to server",
+                Content = content,
                 Priority = NotificationPriority.Urgent,
                 Type = NotificationType.EdgeBoxHealthy,
                 RelatedEntityId = ebInstall.Id,
