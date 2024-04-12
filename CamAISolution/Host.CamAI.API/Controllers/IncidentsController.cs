@@ -125,6 +125,7 @@ public class IncidentsController(
     /// <param name="startDate"></param>
     /// <param name="endDate"></param>
     /// <param name="interval"></param>
+    /// <param name="type"></param>
     /// <returns></returns>
     [HttpGet("count")]
     [AccessTokenGuard(Role.ShopManager, Role.BrandManager)]
@@ -132,9 +133,10 @@ public class IncidentsController(
         Guid? shopId,
         DateOnly startDate,
         DateOnly endDate,
-        ReportInterval interval
+        ReportInterval interval,
+        IncidentTypeRequestOption type
     )
     {
-        return await incidentService.CountIncidentsByShop(shopId, startDate, endDate, interval);
+        return await incidentService.CountIncidentsByShop(shopId, startDate, endDate, interval, type);
     }
 }

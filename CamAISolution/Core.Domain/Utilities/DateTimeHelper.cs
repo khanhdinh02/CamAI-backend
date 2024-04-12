@@ -57,4 +57,17 @@ public static class DateTimeHelper
             _ => throw new ArgumentOutOfRangeException(nameof(interval), interval, null)
         };
     }
+
+    public static TimeSpan MapTimeSpanFromTimeInterval(ReportInterval interval)
+    {
+        return interval switch
+        {
+            ReportInterval.HalfHour => TimeSpan.FromMinutes(30),
+            ReportInterval.Hour => TimeSpan.FromHours(1),
+            ReportInterval.HalfDay => TimeSpan.FromHours(12),
+            ReportInterval.Day => TimeSpan.FromDays(1),
+            ReportInterval.Week => TimeSpan.FromDays(7),
+            _ => throw new ArgumentOutOfRangeException(nameof(interval), interval, null)
+        };
+    }
 }

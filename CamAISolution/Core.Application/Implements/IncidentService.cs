@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using System.Net.Mime;
 using Core.Application.Events;
 using Core.Application.Events.Args;
@@ -147,9 +148,12 @@ public class IncidentService(
         Guid? shopId,
         DateOnly startDate,
         DateOnly endDate,
-        ReportInterval interval
+        ReportInterval interval,
+        IncidentTypeRequestOption type
     )
     {
+        // ------ VALIDATION ------
+
         var user = accountService.GetCurrentAccount();
         shopId = user.Role switch
         {
@@ -176,22 +180,55 @@ public class IncidentService(
                 Data = []
             };
 
-        var items = (
-            await unitOfWork.Incidents.GetAsync(
-                i =>
+        // ------ QUERY ------
+
+        var startDateTime = startDate.ToDateTime(TimeOnly.MinValue);
+        var endDateTime = endDate.AddDays(1).ToDateTime(TimeOnly.MinValue);
+
+        Expression<Func<Incident, bool>> criteria = type switch
+        {
+            IncidentTypeRequestOption.Phone
+                => i =>
+                    i.IncidentType == IncidentType.Phone
+                    && i.ShopId == shopId
+                    && i.StartTime >= startDateTime
+                    && i.StartTime < endDateTime,
+            IncidentTypeRequestOption.Uniform
+                => i =>
+                    i.IncidentType == IncidentType.Uniform
+                    && i.ShopId == shopId
+                    && i.StartTime >= startDateTime
+                    && i.StartTime < endDateTime,
+            IncidentTypeRequestOption.Interaction
+                => i =>
+                    i.IncidentType == IncidentType.Interaction
+                    && i.ShopId == shopId
+                    && i.StartTime >= startDateTime
+                    && i.StartTime < endDateTime,
+            IncidentTypeRequestOption.Incident
+                => i =>
                     i.IncidentType != IncidentType.Interaction
                     && i.ShopId == shopId
-                    && i.StartTime >= startDate.ToDateTime(TimeOnly.MinValue)
-                    && i.StartTime < endDate.AddDays(1).ToDateTime(TimeOnly.MinValue),
-                orderBy: o => o.OrderBy(i => i.StartTime),
-                takeAll: true
-            )
-        )
-            .Values.GroupBy(i =>
-                DateTimeHelper.CalculateTimeForInterval(i.StartTime, interval, startDate.ToDateTime(TimeOnly.MinValue))
-            )
-            .Select(group => new IncidentCountItemDto(group.Key, group.Count()))
-            .ToList();
+                    && i.StartTime >= startDateTime
+                    && i.StartTime < endDateTime,
+            _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
+        };
+
+        // var items = (await unitOfWork.Incidents.GetAsync(criteria, takeAll: true))
+        //     .Values.GroupBy(i =>
+        //         DateTimeHelper.CalculateTimeForInterval(i.StartTime, interval, startDate.ToDateTime(TimeOnly.MinValue))
+        //     )
+        //     .Select(group => new IncidentCountItemDto(group.Key, group.Count()))
+        //     .ToList();
+
+        var incidents = (await unitOfWork.Incidents.GetAsync(criteria, takeAll: true)).Values;
+        var timeSpan = DateTimeHelper.MapTimeSpanFromTimeInterval(interval);
+        var items = new List<IncidentCountItemDto>();
+        for (var time = startDateTime; time < endDateTime; time += timeSpan)
+        {
+            var count = incidents.Count(i => i.StartTime >= time && i.StartTime < time + timeSpan);
+            items.Add(new IncidentCountItemDto(time, count));
+        }
 
         return new IncidentCountDto
         {
