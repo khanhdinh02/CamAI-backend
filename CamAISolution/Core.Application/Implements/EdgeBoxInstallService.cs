@@ -339,4 +339,26 @@ public class EdgeBoxInstallService(
         );
         await unitOfWork.CompleteAsync();
     }
+
+    public async Task<EdgeBoxInstall> GetEdgeBoxInstallById(Guid edgeBoxInstallId)
+    {
+        var edgeBoxInstall =
+            (
+                await unitOfWork.EdgeBoxInstalls.GetAsync(
+                    expression: ei => ei.Id == edgeBoxInstallId,
+                    includeProperties:
+                    [
+                        nameof(EdgeBoxInstall.EdgeBox),
+                        nameof(EdgeBoxInstall.Shop),
+                        nameof(EdgeBoxInstall)
+                    ]
+                )
+            ).Values.First() ?? throw new NotFoundException(typeof(EdgeBoxInstall), edgeBoxInstallId);
+        return edgeBoxInstall;
+    }
+
+    public Task<IList<EdgeBoxInstall>> GetAllEdgeBoxInstall()
+    {
+        return unitOfWork.EdgeBoxInstalls.GetAsync(takeAll: true).ContinueWith(t => t.Result.Values);
+    }
 }

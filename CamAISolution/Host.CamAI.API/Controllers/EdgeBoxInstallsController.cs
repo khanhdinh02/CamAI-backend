@@ -101,4 +101,20 @@ public class EdgeBoxInstallsController(IEdgeBoxInstallService edgeBoxInstallServ
         await edgeBoxInstallService.UninstallEdgeBox(id);
         return NoContent();
     }
+
+    [HttpGet("all")]
+    [AccessTokenGuard(Role.Admin)]
+    public async Task<ActionResult<List<EdgeBoxInstallDto>>> GetAllEdgeBoxInstall()
+    {
+        var edgeBoxInstalls = await edgeBoxInstallService.GetAllEdgeBoxInstall();
+        return Ok(mapper.Map<List<EdgeBoxInstall>, List<EdgeBoxInstallDto>>(edgeBoxInstalls.ToList()));
+    }
+
+    [HttpGet("{id}")]
+    [AccessTokenGuard(Role.Admin)]
+    public async Task<ActionResult<EdgeBoxInstallDto>> GetEdgeBoxInstallById(Guid id)
+    {
+        var edgeBoxInstall = await edgeBoxInstallService.GetEdgeBoxInstallById(id);
+        return Ok(mapper.Map<EdgeBoxInstall, EdgeBoxInstallDto>(edgeBoxInstall));
+    }
 }
