@@ -95,10 +95,19 @@ public class EmployeeService(IUnitOfWork unitOfWork, IAccountService accountServ
 
     public async Task DeleteEmployee(Guid id)
     {
-        var employee = await GetEmployeeById(id);
-        employee.EmployeeStatus = EmployeeStatus.Inactive;
-        employee.ShopId = null;
-        unitOfWork.Employees.Update(employee);
+        var employee =
+            (
+                await unitOfWork.Employees.GetAsync(e => e.Id == id, includeProperties: [nameof(Employee.Incidents)])
+            ).Values.FirstOrDefault() ?? throw new NotFoundException(typeof(Employee), id);
+        if (!HasAuthority(accountService.GetCurrentAccount(), employee))
+            throw new ForbiddenException(accountService.GetCurrentAccount(), employee);
+        if (employee.Incidents.Count == 0)
+            unitOfWork.Employees.Delete(employee);
+        else
+        {
+            employee.EmployeeStatus = EmployeeStatus.Inactive;
+            unitOfWork.Employees.Update(employee);
+        }
         await unitOfWork.CompleteAsync();
     }
 
@@ -108,7 +117,7 @@ public class EmployeeService(IUnitOfWork unitOfWork, IAccountService accountServ
             return true;
         if (user.Role == Role.BrandManager)
             return user.BrandId == employee.Shop?.BrandId;
-        if (user.Role == Role.ShopManager && user.ManagingShop != null)
+        if (user is { Role: Role.ShopManager, ManagingShop: not null })
             return user.ManagingShop.Id == employee.ShopId;
         return false;
     }
