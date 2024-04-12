@@ -2,6 +2,7 @@ using System.Text.Json;
 using Core.Application.Events;
 using Core.Application.Exceptions;
 using Core.Application.Models;
+using Core.Domain;
 using Core.Domain.DTO;
 using Core.Domain.Entities;
 using Core.Domain.Enums;
@@ -18,7 +19,8 @@ public class ReportService(
     IAccountService accountService,
     IShopService shopService,
     HumanCountSubject subject,
-    AiConfiguration configuration
+    AiConfiguration configuration,
+    IAppLogging<ReportService> logger
 ) : IReportService
 {
     private readonly string baseOutputDir = configuration.OutputDirectory;
@@ -49,72 +51,37 @@ public class ReportService(
 
     private HumanCountBuffer CreateHumanCountBufferResult(Guid shopId) => new(subject, shopId);
 
-    public async Task<IEnumerable<HumanCountDto>> GetHumanCountData(DateOnly date, ReportTimeRange timeRange)
+    public async Task<HumanCountDto> GetHumanCountData(DateOnly startDate, DateOnly endDate, ReportInterval interval)
     {
         var account = accountService.GetCurrentAccount();
         CheckAuthority(account);
         var shopId = account.ManagingShop!.Id;
 
-        return await GetHumanCountDataInTimeRange(shopId, date, timeRange);
+        return await GetHumanCountDataInTimeRange(shopId, startDate, endDate, interval);
     }
 
-    public async Task<IEnumerable<HumanCountDto>> GetHumanCountData(
+    public async Task<HumanCountDto> GetHumanCountData(
         Guid shopId,
-        DateOnly date,
-        ReportTimeRange timeRange
+        DateOnly startDate,
+        DateOnly endDate,
+        ReportInterval interval
     )
     {
         // validation is already in shop service
         await shopService.GetShopById(shopId);
-        return await GetHumanCountDataInTimeRange(shopId, date, timeRange);
+        return await GetHumanCountDataInTimeRange(shopId, startDate, endDate, interval);
     }
 
-    private async Task<IEnumerable<HumanCountDto>> GetHumanCountDataInTimeRange(
+    private async Task<HumanCountDto> GetHumanCountDataInTimeRange(
         Guid shopId,
         DateOnly startDate,
-        ReportTimeRange timeRange
+        DateOnly endDate,
+        ReportInterval interval
     )
     {
-        IEnumerable<HumanCountDto> result = [];
+        List<HumanCountItemDto> columns = [];
 
-        // Calculate EndDate and GroupByTime base on time range.
-        // GroupByTime is a Func to pass to GroupBy method.
-        // Each group is a column in the chart.
-        var (endDate, groupByTime) = timeRange switch
-        {
-            ReportTimeRange.Day
-                => (
-                    startDate.AddDays(1),
-                    (Func<HumanCountModel, DateTime>)(
-                        m => new DateTime(
-                            DateOnly.FromDateTime(m.Time),
-                            new TimeOnly(m.Time.Hour, m.Time.Minute / 30 * 30), // 30 min gap
-                            DateTimeKind.Utc
-                        )
-                    )
-                ),
-            ReportTimeRange.Week
-                => (
-                    startDate.AddDays(7),
-                    m => new DateTime(
-                        DateOnly.FromDateTime(m.Time),
-                        new TimeOnly(m.Time.Hour / 12 * 12), // 1/2 day gap
-                        DateTimeKind.Utc
-                    )
-                ),
-            ReportTimeRange.Month
-                => (
-                    startDate.AddMonths(1),
-                    m => new DateTime(
-                        DateOnly.FromDateTime(m.Time), // 1 day gap
-                        TimeOnly.MinValue,
-                        DateTimeKind.Utc
-                    )
-                ),
-            _ => throw new ArgumentOutOfRangeException(nameof(timeRange), timeRange, null)
-        };
-
-        for (var date = startDate; date < endDate; date = date.AddDays(1))
+        for (var date = startDate; date <= endDate; date = date.AddDays(1))
         {
             // shopId -> date -> time
             var outputPath = Path.Combine(baseOutputDir, shopId.ToString("N"), date.ToFilePath());
@@ -125,7 +92,13 @@ public class ReportService(
                 var resultForDate = lines
                     .Select(l => JsonSerializer.Deserialize<HumanCountModel>(l)!)
                     .OrderBy(r => r.Time)
-                    .GroupBy(groupByTime)
+                    .GroupBy(r =>
+                        DateTimeHelper.CalculateTimeForInterval(
+                            r.Time,
+                            interval,
+                            startDate.ToDateTime(TimeOnly.MinValue)
+                        )
+                    )
                     .Select(group =>
                     {
                         // Generate a column of the chart
@@ -135,9 +108,8 @@ public class ReportService(
                             ? (orderedGroup.ElementAt(count / 2).Total + orderedGroup.ElementAt(count / 2 - 1).Total)
                                 / 2.0f
                             : orderedGroup.ElementAt(count / 2).Total;
-                        return new HumanCountDto
+                        return new HumanCountItemDto
                         {
-                            ShopId = shopId,
                             Time = group.Key,
                             Low = group.Min(r => r.Total),
                             High = group.Max(r => r.Total),
@@ -146,13 +118,21 @@ public class ReportService(
                             Median = median
                         };
                     });
-                result = result.Concat(resultForDate);
+                columns.AddRange(resultForDate);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                throw new NotFoundException($"Cannot find human count data for date {date} and shop {shopId}");
+                logger.Error($"Cannot find human count data for date {date} and shop {shopId}", ex);
             }
         }
-        return result;
+
+        return new HumanCountDto
+        {
+            ShopId = shopId,
+            StartDate = startDate,
+            EndDate = endDate,
+            Interval = interval,
+            Data = columns
+        };
     }
 }

@@ -6,5 +6,6 @@ namespace Core.Domain.Enums;
 public enum IncidentType
 {
     Phone = 1,
-    Uniform = 2
+    Uniform = 2,
+    Interaction = 3
 }

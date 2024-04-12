@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using System.Net.WebSockets;
+using System.Text.Json;
 using Core.Application.Events;
 using Core.Application.Events.Args;
 using Core.Domain.DTO;
@@ -15,6 +16,8 @@ public class NotificationSocketManager : Core.Domain.Events.IObserver<CreatedAcc
     private readonly IServiceProvider serviceProvider;
     private readonly AccountNotificationSubject accountNotificationSubject;
 
+    private readonly JsonSerializerOptions options = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+
     public NotificationSocketManager(
         IServiceProvider serviceProvider,
         AccountNotificationSubject accountNotificationSubject
@@ -29,20 +32,29 @@ public class NotificationSocketManager : Core.Domain.Events.IObserver<CreatedAcc
 
     public bool RemoveSocket(Guid accountId) => sockets.TryRemove(accountId, out _);
 
-    public void Update(object? sender, CreatedAccountNotificationArgs args)
+    public async void Update(object? sender, CreatedAccountNotificationArgs args)
     {
         using var scope = serviceProvider.CreateScope();
-        var mapper = scope.ServiceProvider.GetRequiredService<IBaseMapping>();
-        foreach (var userId in args.SentToIds)
+        try
         {
-            if (sockets.TryGetValue(userId, out var socket))
+            var mapper = scope.ServiceProvider.GetRequiredService<IBaseMapping>();
+            foreach (var userId in args.SentToIds)
             {
-                var jsonObj = System.Text.Json.JsonSerializer.Serialize(
-                    mapper.Map<Notification, NotificationDto>(args.Notification)
-                );
-                var sentData = System.Text.Encoding.UTF8.GetBytes(jsonObj);
-                socket.SendAsync(sentData, WebSocketMessageType.Text, true, CancellationToken.None);
+                if (sockets.TryGetValue(userId, out var socket))
+                {
+                    var jsonObj = JsonSerializer.Serialize(
+                        mapper.Map<Notification, NotificationDto>(args.Notification),
+                        options
+                    );
+                    var sentData = System.Text.Encoding.UTF8.GetBytes(jsonObj);
+                    await socket.SendAsync(sentData, WebSocketMessageType.Text, true, CancellationToken.None);
+                }
             }
+        }
+        catch (Exception ex)
+        {
+            var logger = scope.ServiceProvider.GetRequiredService<ILogger<NotificationSocketManager>>();
+            logger.LogError(ex, ex.Message);
         }
     }
 

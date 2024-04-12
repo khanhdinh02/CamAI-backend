@@ -50,20 +50,24 @@ public class ReportsController(IReportService reportService) : ControllerBase
     /// Get past data of human count for shop manager
     /// </summary>
     [HttpGet("customer")]
-    // [AccessTokenGuard(Role.ShopManager)]
-    public async Task<IEnumerable<HumanCountDto>> GetHumanCountData(DateOnly date, ReportTimeRange timeRange)
+    [AccessTokenGuard(Role.ShopManager)]
+    public async Task<HumanCountDto> GetHumanCountData(DateOnly startDate, DateOnly endDate, ReportInterval interval)
     {
-        return await reportService.GetHumanCountData(date, timeRange);
+        return await reportService.GetHumanCountData(startDate, endDate, interval);
     }
 
+    /// <summary>
+    /// Get past data of human count for admin and brand manager
+    /// </summary>
     [HttpGet("{shopId}/customer")]
-    // [AccessTokenGuard(Role.ShopManager, Role.BrandManager)]
-    public async Task<IEnumerable<HumanCountDto>> GetHumanCountData(
+    [AccessTokenGuard(Role.ShopManager, Role.BrandManager)]
+    public async Task<HumanCountDto> GetHumanCountData(
         [FromRoute] Guid shopId,
-        [FromQuery] DateOnly date,
-        [FromQuery] ReportTimeRange timeRange
+        [FromQuery] DateOnly startDate,
+        [FromQuery] DateOnly endDate,
+        [FromQuery] ReportInterval interval
     )
     {
-        return await reportService.GetHumanCountData(shopId, date, timeRange);
+        return await reportService.GetHumanCountData(shopId, startDate, endDate, interval);
     }
 }

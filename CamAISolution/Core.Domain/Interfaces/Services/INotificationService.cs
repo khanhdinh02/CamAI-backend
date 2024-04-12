@@ -10,4 +10,5 @@ public interface INotificationService
     Task<Notification> CreateNotification(CreateNotificationDto dto);
     Task<PaginationResult<AccountNotification>> SearchNotification(SearchNotificationRequest req);
     Task<AccountNotification> UpdateStatus(Guid notificationId, NotificationStatus status);
+    Task UpdateAllNotificationToRead();
 }

@@ -129,7 +129,7 @@ public class EdgeBoxInstallService(
         var ebInstall =
             await unitOfWork.EdgeBoxInstalls.GetByIdAsync(edgeBoxInstallId)
             ?? throw new NotFoundException(typeof(EdgeBoxInstall), edgeBoxInstallId);
-        return await UpdateStatus(ebInstall, status);
+        return await UpdateStatus(ebInstall, status, description);
     }
 
     public async Task<EdgeBoxInstall> UpdateStatus(
@@ -302,6 +302,42 @@ public class EdgeBoxInstallService(
             TotalCount = installs.Count,
             Values = installs
         };
+    }
+
+    public async Task UninstallEdgeBox(Guid installId)
+    {
+        var install =
+            await unitOfWork.EdgeBoxInstalls.GetByIdAsync(installId)
+            ?? throw new NotFoundException(typeof(EdgeBoxInstall), installId);
+        var edgeBox =
+            await unitOfWork.EdgeBoxes.GetByIdAsync(install.EdgeBoxId)
+            ?? throw new NotFoundException(typeof(EdgeBox), install.EdgeBoxId);
+
+        // Make sure that the edge box is being assigned for a shop
+        if ((await GetLatestInstallingByEdgeBox(install.EdgeBoxId))?.Id != installId)
+            return;
+
+        (var description, edgeBox.EdgeBoxLocation) = install.EdgeBoxInstallStatus switch
+        {
+            // If edge box is not installed yet, just cancel the installation
+            EdgeBoxInstallStatus.New
+                => ("Cancel edge box installation", EdgeBoxLocation.Idle),
+            _ => ("Uninstall edge box", EdgeBoxLocation.Uninstalling)
+        };
+        install.UninstalledTime = DateTimeHelper.VNDateTime;
+        install.EdgeBoxInstallStatus = EdgeBoxInstallStatus.Disabled;
+        unitOfWork.EdgeBoxInstalls.Update(install);
+        unitOfWork.EdgeBoxes.Update(edgeBox);
+        await unitOfWork.EdgeBoxActivities.AddAsync(
+            new EdgeBoxActivity
+            {
+                Type = EdgeBoxActivityType.EdgeBoxUninstall,
+                EdgeBoxId = install.EdgeBoxId,
+                EdgeBoxInstallId = installId,
+                Description = description
+            }
+        );
+        await unitOfWork.CompleteAsync();
     }
 
     public async Task<EdgeBoxInstall> UpdateIpAddress(EdgeBoxInstall edgeBoxInstall, string ipAddress)
