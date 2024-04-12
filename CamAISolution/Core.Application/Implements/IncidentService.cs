@@ -235,6 +235,7 @@ public class IncidentService(
                 var average = group
                     .Where(i => i.EndTime != null)
                     .Select(i => (i.EndTime - i.StartTime)!.Value.TotalSeconds)
+                    .DefaultIfEmpty(0)
                     .Average();
                 items.Add(new IncidentCountItemDto(time, count, average));
             }
