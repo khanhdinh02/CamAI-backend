@@ -78,7 +78,7 @@ public class CameraService(
         if (camera == null)
             return;
 
-        var hasRelatedEntity = (await unitOfWork.Evidences.GetAsync(x => x.CameraId == id)).IsValuesEmpty;
+        var hasRelatedEntity = (await unitOfWork.Evidences.GetAsync(x => x.CameraId == id)).TotalCount != 0;
         if (hasRelatedEntity)
         {
             camera.Status = CameraStatus.Disabled;
