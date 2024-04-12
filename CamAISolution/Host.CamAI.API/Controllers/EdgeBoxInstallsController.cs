@@ -45,9 +45,8 @@ public class EdgeBoxInstallsController(IEdgeBoxInstallService edgeBoxInstallServ
     /// <summary>
     /// For admin: Get all install of an edge box
     /// </summary>
-    /// <remarks>Use for Brand Manager.</remarks>
     /// <param name="edgeBoxId"></param>
-    /// <param name="request"></param>
+    /// <param name="request">request.EdgeBoxId will be replaced by the path param edgeBoxId </param>
     /// <returns></returns>
     [HttpGet("/api/edgeBoxes/{edgeBoxId}/installs")]
     [AccessTokenGuard(Role.Admin)]
@@ -59,6 +58,20 @@ public class EdgeBoxInstallsController(IEdgeBoxInstallService edgeBoxInstallServ
         request.EdgeBoxId = edgeBoxId;
         var edgeBoxInstalls = await edgeBoxInstallService.GetEdgeBoxInstall(request);
         return mapper.Map<EdgeBoxInstall, EdgeBoxInstallDto>(edgeBoxInstalls);
+    }
+
+    /// <summary>
+    /// Search Edge Box Install
+    /// </summary>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    [HttpGet("search")]
+    [AccessTokenGuard(Role.Admin)]
+    public async Task<PaginationResult<EdgeBoxInstallDto>> SearchEdgeBoxInstall(
+        [FromQuery] SearchEdgeBoxInstallRequest request
+    )
+    {
+        return mapper.Map<EdgeBoxInstall, EdgeBoxInstallDto>(await edgeBoxInstallService.GetEdgeBoxInstall(request));
     }
 
     /// <summary>
