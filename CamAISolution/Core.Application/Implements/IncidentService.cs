@@ -226,8 +226,18 @@ public class IncidentService(
         var items = new List<IncidentCountItemDto>();
         for (var time = startDateTime; time < endDateTime; time += timeSpan)
         {
-            var count = incidents.Count(i => i.StartTime >= time && i.StartTime < time + timeSpan);
-            items.Add(new IncidentCountItemDto(time, count));
+            var group = incidents.Where(i => i.StartTime >= time && i.StartTime < time + timeSpan);
+            var count = group.Count();
+            if (type != IncidentTypeRequestOption.Interaction)
+                items.Add(new IncidentCountItemDto(time, count));
+            else
+            {
+                var average = group
+                    .Where(i => i.EndTime != null)
+                    .Select(i => (i.EndTime - i.StartTime)!.Value.TotalSeconds)
+                    .Average();
+                items.Add(new IncidentCountItemDto(time, count, average));
+            }
         }
 
         return new IncidentCountDto
