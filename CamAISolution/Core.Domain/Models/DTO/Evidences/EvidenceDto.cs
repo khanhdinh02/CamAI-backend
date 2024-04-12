@@ -12,6 +12,5 @@ public class EvidenceDto : BaseDto
 
     public virtual ImageDto? Image { get; set; }
     public virtual IncidentDto Incident { get; set; } = null!;
-    // TODO [Duy]: Add camera dto
-    // public virtual CameraDto Camera { get; set; } = null!;
+    public virtual CameraDto Camera { get; set; } = null!;
 }

@@ -1,6 +1,9 @@
 using Core.Domain;
+using Core.Domain.DTO;
+using Core.Domain.Entities;
 using Core.Domain.Enums;
 using Core.Domain.Interfaces.Services;
+using Core.Domain.Models.Publishers;
 using Core.Domain.Services;
 using Host.CamAI.API.BackgroundServices;
 using Host.CamAI.API.Consumers.Contracts;
@@ -12,8 +15,10 @@ namespace Host.CamAI.API.Consumers;
 [Consumer("{MachineName}_HealthCheckResponse", ConsumerConstant.HealthCheckResponse)]
 public class HealthCheckResponseConsumer(
     IAppLogging<HealthCheckResponseConsumer> logger,
+    ICacheService cache,
     IEdgeBoxInstallService edgeBoxInstallService,
-    IJwtService jwtService
+    INotificationService notificationService,
+    IMessageQueueService messageQueueService
 ) : IConsumer<HealthCheckResponseMessage>
 {
     public async Task Consume(ConsumeContext<HealthCheckResponseMessage> context)
@@ -27,25 +32,77 @@ public class HealthCheckResponseConsumer(
             logger.Info($"Edge box install not found for {message.EdgeBoxId}");
             return;
         }
-        if (ebInstall.EdgeBoxInstallStatus == message.Status)
+
+        // Reactivate edge box
+        var retryActivateEdgeBox = false;
+        if (
+            ebInstall.ActivationStatus == EdgeBoxActivationStatus.Failed
+            && message.Status == EdgeBoxInstallStatus.Working
+        )
         {
-            logger.Info($"Edge box install status not change {message.Status}");
+            await messageQueueService.Publish(
+                new ActivatedEdgeBoxMessage
+                {
+                    Message = "Activate edge box",
+                    RoutingKey = ebInstall.EdgeBoxId.ToString("N")
+                }
+            );
+            retryActivateEdgeBox = true;
+        }
+
+        if (ebInstall.EdgeBoxInstallStatus == message.Status && ebInstall.IpAddress == message.IpAddress)
+        {
+            logger.Info($"Edge box install status {message.Status} and ip address {message.IpAddress} not change");
             return;
         }
 
-        // TODO: remove jwt service after remove modified by in activity
-        await jwtService.SetCurrentUserToSystemHandler();
-        // TODO: add reason after refactor activity
+        var willSendNotif = ebInstall.EdgeBoxInstallStatus != message.Status;
         await edgeBoxInstallService.UpdateStatus(ebInstall, message.Status, message.Reason);
+        await edgeBoxInstallService.UpdateIpAddress(ebInstall, message.IpAddress);
 
+        if (willSendNotif)
+            await SendNotificationToAdminAndManager(message, ebInstall, retryActivateEdgeBox);
+    }
+
+    private async Task SendNotificationToAdminAndManager(
+        HealthCheckResponseMessage message,
+        EdgeBoxInstall ebInstall,
+        bool retryActivateEdgeBox = false
+    )
+    {
+        CreateNotificationDto dto;
         if (message.Status == EdgeBoxInstallStatus.Unhealthy)
         {
-            // TODO: notify admin and manager
+            dto = new CreateNotificationDto
+            {
+                Title = "Edge box is unhealthy failed",
+                Content = $"Edge box does not response. Status changed to {EdgeBoxInstallStatus.Unhealthy}",
+                Priority = NotificationPriority.Urgent,
+                Type = NotificationType.EdgeBoxUnhealthy,
+                RelatedEntityId = ebInstall.Id,
+            };
         }
         else
         {
-            // TODO: try to reactivate edge box
-            // TODO: notify admin and manager as well
+            // for healthy case
+            var content = "Edge box is now connected to server";
+            if (retryActivateEdgeBox)
+                content += "Retrying to activate edge box";
+            dto = new CreateNotificationDto
+            {
+                Title = "Edge box is now connected to server",
+                Content = content,
+                Priority = NotificationPriority.Urgent,
+                Type = NotificationType.EdgeBoxHealthy,
+                RelatedEntityId = ebInstall.Id,
+            };
         }
+
+        var sentTo = new List<Guid> { await cache.GetAdminAccount() };
+        if (ebInstall.Shop.ShopManagerId.HasValue)
+            sentTo.Add(ebInstall.Shop.ShopManagerId.Value);
+        dto.SentToId = sentTo;
+
+        await notificationService.CreateNotification(dto);
     }
 }

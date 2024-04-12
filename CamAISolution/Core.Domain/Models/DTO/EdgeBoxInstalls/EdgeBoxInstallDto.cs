@@ -10,6 +10,7 @@ public class EdgeBoxInstallDto : BaseDto
     public DateTime? UninstalledTime { get; set; }
     public EdgeBoxActivationStatus ActivationStatus { get; set; }
     public EdgeBoxInstallStatus EdgeBoxInstallStatus { get; set; }
+    public string? IpAddress { get; set; }
 
     public EdgeBoxDto EdgeBox { get; set; } = null!;
     public ShopDto Shop { get; set; } = null!;
