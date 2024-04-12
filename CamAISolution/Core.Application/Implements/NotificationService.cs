@@ -85,4 +85,21 @@ public class NotificationService(
         }
         return accountNotification;
     }
+
+    public async Task UpdateAllNotificationToRead()
+    {
+        var currentUser = jwtService.GetCurrentUser();
+        var accountNotifications = (
+            await unitOfWork
+                .GetRepository<AccountNotification>()
+                .GetAsync(
+                    expression: an => an.AccountId == currentUser.Id && an.Status == NotificationStatus.Unread,
+                    takeAll: true,
+                    disableTracking: false
+                )
+        ).Values;
+        foreach (var accountNotification in accountNotifications)
+            accountNotification.Status = NotificationStatus.Read;
+        await unitOfWork.CompleteAsync();
+    }
 }
