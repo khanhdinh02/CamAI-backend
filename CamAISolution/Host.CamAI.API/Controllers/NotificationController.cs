@@ -50,6 +50,17 @@ public class NotificationsController(
     }
 
     /// <summary>
+    /// Update all notifications' status of current to Read
+    /// </summary>
+    /// <returns></returns>
+    [HttpPatch("read-all")]
+    public async Task<IActionResult> UpdateAllNotificationToRead()
+    {
+        await notificationService.UpdateAllNotificationToRead();
+        return Ok();
+    }
+
+    /// <summary>
     /// Get notification in real-time
     /// </summary>
     [HttpGet("new")]
