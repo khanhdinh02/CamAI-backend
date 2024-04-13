@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using Core.Domain;
 using Core.Domain.DTO;
 using Core.Domain.Interfaces.Services;
@@ -11,13 +12,18 @@ namespace Host.CamAI.API.Consumers;
 public class DetectionConsumer(IAppLogging<DetectionConsumer> logger, IIncidentService incidentService)
     : IConsumer<ReceivedIncidentMessage>
 {
+    private static readonly ConcurrentDictionary<Guid, SemaphoreSlim> Locks = new();
+
     public async Task Consume(ConsumeContext<ReceivedIncidentMessage> context)
     {
         var receivedIncident = context.Message;
         logger.Info(
             $"Receive new detection type {receivedIncident.IncidentType} from edge box {receivedIncident.EdgeBoxId}"
         );
+        var @lock = Locks.GetOrAdd(receivedIncident.Id, _ => new SemaphoreSlim(1, 1));
+        await @lock.WaitAsync();
         await incidentService.UpsertIncident(Map(receivedIncident));
+        @lock.Release();
     }
 
     private static CreateIncidentDto Map(ReceivedIncidentMessage receivedIncidentMessage)
