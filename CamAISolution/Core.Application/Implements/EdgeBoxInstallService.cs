@@ -354,7 +354,7 @@ public class EdgeBoxInstallService(
 
     public async Task<EdgeBoxInstall> UpdateLastSeen(EdgeBoxInstall edgeBoxInstall)
     {
-        edgeBoxInstall.LastSeen = DateTime.Now;
+        edgeBoxInstall.LastSeen = DateTimeHelper.VNDateTime;
         unitOfWork.EdgeBoxInstalls.Update(edgeBoxInstall);
         await unitOfWork.CompleteAsync();
         return edgeBoxInstall;

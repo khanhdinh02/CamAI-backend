@@ -2,6 +2,7 @@ using Core.Domain;
 using Core.Domain.Enums;
 using Core.Domain.Interfaces.Services;
 using Core.Domain.Repositories;
+using Core.Domain.Utilities;
 using Host.CamAI.API.Consumers.Contracts;
 using Infrastructure.MessageQueue;
 using Infrastructure.Observer;
@@ -36,7 +37,7 @@ public class InitializeRequestConsumer(
         ebInstall.OperatingSystem = message.OperatingSystem;
         ebInstall.EdgeBox.MacAddress = message.MacAddress;
         ebInstall.EdgeBox.Version = message.Version;
-        ebInstall.LastSeen = DateTime.Now;
+        ebInstall.LastSeen = DateTimeHelper.VNDateTime;
         unitOfWork.EdgeBoxInstalls.Update(ebInstall);
         unitOfWork.EdgeBoxes.Update(ebInstall.EdgeBox);
         await unitOfWork.CompleteAsync();
