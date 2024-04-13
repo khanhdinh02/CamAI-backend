@@ -14,6 +14,11 @@ public class EdgeBoxInstallSearchSpec : RepositorySpec<EdgeBoxInstall>
             baseSpec.And(new EdgeBoxInstallByEdgeBoxIdSpec(search.EdgeBoxId.Value));
         if (search.EdgeBoxInstallStatus.HasValue)
             baseSpec.And(new EdgeBoxInstallByStatusSpec(search.EdgeBoxInstallStatus.Value));
+        if (search.ShopId.HasValue)
+            baseSpec.And(new EdgeBoxInstallByShopId(search.ShopId.Value));
+        if (search.ActivationStatus.HasValue)
+            baseSpec.And(new EdgeBoxInstallByActivationStatus(search.ActivationStatus.Value));
+
         return baseSpec.GetExpression();
     }
 

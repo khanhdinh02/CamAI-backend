@@ -6,4 +6,6 @@ public class SearchEdgeBoxInstallRequest : BaseSearchRequest
 {
     public Guid? EdgeBoxId { get; set; }
     public EdgeBoxInstallStatus? EdgeBoxInstallStatus { get; set; }
+    public Guid? ShopId { get; set; }
+    public EdgeBoxActivationStatus? ActivationStatus { get; set; }
 }
