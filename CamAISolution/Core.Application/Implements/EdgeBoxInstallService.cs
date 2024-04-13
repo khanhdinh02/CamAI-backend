@@ -84,8 +84,12 @@ public class EdgeBoxInstallService(
                 )
             ).Values.FirstOrDefault() ?? throw new NotFoundException("Wrong activation code");
 
-        // TODO: check edge box location occupied
-        if (ebInstall.ActivationStatus == EdgeBoxActivationStatus.NotActivated)
+        if (ebInstall.EdgeBox.EdgeBoxLocation != EdgeBoxLocation.Occupied)
+            throw new BadRequestException(
+                "Edge box has not been installed to shop. Please wait for admin to install edge box"
+            );
+
+        if (ebInstall.ActivationStatus != EdgeBoxActivationStatus.Activated)
         {
             await unitOfWork.EdgeBoxActivities.AddAsync(
                 new EdgeBoxActivity
