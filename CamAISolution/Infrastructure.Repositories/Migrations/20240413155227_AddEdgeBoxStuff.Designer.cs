@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Repositories.Migrations
 {
     [DbContext(typeof(CamAIContext))]
-    [Migration("20240413145040_AddMoreStuff")]
-    partial class AddMoreStuff
+    [Migration("20240413155227_AddEdgeBoxStuff")]
+    partial class AddEdgeBoxStuff
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
