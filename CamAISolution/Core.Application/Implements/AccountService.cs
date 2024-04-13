@@ -174,14 +174,6 @@ public class AccountService(IUnitOfWork unitOfWork, IJwtService jwtService, IBas
         return newAccount;
     }
 
-    [Obsolete]
-    private Account CreateTechnician(Account newAccount)
-    {
-        newAccount.Role = Role.Technician;
-        newAccount.AccountStatus = AccountStatus.New;
-        return newAccount;
-    }
-
     private Account CreateShopManager(Account newAccount)
     {
         newAccount.Role = Role.ShopManager;
