@@ -6,28 +6,22 @@ namespace Host.CamAI.API.Events;
 public class ApplicationDelayEventListener(IServiceProvider serviceProvider) : IApplicationDelayEventListener
 {
     private readonly ConcurrentDictionary<string, IApplicationDelayEvent> events = new();
-    private static readonly ConcurrentDictionary<string, CancellationTokenSource> cancellationTokenSources = new();
+    private static readonly ConcurrentDictionary<string, CancellationTokenSource> CancellationTokenSources = new();
 
     public Task AddEvent(string eventId, IApplicationDelayEvent appDelayEvent, bool isInvokedAfterAdded)
     {
+        StopEvent(eventId);
         events[eventId] = appDelayEvent;
-        if (isInvokedAfterAdded)
-        {
-            return InvokeEvent(eventId);
-        }
-
-        return Task.CompletedTask;
+        return isInvokedAfterAdded ? InvokeEvent(eventId) : Task.CompletedTask;
     }
 
     public Task InvokeEvent(string eventId)
     {
         if (!events.TryGetValue(eventId, out var eventObj))
-        {
             return Task.CompletedTask;
-        }
 
         using var tokenSrc = new CancellationTokenSource();
-        cancellationTokenSources.TryAdd(eventId, tokenSrc);
+        CancellationTokenSources.TryAdd(eventId, tokenSrc);
         return new TaskFactory().StartNew(
             () =>
             {
@@ -53,7 +47,7 @@ public class ApplicationDelayEventListener(IServiceProvider serviceProvider) : I
 
     public Task StopEvent(string eventId)
     {
-        if (cancellationTokenSources.TryGetValue(eventId, out var token))
+        if (CancellationTokenSources.TryGetValue(eventId, out var token))
         {
             events.TryRemove(eventId, out _);
             return token.CancelAsync();
