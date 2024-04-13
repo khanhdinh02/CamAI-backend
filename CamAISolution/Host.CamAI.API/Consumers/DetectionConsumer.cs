@@ -26,6 +26,7 @@ public class DetectionConsumer(IAppLogging<DetectionConsumer> logger, IIncidentS
         {
             EdgeBoxId = receivedIncidentMessage.EdgeBoxId,
             Id = receivedIncidentMessage.Id,
+            AiId = receivedIncidentMessage.AiId,
             IncidentType = receivedIncidentMessage.IncidentType,
             StartTime = receivedIncidentMessage.StartTime,
             EndTime = receivedIncidentMessage.EndTime,

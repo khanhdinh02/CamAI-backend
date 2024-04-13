@@ -18,6 +18,7 @@ public interface IIncidentService
         Guid? shopId,
         DateOnly startDate,
         DateOnly endDate,
-        ReportInterval interval
+        ReportInterval interval,
+        IncidentTypeRequestOption type
     );
 }

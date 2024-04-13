@@ -89,35 +89,79 @@ public class ReportService(
             {
                 var lines = await File.ReadAllLinesAsync(outputPath);
 
-                var resultForDate = lines
-                    .Select(l => JsonSerializer.Deserialize<HumanCountModel>(l)!)
-                    .OrderBy(r => r.Time)
-                    .GroupBy(r =>
-                        DateTimeHelper.CalculateTimeForInterval(
-                            r.Time,
-                            interval,
-                            startDate.ToDateTime(TimeOnly.MinValue)
-                        )
-                    )
-                    .Select(group =>
+                // var resultForDate = lines
+                //     .Select(l => JsonSerializer.Deserialize<HumanCountModel>(l)!)
+                //     .OrderBy(r => r.Time)
+                //     .GroupBy(r =>
+                //         DateTimeHelper.CalculateTimeForInterval(
+                //             r.Time,
+                //             interval,
+                //             startDate.ToDateTime(TimeOnly.MinValue)
+                //         )
+                //     )
+                //     .Select(group =>
+                //     {
+                //         // Generate a column of the chart
+                //         var count = group.Count();
+                //         var orderedGroup = group.OrderBy(r => r.Total);
+                //         var median = int.IsEvenInteger(count)
+                //             ? (orderedGroup.ElementAt(count / 2).Total + orderedGroup.ElementAt(count / 2 - 1).Total)
+                //                 / 2.0f
+                //             : orderedGroup.ElementAt(count / 2).Total;
+                //         return new HumanCountItemDto
+                //         {
+                //             Time = group.Key,
+                //             Low = group.Min(r => r.Total),
+                //             High = group.Max(r => r.Total),
+                //             Open = group.First().Total,
+                //             Close = group.Last().Total,
+                //             Median = median
+                //         };
+                //     });
+
+                var timeSpan = DateTimeHelper.MapTimeSpanFromTimeInterval(interval);
+                var data = lines.Select(l => JsonSerializer.Deserialize<HumanCountModel>(l)!);
+                var resultForDate = new List<HumanCountItemDto>();
+                for (
+                    var time = date.ToDateTime(TimeOnly.MinValue);
+                    time < date.AddDays(1).ToDateTime(TimeOnly.MinValue);
+                    time += timeSpan
+                )
+                {
+                    var group = data.Where(r => r.Time >= time && r.Time < time + timeSpan).OrderBy(c => c.Time);
+                    if (!group.Any())
                     {
-                        // Generate a column of the chart
-                        var count = group.Count();
-                        var orderedGroup = group.OrderBy(r => r.Total);
-                        var median = int.IsEvenInteger(count)
-                            ? (orderedGroup.ElementAt(count / 2).Total + orderedGroup.ElementAt(count / 2 - 1).Total)
-                                / 2.0f
-                            : orderedGroup.ElementAt(count / 2).Total;
-                        return new HumanCountItemDto
+                        resultForDate.Add(
+                            new HumanCountItemDto
+                            {
+                                Time = time,
+                                Low = 0,
+                                High = 0,
+                                Open = 0,
+                                Close = 0,
+                                Median = 0
+                            }
+                        );
+                        continue;
+                    }
+                    var count = group.Count();
+                    var orderedGroup = group.OrderBy(r => r.Total);
+                    var median = int.IsEvenInteger(count)
+                        ? (orderedGroup.ElementAt(count / 2).Total + orderedGroup.ElementAt(count / 2 - 1).Total) / 2.0f
+                        : orderedGroup.ElementAt(count / 2).Total;
+                    resultForDate.Add(
+                        new HumanCountItemDto
                         {
-                            Time = group.Key,
+                            Time = time,
                             Low = group.Min(r => r.Total),
                             High = group.Max(r => r.Total),
                             Open = group.First().Total,
                             Close = group.Last().Total,
                             Median = median
-                        };
-                    });
+                        }
+                    );
+                }
+
                 columns.AddRange(resultForDate);
             }
             catch (Exception ex)

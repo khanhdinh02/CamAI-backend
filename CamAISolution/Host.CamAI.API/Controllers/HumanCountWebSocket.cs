@@ -8,6 +8,7 @@ namespace Host.CamAI.API.Controllers;
 
 public class HumanCountWebSocket(WebSocket webSocket, IReportService reportService, Guid? shopId = default)
 {
+    private readonly JsonSerializerOptions options = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
     private Task<WebSocketReceiveResult> receiveMessageTask = null!;
 
     public async Task Start()
@@ -60,7 +61,7 @@ public class HumanCountWebSocket(WebSocket webSocket, IReportService reportServi
 
     private async Task SendData(HumanCountModel data)
     {
-        var dataBytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(data));
+        var dataBytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(data, options));
 
         await webSocket.SendAsync(
             new ArraySegment<byte>(dataBytes, 0, dataBytes.Length),

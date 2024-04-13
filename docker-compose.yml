@@ -35,6 +35,7 @@ services:
       - ImageConfiguration__BaseImageFolderPath=${BASE_IMAGE_FOLER}
       - ImageConfiguration__MaxImageSize=${MAX_IMAGE_SIZE}
       - ImageConfiguration__HostingUri=${HOST_URI}
+      - Ai__OutputDirectory=${BASE_IMAGE_FOLER}
     volumes:
       - camai-web-api:${BASE_IMAGE_FOLER}
   camai-rabbitmq:

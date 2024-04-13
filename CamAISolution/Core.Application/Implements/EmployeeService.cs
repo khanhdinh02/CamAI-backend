@@ -10,7 +10,6 @@ using Core.Domain.Repositories;
 
 namespace Core.Application.Implements;
 
-// TODO [Khanh]: What authority do brand manager and shop manager have over employees?
 public class EmployeeService(IUnitOfWork unitOfWork, IAccountService accountService, IBaseMapping mapper)
     : IEmployeeService
 {
@@ -48,7 +47,7 @@ public class EmployeeService(IUnitOfWork unitOfWork, IAccountService accountServ
         var user = accountService.GetCurrentAccount();
         var oldEmp = (await unitOfWork.Employees.GetAsync(e => e.Email == dto.Email)).Values.FirstOrDefault();
 
-        if (oldEmp != null)
+        if (oldEmp != null && dto.Email != null)
         {
             if (oldEmp.EmployeeStatus != EmployeeStatus.Inactive)
                 throw new BadRequestException($"Email {dto.Email} is already taken");
