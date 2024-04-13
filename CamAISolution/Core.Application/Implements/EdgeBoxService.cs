@@ -112,6 +112,12 @@ public class EdgeBoxService(IUnitOfWork unitOfWork, IAccountService accountServi
         if (foundEdgeBox.EdgeBoxStatus == EdgeBoxStatus.Inactive && currentAccount.Role != Role.Admin)
             throw new BadRequestException("Cannot modified inactive edgeBox");
 
+        if (
+            foundEdgeBox.SerialNumber != edgeBoxDto.SerialNumber
+            && !(await unitOfWork.EdgeBoxes.GetAsync(x => x.SerialNumber == edgeBoxDto.SerialNumber)).IsValuesEmpty
+        )
+            throw new BadRequestException("Serial number already exist in the system");
+
         _ =
             await unitOfWork.EdgeBoxModels.GetByIdAsync(edgeBoxDto.EdgeBoxModelId)
             ?? throw new NotFoundException(typeof(EdgeBoxModel), edgeBoxDto.EdgeBoxModelId);
