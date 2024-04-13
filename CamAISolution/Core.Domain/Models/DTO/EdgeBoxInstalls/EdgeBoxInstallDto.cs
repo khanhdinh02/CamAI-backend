@@ -5,7 +5,9 @@ namespace Core.Domain.DTO;
 public class EdgeBoxInstallDto : BaseDto
 {
     public Guid EdgeBoxId { get; set; }
+    public DateTime? LastSeen { get; set; }
     public Guid ShopId { get; set; }
+    public string? OperatingSystem { get; set; }
     public string? ActivationCode { get; set; }
     public DateTime? UninstalledTime { get; set; }
     public EdgeBoxActivationStatus ActivationStatus { get; set; }

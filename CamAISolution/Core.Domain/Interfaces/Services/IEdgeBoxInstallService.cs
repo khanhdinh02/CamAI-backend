@@ -52,4 +52,5 @@ public interface IEdgeBoxInstallService
     Task UninstallEdgeBox(Guid installId);
 
     Task<EdgeBoxInstall> UpdateIpAddress(EdgeBoxInstall edgeBoxInstall, string ipAddress);
+    Task<EdgeBoxInstall> UpdateLastSeen(EdgeBoxInstall edgeBoxInstall);
 }

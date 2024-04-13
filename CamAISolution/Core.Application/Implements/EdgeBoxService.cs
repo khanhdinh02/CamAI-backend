@@ -86,6 +86,9 @@ public class EdgeBoxService(IUnitOfWork unitOfWork, IAccountService accountServi
 
     public async Task<EdgeBox> CreateEdgeBox(CreateEdgeBoxDto edgeBoxDto)
     {
+        if (!(await unitOfWork.EdgeBoxes.GetAsync(x => x.SerialNumber == edgeBoxDto.SerialNumber)).IsValuesEmpty)
+            throw new BadRequestException("Serial number already exist in the system");
+
         _ =
             await unitOfWork.EdgeBoxModels.GetByIdAsync(edgeBoxDto.EdgeBoxModelId)
             ?? throw new NotFoundException(typeof(EdgeBoxModel), edgeBoxDto.EdgeBoxModelId);

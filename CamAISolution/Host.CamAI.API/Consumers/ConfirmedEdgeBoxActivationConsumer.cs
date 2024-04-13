@@ -58,7 +58,6 @@ public class ConfirmedEdgeBoxActivationConsumer(
                     EdgeBoxActivationStatus.Activated,
                     "Edge box activated"
                 );
-                await applicationDelayEventListener.StopEvent($"ActivateEdgeBox{edgeBoxInstall.Id:N}");
             }
             await applicationDelayEventListener.StopEvent($"ActivateEdgeBox{edgeBoxInstall.Id:N}");
 
