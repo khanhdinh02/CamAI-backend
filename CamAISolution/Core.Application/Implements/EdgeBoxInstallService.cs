@@ -45,6 +45,8 @@ public class EdgeBoxInstallService(
                     includeProperties: [$"{nameof(Shop.Brand)}.{nameof(Brand.BrandManager)}"]
                 )
             ).Values.FirstOrDefault() ?? throw new NotFoundException(typeof(Shop), dto.ShopId);
+        if (shop.ShopStatus == ShopStatus.Inactive)
+            throw new BadRequestException("Shop is inactive");
 
         var ebInstall = mapper.Map<CreateEdgeBoxInstallDto, EdgeBoxInstall>(dto);
         ebInstall.ActivationCode = RandomGenerator.GetAlphanumericString(CodeLength);

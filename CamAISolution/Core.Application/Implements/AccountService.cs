@@ -69,8 +69,6 @@ public class AccountService(IUnitOfWork unitOfWork, IJwtService jwtService, IBas
         {
             if (dto.Role == Role.BrandManager)
                 newAccount = await CreateBrandManager(newAccount);
-            else if (dto.Role == Role.Technician)
-                newAccount = CreateTechnician(newAccount);
             else
                 throw new ForbiddenException(currentUser, typeof(Account));
         }
@@ -107,7 +105,7 @@ public class AccountService(IUnitOfWork unitOfWork, IJwtService jwtService, IBas
         var user = GetCurrentAccount();
         switch (user.Role)
         {
-            case Role.Admin when account.Role is Role.BrandManager or Role.Technician:
+            case Role.Admin when account.Role is Role.BrandManager:
             case Role.BrandManager when account.Role == Role.ShopManager:
                 unitOfWork.Accounts.Update(account);
                 break;
@@ -125,13 +123,18 @@ public class AccountService(IUnitOfWork unitOfWork, IJwtService jwtService, IBas
         var account = await GetAccountById(id);
         switch (user.Role)
         {
-            case Role.Admin when account.Role != Role.BrandManager && account.Role != Role.Technician:
+            case Role.Admin when account.Role is not (Role.BrandManager or Role.ShopManager):
             case Role.BrandManager when account.Role != Role.ShopManager:
                 throw new ForbiddenException(user, account);
         }
 
-        account.AccountStatus = AccountStatus.Inactive;
-        unitOfWork.Accounts.Update(account);
+        if (account is { Role: Role.ShopManager, AccountStatus: AccountStatus.New })
+            unitOfWork.Accounts.Delete(account);
+        else
+        {
+            account.AccountStatus = AccountStatus.Inactive;
+            unitOfWork.Accounts.Update(account);
+        }
         await unitOfWork.CompleteAsync();
     }
 
@@ -167,13 +170,6 @@ public class AccountService(IUnitOfWork unitOfWork, IJwtService jwtService, IBas
         newAccount.Brand = brand;
         newAccount.ManagingBrand = brand;
         newAccount.Role = Role.BrandManager;
-        newAccount.AccountStatus = AccountStatus.New;
-        return newAccount;
-    }
-
-    private Account CreateTechnician(Account newAccount)
-    {
-        newAccount.Role = Role.Technician;
         newAccount.AccountStatus = AccountStatus.New;
         return newAccount;
     }
