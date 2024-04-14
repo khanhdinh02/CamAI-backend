@@ -1,16 +1,22 @@
 using System.Collections.Concurrent;
 using Core.Domain;
 using Core.Domain.DTO;
+using Core.Domain.Entities;
+using Core.Domain.Interfaces.Mappings;
 using Core.Domain.Interfaces.Services;
 using Host.CamAI.API.Consumers.Contracts;
 using Infrastructure.MessageQueue;
+using Infrastructure.Observer.Messages;
 using MassTransit;
 
 namespace Host.CamAI.API.Consumers;
 
 [Consumer("{MachineName}_Detection", ConsumerConstant.Detection)]
-public class DetectionConsumer(IAppLogging<DetectionConsumer> logger, IIncidentService incidentService)
-    : IConsumer<ReceivedIncidentMessage>
+public class DetectionConsumer(
+    IAppLogging<DetectionConsumer> logger,
+    IIncidentService incidentService,
+    IBaseMapping mapper
+) : IConsumer<ReceivedIncidentMessage>
 {
     private static readonly ConcurrentDictionary<Guid, SemaphoreSlim> Locks = new();
 
@@ -26,7 +32,7 @@ public class DetectionConsumer(IAppLogging<DetectionConsumer> logger, IIncidentS
         @lock.Release();
     }
 
-    private static CreateIncidentDto Map(ReceivedIncidentMessage receivedIncidentMessage)
+    private CreateIncidentDto Map(ReceivedIncidentMessage receivedIncidentMessage)
     {
         return new CreateIncidentDto
         {
@@ -40,13 +46,13 @@ public class DetectionConsumer(IAppLogging<DetectionConsumer> logger, IIncidentS
         };
     }
 
-    private static CreateEvidenceDto Map(ReceivedEvidence receivedEvidence)
+    private CreateEvidenceDto Map(ReceivedEvidence receivedEvidence)
     {
         return new CreateEvidenceDto
         {
             Content = receivedEvidence.Content,
             EvidenceType = receivedEvidence.EvidenceType,
-            CameraId = receivedEvidence.CameraId
+            Camera = mapper.Map<EdgeBoxCameraDto, Camera>(receivedEvidence.Camera)
         };
     }
 }
