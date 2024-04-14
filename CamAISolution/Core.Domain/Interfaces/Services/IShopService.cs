@@ -18,4 +18,5 @@ public interface IShopService
     Task<Shop> UpdateShop(Guid id, CreateOrUpdateShopDto shopDto);
     Task DeleteShop(Guid id);
     Task<Shop> UpdateShopStatus(Guid shopId, ShopStatus shopStatus);
+    Task<PaginationResult<Shop>> GetShopsInstallingEdgeBox(bool hasEdgeBoxInstalling);
 }

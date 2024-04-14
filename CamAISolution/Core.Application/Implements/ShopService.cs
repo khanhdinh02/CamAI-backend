@@ -98,6 +98,25 @@ public class ShopService(
         return shops;
     }
 
+    public async Task<PaginationResult<Shop>> GetShopsInstallingEdgeBox(bool hasEdgeBoxInstalling)
+    {
+        var installingEdgeBoxShops = (
+            await unitOfWork.Shops.GetAsync(
+                s =>
+                    s.EdgeBoxInstalls.Any(i => i.EdgeBoxInstallStatus != EdgeBoxInstallStatus.Disabled)
+                    == hasEdgeBoxInstalling,
+                takeAll: true
+            )
+        ).Values.ToList();
+        return new PaginationResult<Shop>
+        {
+            Values = installingEdgeBoxShops,
+            PageIndex = 0,
+            PageSize = installingEdgeBoxShops.Count,
+            TotalCount = installingEdgeBoxShops.Count
+        };
+    }
+
     public async Task<Shop> UpdateShop(Guid id, CreateOrUpdateShopDto shopDto)
     {
         var foundShops = await unitOfWork.Shops.GetAsync(new ShopByIdRepoSpec(id, false));
