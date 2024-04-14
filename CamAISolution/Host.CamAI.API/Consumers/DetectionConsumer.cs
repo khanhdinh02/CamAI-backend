@@ -28,8 +28,15 @@ public class DetectionConsumer(
         );
         var @lock = Locks.GetOrAdd(receivedIncident.Id, _ => new SemaphoreSlim(1, 1));
         await @lock.WaitAsync();
-        await incidentService.UpsertIncident(Map(receivedIncident));
-        @lock.Release();
+        try
+        {
+            await incidentService.UpsertIncident(Map(receivedIncident));
+        }
+        catch (Exception) { }
+        finally
+        {
+            @lock.Release();
+        }
     }
 
     private CreateIncidentDto Map(ReceivedIncidentMessage receivedIncidentMessage)
