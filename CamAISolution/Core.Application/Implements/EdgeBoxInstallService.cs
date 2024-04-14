@@ -352,12 +352,7 @@ public class EdgeBoxInstallService(
             (
                 await unitOfWork.EdgeBoxInstalls.GetAsync(
                     expression: ei => ei.Id == edgeBoxInstallId,
-                    includeProperties:
-                    [
-                        nameof(EdgeBoxInstall.EdgeBox),
-                        nameof(EdgeBoxInstall.Shop),
-                        nameof(EdgeBoxInstall)
-                    ]
+                    includeProperties: [nameof(EdgeBoxInstall.EdgeBox), nameof(EdgeBoxInstall.Shop),]
                 )
             ).Values.First() ?? throw new NotFoundException(typeof(EdgeBoxInstall), edgeBoxInstallId);
         return edgeBoxInstall;
