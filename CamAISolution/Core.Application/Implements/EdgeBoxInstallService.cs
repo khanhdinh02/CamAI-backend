@@ -198,7 +198,7 @@ public class EdgeBoxInstallService(
                 i => i.EdgeBoxId == edgeBoxId && i.EdgeBox.EdgeBoxLocation != EdgeBoxLocation.Idle,
                 o => o.OrderByDescending(i => i.CreatedDate),
                 [
-                    nameof(EdgeBoxInstall.EdgeBox),
+                    $"{nameof(EdgeBoxInstall.EdgeBox)}.{nameof(EdgeBox.EdgeBoxModel)}",
                     $"{nameof(EdgeBoxInstall.Shop)}.{nameof(Shop.Brand)}",
                     $"{nameof(EdgeBoxInstall.Shop)}.{nameof(Shop.Ward)}.{nameof(Ward.District)}.{nameof(District.Province)}"
                 ],
@@ -377,6 +377,14 @@ public class EdgeBoxInstallService(
         unitOfWork.EdgeBoxInstalls.Update(edgeBoxInstall);
         await unitOfWork.CompleteAsync();
 
+        return edgeBoxInstall;
+    }
+
+    public async Task<EdgeBoxInstall> UpdateLastSeen(EdgeBoxInstall edgeBoxInstall)
+    {
+        edgeBoxInstall.LastSeen = DateTimeHelper.VNDateTime;
+        unitOfWork.EdgeBoxInstalls.Update(edgeBoxInstall);
+        await unitOfWork.CompleteAsync();
         return edgeBoxInstall;
     }
 }

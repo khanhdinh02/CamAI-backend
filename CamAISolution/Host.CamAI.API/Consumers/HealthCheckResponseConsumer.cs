@@ -50,15 +50,12 @@ public class HealthCheckResponseConsumer(
             retryActivateEdgeBox = true;
         }
 
-        if (ebInstall.EdgeBoxInstallStatus == message.Status && ebInstall.IpAddress == message.IpAddress)
-        {
-            logger.Info($"Edge box install status {message.Status} and ip address {message.IpAddress} not change");
-            return;
-        }
+        logger.Info($"Edge box install #{ebInstall.Id} status {message.Status} and ip address {message.IpAddress}");
 
         var willSendNotif = ebInstall.EdgeBoxInstallStatus != message.Status;
         await edgeBoxInstallService.UpdateStatus(ebInstall, message.Status, message.Reason);
         await edgeBoxInstallService.UpdateIpAddress(ebInstall, message.IpAddress);
+        await edgeBoxInstallService.UpdateLastSeen(ebInstall);
 
         if (willSendNotif)
             await SendNotificationToAdminAndManager(message, ebInstall, retryActivateEdgeBox);
