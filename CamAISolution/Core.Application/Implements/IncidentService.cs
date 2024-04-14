@@ -88,6 +88,12 @@ public class IncidentService(
         await unitOfWork.CompleteAsync();
     }
 
+    // TODO: squash incident
+    // TODO: incident must all have the same employee or unassigned
+    // TODO: incident must all be the same type
+    // TODO: Phone incident must be 3 mins within each other
+    // TODO: Uniform incident must be 10 mins within each other
+
     public async Task<Incident> UpsertIncident(CreateIncidentDto incidentDto)
     {
         var incident = await unitOfWork.Incidents.GetByIdAsync(incidentDto.Id);
@@ -95,8 +101,8 @@ public class IncidentService(
         bool isNewIncident = incident == null;
 
         var ebInstall = await edgeBoxInstallService.GetLatestInstallingByEdgeBox(incidentDto.EdgeBoxId);
-        foreach (var cameraId in incidentDto.Evidences.Select(x => x.CameraId))
-            await cameraService.CreateCameraIfNotExist(cameraId, ebInstall!.ShopId);
+        foreach (var camera in incidentDto.Evidences.Select(x => x.Camera))
+            await cameraService.CreateCameraIfNotExist(camera);
 
         await unitOfWork.BeginTransaction();
         if (incident == null)
