@@ -21,4 +21,6 @@ public interface IIncidentService
         ReportInterval interval,
         IncidentTypeRequestOption type
     );
+
+    Task AcceptOrRejectAllIncidents(List<Guid> incidentIds, Guid employeeId, bool isAccept);
 }
