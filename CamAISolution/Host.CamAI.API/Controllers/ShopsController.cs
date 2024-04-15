@@ -76,4 +76,18 @@ public class ShopsController(IShopService shopService, IBaseMapping baseMapping)
         await shopService.DeleteShop(id);
         return Accepted();
     }
+
+    /// <summary>
+    /// Get all shops that currently have edge box installing or not.
+    /// </summary>
+    /// <remarks>For role Admin</remarks>
+    /// <param name="q"></param>
+    /// <returns></returns>
+    [HttpGet("installing")]
+    [AccessTokenGuard(Role.Admin)]
+    public async Task<ActionResult<PaginationResult<ShopDto>>> GetShopsInstallingEdgeBox(bool q)
+    {
+        var shops = await shopService.GetShopsInstallingEdgeBox(q);
+        return Ok(baseMapping.Map<Shop, ShopDto>(shops));
+    }
 }
