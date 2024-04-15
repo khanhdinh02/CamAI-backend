@@ -88,6 +88,30 @@ public class IncidentService(
         await unitOfWork.CompleteAsync();
     }
 
+    public async Task AcceptOrRejectAllIncidents(List<Guid> incidentIds, Guid employeeId, bool isAccept)
+    {
+        if (incidentIds.Count == 0)
+            throw new BadRequestException("Incident ids cannot be empty");
+        var incidents = await unitOfWork.Incidents.GetAsync(expression: i => incidentIds.Contains(i.Id) && i.Shop.ShopManagerId == accountService.GetCurrentAccount().Id, takeAll: true).ContinueWith(t => t.Result.Values);
+        var employee = await employeeService.GetEmployeeById(employeeId);
+        if (incidents.Any(i => i.ShopId  != employee.ShopId))
+            throw new BadRequestException("Incident and employee are not in the same shop");
+        var interactionIncidentId = Guid.Empty;
+        if (incidents.Any(i =>
+            {
+                interactionIncidentId = i.Id;
+                return i.IncidentType == IncidentType.Interaction;
+            }))
+            throw new BadRequestException($"Cannot assign employee for interaction #{interactionIncidentId}");
+        foreach (var incident in incidents)
+        {
+            incident.EmployeeId = isAccept ? employee.Id : null;
+            incident.Status = isAccept ? IncidentStatus.Accepted : IncidentStatus.Rejected;
+            unitOfWork.Incidents.Update(incident);
+        }
+        await unitOfWork.CompleteAsync();
+    }
+
     // TODO: squash incident
     // TODO: incident must all have the same employee or unassigned
     // TODO: incident must all be the same type

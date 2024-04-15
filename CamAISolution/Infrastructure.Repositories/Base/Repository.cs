@@ -94,7 +94,7 @@ public class Repository<T>(CamAIContext context, IRepositorySpecificationEvaluat
         var data = await query.ToListAsync();
         return new PaginationResult<T>
         {
-            PageIndex = specification.Skip / specification.Take,
+            PageIndex = specification.Skip / (specification.Take == 0 ? 1 : specification.Take),
             PageSize = data.Count,
             TotalCount = count,
             Values = data

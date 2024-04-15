@@ -59,6 +59,14 @@ public class IncidentsController(
         return mapping.Map<Incident, IncidentDto>(await incidentService.GetIncidents(searchRequest));
     }
 
+    [HttpPost("accept-incidents")]
+    [AccessTokenGuard(Role.ShopManager)]
+    public async Task<IActionResult> AcceptAllIncidents(AcceptOrRejectAllIncidentsRequest request)
+    {
+        await incidentService.AcceptOrRejectAllIncidents(request.IncidentIds, request.EmployeeId, request.IsAccept);
+        return Ok();
+    }
+
     /// <summary>
     /// For shop manager to assign incident to employee
     /// It will also change the status of incident to Accepted
