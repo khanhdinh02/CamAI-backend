@@ -59,11 +59,16 @@ public class IncidentsController(
         return mapping.Map<Incident, IncidentDto>(await incidentService.GetIncidents(searchRequest));
     }
 
-    [HttpPost("accept-incidents")]
+    [HttpPost("accept")]
+    [HttpPost("reject")]
     [AccessTokenGuard(Role.ShopManager)]
     public async Task<IActionResult> AcceptAllIncidents(AcceptOrRejectAllIncidentsRequest request)
     {
-        await incidentService.AcceptOrRejectAllIncidents(request.IncidentIds, request.EmployeeId, request.IsAccept);
+        await incidentService.AcceptOrRejectAllIncidents(
+            request.IncidentIds,
+            request.EmployeeId,
+            Request.Path.ToString().ToLower().Contains("accept")
+        );
         return Ok();
     }
 

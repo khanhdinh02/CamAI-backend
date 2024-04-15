@@ -1,5 +1,7 @@
 using System.Linq.Expressions;
 using System.Net.Mime;
+using System.Reflection.Metadata;
+using System.Text;
 using Core.Application.Events;
 using Core.Application.Events.Args;
 using Core.Application.Exceptions;
@@ -92,23 +94,28 @@ public class IncidentService(
     {
         if (incidentIds.Count == 0)
             throw new BadRequestException("Incident ids cannot be empty");
-        var incidents = await unitOfWork.Incidents.GetAsync(expression: i => incidentIds.Contains(i.Id) && i.Shop.ShopManagerId == accountService.GetCurrentAccount().Id, takeAll: true).ContinueWith(t => t.Result.Values);
+        var incidents = await unitOfWork
+            .Incidents.GetAsync(
+                expression: i =>
+                    incidentIds.Contains(i.Id) && i.Shop.ShopManagerId == accountService.GetCurrentAccount().Id,
+                takeAll: true
+            )
+            .ContinueWith(t => t.Result.Values);
         var employee = await employeeService.GetEmployeeById(employeeId);
-        if (incidents.Any(i => i.ShopId  != employee.ShopId))
+        if (incidents.Any(i => i.ShopId != employee.ShopId))
             throw new BadRequestException("Incident and employee are not in the same shop");
-        var interactionIncidentId = Guid.Empty;
-        if (incidents.Any(i =>
-            {
-                interactionIncidentId = i.Id;
-                return i.IncidentType == IncidentType.Interaction;
-            }))
-            throw new BadRequestException($"Cannot assign employee for interaction #{interactionIncidentId}");
+        var invalidIncidents = incidents.Where(i => i.IncidentType != IncidentType.Interaction).Select(i => i.Id);
+        if (invalidIncidents.Any())
+            throw new BadRequestException(
+                $"Cannot assign employee for interaction {String.Join(", ", invalidIncidents)}"
+            );
         foreach (var incident in incidents)
         {
             incident.EmployeeId = isAccept ? employee.Id : null;
             incident.Status = isAccept ? IncidentStatus.Accepted : IncidentStatus.Rejected;
             unitOfWork.Incidents.Update(incident);
         }
+
         await unitOfWork.CompleteAsync();
     }
 
