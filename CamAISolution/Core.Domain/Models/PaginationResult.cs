@@ -9,7 +9,7 @@ public class PaginationResult<T>
         Values = values.Skip(pageSize * pageIndex).Take(pageSize).ToList();
         PageIndex = pageIndex;
         PageSize = pageSize;
-        TotalCount = Values.Count;
+        TotalCount = values.Count();
     }
 
     public IList<T> Values { get; set; } = new List<T>();
