@@ -22,4 +22,5 @@ public interface IRepository<T>
     public Task<int> CountAsync(Expression<Func<T, bool>>? expression = null);
     public T Update(T entity);
     public T Delete(T entity);
+    public IQueryable<IGrouping<TKey, T>> GroupEntity<TKey>(Expression<Func<T, TKey>> expr);
 }

@@ -10,12 +10,14 @@ using Core.Domain.Interfaces.Services;
 using Core.Domain.Models;
 using Core.Domain.Models.Configurations;
 using Core.Domain.Models.Consumers;
+using Core.Domain.Repositories;
 using Core.Domain.Services;
 using Core.Domain.Utilities;
 
 namespace Core.Application.Implements;
 
 public class ReportService(
+    IUnitOfWork unitOfWork,
     IAccountService accountService,
     IShopService shopService,
     HumanCountSubject subject,
@@ -177,6 +179,38 @@ public class ReportService(
             EndDate = endDate,
             Interval = interval,
             Data = columns
+        };
+    }
+
+    public async Task<EdgeBoxReportDto> GetEdgeBoxReport()
+    {
+        var reportByStatus = unitOfWork
+            .EdgeBoxes.GroupEntity(x => x.EdgeBoxStatus)
+            .ToDictionary(x => x.Key, x => x.Count());
+        var reportByLocation = unitOfWork
+            .EdgeBoxes.GroupEntity(x => x.EdgeBoxLocation)
+            .ToDictionary(x => x.Key, x => x.Count());
+        return new EdgeBoxReportDto
+        {
+            Total = await unitOfWork.EdgeBoxes.CountAsync(),
+            Location = reportByLocation,
+            Status = reportByStatus
+        };
+    }
+
+    public async Task<EdgeBoxInstallReportDto> GetInstallEdgeBoxReport()
+    {
+        var reportByStatus = unitOfWork
+            .EdgeBoxInstalls.GroupEntity(x => x.EdgeBoxInstallStatus)
+            .ToDictionary(x => x.Key, x => x.Count());
+        var reportByActivationStatus = unitOfWork
+            .EdgeBoxInstalls.GroupEntity(x => x.ActivationStatus)
+            .ToDictionary(x => x.Key, x => x.Count());
+        return new EdgeBoxInstallReportDto
+        {
+            Total = await unitOfWork.EdgeBoxInstalls.CountAsync(),
+            Status = reportByStatus,
+            ActivationStatus = reportByActivationStatus
         };
     }
 }

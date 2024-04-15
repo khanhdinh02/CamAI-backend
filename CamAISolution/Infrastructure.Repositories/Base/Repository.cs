@@ -1,4 +1,5 @@
 using System.Linq.Expressions;
+using Core.Domain.Entities;
 using Core.Domain.Models;
 using Core.Domain.Repositories;
 using Core.Domain.Specifications.Repositories;
@@ -125,5 +126,10 @@ public class Repository<T>(CamAIContext context, IRepositorySpecificationEvaluat
         }
 
         return entity;
+    }
+
+    public IQueryable<IGrouping<TKey, T>> GroupEntity<TKey>(Expression<Func<T, TKey>> groupKey)
+    {
+        return context.Set<T>().GroupBy(groupKey);
     }
 }
