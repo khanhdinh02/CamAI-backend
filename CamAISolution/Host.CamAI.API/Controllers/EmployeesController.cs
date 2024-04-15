@@ -54,6 +54,10 @@ public class EmployeesController(IEmployeeService employeeService, IBaseMapping 
         return mapper.Map<Employee, EmployeeDto>(await employeeService.UpdateEmployee(id, dto));
     }
 
+    /// <remarks>If the employee does not have any incident, they will be removed,
+    /// otherwise their status will be updated to <c>Inactive</c></remarks>
+    /// <param name="id"></param>
+    /// <returns></returns>
     [HttpDelete("{id}")]
     [AccessTokenGuard(Role.ShopManager)]
     public async Task<IActionResult> Delete(Guid id)

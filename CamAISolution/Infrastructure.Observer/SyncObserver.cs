@@ -65,4 +65,19 @@ public class SyncObserver(EventManager eventManager, IServiceProvider provider)
         };
         await SendMessage(updateMessage);
     }
+
+    public async Task SyncEdgeBox(EdgeBoxInstall edgeBoxInstall, string routingKey)
+    {
+        var edgeBox = edgeBoxInstall.EdgeBox;
+        await SendMessage(
+            new EdgeBoxUpdateMessage
+            {
+                RoutingKey = routingKey,
+                SerialNumber = edgeBox.SerialNumber,
+                Name = edgeBox.Name,
+                Model = edgeBox.EdgeBoxModel.Name,
+                ActivationStatus = edgeBoxInstall.ActivationStatus
+            }
+        );
+    }
 }

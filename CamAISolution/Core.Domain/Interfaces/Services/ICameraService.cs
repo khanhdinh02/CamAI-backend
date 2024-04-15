@@ -10,5 +10,5 @@ public interface ICameraService
     Task<Camera> GetCameraById(Guid id);
     Task<Camera> UpsertCamera(Camera camera);
     Task DeleteCamera(Guid id);
-    Task CreateCameraIfNotExist(Guid id, Guid shopId);
+    Task CreateCameraIfNotExist(Camera camera);
 }

@@ -90,17 +90,11 @@ public class CameraService(
         await unitOfWork.CompleteAsync();
     }
 
-    public async Task CreateCameraIfNotExist(Guid id, Guid shopId)
+    public async Task CreateCameraIfNotExist(Camera camera)
     {
-        if (await unitOfWork.Cameras.IsExisted(id))
+        if (await unitOfWork.Cameras.IsExisted(camera.Id))
             return;
 
-        var camera = new Camera
-        {
-            Id = id,
-            ShopId = shopId,
-            Name = id.ToString("N")
-        };
         await unitOfWork.Cameras.AddAsync(camera);
         await unitOfWork.CompleteAsync();
     }

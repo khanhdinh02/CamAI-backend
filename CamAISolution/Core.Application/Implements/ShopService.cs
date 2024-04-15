@@ -46,8 +46,15 @@ public class ShopService(
             throw new BadRequestException("Cannot delete shop that has active edge box");
 
         var shop = await GetShopById(id);
-        if (await unitOfWork.EdgeBoxInstalls.CountAsync(x => x.ShopId == id) > 0)
+        if (
+            (await unitOfWork.EdgeBoxInstalls.GetAsync(x => x.ShopId == id, takeAll: true)).Values is
+            { Count: > 0 } installs
+        )
+        {
+            if (installs.Any(i => i.EdgeBoxInstallStatus != EdgeBoxInstallStatus.Disabled))
+                throw new BadRequestException("Cannot delete shop that currently has installed edge boxes");
             shop.ShopStatus = ShopStatus.Inactive;
+        }
         else
         {
             unitOfWork.Shops.Delete(shop);

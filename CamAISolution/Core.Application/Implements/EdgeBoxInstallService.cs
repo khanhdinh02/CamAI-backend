@@ -45,6 +45,8 @@ public class EdgeBoxInstallService(
                     includeProperties: [$"{nameof(Shop.Brand)}.{nameof(Brand.BrandManager)}"]
                 )
             ).Values.FirstOrDefault() ?? throw new NotFoundException(typeof(Shop), dto.ShopId);
+        if (shop.ShopStatus == ShopStatus.Inactive)
+            throw new BadRequestException("Shop is inactive");
 
         var ebInstall = mapper.Map<CreateEdgeBoxInstallDto, EdgeBoxInstall>(dto);
         ebInstall.ActivationCode = RandomGenerator.GetAlphanumericString(CodeLength);
@@ -84,8 +86,12 @@ public class EdgeBoxInstallService(
                 )
             ).Values.FirstOrDefault() ?? throw new NotFoundException("Wrong activation code");
 
-        // TODO: check edge box location occupied
-        if (ebInstall.ActivationStatus == EdgeBoxActivationStatus.NotActivated)
+        if (ebInstall.EdgeBox.EdgeBoxLocation != EdgeBoxLocation.Occupied)
+            throw new BadRequestException(
+                "Edge box has not been installed to shop. Please wait for admin to install edge box"
+            );
+
+        if (ebInstall.ActivationStatus != EdgeBoxActivationStatus.Activated)
         {
             await unitOfWork.EdgeBoxActivities.AddAsync(
                 new EdgeBoxActivity
@@ -192,7 +198,7 @@ public class EdgeBoxInstallService(
                 i => i.EdgeBoxId == edgeBoxId && i.EdgeBox.EdgeBoxLocation != EdgeBoxLocation.Idle,
                 o => o.OrderByDescending(i => i.CreatedDate),
                 [
-                    nameof(EdgeBoxInstall.EdgeBox),
+                    $"{nameof(EdgeBoxInstall.EdgeBox)}.{nameof(EdgeBox.EdgeBoxModel)}",
                     $"{nameof(EdgeBoxInstall.Shop)}.{nameof(Shop.Brand)}",
                     $"{nameof(EdgeBoxInstall.Shop)}.{nameof(Shop.Ward)}.{nameof(Ward.District)}.{nameof(District.Province)}"
                 ],
@@ -340,6 +346,23 @@ public class EdgeBoxInstallService(
         await unitOfWork.CompleteAsync();
     }
 
+    public async Task<EdgeBoxInstall> GetEdgeBoxInstallById(Guid edgeBoxInstallId)
+    {
+        var edgeBoxInstall =
+            (
+                await unitOfWork.EdgeBoxInstalls.GetAsync(
+                    expression: ei => ei.Id == edgeBoxInstallId,
+                    includeProperties: [nameof(EdgeBoxInstall.EdgeBox), nameof(EdgeBoxInstall.Shop),]
+                )
+            ).Values.First() ?? throw new NotFoundException(typeof(EdgeBoxInstall), edgeBoxInstallId);
+        return edgeBoxInstall;
+    }
+
+    public Task<IList<EdgeBoxInstall>> GetAllEdgeBoxInstall()
+    {
+        return unitOfWork.EdgeBoxInstalls.GetAsync(takeAll: true).ContinueWith(t => t.Result.Values);
+    }
+
     public async Task<EdgeBoxInstall> UpdateIpAddress(EdgeBoxInstall edgeBoxInstall, string ipAddress)
     {
         if (edgeBoxInstall.IpAddress == ipAddress)
@@ -349,6 +372,14 @@ public class EdgeBoxInstallService(
         unitOfWork.EdgeBoxInstalls.Update(edgeBoxInstall);
         await unitOfWork.CompleteAsync();
 
+        return edgeBoxInstall;
+    }
+
+    public async Task<EdgeBoxInstall> UpdateLastSeen(EdgeBoxInstall edgeBoxInstall)
+    {
+        edgeBoxInstall.LastSeen = DateTimeHelper.VNDateTime;
+        unitOfWork.EdgeBoxInstalls.Update(edgeBoxInstall);
+        await unitOfWork.CompleteAsync();
         return edgeBoxInstall;
     }
 }

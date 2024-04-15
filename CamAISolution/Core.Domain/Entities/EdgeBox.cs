@@ -10,6 +10,8 @@ public class EdgeBox : BusinessEntity
     public string? Name { get; set; }
     public string? Version { get; set; }
     public Guid EdgeBoxModelId { get; set; }
+    public string? MacAddress { get; set; }
+    public string? SerialNumber { get; set; } = null!;
     public EdgeBoxStatus EdgeBoxStatus { get; set; }
     public EdgeBoxLocation EdgeBoxLocation { get; set; }
 

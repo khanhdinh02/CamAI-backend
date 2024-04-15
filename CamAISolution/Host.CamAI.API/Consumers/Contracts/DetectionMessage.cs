@@ -1,4 +1,5 @@
 using Core.Domain.Enums;
+using Infrastructure.Observer.Messages;
 using MassTransit;
 
 namespace Host.CamAI.API.Consumers.Contracts;
@@ -19,6 +20,6 @@ public class ReceivedEvidence
 {
     public byte[] Content { get; set; }
     public EvidenceType EvidenceType { get; set; }
-    public Guid CameraId { get; set; }
+    public EdgeBoxCameraDto Camera { get; set; }
     public Guid EdgeBoxId { get; set; }
 }

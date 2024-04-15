@@ -86,6 +86,9 @@ public class EdgeBoxService(IUnitOfWork unitOfWork, IAccountService accountServi
 
     public async Task<EdgeBox> CreateEdgeBox(CreateEdgeBoxDto edgeBoxDto)
     {
+        if (!(await unitOfWork.EdgeBoxes.GetAsync(x => x.SerialNumber == edgeBoxDto.SerialNumber)).IsValuesEmpty)
+            throw new BadRequestException("Serial number already exist in the system");
+
         _ =
             await unitOfWork.EdgeBoxModels.GetByIdAsync(edgeBoxDto.EdgeBoxModelId)
             ?? throw new NotFoundException(typeof(EdgeBoxModel), edgeBoxDto.EdgeBoxModelId);
@@ -108,6 +111,12 @@ public class EdgeBoxService(IUnitOfWork unitOfWork, IAccountService accountServi
         var currentAccount = accountService.GetCurrentAccount();
         if (foundEdgeBox.EdgeBoxStatus == EdgeBoxStatus.Inactive && currentAccount.Role != Role.Admin)
             throw new BadRequestException("Cannot modified inactive edgeBox");
+
+        if (
+            foundEdgeBox.SerialNumber != edgeBoxDto.SerialNumber
+            && !(await unitOfWork.EdgeBoxes.GetAsync(x => x.SerialNumber == edgeBoxDto.SerialNumber)).IsValuesEmpty
+        )
+            throw new BadRequestException("Serial number already exist in the system");
 
         _ =
             await unitOfWork.EdgeBoxModels.GetByIdAsync(edgeBoxDto.EdgeBoxModelId)
