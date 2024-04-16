@@ -25,17 +25,23 @@ public class ShopService(
 {
     public async Task<Shop> CreateShop(CreateOrUpdateShopDto shopDto)
     {
-        await IsValidShopDto(shopDto);
-        var shop = mapping.Map<CreateOrUpdateShopDto, Shop>(shopDto);
-        shop.ShopStatus = ShopStatus.Active;
+        await unitOfWork.BeginTransaction();
+
         var account = accountService.GetCurrentAccount();
         if (!account.BrandId.HasValue)
             throw new BadRequestException(
-                $"Cannot create shop because current account doesn't have any registered Brand"
+                "Cannot create shop because current account doesn't have any registered Brand"
             );
+        await IsValidShopDto(shopDto);
+
+        var shop = mapping.Map<CreateOrUpdateShopDto, Shop>(shopDto);
+        shop.ShopManagerId = null;
+        shop.ShopStatus = ShopStatus.Active;
         shop.BrandId = account.BrandId.Value;
         shop = await unitOfWork.Shops.AddAsync(shop);
-        await unitOfWork.CompleteAsync();
+        await AssignShopManager(shop, shopDto.ShopManagerId);
+
+        await unitOfWork.CommitTransaction();
         return shop;
     }
 
@@ -100,30 +106,22 @@ public class ShopService(
 
     public async Task<Shop> UpdateShop(Guid id, CreateOrUpdateShopDto shopDto)
     {
-        var foundShops = await unitOfWork.Shops.GetAsync(new ShopByIdRepoSpec(id, false));
-        if (foundShops.IsValuesEmpty)
-            throw new NotFoundException(typeof(Shop), id);
-        var foundShop = foundShops.Values[0];
+        var foundShop =
+            (await unitOfWork.Shops.GetAsync(new ShopByIdRepoSpec(id, false))).Values.FirstOrDefault()
+            ?? throw new NotFoundException(typeof(Shop), id);
         var currentAccount = accountService.GetCurrentAccount();
         if (!(currentAccount.BrandId.HasValue && foundShop.BrandId == currentAccount.BrandId.Value))
             throw new ForbiddenException("Current user not allowed to do this action.");
         if (foundShop.ShopStatus != ShopStatus.Active)
-            throw new BadRequestException($"Cannot modified inactive shop");
+            throw new BadRequestException("Cannot modified inactive shop");
         await IsValidShopDto(shopDto, id);
+
+        var oldShopManagerId = foundShop.ShopManagerId;
         mapping.Map(shopDto, foundShop);
-        var shop = unitOfWork.Shops.Update(foundShop);
-        if (await unitOfWork.CompleteAsync() > 0)
-        {
-            try
-            {
-                eventManager.NotifyShopChanged(shop);
-            }
-            catch (Exception ex)
-            {
-                logger.Error(ex.Message, ex);
-            }
-        }
-        return shop;
+        foundShop.ShopManagerId = oldShopManagerId;
+        await AssignShopManager(foundShop, shopDto.ShopManagerId);
+        eventManager.NotifyShopChanged(foundShop);
+        return foundShop;
     }
 
     public async Task<Shop> UpdateShopStatus(Guid shopId, ShopStatus shopStatus)
@@ -148,28 +146,50 @@ public class ShopService(
     {
         if (!await unitOfWork.Wards.IsExisted(shopDto.WardId))
             throw new NotFoundException(typeof(Ward), shopDto.WardId);
-        if (shopDto.ShopManagerId.HasValue)
-        {
-            var foundAccounts = await unitOfWork.Accounts.GetAsync(
-                expression: a =>
-                    a.Id == shopDto.ShopManagerId.Value
-                    && (a.AccountStatus == AccountStatus.Active || a.AccountStatus == AccountStatus.New),
-                includeProperties: [nameof(Account.ManagingShop)]
+        var account =
+            (
+                await unitOfWork.Accounts.GetAsync(
+                    expression: a =>
+                        a.Id == shopDto.ShopManagerId
+                        && (a.AccountStatus == AccountStatus.Active || a.AccountStatus == AccountStatus.New),
+                    includeProperties: [nameof(Account.ManagingShop)]
+                )
+            ).Values.FirstOrDefault() ?? throw new NotFoundException(typeof(Account), shopDto.ShopManagerId);
+        if (account.Role != Role.ShopManager)
+            throw new BadRequestException("Account is not a shop manager");
+
+        var brandManager = accountService.GetCurrentAccount();
+        if (account.BrandId != brandManager.BrandId)
+            throw new BadRequestException(
+                $"Account is not in the same brand as brand manager. Id {brandManager.BrandId}"
             );
-            if (foundAccounts.Values.Count == 0)
-                throw new NotFoundException(typeof(Account), shopDto.ShopManagerId.Value);
-            var account = foundAccounts.Values[0];
-            if (account.Role != Role.ShopManager)
-                throw new BadRequestException("Account is not a shop manager");
-            var brandManager = accountService.GetCurrentAccount();
+    }
 
-            if (account.ManagingShop != null && account.ManagingShop?.Id != shopId)
-                throw new BadRequestException("Account is a manager of another shop");
+    private async Task AssignShopManager(Shop shop, Guid shopManagerId)
+    {
+        if (shop.ShopManagerId == shopManagerId)
+            return;
 
-            if (account.BrandId != brandManager.BrandId)
-                throw new BadRequestException(
-                    $"Account is not in the same brand as brand manager. Id {brandManager.BrandId}"
-                );
+        var shopManager =
+            (
+                await unitOfWork.Accounts.GetAsync(
+                    a => a.Id == shopManagerId,
+                    includeProperties: [nameof(Account.ManagingShop)]
+                )
+            ).Values.FirstOrDefault() ?? throw new NotFoundException(typeof(Account), shopManagerId);
+        if (shopManager.Role != Role.ShopManager)
+            throw new BadRequestException("Account is not a shop manager");
+
+        if (shopManager.ManagingShop != null)
+        {
+            var oldShop =
+                await unitOfWork.Shops.GetByIdAsync(shopManager.ManagingShop.Id)
+                ?? throw new NotFoundException(typeof(Shop), shopManager.ManagingShop.Id);
+            oldShop.ShopManagerId = null;
+            unitOfWork.Shops.Update(oldShop);
         }
+        shop.ShopManagerId = shopManagerId;
+        unitOfWork.Shops.Update(shop);
+        await unitOfWork.CompleteAsync();
     }
 }
