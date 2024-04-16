@@ -19,9 +19,9 @@ public class EdgeBoxHealthCheckService(
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        try
+        while (!stoppingToken.IsCancellationRequested)
         {
-            while (!stoppingToken.IsCancellationRequested)
+            try
             {
                 // init service
                 var scope = provider.CreateScope();
@@ -30,10 +30,10 @@ public class EdgeBoxHealthCheckService(
 
                 await Task.Delay(TimeSpan.FromSeconds(healthCheckConfiguration.EdgeBoxHealthCheckDelay), stoppingToken);
             }
-        }
-        catch (Exception ex)
-        {
-            logger.Error(ex.Message, ex);
+            catch (Exception ex)
+            {
+                logger.Error(ex.Message, ex);
+            }
         }
     }
 
