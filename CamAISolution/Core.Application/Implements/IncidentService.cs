@@ -125,13 +125,15 @@ public class IncidentService(
     // TODO: Phone incident must be 3 mins within each other
     // TODO: Uniform incident must be 10 mins within each other
 
-    public async Task<Incident> UpsertIncident(CreateIncidentDto incidentDto)
+    public async Task<Incident?> UpsertIncident(CreateIncidentDto incidentDto)
     {
         var incident = await unitOfWork.Incidents.GetByIdAsync(incidentDto.Id);
-
-        bool isNewIncident = incident == null;
+        var isNewIncident = incident == null;
 
         var ebInstall = await edgeBoxInstallService.GetLatestInstallingByEdgeBox(incidentDto.EdgeBoxId);
+        if (ebInstall == null)
+            return null;
+
         foreach (var camera in incidentDto.Evidences.Select(x => x.Camera))
             await cameraService.CreateCameraIfNotExist(camera);
 

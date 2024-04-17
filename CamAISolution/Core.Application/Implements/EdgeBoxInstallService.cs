@@ -195,8 +195,8 @@ public class EdgeBoxInstallService(
     {
         return (
             await unitOfWork.EdgeBoxInstalls.GetAsync(
-                i => i.EdgeBoxId == edgeBoxId && i.EdgeBox.EdgeBoxLocation != EdgeBoxLocation.Idle,
-                o => o.OrderByDescending(i => i.CreatedDate),
+                i => i.EdgeBoxId == edgeBoxId && i.EdgeBoxInstallStatus != EdgeBoxInstallStatus.Disabled,
+                includeProperties:
                 [
                     $"{nameof(EdgeBoxInstall.EdgeBox)}.{nameof(EdgeBox.EdgeBoxModel)}",
                     $"{nameof(EdgeBoxInstall.Shop)}.{nameof(Shop.Brand)}",

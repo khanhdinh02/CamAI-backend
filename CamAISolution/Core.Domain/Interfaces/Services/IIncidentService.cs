@@ -7,7 +7,7 @@ namespace Core.Domain.Interfaces.Services;
 
 public interface IIncidentService
 {
-    Task<Incident> UpsertIncident(CreateIncidentDto incidentDto);
+    Task<Incident?> UpsertIncident(CreateIncidentDto incidentDto);
     Task<Incident> GetIncidentById(Guid id, bool includeAll = false);
     Task<PaginationResult<Incident>> GetIncidents(SearchIncidentRequest searchRequest);
 
