@@ -8,7 +8,10 @@ public class EvidenceProfile : Profile
 {
     public EvidenceProfile()
     {
-        CreateMap<CreateEvidenceDto, Evidence>();
+        CreateMap<CreateEvidenceDto, Evidence>()
+            .ForMember(x => x.Camera, opts => opts.Ignore())
+            .ForMember(x => x.CameraId, opts => opts.MapFrom((dto, _) => dto.Camera.Id));
+
         CreateMap<Evidence, EvidenceDto>()
             .ForMember(
                 x => x.Incident,
