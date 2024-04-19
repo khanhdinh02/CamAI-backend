@@ -23,6 +23,7 @@ public static class RepositoriesDependencyInjection
         services.AddScoped<ICustomShopRepository, CustomShopRepository>();
         services.AddScoped<ICustomAccountRepository, CustomAccountRepository>();
         services.AddScoped<ICustomEmployeeRepository, CustomEmployeeRepository>();
+        services.AddScoped<ICustomEdgeBoxInstallRepository, CustomEdgeBoxInstallRepository>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         return services;
     }
