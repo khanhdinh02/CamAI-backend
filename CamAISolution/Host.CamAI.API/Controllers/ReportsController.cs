@@ -14,7 +14,7 @@ public class ReportsController(IReportService reportService) : ControllerBase
     /// Only for shop manager
     /// This will get the real-time chart data for their shop
     /// </summary>
-    [HttpGet("shop/chart/customer")]
+    [HttpGet("shops/chart/customer")]
     [AccessTokenGuard(Role.ShopManager)]
     public async Task ShopCustomerAreaChart()
     {
@@ -32,7 +32,7 @@ public class ReportsController(IReportService reportService) : ControllerBase
     /// Only for brand manager
     /// This will get the real-time chart data for one of their shop
     /// </summary>
-    [HttpGet("shop/{shopId}/chart/customer")]
+    [HttpGet("shops/{shopId}/chart/customer")]
     [AccessTokenGuard(Role.ShopManager, Role.BrandManager)]
     public async Task BrandCustomerAreaChart(Guid shopId)
     {
@@ -49,7 +49,7 @@ public class ReportsController(IReportService reportService) : ControllerBase
     /// <summary>
     /// Get past data of human count for shop manager
     /// </summary>
-    [HttpGet("shop/customer")]
+    [HttpGet("shops/customer")]
     [AccessTokenGuard(Role.ShopManager)]
     public async Task<HumanCountDto> GetHumanCountData(DateOnly startDate, DateOnly endDate, ReportInterval interval)
     {
@@ -59,7 +59,7 @@ public class ReportsController(IReportService reportService) : ControllerBase
     /// <summary>
     /// Get past data of human count for admin and brand manager
     /// </summary>
-    [HttpGet("shop/{shopId}/customer")]
+    [HttpGet("shops/{shopId}/customer")]
     [AccessTokenGuard(Role.ShopManager, Role.BrandManager)]
     public async Task<HumanCountDto> GetHumanCountData(
         [FromRoute] Guid shopId,
