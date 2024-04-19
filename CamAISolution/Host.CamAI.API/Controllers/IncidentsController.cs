@@ -152,4 +152,11 @@ public class IncidentsController(
     {
         return await incidentService.CountIncidentsByShop(shopId, startDate, endDate, interval, type);
     }
+
+    [HttpGet("percent")]
+    [AccessTokenGuard(Role.ShopManager, Role.BrandManager)]
+    public async Task<IncidentPercentDto> GetIncidentPercent(Guid? shopId, DateOnly startDate, DateOnly endDate)
+    {
+        return await incidentService.GetIncidentPercent(shopId, startDate, endDate);
+    }
 }

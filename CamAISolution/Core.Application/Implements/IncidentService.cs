@@ -1,7 +1,5 @@
 using System.Linq.Expressions;
 using System.Net.Mime;
-using System.Reflection.Metadata;
-using System.Text;
 using Core.Application.Events;
 using Core.Application.Events.Args;
 using Core.Application.Exceptions;
@@ -29,6 +27,9 @@ public class IncidentService(
     IncidentSubject incidentSubject
 ) : IIncidentService
 {
+    private static IEnumerable<IncidentType> IncidentTypes =>
+        Enum.GetValues<IncidentType>().Where(t => t != IncidentType.Interaction);
+
     public async Task<Incident> GetIncidentById(Guid id, bool includeAll = false)
     {
         var incident =
@@ -197,15 +198,12 @@ public class IncidentService(
         shopId = user.Role switch
         {
             Role.BrandManager when shopId == null => throw new BadRequestException("Please specify a shop id"),
-            Role.ShopManager => user.ManagingShop?.Id,
+            Role.ShopManager => user.ManagingShop?.Id ?? throw new ForbiddenException(user, typeof(Shop)),
             _ => shopId
         };
 
         var shop = await unitOfWork.Shops.GetByIdAsync(shopId) ?? throw new NotFoundException(typeof(Shop), shopId);
-        if (
-            (user.Role == Role.BrandManager && user.BrandId != shop.BrandId)
-            || (user.Role == Role.ShopManager && user.ManagingShop?.Id != shopId)
-        )
+        if (user.Role == Role.BrandManager && user.BrandId != shop.BrandId)
             throw new ForbiddenException(user, shop);
 
         if (startDate > endDate)
@@ -288,6 +286,151 @@ public class IncidentService(
             EndDate = endDate,
             Interval = interval,
             Data = items
+        };
+    }
+
+    public async Task<IncidentPercentDto> GetIncidentPercent(Guid? shopId, DateOnly startDate, DateOnly endDate)
+    {
+        // ------ VALIDATION ------
+
+        var user = accountService.GetCurrentAccount();
+        shopId = user.Role switch
+        {
+            Role.BrandManager when shopId == null => throw new BadRequestException("Please specify a shop id"),
+            Role.ShopManager => user.ManagingShop?.Id ?? throw new ForbiddenException(user, typeof(Shop)),
+            _ => shopId
+        };
+
+        var shop = await unitOfWork.Shops.GetByIdAsync(shopId) ?? throw new NotFoundException(typeof(Shop), shopId);
+        if (user.Role == Role.BrandManager && user.BrandId != shop.BrandId)
+            throw new ForbiddenException(user, shop);
+
+        if (startDate > endDate)
+            return new IncidentPercentDto
+            {
+                ShopId = shopId.Value,
+                Total = 0,
+                StartDate = startDate,
+                EndDate = endDate
+            };
+
+        // ------ QUERY ------
+
+        var incidents = (
+            await unitOfWork.Incidents.GetAsync(
+                i =>
+                    i.ShopId == shopId
+                    && IncidentTypes.Contains(i.IncidentType)
+                    && i.StartTime >= startDate.ToDateTime(TimeOnly.MinValue)
+                    && i.StartTime < endDate.AddDays(1).ToDateTime(TimeOnly.MinValue),
+                takeAll: true
+            )
+        ).Values;
+
+        var total = incidents.Count;
+        var statusPercentDictionary = incidents
+            .GroupBy(i => i.Status)
+            .ToDictionary(
+                group => group.Key,
+                group =>
+                {
+                    var groupTotal = group.Count();
+                    return new IncidentStatusPercentDto
+                    {
+                        Status = group.Key,
+                        Total = groupTotal,
+                        Percent = Calculator.Divide(groupTotal, (double)total)
+                    };
+                }
+            );
+        var statusPercent = Enum.GetValues<IncidentStatus>()
+            .Select(status =>
+            {
+                if (!statusPercentDictionary.TryGetValue(status, out var value))
+                    return new IncidentStatusPercentDto
+                    {
+                        Status = status,
+                        Total = 0,
+                        Percent = 0
+                    };
+                return value;
+            })
+            .ToList();
+
+        var percentByTypeDictionary = incidents
+            .GroupBy(i => i.IncidentType)
+            .ToDictionary(
+                group => group.Key,
+                group =>
+                {
+                    var groupTotal = group.Count();
+                    var typeStatusPercentDictionary = group
+                        .GroupBy(i => i.Status)
+                        .ToDictionary(
+                            statusGroup => statusGroup.Key,
+                            statusGroup =>
+                            {
+                                var statusGroupTotal = statusGroup.Count();
+                                return new IncidentStatusPercentDto
+                                {
+                                    Status = statusGroup.Key,
+                                    Total = statusGroupTotal,
+                                    Percent = Calculator.Divide(statusGroupTotal, (double)groupTotal)
+                                };
+                            }
+                        );
+                    var typeStatusPercent = Enum.GetValues<IncidentStatus>()
+                        .Select(status =>
+                        {
+                            if (!typeStatusPercentDictionary.TryGetValue(status, out var value))
+                                return new IncidentStatusPercentDto
+                                {
+                                    Status = status,
+                                    Total = 0,
+                                    Percent = 0
+                                };
+                            return value;
+                        })
+                        .ToList();
+                    return new IncidentTypePercentDto
+                    {
+                        Type = group.Key,
+                        Total = groupTotal,
+                        Percent = Calculator.Divide(groupTotal, (double)total),
+                        Statuses = typeStatusPercent
+                    };
+                }
+            );
+        var percentByType = IncidentTypes
+            .Select(type =>
+            {
+                if (!percentByTypeDictionary.TryGetValue(type, out var value))
+                    return new IncidentTypePercentDto
+                    {
+                        Type = type,
+                        Total = 0,
+                        Percent = 0,
+                        Statuses = Enum.GetValues<IncidentStatus>()
+                            .Select(status => new IncidentStatusPercentDto
+                            {
+                                Status = status,
+                                Total = 0,
+                                Percent = 0
+                            })
+                            .ToList()
+                    };
+                return value;
+            })
+            .ToList();
+
+        return new IncidentPercentDto
+        {
+            ShopId = shopId.Value,
+            Total = total,
+            Statuses = statusPercent,
+            StartDate = startDate,
+            EndDate = endDate,
+            Types = percentByType
         };
     }
 }
