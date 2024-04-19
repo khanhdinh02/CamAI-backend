@@ -382,4 +382,17 @@ public class EdgeBoxInstallService(
         await unitOfWork.CompleteAsync();
         return edgeBoxInstall;
     }
+
+    public Task UpdateEdgeBoxHealthByLastSeen(TimeSpan elapsedTime)
+    {
+        var lastTime = DateTimeHelper.VNDateTime - elapsedTime;
+        unitOfWork.EdgeBoxInstalls.UpdateStatusBy(
+            EdgeBoxInstallStatus.Unhealthy,
+            x =>
+                x.LastSeen < lastTime
+                && x.EdgeBox.EdgeBoxLocation == EdgeBoxLocation.Occupied
+                && x.EdgeBoxInstallStatus == EdgeBoxInstallStatus.Working
+        );
+        return Task.CompletedTask;
+    }
 }
