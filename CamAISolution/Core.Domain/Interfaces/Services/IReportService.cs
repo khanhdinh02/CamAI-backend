@@ -16,4 +16,7 @@ public interface IReportService
         DateOnly endDate,
         ReportInterval interval
     );
+
+    public Task<EdgeBoxReportDto> GetEdgeBoxReport();
+    public Task<EdgeBoxInstallReportDto> GetInstallEdgeBoxReport();
 }
