@@ -5,6 +5,7 @@ using Core.Domain.Enums;
 using Core.Domain.Interfaces.Services;
 using Core.Domain.Models.Publishers;
 using Core.Domain.Services;
+using Host.CamAI.API.BackgroundServices;
 using Host.CamAI.API.Consumers.Contracts;
 using Infrastructure.MessageQueue;
 using MassTransit;
@@ -24,6 +25,7 @@ public class HealthCheckResponseConsumer(
     {
         var message = context.Message;
         logger.Info($"Receive health check response from edge box {message.EdgeBoxId}");
+        EdgeBoxHealthCheckService.ReceivedEdgeBoxHealthResponse(message.EdgeBoxId);
         var ebInstall = await edgeBoxInstallService.GetLatestInstallingByEdgeBox(message.EdgeBoxId);
         if (ebInstall == null)
         {
@@ -34,7 +36,7 @@ public class HealthCheckResponseConsumer(
         // Reactivate edge box
         var retryActivateEdgeBox = false;
         if (
-            ebInstall.ActivationStatus is EdgeBoxActivationStatus.Failed or EdgeBoxActivationStatus.Pending
+            ebInstall.ActivationStatus == EdgeBoxActivationStatus.Failed
             && message.Status == EdgeBoxInstallStatus.Working
         )
         {
