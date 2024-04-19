@@ -385,11 +385,11 @@ public class EdgeBoxInstallService(
 
     public Task UpdateEdgeBoxHealthByLastSeen(TimeSpan elapsedTime)
     {
-        var now = DateTimeHelper.VNDateTime;
+        var lastTime = DateTimeHelper.VNDateTime - elapsedTime;
         unitOfWork.EdgeBoxInstalls.UpdateStatusBy(
             EdgeBoxInstallStatus.Unhealthy,
             x =>
-                x.LastSeen + elapsedTime < now
+                x.LastSeen < lastTime
                 && x.EdgeBox.EdgeBoxLocation == EdgeBoxLocation.Occupied
                 && x.EdgeBoxInstallStatus == EdgeBoxInstallStatus.Working
         );
