@@ -58,6 +58,9 @@ public class BrandService(
 
     public async Task<Brand> CreateBrand(CreateBrandDto brandDto, CreateImageDto? banner, CreateImageDto? logo)
     {
+        if (!await unitOfWork.Wards.IsExisted(brandDto.CompanyWardId))
+            throw new NotFoundException(typeof(Ward), brandDto.CompanyWardId);
+
         var brand = mapping.Map<CreateBrandDto, Brand>(brandDto);
         if (banner != null)
             brand.BannerId = (await blobService.UploadImage(banner, nameof(Brand), nameof(Brand.Banner))).Id;
@@ -87,6 +90,9 @@ public class BrandService(
         var brand = await unitOfWork.Brands.GetByIdAsync(id);
         if (brand is null)
             throw new NotFoundException(typeof(Brand), id);
+
+        if (!await unitOfWork.Wards.IsExisted(brandDto.CompanyWardId))
+            throw new NotFoundException(typeof(Ward), brandDto.CompanyWardId);
 
         var currentAccount = accountService.GetCurrentAccount();
         if (!IsAccountOwnBrand(currentAccount, brand))

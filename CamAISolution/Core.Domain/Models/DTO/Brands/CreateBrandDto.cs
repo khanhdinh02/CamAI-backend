@@ -14,7 +14,9 @@ public class CreateBrandDto
     [StringLength(50)]
     [Phone]
     public string? Phone { get; set; }
-
-    // public CreateImageDto? Logo { get; set; }
-    // public CreateImageDto? Banner { get; set; }
+    public string? Description { get; set; }
+    public string CompanyName { get; set; } = null!;
+    public string? BrandWebsite { get; set; }
+    public string CompanyAddress { get; set; } = null!;
+    public Guid CompanyWardId { get; set; }
 }
