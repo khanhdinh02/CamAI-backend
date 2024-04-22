@@ -8,12 +8,12 @@ public class Employee : BusinessEntity
 {
     [StringLength(50)]
     public string Name { get; set; } = null!;
+    public string? OrganizationId { get; set; }
     public string? Email { get; set; }
     public Gender Gender { get; set; }
 
     [StringLength(50)]
     public string? Phone { get; set; }
-
     // TODO: change this to table Image
     public Uri? Image { get; set; }
     public DateOnly? Birthday { get; set; }

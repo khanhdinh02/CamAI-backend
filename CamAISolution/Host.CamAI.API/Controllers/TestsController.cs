@@ -2,10 +2,14 @@ using Core.Application.Events;
 using Core.Application.Events.Args;
 using Core.Domain.DTO;
 using Core.Domain.Entities;
+using Core.Domain.Enums;
 using Core.Domain.Interfaces.Mappings;
 using Core.Domain.Interfaces.Services;
 using Infrastructure.Observer.Messages;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using Org.BouncyCastle.Crypto.Encodings;
+using RabbitMQ.Client;
 
 namespace Host.CamAI.API.Controllers;
 
@@ -15,10 +19,24 @@ public class TestsController(
     IBaseMapping mapping,
     IIncidentService incidentService,
     EventManager eventManager,
-    AccountNotificationSubject accountNotificationSubject,
-    IncidentSubject incidentSubject
+    IncidentSubject incidentSubject,
+    ILogger<TestsController> logger,
+    IReadFileService readFileService
 ) : ControllerBase
 {
+    [HttpPost("readfile")]
+    public ActionResult ReadFile(IFormFile file)
+    {
+        // var path = "/home/ryuuji/coding/capstone/documents/test.csv";
+        using var stream = new MemoryStream();
+        file.CopyTo(stream);
+        stream.Seek(0, SeekOrigin.Begin);
+        foreach (var record in readFileService.ReadFile<EmployeeFromFileFormat>(stream, FileType.Csv))
+            logger.LogInformation($"{record.Name}, {record.IsSupervisor}");
+        return Ok();
+    }
+
+
     [HttpGet]
     public ActionResult<string> TestEndpoint()
     {

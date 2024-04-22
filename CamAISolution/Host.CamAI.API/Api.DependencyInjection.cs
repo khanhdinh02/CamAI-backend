@@ -10,6 +10,7 @@ using Core.Domain.Services;
 using Host.CamAI.API.BackgroundServices;
 using Host.CamAI.API.Events;
 using Host.CamAI.API.Sockets;
+using Infrastructure.Files;
 using Microsoft.OpenApi.Models;
 
 namespace Host.CamAI.API;
@@ -53,6 +54,7 @@ public static class ApiDependencyInjection
         services.AddScoped<INotificationService, NotificationService>();
         services.AddSingleton<EventManager>().AddSingleton<HumanCountSubject>();
         services.AddObserverPattern();
+        services.AddReadFile();
         return services;
     }
 

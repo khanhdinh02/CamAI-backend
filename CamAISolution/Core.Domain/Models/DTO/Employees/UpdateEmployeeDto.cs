@@ -7,6 +7,7 @@ public class UpdateEmployeeDto
 {
     [StringLength(50)]
     public string Name { get; set; } = null!;
+    public string? OrganizationId { get; set; }
 
     [EmailAddress]
     public string Email { get; set; } = null!;
