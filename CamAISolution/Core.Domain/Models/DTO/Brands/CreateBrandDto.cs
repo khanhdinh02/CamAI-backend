@@ -18,5 +18,5 @@ public class CreateBrandDto
     public string CompanyName { get; set; } = null!;
     public string? BrandWebsite { get; set; }
     public string CompanyAddress { get; set; } = null!;
-    public Guid CompanyWardId { get; set; }
+    public int CompanyWardId { get; set; }
 }

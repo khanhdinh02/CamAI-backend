@@ -15,8 +15,8 @@ public class BrandDto : BaseDto
     public string CompanyName { get; set; } = null!;
     public string? BrandWebsite { get; set; }
     public string CompanyAddress { get; set; } = null!;
-    public Guid CompanyWardId { get; set; }
+    public int CompanyWardId { get; set; }
     public BrandStatus BrandStatus { get; set; }
     public AccountDto? BrandManager { get; set; }
-    public WardDto Ward { get; set; } = null!;
+    public WardDto CompanyWard { get; set; } = null!;
 }
