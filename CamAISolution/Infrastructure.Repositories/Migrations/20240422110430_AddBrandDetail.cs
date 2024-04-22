@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
@@ -33,12 +32,11 @@ namespace Infrastructure.Repositories.Migrations
                 nullable: false,
                 defaultValue: "");
 
-            migrationBuilder.AddColumn<Guid>(
+            migrationBuilder.AddColumn<int>(
                 name: "CompanyWardId",
                 table: "Brands",
-                type: "uniqueidentifier",
-                nullable: false,
-                defaultValue: new Guid("00000000-0000-0000-0000-000000000000"));
+                type: "int",
+                nullable: true);
 
             migrationBuilder.AddColumn<string>(
                 name: "Description",
@@ -46,36 +44,28 @@ namespace Infrastructure.Repositories.Migrations
                 type: "nvarchar(max)",
                 nullable: true);
 
-            migrationBuilder.AddColumn<int>(
-                name: "WardId",
-                table: "Brands",
-                type: "int",
-                nullable: false,
-                defaultValue: 0);
-
             migrationBuilder.CreateIndex(
-                name: "IX_Brands_WardId",
+                name: "IX_Brands_CompanyWardId",
                 table: "Brands",
-                column: "WardId");
+                column: "CompanyWardId");
 
             migrationBuilder.AddForeignKey(
-                name: "FK_Brands_Wards_WardId",
+                name: "FK_Brands_Wards_CompanyWardId",
                 table: "Brands",
-                column: "WardId",
+                column: "CompanyWardId",
                 principalTable: "Wards",
-                principalColumn: "Id",
-                onDelete: ReferentialAction.Cascade);
+                principalColumn: "Id");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropForeignKey(
-                name: "FK_Brands_Wards_WardId",
+                name: "FK_Brands_Wards_CompanyWardId",
                 table: "Brands");
 
             migrationBuilder.DropIndex(
-                name: "IX_Brands_WardId",
+                name: "IX_Brands_CompanyWardId",
                 table: "Brands");
 
             migrationBuilder.DropColumn(
@@ -96,10 +86,6 @@ namespace Infrastructure.Repositories.Migrations
 
             migrationBuilder.DropColumn(
                 name: "Description",
-                table: "Brands");
-
-            migrationBuilder.DropColumn(
-                name: "WardId",
                 table: "Brands");
         }
     }

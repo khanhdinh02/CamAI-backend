@@ -28,7 +28,7 @@ public class Brand : BusinessEntity
 
     [StringLength(200)]
     public string CompanyAddress { get; set; } = null!;
-    public Guid CompanyWardId { get; set; }
+    public int? CompanyWardId { get; set; }
 
     public Guid? LogoId { get; set; }
     public Guid? BannerId { get; set; }
@@ -43,5 +43,7 @@ public class Brand : BusinessEntity
     [InverseProperty(nameof(Account.Brand))]
     public virtual ICollection<Account> Accounts { get; set; } = new HashSet<Account>();
     public virtual ICollection<Shop> Shops { get; set; } = new HashSet<Shop>();
-    public virtual Ward Ward { get; set; } = null!;
+
+    [ForeignKey(nameof(CompanyWardId))]
+    public virtual Ward? CompanyWard { get; set; }
 }

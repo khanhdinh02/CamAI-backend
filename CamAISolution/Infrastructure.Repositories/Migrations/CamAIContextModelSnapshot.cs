@@ -132,8 +132,8 @@ namespace Infrastructure.Repositories.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<Guid>("CompanyWardId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<int?>("CompanyWardId")
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
@@ -164,9 +164,6 @@ namespace Infrastructure.Repositories.Migrations
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("rowversion");
 
-                    b.Property<int>("WardId")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
 
                     b.HasIndex("BannerId");
@@ -175,9 +172,9 @@ namespace Infrastructure.Repositories.Migrations
                         .IsUnique()
                         .HasFilter("[BrandManagerId] IS NOT NULL");
 
-                    b.HasIndex("LogoId");
+                    b.HasIndex("CompanyWardId");
 
-                    b.HasIndex("WardId");
+                    b.HasIndex("LogoId");
 
                     b.ToTable("Brands");
                 });
@@ -817,23 +814,21 @@ namespace Infrastructure.Repositories.Migrations
                         .WithOne("ManagingBrand")
                         .HasForeignKey("Core.Domain.Entities.Brand", "BrandManagerId");
 
+                    b.HasOne("Core.Domain.Entities.Ward", "CompanyWard")
+                        .WithMany()
+                        .HasForeignKey("CompanyWardId");
+
                     b.HasOne("Core.Domain.Entities.Image", "Logo")
                         .WithMany()
                         .HasForeignKey("LogoId");
-
-                    b.HasOne("Core.Domain.Entities.Ward", "Ward")
-                        .WithMany()
-                        .HasForeignKey("WardId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
 
                     b.Navigation("Banner");
 
                     b.Navigation("BrandManager");
 
-                    b.Navigation("Logo");
+                    b.Navigation("CompanyWard");
 
-                    b.Navigation("Ward");
+                    b.Navigation("Logo");
                 });
 
             modelBuilder.Entity("Core.Domain.Entities.Camera", b =>
