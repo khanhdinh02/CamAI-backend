@@ -119,27 +119,8 @@ namespace Infrastructure.Repositories.Migrations
                     b.Property<int>("BrandStatus")
                         .HasColumnType("int");
 
-                    b.Property<string>("BrandWebsite")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("CompanyAddress")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<string>("CompanyName")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<Guid>("CompanyWardId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Email")
                         .HasColumnType("nvarchar(max)");
@@ -164,9 +145,6 @@ namespace Infrastructure.Repositories.Migrations
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("rowversion");
 
-                    b.Property<int>("WardId")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
 
                     b.HasIndex("BannerId");
@@ -176,8 +154,6 @@ namespace Infrastructure.Repositories.Migrations
                         .HasFilter("[BrandManagerId] IS NOT NULL");
 
                     b.HasIndex("LogoId");
-
-                    b.HasIndex("WardId");
 
                     b.ToTable("Brands");
                 });
@@ -821,19 +797,11 @@ namespace Infrastructure.Repositories.Migrations
                         .WithMany()
                         .HasForeignKey("LogoId");
 
-                    b.HasOne("Core.Domain.Entities.Ward", "Ward")
-                        .WithMany()
-                        .HasForeignKey("WardId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.Navigation("Banner");
 
                     b.Navigation("BrandManager");
 
                     b.Navigation("Logo");
-
-                    b.Navigation("Ward");
                 });
 
             modelBuilder.Entity("Core.Domain.Entities.Camera", b =>
