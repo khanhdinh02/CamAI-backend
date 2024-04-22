@@ -9,6 +9,7 @@
         <ProjectReference Include="..\Core.Application\Core.Application.csproj" />
     </ItemGroup>
     <ItemGroup>
+        <PackageReference Include="ExcelMapper" />
         <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
         <PackageReference Include="CsvHelper" />
     </ItemGroup>

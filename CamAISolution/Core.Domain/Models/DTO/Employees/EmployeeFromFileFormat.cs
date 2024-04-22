@@ -21,5 +21,5 @@ public class EmployeeFromFileFormat
     public string? Phone { get; set; }
     public DateOnly? Birthday { get; set; }
     public string? AddressLine { get; set; }
-    public object? IsSupervisor { get; set; }
+    public string IsSupervisor { get; set; }
 }

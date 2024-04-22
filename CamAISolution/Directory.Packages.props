@@ -7,6 +7,7 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageVersion Include="CsvHelper" Version="31.0.4" />
+    <PackageVersion Include="ExcelMapper" Version="5.2.581" />
     <PackageVersion Include="FirebaseAdmin" Version="2.4.0" />
     <PackageVersion Include="Microsoft.Extensions.Caching.Abstractions" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Caching.Memory" Version="8.0.0" />

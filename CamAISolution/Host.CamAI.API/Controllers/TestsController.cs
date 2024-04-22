@@ -32,7 +32,7 @@ public class TestsController(
         file.CopyTo(stream);
         stream.Seek(0, SeekOrigin.Begin);
         foreach (var record in readFileService.ReadFile<EmployeeFromFileFormat>(stream, FileType.Csv))
-            logger.LogInformation($"{record.Name}, {record.IsSupervisor}");
+            logger.LogInformation($"{record.Name}, {record.Email}");
         return Ok();
     }
 

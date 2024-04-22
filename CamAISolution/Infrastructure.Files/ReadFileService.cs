@@ -4,6 +4,7 @@ using Core.Domain;
 using Core.Domain.Enums;
 using Core.Domain.Interfaces.Services;
 using CsvHelper;
+using Ganss.Excel;
 
 namespace Infrastructure.Files;
 
@@ -40,11 +41,13 @@ public class ReadFileService(IAppLogging<ReadFileService> logger) : IReadFileSer
 
     private IEnumerable<T> ReadFromJson<T>(Stream stream)
     {
-        throw new NotImplementedException();
+        foreach (var record in System.Text.Json.JsonSerializer.Deserialize<IEnumerable<T>>(stream))
+            yield return record;
     }
 
     private IEnumerable<T> ReadFromXlsx<T>(Stream stream)
     {
-        throw new NotImplementedException();
+        foreach (var record in new ExcelMapper(stream).Fetch<T>())
+            yield return record;
     }
 }
