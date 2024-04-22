@@ -24,6 +24,8 @@ public class EdgeBoxInstallSearchSpec : RepositorySpec<EdgeBoxInstall>
             baseSpec.And(new EdgeBoxInstallByStartLastSeen(search.StartLastSeen.Value));
         if (search.EndLastSeen.HasValue)
             baseSpec.And(new EdgeBoxInstallByEndLastSeen(search.EndLastSeen.Value));
+        if (search.NotificationSent.HasValue)
+            baseSpec.And(new EdgeBoxInstallByNotificationSent(search.NotificationSent.Value));
 
         return baseSpec.GetExpression();
     }

@@ -58,4 +58,5 @@ public interface IEdgeBoxInstallService
     Task<EdgeBoxInstall> UpdateIpAddress(EdgeBoxInstall edgeBoxInstall, string ipAddress);
     Task<EdgeBoxInstall> UpdateLastSeen(EdgeBoxInstall edgeBoxInstall);
     Task UpdateEdgeBoxHealthByLastSeen(TimeSpan elapsedTime);
+    Task<EdgeBoxInstall> UpdateNotificationSent(EdgeBoxInstall edgeBoxInstall, bool notificationSent);
 }

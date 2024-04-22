@@ -55,6 +55,7 @@ public class EdgeBoxHealthCheckService(
             EdgeBoxLocation = EdgeBoxLocation.Occupied,
             EdgeBoxInstallStatus = EdgeBoxInstallStatus.Unhealthy,
             EndLastSeen = DateTime.Now - TimeSpan.FromSeconds(healthCheckConfiguration.UnhealthyNotifyTime),
+            NotificationSent = false,
             PageIndex = 0,
             Size = 100
         };
@@ -62,7 +63,10 @@ public class EdgeBoxHealthCheckService(
         {
             edgeBoxInstallsPagination = await edgeBoxInstallService.GetEdgeBoxInstall(searchRequest);
             foreach (var edgeBoxInstall in edgeBoxInstallsPagination.Values)
+            {
                 await notificationService.CreateNotification(await CreateNotification(edgeBoxInstall));
+                await edgeBoxInstallService.UpdateNotificationSent(edgeBoxInstall, true);
+            }
             searchRequest.PageIndex += 1;
         } while (!edgeBoxInstallsPagination.IsValuesEmpty);
     }

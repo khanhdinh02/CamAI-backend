@@ -13,6 +13,7 @@ public class EdgeBoxInstall : BusinessEntity
     public EdgeBoxInstallStatus EdgeBoxInstallStatus { get; set; }
 
     public DateTime? LastSeen { get; set; }
+    public bool NotificationSent { get; set; }
     public string? IpAddress { get; set; }
     public string? OperatingSystem { get; set; }
 
