@@ -7,7 +7,6 @@ public class CreateAccountDto
 {
     [EmailAddress]
     public string Email { get; set; } = null!;
-    public string Password { get; set; } = null!;
 
     [StringLength(50, MinimumLength = 1)]
     public string Name { get; set; } = null!;
