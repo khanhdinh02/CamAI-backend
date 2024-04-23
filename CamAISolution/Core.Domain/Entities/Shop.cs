@@ -6,6 +6,8 @@ namespace Core.Domain.Entities;
 
 public class Shop : BusinessEntity
 {
+    // public string? OrganizationId { get; set; }
+
     [StringLength(50)]
     public string Name { get; set; } = null!;
     public TimeOnly OpenTime { get; set; }

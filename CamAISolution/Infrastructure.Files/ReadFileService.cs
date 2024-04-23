@@ -19,7 +19,6 @@ public class ReadFileService(IAppLogging<ReadFileService> logger) : IReadFileSer
 
                 FileType.Xlsx => ReadFromXlsx<T>(stream),
                 FileType.Csv => ReadFromCsv<T>(stream),
-                FileType.Json => ReadFromJson<T>(stream),
                 _ => throw new NotSupportedException()
             };
         }
@@ -39,10 +38,9 @@ public class ReadFileService(IAppLogging<ReadFileService> logger) : IReadFileSer
             yield return record;
     }
 
-    private IEnumerable<T> ReadFromJson<T>(Stream stream)
+    public T ReadFromJson<T>(Stream stream)
     {
-        foreach (var record in System.Text.Json.JsonSerializer.Deserialize<IEnumerable<T>>(stream))
-            yield return record;
+        return System.Text.Json.JsonSerializer.Deserialize<T>(stream) ?? throw new BadRequestException("Cannot parse json file");
     }
 
     private IEnumerable<T> ReadFromXlsx<T>(Stream stream)

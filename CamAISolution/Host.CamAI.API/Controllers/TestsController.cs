@@ -8,8 +8,6 @@ using Core.Domain.Interfaces.Services;
 using Infrastructure.Observer.Messages;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
-using Org.BouncyCastle.Crypto.Encodings;
-using RabbitMQ.Client;
 
 namespace Host.CamAI.API.Controllers;
 
@@ -31,11 +29,10 @@ public class TestsController(
         using var stream = new MemoryStream();
         file.CopyTo(stream);
         stream.Seek(0, SeekOrigin.Begin);
-        foreach (var record in readFileService.ReadFile<EmployeeFromFileFormat>(stream, FileType.Csv))
-            logger.LogInformation($"{record.Name}, {record.Email}");
+        foreach (var record in readFileService.ReadFile<ShopFromImportFile>(stream, FileType.Xlsx))
+            logger.LogInformation($"{record.ShopName}, {record.ShopManagerEmail}");
         return Ok();
     }
-
 
     [HttpGet]
     public ActionResult<string> TestEndpoint()

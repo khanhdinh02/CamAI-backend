@@ -1,5 +1,6 @@
 using Core.Domain.DTO;
 using Core.Domain.Entities;
+using Core.Domain.Enums;
 using Core.Domain.Models;
 
 namespace Core.Domain.Interfaces.Services;

@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using System.Text.Json;
 using Core.Application.Events;
 using Core.Application.Exceptions;
@@ -23,7 +22,8 @@ public class BrandService(
     IAppLogging<BrandService> logger,
     IBaseMapping mapping,
     EventManager eventManager,
-    IBlobService blobService
+    IBlobService blobService,
+    IReadFileService readFileService
 ) : IBrandService
 {
     public async Task<PaginationResult<Brand>> GetBrands(SearchBrandRequest searchRequest)
@@ -226,4 +226,11 @@ public class BrandService(
         return brand != null
             && (account.Role == Role.Admin || (account.Role == Role.BrandManager && account.Brand!.Id == brand.Id));
     }
+
+    public Task MassImportShop(Stream shopStream, Stream shopManagerStream, FileType type)
+    {
+        
+        throw new NotImplementedException();
+    }
+
 }

@@ -138,4 +138,15 @@ public class BrandsController(IBrandService brandService, IBaseMapping mapping) 
         await brandService.UpdateImage(await imageDto.ToCreateImageDto(), type);
         return Ok();
     }
+
+    // [HttpPost("shop/import")]
+    // [AccessTokenGuard(Role.BrandManager)]
+    // public async Task<ActionResult> MassImportShop(IFormFile shops, IFormFile shopManagers, FileType type)
+    // {
+    //     using var shopStream = new MemoryStream();
+    //     using var shopManagerStream = new MemoryStream();
+    //     shops.CopyTo(shopStream);
+    //     shopManagerStream.CopyTo(shopManagerStream);
+    //     await brandService.MassImportShop(shopStream, shopManagerStream, type);
+    // }
 }
