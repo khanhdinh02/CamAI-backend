@@ -39,7 +39,7 @@ public class CamAIContext : DbContext
 
         modelBuilder.Entity<AccountNotification>().HasKey(an => new { an.AccountId, an.NotificationId });
 
-        modelBuilder.ApplyConfiguration(new EmployeeConfigurations());
+        modelBuilder.ApplyConfigurationsFromAssembly(this.GetType().Assembly);
     }
 
 }

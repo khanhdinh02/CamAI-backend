@@ -11,6 +11,7 @@ using Core.Domain.Interfaces.Services;
 using Core.Domain.Models;
 using Core.Domain.Repositories;
 using Core.Domain.Services;
+using Core.Domain.Utilities;
 
 namespace Core.Application.Implements;
 
@@ -20,7 +21,8 @@ public class ShopService(
     IAppLogging<ShopService> logger,
     IBaseMapping mapping,
     IAccountService accountService,
-    EventManager eventManager
+    EventManager eventManager,
+    IReadFileService readFileService
 ) : IShopService
 {
     public async Task<Shop> CreateShop(CreateOrUpdateShopDto shopDto)
@@ -210,5 +212,63 @@ public class ShopService(
         shop.ShopManagerId = shopManagerId;
         unitOfWork.Shops.Update(shop);
         await unitOfWork.CompleteAsync();
+    }
+
+    public async Task UpsertShop(Guid actorId, Stream stream)
+    {
+        var shopInserted = new HashSet<Guid>();
+        var shopUpdated = new HashSet<Guid>();
+        var accountInserted = new HashSet<Guid>();
+        var accountUpdated = new HashSet<Guid>();
+        var brand = (await unitOfWork.Brands.GetAsync(expression: b => b.BrandManagerId == actorId)).Values.FirstOrDefault() ?? throw new NotFoundException("Cannot find brand manager when upsert");
+        await unitOfWork.BeginTransaction();
+        foreach (var record in readFileService.ReadFile<ShopFromImportFile>(stream, FileType.Csv))
+        {
+            var shop = (await unitOfWork.Shops.GetAsync(expression: s => s.ExternalId == record.ExternalShopId)).Values.FirstOrDefault();
+            var account = (await unitOfWork.Accounts.GetAsync(expression: a => a.ExternalId == record.ExternalShopManagerId || a.Email == record.ShopManagerEmail)).Values.FirstOrDefault();
+            if (account == null)
+            {
+                account = record.GetManager();
+                account.Password = Hasher.Hash($"{account.Email}@123");
+                account.AccountStatus = AccountStatus.New;
+                account = await unitOfWork.Accounts.AddAsync(account);
+                accountInserted.Add(account.Id);
+            }
+            else
+            {
+                account.Email = record.GetManager().Email;
+                account.Name = record.GetManager().Name;
+                account.Gender = record.GetManager().Gender;
+                account.AddressLine = record.GetManager().AddressLine;
+                account.ExternalId = record.GetManager().ExternalId;
+                account.BrandId = brand.Id;
+                unitOfWork.Accounts.Update(account);
+                accountUpdated.Add(account.Id);
+            }
+            if (shop == null)
+            {
+                shop = record.GetShop();
+                shop.ShopManagerId = account.Id;
+                shop.BrandId = brand.Id;
+                shop.ShopStatus = ShopStatus.Active;
+                //TODO[Dat]: insert 0 value to database
+                shop.WardId = 1;
+                shop = await unitOfWork.Shops.AddAsync(shop);
+                shopInserted.Add(shop.Id);
+            }
+            else
+            {
+                shop.ExternalId = record.GetShop().ExternalId;
+                shop.Name = record.GetShop().Name;
+                shop.OpenTime = record.GetShop().OpenTime;
+                shop.CloseTime = record.GetShop().CloseTime;
+                shop.Phone = record.GetShop().Phone;
+                shop.AddressLine = record.GetShop().AddressLine;
+                unitOfWork.Shops.Update(shop);
+                shopUpdated.Add(shop.Id);
+            }
+        }
+        await unitOfWork.CompleteAsync();
+        await unitOfWork.CommitTransaction();
     }
 }

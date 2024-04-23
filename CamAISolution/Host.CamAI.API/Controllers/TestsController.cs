@@ -25,12 +25,11 @@ public class TestsController(
     [HttpPost("readfile")]
     public ActionResult ReadFile(IFormFile file)
     {
-        // var path = "/home/ryuuji/coding/capstone/documents/test.csv";
         using var stream = new MemoryStream();
         file.CopyTo(stream);
         stream.Seek(0, SeekOrigin.Begin);
-        foreach (var record in readFileService.ReadFile<ShopFromImportFile>(stream, FileType.Xlsx))
-            logger.LogInformation($"{record.ShopName}, {record.ShopManagerEmail}");
+        foreach (var record in readFileService.ReadFile<ShopFromImportFile>(stream, FileType.Csv))
+            logger.LogInformation($"{record.ShopName}, {record.ExternalShopId}");
         return Ok();
     }
 

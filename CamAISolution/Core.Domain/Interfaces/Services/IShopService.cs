@@ -19,4 +19,5 @@ public interface IShopService
     Task DeleteShop(Guid id);
     Task<Shop> UpdateShopStatus(Guid shopId, ShopStatus shopStatus);
     Task<PaginationResult<Shop>> GetShopsInstallingEdgeBox(bool hasEdgeBoxInstalling);
+    Task UpsertShop(Guid actorId, Stream stream);
 }

@@ -1,7 +1,10 @@
+using System.Collections.Concurrent;
+using Core.Domain;
 using Core.Domain.DTO;
 using Core.Domain.Entities;
 using Core.Domain.Enums;
 using Core.Domain.Interfaces.Mappings;
+using Core.Domain.Interfaces.Services;
 using Core.Domain.Models;
 using Core.Domain.Services;
 using Infrastructure.Jwt.Attribute;
@@ -11,8 +14,10 @@ namespace Host.CamAI.API.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class ShopsController(IShopService shopService, IBaseMapping baseMapping) : ControllerBase
+public class ShopsController(IAppLogging<ShopsController> logger, IAccountService accountService, IServiceProvider serviceProvider, IShopService shopService, IBaseMapping baseMapping) : ControllerBase
 {
+    private static readonly ConcurrentDictionary<string, Task> tasks = new();
+
     /// <summary>
     /// Search Shop base on current account's roles.
     /// </summary>
@@ -89,5 +94,40 @@ public class ShopsController(IShopService shopService, IBaseMapping baseMapping)
     {
         var shops = await shopService.GetShopsInstallingEdgeBox(q);
         return Ok(baseMapping.Map<Shop, ShopDto>(shops));
+    }
+
+    [HttpPost("upsert")]
+    [AccessTokenGuard(Role.BrandManager)]
+    public Task<IActionResult> UpsertShopAndManager(IFormFile file)
+    {
+        var actorId = accountService.GetCurrentAccount().Id;
+        var id = Guid.NewGuid().ToString("N");
+        var bulkTask = Task.Run(async () =>
+        {
+
+            try
+            {
+                var scope = serviceProvider.CreateScope();
+                var scopeShopService = scope.ServiceProvider.GetRequiredService<IShopService>();
+                var jwtService = scope.ServiceProvider.GetRequiredService<IJwtService>();
+                using var stream = new MemoryStream();
+                await file.CopyToAsync(stream);
+                stream.Seek(0, SeekOrigin.Begin);
+                await jwtService.SetCurrentUserToSystemHandler();
+                await scopeShopService.UpsertShop(actorId, stream);
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex.Message, ex);
+            }
+
+        }).ContinueWith(_ => tasks.TryRemove(id, out _));
+        tasks.TryAdd(id, bulkTask);
+        var res = new BulkResponse()
+        {
+            TaskId = id,
+            Message = $"Task is accepted"
+        };
+        return Task.FromResult<IActionResult>(Ok(res));
     }
 }

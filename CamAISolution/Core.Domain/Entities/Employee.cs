@@ -8,7 +8,6 @@ public class Employee : BusinessEntity
 {
     [StringLength(50)]
     public string Name { get; set; } = null!;
-    public string? OrganizationId { get; set; }
     public string? Email { get; set; }
     public Gender Gender { get; set; }
 

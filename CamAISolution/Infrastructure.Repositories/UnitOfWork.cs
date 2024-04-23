@@ -43,7 +43,10 @@ public class UnitOfWork(CamAIContext context, IServiceProvider serviceProvider) 
     public Task CommitTransaction()
     {
         if (haveTransaction)
+        {
+            UpdateAuditableEntities();
             return context.Database.CommitTransactionAsync();
+        }
         return Task.CompletedTask;
     }
 
@@ -58,6 +61,12 @@ public class UnitOfWork(CamAIContext context, IServiceProvider serviceProvider) 
     }
 
     public async Task<int> CompleteAsync()
+    {
+        UpdateAuditableEntities();
+        return await context.SaveChangesAsync();
+    }
+
+    private void UpdateAuditableEntities()
     {
         foreach (var entry in context.ChangeTracker.Entries<BusinessEntity>())
         {
@@ -87,7 +96,6 @@ public class UnitOfWork(CamAIContext context, IServiceProvider serviceProvider) 
                 }
             }
         }
-        return await context.SaveChangesAsync();
     }
 
     public void Dispose()

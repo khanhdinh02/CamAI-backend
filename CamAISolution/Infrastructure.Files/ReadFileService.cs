@@ -48,4 +48,10 @@ public class ReadFileService(IAppLogging<ReadFileService> logger) : IReadFileSer
         foreach (var record in new ExcelMapper(stream).Fetch<T>())
             yield return record;
     }
+
+    public async Task Dummy()
+    {
+        await Task.Delay(3000);
+        logger.Info("Delay message");
+    }
 }
