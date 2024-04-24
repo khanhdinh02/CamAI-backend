@@ -6,6 +6,8 @@ public class IncidentCountDto
 {
     public Guid ShopId { get; set; }
     public int Total { get; set; }
+    public Dictionary<IncidentType, int> Type { get; set; } = null!;
+    public Dictionary<IncidentStatus, int> Status { get; set; } = null!;
     public DateOnly StartDate { get; set; }
     public DateOnly EndDate { get; set; }
     public ReportInterval Interval { get; set; }
@@ -17,4 +19,7 @@ public class IncidentCountItemDto(DateTime time, int count, double? averageDurat
     public DateTime Time { get; set; } = time;
     public int Count { get; set; } = count;
     public double? AverageDuration { get; set; } = averageDuration;
+
+    public Dictionary<IncidentType, int> Type { get; set; } = null!;
+    public Dictionary<IncidentStatus, int> Status { get; set; } = null!;
 }
