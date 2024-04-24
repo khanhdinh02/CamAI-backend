@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using Core.Application.Exceptions;
 using Core.Domain;
 using Core.Domain.DTO;
 using Core.Domain.Entities;
@@ -16,7 +17,7 @@ namespace Host.CamAI.API.Controllers;
 [ApiController]
 public class ShopsController(IAppLogging<ShopsController> logger, IAccountService accountService, IServiceProvider serviceProvider, IShopService shopService, IBaseMapping baseMapping) : ControllerBase
 {
-    private static readonly ConcurrentDictionary<string, Task> tasks = new();
+    private static readonly ConcurrentDictionary<string, Task<BulkUpsertTaskResultResponse>> tasks = new();
 
     /// <summary>
     /// Search Shop base on current account's roles.
@@ -97,6 +98,7 @@ public class ShopsController(IAppLogging<ShopsController> logger, IAccountServic
     }
 
     [HttpPost("upsert")]
+    [RequestSizeLimit(10_000_000)]
     [AccessTokenGuard(Role.BrandManager)]
     public Task<IActionResult> UpsertShopAndManager(IFormFile file)
     {
@@ -104,7 +106,6 @@ public class ShopsController(IAppLogging<ShopsController> logger, IAccountServic
         var id = Guid.NewGuid().ToString("N");
         var bulkTask = Task.Run(async () =>
         {
-
             try
             {
                 var scope = serviceProvider.CreateScope();
@@ -114,14 +115,19 @@ public class ShopsController(IAppLogging<ShopsController> logger, IAccountServic
                 await file.CopyToAsync(stream);
                 stream.Seek(0, SeekOrigin.Begin);
                 await jwtService.SetCurrentUserToSystemHandler();
-                await scopeShopService.UpsertShop(actorId, stream);
+                var result = await scopeShopService.UpsertShop(actorId, stream);
+                return result;
             }
             catch (Exception ex)
             {
                 logger.Error(ex.Message, ex);
             }
-
-        }).ContinueWith(_ => tasks.TryRemove(id, out _));
+            finally
+            {
+                tasks.TryRemove(id, out _);
+            }
+            throw new ServiceUnavailableException("");
+        });
         tasks.TryAdd(id, bulkTask);
         var res = new BulkResponse()
         {

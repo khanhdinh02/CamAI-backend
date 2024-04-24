@@ -48,7 +48,7 @@ public class ShopFromImportFile : IFileMappable
         return result;
     }
 
-    public bool IsValid() => ShopFromImportFileValidation().Any();
+    public bool IsValid() => !ShopFromImportFileValidation().Any();
 
     public IDictionary<string, object?> ShopFromImportFileValidation() =>
         AccountValidation().Aggregate(ShopValidation(), (aggregateDict, next) =>

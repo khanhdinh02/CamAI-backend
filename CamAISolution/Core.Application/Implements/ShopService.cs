@@ -214,18 +214,24 @@ public class ShopService(
         await unitOfWork.CompleteAsync();
     }
 
-    public async Task UpsertShop(Guid actorId, Stream stream)
+    public async Task<BulkUpsertTaskResultResponse> UpsertShop(Guid actorId, Stream stream)
     {
         var shopInserted = new HashSet<Guid>();
         var shopUpdated = new HashSet<Guid>();
         var accountInserted = new HashSet<Guid>();
         var accountUpdated = new HashSet<Guid>();
         var faliedValidatedRecords = new Dictionary<int, object?>();
-        
+        var rowCount = 0;
         var brand = (await unitOfWork.Brands.GetAsync(expression: b => b.BrandManagerId == actorId)).Values.FirstOrDefault() ?? throw new NotFoundException("Cannot find brand manager when upsert");
         await unitOfWork.BeginTransaction();
         foreach (var record in readFileService.ReadFile<ShopFromImportFile>(stream, FileType.Csv))
         {
+            rowCount++;
+            if (!record.IsValid())
+            {
+                faliedValidatedRecords.Add(rowCount, record.ShopFromImportFileValidation());
+                continue;
+            }
             var shop = (await unitOfWork.Shops.GetAsync(expression: s => record.ExternalShopId != null && s.ExternalId == record.ExternalShopId)).Values.FirstOrDefault();
             var account = (await unitOfWork.Accounts.GetAsync(expression: a => a.ExternalId == record.ExternalShopManagerId || a.Email == record.ShopManagerEmail)).Values.FirstOrDefault();
             if (account == null)
@@ -272,5 +278,8 @@ public class ShopService(
         }
         await unitOfWork.CompleteAsync();
         await unitOfWork.CommitTransaction();
+        var result = new BulkUpsertTaskResultResponse(shopInserted.Count + accountInserted.Count, shopUpdated.Count + accountUpdated.Count, shopInserted, accountInserted, shopUpdated, accountUpdated, faliedValidatedRecords);
+        logger.Info($"Bulk upsert shop result:\nInserted: {result.Added}\nUpdated: {result.Updated}\nMetadata: {System.Text.Json.JsonSerializer.Serialize(result.Metadata)}");
+        return result;
     }
 }
