@@ -260,7 +260,6 @@ public class ShopService(
                 shop.BrandId = brand.Id;
                 shop.ShopStatus = ShopStatus.Active;
                 //TODO[Dat]: insert 0 value to database
-                shop.WardId = 1;
                 shop = await unitOfWork.Shops.AddAsync(shop);
                 shopInserted.Add(shop.Id);
             }
