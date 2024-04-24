@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.Net.Mail;
+using Core.Domain.Constants;
 using Core.Domain.Entities;
 using Core.Domain.Enums;
 
@@ -33,8 +34,8 @@ public class ShopFromImportFile : IFileMappable
             result.Add($"{nameof(ShopOpenTime)}", "Shop open time cannot later or equal than close time");
         if (ShopName.Length > 50)
             result.Add($"{nameof(ShopName)}", "Shop name's length must be less than or equal to 50");
-        if (ShopPhone != null && ShopPhone.Length > 50)
-            result.Add($"{nameof(ShopPhone)}", "Shop phone's lenght must be less than or equal to 50");
+        if (ShopPhone != null && !RegexHelper.VietNamPhoneNumber.IsMatch(ShopPhone))
+            result.Add($"{nameof(ShopPhone)}", "Shop phone's is wrong");
         return result;
     }
 
@@ -56,7 +57,7 @@ public class ShopFromImportFile : IFileMappable
             aggregateDict[next.Key] = next.Value;
             return aggregateDict;
         });
-    public Account GetManager() => new Account
+    public Account GetManager() => new()
     {
         Email = ShopManagerEmail,
         Name = ShopManagerName,
@@ -65,7 +66,7 @@ public class ShopFromImportFile : IFileMappable
         ExternalId = ExternalShopManagerId,
     };
 
-    public Shop GetShop() => new Shop
+    public Shop GetShop() => new()
     {
         ExternalId = ExternalShopId,
         Name = ShopName,

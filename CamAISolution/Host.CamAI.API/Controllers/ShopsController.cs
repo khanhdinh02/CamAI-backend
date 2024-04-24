@@ -17,7 +17,7 @@ namespace Host.CamAI.API.Controllers;
 [ApiController]
 public class ShopsController(IAppLogging<ShopsController> logger, IAccountService accountService, IServiceProvider serviceProvider, IShopService shopService, IBaseMapping baseMapping) : ControllerBase
 {
-    private static readonly ConcurrentDictionary<string, Task<BulkUpsertTaskResultResponse>> tasks = new();
+    private static readonly ConcurrentDictionary<string, Task<BulkUpsertTaskResultResponse>> Tasks = new();
 
     /// <summary>
     /// Search Shop base on current account's roles.
@@ -100,19 +100,20 @@ public class ShopsController(IAppLogging<ShopsController> logger, IAccountServic
     [HttpPost("upsert")]
     [RequestSizeLimit(10_000_000)]
     [AccessTokenGuard(Role.BrandManager)]
-    public Task<IActionResult> UpsertShopAndManager(IFormFile file)
+    public async Task<IActionResult> UpsertShopAndManager(IFormFile file)
     {
         var actorId = accountService.GetCurrentAccount().Id;
         var id = Guid.NewGuid().ToString("N");
+        var stream = new MemoryStream();
+        await file.CopyToAsync(stream);
         var bulkTask = Task.Run(async () =>
         {
+            using var scope = serviceProvider.CreateScope();
             try
             {
-                var scope = serviceProvider.CreateScope();
+                await Task.Delay(5000);
                 var scopeShopService = scope.ServiceProvider.GetRequiredService<IShopService>();
                 var jwtService = scope.ServiceProvider.GetRequiredService<IJwtService>();
-                using var stream = new MemoryStream();
-                await file.CopyToAsync(stream);
                 stream.Seek(0, SeekOrigin.Begin);
                 await jwtService.SetCurrentUserToSystemHandler();
                 var result = await scopeShopService.UpsertShop(actorId, stream);
@@ -120,20 +121,44 @@ public class ShopsController(IAppLogging<ShopsController> logger, IAccountServic
             }
             catch (Exception ex)
             {
-                logger.Error(ex.Message, ex);
+                scope.ServiceProvider.GetRequiredService<IAppLogging<ShopsController>>().Error(ex.Message, ex);
             }
             finally
             {
-                tasks.TryRemove(id, out _);
+                await stream.DisposeAsync();
+                Tasks.TryRemove(id, out _);
             }
-            throw new ServiceUnavailableException("");
+
+            return new BulkUpsertTaskResultResponse(0 ,0, 0);
         });
-        tasks.TryAdd(id, bulkTask);
+        Tasks.TryAdd(id, bulkTask);
         var res = new BulkResponse()
         {
             TaskId = id,
-            Message = $"Task is accepted"
+            Message = "Task is accepted"
         };
-        return Task.FromResult<IActionResult>(Ok(res));
+        return Ok(res);
+    }
+
+    /// <summary>
+    /// Long polling to get result of upsert task
+    /// </summary>
+    /// <param name="taskId">String value returned by /api/shops/upsert</param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    [HttpGet("upsert/task/{taskId}/result")]
+    public async Task<IActionResult> GetUpsertTaskResult(string taskId, CancellationToken cancellationToken)
+    {
+
+        if (!Tasks.TryGetValue(taskId, out var bulkTask))
+            return NoContent();
+        using var tokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        tokenSource.CancelAfter(TimeSpan.FromMinutes(2));
+
+        var timeoutTask = Task.Delay(-1, tokenSource.Token);
+        var completedTask = await Task.WhenAny(timeoutTask, bulkTask);
+        if (completedTask == bulkTask)
+            return Ok(await bulkTask);
+        return NoContent();
     }
 }
