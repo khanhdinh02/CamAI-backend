@@ -1,15 +1,18 @@
 ﻿using System.Globalization;
+using System.Reflection;
 using Core.Application.Exceptions;
 using Core.Domain;
 using Core.Domain.Enums;
 using Core.Domain.Interfaces.Services;
 using CsvHelper;
+using CsvHelper.Configuration;
 using Ganss.Excel;
 
 namespace Infrastructure.Files;
 
 public class ReadFileService(IAppLogging<ReadFileService> logger) : IReadFileService
 {
+    private static readonly IEnumerable<Type> classMaps = Assembly.GetAssembly(typeof(ReadFileService))!.GetTypes().Where(type => type.IsClass && !type.IsAbstract && type.IsSubclassOf(typeof(ClassMap)));
     public IEnumerable<T> ReadFile<T>(Stream stream, FileType type)
     {
         try
@@ -34,6 +37,10 @@ public class ReadFileService(IAppLogging<ReadFileService> logger) : IReadFileSer
     {
         using var reader = new StreamReader(stream);
         using var helper = new CsvReader(reader, CultureInfo.InvariantCulture);
+        //TODO[Dat]: use factory pattern
+        foreach (var classMap in classMaps)
+            helper.Context.RegisterClassMap(classMap);
+
         foreach (var record in helper.GetRecords<T>())
             yield return record;
     }
@@ -47,11 +54,5 @@ public class ReadFileService(IAppLogging<ReadFileService> logger) : IReadFileSer
     {
         foreach (var record in new ExcelMapper(stream).Fetch<T>())
             yield return record;
-    }
-
-    public async Task Dummy()
-    {
-        await Task.Delay(3000);
-        logger.Info("Delay message");
     }
 }

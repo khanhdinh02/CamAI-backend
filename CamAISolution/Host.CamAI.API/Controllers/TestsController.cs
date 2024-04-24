@@ -1,5 +1,7 @@
+using System.Text;
 using Core.Application.Events;
 using Core.Application.Events.Args;
+using Core.Domain.Constants;
 using Core.Domain.DTO;
 using Core.Domain.Entities;
 using Core.Domain.Enums;
@@ -22,6 +24,24 @@ public class TestsController(
     IReadFileService readFileService
 ) : ControllerBase
 {
+    [HttpGet("text")]
+    public object TestValidation()
+    {
+        var error = new StringBuilder("");
+        while (error.Length < 60)
+        {
+            error.Append("t");
+        }
+
+        var test = new ShopFromImportFile
+        {
+            ShopAddress = error.ToString(),
+            ShopManagerEmail = error.ToString(),
+            ShopManagerName = error.ToString(),
+            ShopName = error.ToString(),
+        };
+        return test.ShopFromImportFileValidation();
+    }
     [HttpPost("readfile")]
     public ActionResult ReadFile(IFormFile file)
     {

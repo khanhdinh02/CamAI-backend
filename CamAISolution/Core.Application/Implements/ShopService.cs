@@ -220,11 +220,13 @@ public class ShopService(
         var shopUpdated = new HashSet<Guid>();
         var accountInserted = new HashSet<Guid>();
         var accountUpdated = new HashSet<Guid>();
+        var faliedValidatedRecords = new Dictionary<int, object?>();
+        
         var brand = (await unitOfWork.Brands.GetAsync(expression: b => b.BrandManagerId == actorId)).Values.FirstOrDefault() ?? throw new NotFoundException("Cannot find brand manager when upsert");
         await unitOfWork.BeginTransaction();
         foreach (var record in readFileService.ReadFile<ShopFromImportFile>(stream, FileType.Csv))
         {
-            var shop = (await unitOfWork.Shops.GetAsync(expression: s => s.ExternalId == record.ExternalShopId)).Values.FirstOrDefault();
+            var shop = (await unitOfWork.Shops.GetAsync(expression: s => record.ExternalShopId != null && s.ExternalId == record.ExternalShopId)).Values.FirstOrDefault();
             var account = (await unitOfWork.Accounts.GetAsync(expression: a => a.ExternalId == record.ExternalShopManagerId || a.Email == record.ShopManagerEmail)).Values.FirstOrDefault();
             if (account == null)
             {
