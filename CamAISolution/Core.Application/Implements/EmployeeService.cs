@@ -10,7 +10,7 @@ using Core.Domain.Repositories;
 
 namespace Core.Application.Implements;
 
-public class EmployeeService(IUnitOfWork unitOfWork, IAccountService accountService, IBaseMapping mapper)
+public class EmployeeService(IUnitOfWork unitOfWork, IAccountService accountService, IReadFileService readFileService, IBaseMapping mapper)
     : IEmployeeService
 {
     public async Task<PaginationResult<Employee>> GetEmployees(SearchEmployeeRequest req)
@@ -108,6 +108,66 @@ public class EmployeeService(IUnitOfWork unitOfWork, IAccountService accountServ
             unitOfWork.Employees.Update(employee);
         }
         await unitOfWork.CompleteAsync();
+    }
+
+    public async Task<BulkUpsertTaskResultResponse> UpsertEmployees(Guid actorId, MemoryStream stream)
+    {
+        var employeeInserted = new HashSet<Guid>();
+        var employeeUpdated = new HashSet<Guid>();
+        var failedValidatedRecords = new Dictionary<int, object?>();
+        var rowCount = 1;
+        var shop = (await unitOfWork.Shops.GetAsync(s => s.ShopManagerId == actorId)).Values.FirstOrDefault() ??
+                   throw new NotFoundException("Cannot found shop");
+        await unitOfWork.BeginTransaction();
+        foreach (var record in readFileService.ReadFromCsv<EmployeeFromImportFile>(stream))
+        {
+            rowCount++;
+            if (!record.IsValid())
+            {
+                failedValidatedRecords.Add(rowCount, record.EmployeeFromImportFileValidation());
+                continue;
+            }
+
+            var employee = (await unitOfWork.Employees.GetAsync(expression: e =>
+                    (record.ExternalId != null && record.ExternalId == e.ExternalId ) || (record.Email != null && record.Email == e.Email), disableTracking: false)).Values.FirstOrDefault();
+            if (employee == null)
+            {
+                employee = new()
+                {
+                    Name = record.Name,
+                    Gender = record.Gender,
+                    ExternalId = record.ExternalId,
+                    Email = record.Email,
+                    ShopId = shop.Id,
+                    Birthday = record.Birthday,
+                    AddressLine = record.AddressLine
+                };
+                employee = await unitOfWork.Employees.AddAsync(employee);
+                employeeInserted.Add(employee.Id);
+            }
+            else
+            {
+                employee.Name = record.Name;
+                employee.Gender = record.Gender;
+                employee.ExternalId = record.ExternalId;
+                employee.Email = record.Email;
+                employee.ShopId = shop.Id;
+                employee.Birthday = record.Birthday;
+                employee.AddressLine = record.AddressLine;
+                unitOfWork.Employees.Update(employee);
+                employeeUpdated.Add(employee.Id);
+            }
+        }
+        await unitOfWork.CompleteAsync();
+        await unitOfWork.CommitTransaction();
+        return new(
+                employeeInserted.Count,
+                employeeUpdated.Count,
+                failedValidatedRecords.Count,
+                new {EmployeeInserted = employeeInserted },
+                new {EmployeeUpdated = employeeUpdated},
+                new {Errors = failedValidatedRecords.Select(e => new {Row = e.Key, Reasons = e.Value })}
+            );
     }
 
     private bool HasAuthority(Account user, Employee employee)

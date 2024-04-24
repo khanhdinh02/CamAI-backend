@@ -10,6 +10,7 @@ using Core.Domain.Interfaces.Services;
 using Infrastructure.Observer.Messages;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using ShopFromImportFile = Core.Domain.DTO.ShopFromImportFile;
 
 namespace Host.CamAI.API.Controllers;
 
@@ -48,7 +49,7 @@ public class TestsController(
         using var stream = new MemoryStream();
         file.CopyTo(stream);
         stream.Seek(0, SeekOrigin.Begin);
-        foreach (var record in readFileService.ReadFile<ShopFromImportFile>(stream, FileType.Csv))
+        foreach (var record in readFileService.ReadFromCsv<ShopFromImportFile>(stream))
             logger.LogInformation($"{record.ShopName}, {record.ExternalShopId}");
         return Ok();
     }

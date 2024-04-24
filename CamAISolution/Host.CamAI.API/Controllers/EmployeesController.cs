@@ -1,9 +1,12 @@
+using System.Collections.Concurrent;
+using Core.Domain;
 using Core.Domain.DTO;
 using Core.Domain.Entities;
 using Core.Domain.Enums;
 using Core.Domain.Interfaces.Mappings;
 using Core.Domain.Interfaces.Services;
 using Core.Domain.Models;
+using Core.Domain.Services;
 using Infrastructure.Jwt.Attribute;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,8 +14,10 @@ namespace Host.CamAI.API.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class EmployeesController(IEmployeeService employeeService, IBaseMapping mapper) : ControllerBase
+public class EmployeesController(IAccountService accountService, IServiceProvider serviceProvider, IEmployeeService employeeService, IBaseMapping mapper) : ControllerBase
 {
+    private static readonly ConcurrentDictionary<string, Task<BulkUpsertTaskResultResponse>> Tasks = new();
+
     /// <summary>
     /// Search employees
     /// </summary>
@@ -64,5 +69,48 @@ public class EmployeesController(IEmployeeService employeeService, IBaseMapping 
     {
         await employeeService.DeleteEmployee(id);
         return Accepted();
+    }
+
+    [HttpPost("upsert")]
+    [RequestSizeLimit(10_000_000)]
+    [AccessTokenGuard(Role.ShopManager)]
+    public async Task<IActionResult> UpsertEmployees(IFormFile file)
+    {
+        var actorId = accountService.GetCurrentAccount().Id;
+        var id = Guid.NewGuid().ToString("N");
+        var stream = new MemoryStream();
+        await file.CopyToAsync(stream);
+        var bulkTask = Task.Run(async () =>
+        {
+            using var scope = serviceProvider.CreateScope();
+            try
+            {
+                var scopeEmployeeService = scope.ServiceProvider.GetRequiredService<IEmployeeService>();
+                var jwtService = scope.ServiceProvider.GetRequiredService<IJwtService>();
+                stream.Seek(0, SeekOrigin.Begin);
+                await jwtService.SetCurrentUserToSystemHandler();
+                var result = await scopeEmployeeService.UpsertEmployees(actorId, stream);
+                return result;
+            }
+            catch (Exception ex)
+            {
+                scope.ServiceProvider.GetRequiredService<IAppLogging<EmployeesController>>().Error(ex.Message, ex);
+            }
+            finally
+            {
+                await stream.DisposeAsync();
+                Tasks.TryRemove(id, out _);
+            }
+
+            return new BulkUpsertTaskResultResponse(0 ,0, 0);
+        });
+        Tasks.TryAdd(id, bulkTask);
+
+        var res = new BulkResponse()
+        {
+            TaskId = id,
+            Message = "Task is accepted"
+        };
+        return Ok(res);
     }
 }

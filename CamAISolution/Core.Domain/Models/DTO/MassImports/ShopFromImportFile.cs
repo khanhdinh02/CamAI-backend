@@ -6,7 +6,7 @@ using Core.Domain.Enums;
 
 namespace Core.Domain.DTO;
 
-public class ShopFromImportFile : IFileMappable
+public class ShopFromImportFile
 {
     public string? ExternalShopId { get; set; }
     public string ShopName { get; set; } = string.Empty;
@@ -35,7 +35,7 @@ public class ShopFromImportFile : IFileMappable
         if (ShopName.Length > 50)
             result.Add($"{nameof(ShopName)}", "Shop name's length must be less than or equal to 50");
         if (ShopPhone != null && !RegexHelper.VietNamPhoneNumber.IsMatch(ShopPhone))
-            result.Add($"{nameof(ShopPhone)}", "Shop phone's is wrong");
+            result.Add($"{nameof(ShopPhone)}", $"{ShopPhone} is wrong");
         return result;
     }
 
@@ -43,7 +43,7 @@ public class ShopFromImportFile : IFileMappable
     {
         var result = new Dictionary<string, object?>();
         if (!MailAddress.TryCreate(ShopManagerEmail, out _))
-            result.Add($"{nameof(ShopManagerEmail)}", $"{ShopManagerEmail} is wrong email format");
+            result.Add($"{nameof(ShopManagerEmail)}", $"{ShopManagerEmail} is wrong format");
         if (ShopManagerName.Length > 50)
             result.Add($"{nameof(ShopManagerName)}", "Manager name's length must be less than or equal to 50");
         return result;

@@ -22,8 +22,7 @@ public class BrandService(
     IAppLogging<BrandService> logger,
     IBaseMapping mapping,
     EventManager eventManager,
-    IBlobService blobService,
-    IReadFileService readFileService
+    IBlobService blobService
 ) : IBrandService
 {
     public async Task<PaginationResult<Brand>> GetBrands(SearchBrandRequest searchRequest)
@@ -226,11 +225,4 @@ public class BrandService(
         return brand != null
             && (account.Role == Role.Admin || (account.Role == Role.BrandManager && account.Brand!.Id == brand.Id));
     }
-
-    public Task MassImportShop(Stream shopStream, Stream shopManagerStream, FileType type)
-    {
-        
-        throw new NotImplementedException();
-    }
-
 }

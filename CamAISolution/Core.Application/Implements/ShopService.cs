@@ -214,7 +214,7 @@ public class ShopService(
         await unitOfWork.CompleteAsync();
     }
 
-    public async Task<BulkUpsertTaskResultResponse> UpsertShop(Guid actorId, Stream stream)
+    public async Task<BulkUpsertTaskResultResponse> UpsertShops(Guid actorId, Stream stream)
     {
         var shopInserted = new HashSet<Guid>();
         var shopUpdated = new HashSet<Guid>();
@@ -224,7 +224,7 @@ public class ShopService(
         var rowCount = 1;
         var brand = (await unitOfWork.Brands.GetAsync(expression: b => b.BrandManagerId == actorId)).Values.FirstOrDefault() ?? throw new NotFoundException("Cannot find brand manager when upsert");
         await unitOfWork.BeginTransaction();
-        foreach (var record in readFileService.ReadFile<ShopFromImportFile>(stream, FileType.Csv))
+        foreach (var record in readFileService.ReadFromCsv<ShopFromImportFile>(stream))
         {
             rowCount++;
             if (!record.IsValid())
@@ -279,14 +279,14 @@ public class ShopService(
         await unitOfWork.CompleteAsync();
         await unitOfWork.CommitTransaction();
         var result = new BulkUpsertTaskResultResponse(
-            shopInserted.Count + accountInserted.Count,
-            shopUpdated.Count + accountUpdated.Count,
-            failedValidatedRecords.Count,
-            new {ShopInserted = shopInserted},
-            new {AccountInserted = accountInserted},
-            new {ShopUpdated = shopUpdated},
-            new {AccountUpdated = accountUpdated},
-            new {Errors = failedValidatedRecords.Select(e => new {Row = e.Key, Reasons = e.Value })}
+                shopInserted.Count + accountInserted.Count,
+                shopUpdated.Count + accountUpdated.Count,
+                failedValidatedRecords.Count,
+                new {ShopInserted = shopInserted},
+                new {AccountInserted = accountInserted},
+                new {ShopUpdated = shopUpdated},
+                new {AccountUpdated = accountUpdated},
+                new {Errors = failedValidatedRecords.Select(e => new {Row = e.Key, Reasons = e.Value })}
             );
         logger.Info($"Bulk upsert shop result:\nInserted: {result.Inserted}\nUpdated: {result.Updated}\nMetadata: {System.Text.Json.JsonSerializer.Serialize(result.Metadata)}");
         return result;

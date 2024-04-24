@@ -4,6 +4,6 @@ namespace Core.Domain.Interfaces.Services;
 
 public interface IReadFileService
 {
-    IEnumerable<T> ReadFile<T>(Stream stream, FileType type);
+    IEnumerable<T> ReadFromCsv<T>(Stream stream);
     T ReadFromJson<T>(Stream stream);
 }

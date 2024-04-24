@@ -111,12 +111,11 @@ public class ShopsController(IAppLogging<ShopsController> logger, IAccountServic
             using var scope = serviceProvider.CreateScope();
             try
             {
-                await Task.Delay(5000);
                 var scopeShopService = scope.ServiceProvider.GetRequiredService<IShopService>();
                 var jwtService = scope.ServiceProvider.GetRequiredService<IJwtService>();
                 stream.Seek(0, SeekOrigin.Begin);
                 await jwtService.SetCurrentUserToSystemHandler();
-                var result = await scopeShopService.UpsertShop(actorId, stream);
+                var result = await scopeShopService.UpsertShops(actorId, stream);
                 return result;
             }
             catch (Exception ex)
