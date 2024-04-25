@@ -113,4 +113,25 @@ public class EmployeesController(IAccountService accountService, IServiceProvide
         };
         return Ok(res);
     }
+
+    /// <summary>
+    /// Long polling to get result of upsert task
+    /// </summary>
+    /// <param name="taskId">String value returned by /api/employees/upsert</param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    [HttpGet("upsert/task/{taskId}/result")]
+    public async Task<IActionResult> GetUpsertTaskResult(string taskId, CancellationToken cancellationToken)
+    {
+        if (!Tasks.TryGetValue(taskId, out var bulkTask))
+            return NoContent();
+        using var tokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        tokenSource.CancelAfter(TimeSpan.FromMinutes(2));
+
+        var timeoutTask = Task.Delay(-1, tokenSource.Token);
+        var completedTask = await Task.WhenAny(timeoutTask, bulkTask);
+        if (completedTask == bulkTask)
+            return Ok(await bulkTask);
+        return NoContent();
+    }
 }
