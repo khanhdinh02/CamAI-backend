@@ -378,6 +378,7 @@ public class EdgeBoxInstallService(
     public async Task<EdgeBoxInstall> UpdateLastSeen(EdgeBoxInstall edgeBoxInstall)
     {
         edgeBoxInstall.LastSeen = DateTimeHelper.VNDateTime;
+        edgeBoxInstall.NotificationSent = false;
         unitOfWork.EdgeBoxInstalls.Update(edgeBoxInstall);
         await unitOfWork.CompleteAsync();
         return edgeBoxInstall;
@@ -394,5 +395,18 @@ public class EdgeBoxInstallService(
                 && x.EdgeBoxInstallStatus == EdgeBoxInstallStatus.Working
         );
         return Task.CompletedTask;
+    }
+
+    public async Task<EdgeBoxInstall> UpdateNotificationSent(EdgeBoxInstall edgeBoxInstall, bool notificationSent)
+    {
+        edgeBoxInstall.LastSeen = DateTimeHelper.VNDateTime;
+        edgeBoxInstall.NotificationSent = false;
+        unitOfWork.EdgeBoxInstalls.Update(edgeBoxInstall);
+        try
+        {
+            await unitOfWork.CompleteAsync();
+        }
+        catch (Exception) { }
+        return edgeBoxInstall;
     }
 }

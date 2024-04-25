@@ -10,5 +10,6 @@ public class BrandByIdRepoSpec : EntityByIdSpec<Brand, Guid>
         AddIncludes(b => b.BrandManager!);
         AddIncludes(nameof(Brand.Logo));
         AddIncludes(nameof(Brand.Banner));
+        AddIncludes(b => b.CompanyWard!.District.Province);
     }
 }

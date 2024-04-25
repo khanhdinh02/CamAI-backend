@@ -4,6 +4,7 @@ using Infrastructure.Repositories.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Repositories.Migrations
 {
     [DbContext(typeof(CamAIContext))]
-    partial class CamAIContextModelSnapshot : ModelSnapshot
+    [Migration("20240422110430_AddBrandDetail")]
+    partial class AddBrandDetail
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -46,9 +49,6 @@ namespace Infrastructure.Repositories.Migrations
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ExternalId")
-                        .HasColumnType("nvarchar(450)");
 
                     b.Property<int?>("Gender")
                         .HasColumnType("int");
@@ -85,8 +85,6 @@ namespace Infrastructure.Repositories.Migrations
                     b.HasIndex("BrandId");
 
                     b.HasIndex("WardId");
-
-                    b.HasIndex(new[] { "ExternalId" }, "IX_Accounts_ExternalId");
 
                     b.ToTable("Accounts");
                 });
@@ -385,9 +383,6 @@ namespace Infrastructure.Repositories.Migrations
                     b.Property<DateTime>("ModifiedDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<bool>("NotificationSent")
-                        .HasColumnType("bit");
-
                     b.Property<string>("OperatingSystem")
                         .HasColumnType("nvarchar(max)");
 
@@ -479,9 +474,6 @@ namespace Infrastructure.Repositories.Migrations
                     b.Property<int>("EmployeeStatus")
                         .HasColumnType("int");
 
-                    b.Property<string>("ExternalId")
-                        .HasColumnType("nvarchar(450)");
-
                     b.Property<int>("Gender")
                         .HasColumnType("int");
 
@@ -516,8 +508,6 @@ namespace Infrastructure.Repositories.Migrations
                     b.HasIndex("ShopId");
 
                     b.HasIndex("WardId");
-
-                    b.HasIndex(new[] { "ExternalId" }, "IX_Employees_ExternalId");
 
                     b.ToTable("Employees");
                 });
@@ -718,9 +708,6 @@ namespace Infrastructure.Repositories.Migrations
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("ExternalId")
-                        .HasColumnType("nvarchar(450)");
-
                     b.Property<DateTime>("ModifiedDate")
                         .HasColumnType("datetime2");
 
@@ -747,7 +734,7 @@ namespace Infrastructure.Repositories.Migrations
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("rowversion");
 
-                    b.Property<int?>("WardId")
+                    b.Property<int>("WardId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
@@ -759,8 +746,6 @@ namespace Infrastructure.Repositories.Migrations
                         .HasFilter("[ShopManagerId] IS NOT NULL");
 
                     b.HasIndex("WardId");
-
-                    b.HasIndex(new[] { "ExternalId" }, "IX_Shops_ExternalId");
 
                     b.ToTable("Shops");
                 });
@@ -1008,7 +993,9 @@ namespace Infrastructure.Repositories.Migrations
 
                     b.HasOne("Core.Domain.Entities.Ward", "Ward")
                         .WithMany()
-                        .HasForeignKey("WardId");
+                        .HasForeignKey("WardId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Brand");
 

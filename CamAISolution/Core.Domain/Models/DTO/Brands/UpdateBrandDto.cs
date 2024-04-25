@@ -12,4 +12,9 @@ public class UpdateBrandDto
 
     [Phone]
     public string? Phone { get; set; }
+    public string? Description { get; set; }
+    public string CompanyName { get; set; } = null!;
+    public string? BrandWebsite { get; set; }
+    public string CompanyAddress { get; set; } = null!;
+    public int CompanyWardId { get; set; }
 }

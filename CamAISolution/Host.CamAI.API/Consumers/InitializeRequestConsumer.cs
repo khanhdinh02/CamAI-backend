@@ -38,6 +38,7 @@ public class InitializeRequestConsumer(
         ebInstall.EdgeBox.MacAddress = message.MacAddress;
         ebInstall.EdgeBox.Version = message.Version;
         ebInstall.LastSeen = DateTimeHelper.VNDateTime;
+        ebInstall.NotificationSent = false;
         unitOfWork.EdgeBoxInstalls.Update(ebInstall);
         unitOfWork.EdgeBoxes.Update(ebInstall.EdgeBox);
         await unitOfWork.CompleteAsync();

@@ -13,6 +13,7 @@ public class BrandSearchSpec : RepositorySpec<Brand>
         AddIncludes(b => b.BrandManager!);
         AddIncludes(nameof(Brand.Logo));
         AddIncludes(nameof(Brand.Banner));
+        AddIncludes(nameof(Brand.CompanyWard));
     }
 
     private static Expression<Func<Brand, bool>> GetExpression(SearchBrandRequest searchRequest)

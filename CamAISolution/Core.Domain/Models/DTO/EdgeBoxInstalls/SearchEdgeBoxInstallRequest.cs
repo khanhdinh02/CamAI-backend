@@ -12,4 +12,5 @@ public class SearchEdgeBoxInstallRequest : BaseSearchRequest
 
     public DateTime? StartLastSeen { get; set; }
     public DateTime? EndLastSeen { get; set; }
+    public bool? NotificationSent { get; set; }
 }
