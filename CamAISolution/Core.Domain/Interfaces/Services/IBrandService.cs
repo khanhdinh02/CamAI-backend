@@ -14,5 +14,4 @@ public interface IBrandService
     Task<Brand> ReactivateBrand(Guid id);
     Task UpdateImage(CreateImageDto imageDto, BrandImageType type);
     Task DeleteBrand(Guid id);
-
 }

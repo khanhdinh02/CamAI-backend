@@ -1,11 +1,12 @@
 using Core.Domain.Constants;
+using Core.Domain.DTO;
 using CsvHelper.Configuration;
 
 namespace Infrastructure.Files.Configurations;
 
-public class EmployeeFromImportFile : ClassMap<EmployeeFromImportFile>
+public class EmployeeFromImportFileMap : ClassMap<EmployeeFromImportFileMap>
 {
-    public EmployeeFromImportFile()
+    public EmployeeFromImportFileMap()
     {
         foreach (var propertyInfo in typeof(EmployeeFromImportFile).GetProperties())
         {

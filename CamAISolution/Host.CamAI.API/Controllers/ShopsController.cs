@@ -102,8 +102,8 @@ public class ShopsController(IAppLogging<ShopsController> logger, IAccountServic
     [AccessTokenGuard(Role.BrandManager)]
     public async Task<IActionResult> UpsertShopAndManager(IFormFile file)
     {
-        var actorId = accountService.GetCurrentAccount().Id;
-        var id = Guid.NewGuid().ToString("N");
+        var brandManagerId = accountService.GetCurrentAccount().Id;
+        var bulkTaskId = Guid.NewGuid().ToString("N");
         var stream = new MemoryStream();
         await file.CopyToAsync(stream);
         var bulkTask = Task.Run(async () =>
@@ -115,7 +115,7 @@ public class ShopsController(IAppLogging<ShopsController> logger, IAccountServic
                 var jwtService = scope.ServiceProvider.GetRequiredService<IJwtService>();
                 stream.Seek(0, SeekOrigin.Begin);
                 await jwtService.SetCurrentUserToSystemHandler();
-                var result = await scopeShopService.UpsertShops(actorId, stream);
+                var result = await scopeShopService.UpsertShops(brandManagerId, stream);
                 return result;
             }
             catch (Exception ex)
@@ -125,15 +125,15 @@ public class ShopsController(IAppLogging<ShopsController> logger, IAccountServic
             finally
             {
                 await stream.DisposeAsync();
-                Tasks.TryRemove(id, out _);
+                Tasks.TryRemove(bulkTaskId, out _);
             }
 
             return new BulkUpsertTaskResultResponse(0 ,0, 0);
         });
-        Tasks.TryAdd(id, bulkTask);
+        Tasks.TryAdd(bulkTaskId, bulkTask);
         var res = new BulkResponse()
         {
-            TaskId = id,
+            TaskId = bulkTaskId,
             Message = "Task is accepted"
         };
         return Ok(res);
