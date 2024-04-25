@@ -22,9 +22,9 @@ public class EmployeeFromImportFile
         var result = new Dictionary<string, object?>();
         if(Name.Length > 50)
             result.Add($"{nameof(Name)}", "Employee name's length must be less than or equal to 50");
-        if(Email != null && !MailAddress.TryCreate(Email, out _))
+        if(!string.IsNullOrEmpty(Email) && !MailAddress.TryCreate(Email, out _))
             result.Add($"{nameof(Email)}", $"{Email} is wrong format");
-        if(Phone != null && !RegexHelper.VietNamPhoneNumber.IsMatch(Phone))
+        if(!string.IsNullOrEmpty(Phone) && !RegexHelper.VietNamPhoneNumber.IsMatch(Phone))
             result.Add($"{nameof(Phone)}", $"{Phone} is wrong");
         if(Birthday.HasValue && Birthday.Value.Year > (DateTimeHelper.VNDateTime.Year - 18))
             result.Add($"{Birthday}", "Employee is not 18 years old");

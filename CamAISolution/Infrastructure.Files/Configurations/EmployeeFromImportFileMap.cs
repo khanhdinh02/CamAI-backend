@@ -4,7 +4,7 @@ using CsvHelper.Configuration;
 
 namespace Infrastructure.Files.Configurations;
 
-public class EmployeeFromImportFileMap : ClassMap<EmployeeFromImportFileMap>
+public class EmployeeFromImportFileMap : ClassMap<EmployeeFromImportFile>
 {
     public EmployeeFromImportFileMap()
     {

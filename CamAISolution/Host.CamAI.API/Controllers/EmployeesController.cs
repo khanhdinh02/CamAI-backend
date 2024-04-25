@@ -85,6 +85,7 @@ public class EmployeesController(IAccountService accountService, IServiceProvide
             using var scope = serviceProvider.CreateScope();
             try
             {
+                await Task.Delay(5000);
                 var scopeEmployeeService = scope.ServiceProvider.GetRequiredService<IEmployeeService>();
                 var jwtService = scope.ServiceProvider.GetRequiredService<IJwtService>();
                 stream.Seek(0, SeekOrigin.Begin);

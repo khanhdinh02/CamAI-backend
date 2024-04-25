@@ -1,5 +1,4 @@
 using System.Collections.Concurrent;
-using Core.Application.Exceptions;
 using Core.Domain;
 using Core.Domain.DTO;
 using Core.Domain.Entities;
@@ -100,7 +99,7 @@ public class ShopsController(IAppLogging<ShopsController> logger, IAccountServic
     [HttpPost("upsert")]
     [RequestSizeLimit(10_000_000)]
     [AccessTokenGuard(Role.BrandManager)]
-    public async Task<IActionResult> UpsertShopAndManager(IFormFile file)
+    public async Task<ActionResult<BulkResponse>> UpsertShopAndManager(IFormFile file)
     {
         var brandManagerId = accountService.GetCurrentAccount().Id;
         var bulkTaskId = Guid.NewGuid().ToString("N");
@@ -146,7 +145,7 @@ public class ShopsController(IAppLogging<ShopsController> logger, IAccountServic
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     [HttpGet("upsert/task/{taskId}/result")]
-    public async Task<IActionResult> GetUpsertTaskResult(string taskId, CancellationToken cancellationToken)
+    public async Task<ActionResult<BulkUpsertTaskResultResponse>> GetUpsertTaskResult(string taskId, CancellationToken cancellationToken)
     {
 
         if (!Tasks.TryGetValue(taskId, out var bulkTask))
