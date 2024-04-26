@@ -102,9 +102,12 @@ public class IncidentService(
                 takeAll: true
             )
             .ContinueWith(t => t.Result.Values);
-        var employee = await employeeService.GetEmployeeById(employeeId);
-        if (incidents.Any(i => i.ShopId != employee.ShopId))
-            throw new BadRequestException("Incident and employee are not in the same shop");
+        if (isAccept)
+        {
+            var employee = await employeeService.GetEmployeeById(employeeId);
+            if (incidents.Any(i => i.ShopId != employee.ShopId))
+                throw new BadRequestException("Incident and employee are not in the same shop");
+        }
         var invalidIncidents = incidents.Where(i => i.IncidentType != IncidentType.Interaction).Select(i => i.Id);
         if (invalidIncidents.Any())
             throw new BadRequestException(
@@ -112,7 +115,7 @@ public class IncidentService(
             );
         foreach (var incident in incidents)
         {
-            incident.EmployeeId = isAccept ? employee.Id : null;
+            incident.EmployeeId = isAccept ? employeeId : null;
             incident.Status = isAccept ? IncidentStatus.Accepted : IncidentStatus.Rejected;
             unitOfWork.Incidents.Update(incident);
         }
