@@ -60,15 +60,18 @@ public class IncidentsController(
     }
 
     [HttpPost("accept")]
+    [AccessTokenGuard(Role.ShopManager)]
+    public async Task<IActionResult> AcceptAllIncidents(AcceptAllIncidentsRequest request)
+    {
+        await incidentService.AcceptOrRejectAllIncidents(request.IncidentIds, request.EmployeeId, true);
+        return Ok();
+    }
+
     [HttpPost("reject")]
     [AccessTokenGuard(Role.ShopManager)]
-    public async Task<IActionResult> AcceptAllIncidents(AcceptOrRejectAllIncidentsRequest request)
+    public async Task<IActionResult> RejectAllIncidents(RejectAllIncidentsRequest request)
     {
-        await incidentService.AcceptOrRejectAllIncidents(
-            request.IncidentIds,
-            request.EmployeeId,
-            Request.Path.ToString().ToLower().Contains("accept")
-        );
+        await incidentService.AcceptOrRejectAllIncidents(request.IncidentIds, Guid.Empty, false);
         return Ok();
     }
 
