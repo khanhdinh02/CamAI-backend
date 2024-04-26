@@ -20,8 +20,11 @@ public class EmployeeFromImportFile
     public IDictionary<string, object?> EmployeeFromImportFileValidation()
     {
         var result = new Dictionary<string, object?>();
-        if(Name.Length > 50)
-            result.Add($"{nameof(Name)}", "Employee name's length must be less than or equal to 50");
+
+        if (string.IsNullOrEmpty(Name))
+            result.Add($"{nameof(Name)}", "Cannot be empty");
+        else if(Name.Length > 50)
+            result.Add($"{nameof(Name)}", "Length must be less than or equal to 50");
         if(!string.IsNullOrEmpty(Email) && !MailAddress.TryCreate(Email, out _))
             result.Add($"{nameof(Email)}", $"{Email} is wrong format");
         if(!string.IsNullOrEmpty(Phone) && !RegexHelper.VietNamPhoneNumber.IsMatch(Phone))

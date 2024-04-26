@@ -18,7 +18,6 @@ public class ShopFromImportFile
     /// </summary>
     public string ShopAddress { get; set; } = null!;
     public string? ExternalShopManagerId { get; set; }
-    [EmailAddress]
     public string ShopManagerEmail { get; set; } = null!;
     public string ShopManagerName { get; set; } = null!;
     public Gender? ShopManagerGender { get; set; } = Gender.Male;
@@ -32,20 +31,30 @@ public class ShopFromImportFile
         var result = new Dictionary<string, object?>();
         if (ShopOpenTime >= ShopCloseTime)
             result.Add($"{nameof(ShopOpenTime)}", "Shop open time cannot later or equal than close time");
-        if (ShopName.Length > 50)
+        if (string.IsNullOrEmpty(ShopName))
+            result.Add($"{nameof(ShopName)}", "Cannot be empty and length must be less than or equal to 50");
+        else if (ShopName.Length > 50)
             result.Add($"{nameof(ShopName)}", "Shop name's length must be less than or equal to 50");
-        if (ShopPhone != null && !RegexHelper.VietNamPhoneNumber.IsMatch(ShopPhone))
+        if (!string.IsNullOrEmpty(ShopPhone) && !RegexHelper.VietNamPhoneNumber.IsMatch(ShopPhone))
             result.Add($"{nameof(ShopPhone)}", $"{ShopPhone} is wrong");
+        if (string.IsNullOrEmpty(ShopAddress))
+            result.Add($"{nameof(ShopAddress)}", "Cannot be empty");
         return result;
     }
 
     private IDictionary<string, object?> AccountValidation()
     {
         var result = new Dictionary<string, object?>();
+        if (string.IsNullOrEmpty(ShopManagerEmail))
+            result.Add($"{nameof(ShopManagerEmail)}", "Cannot be empty");
         if (!MailAddress.TryCreate(ShopManagerEmail, out _))
             result.Add($"{nameof(ShopManagerEmail)}", $"{ShopManagerEmail} is wrong format");
+        if (string.IsNullOrEmpty(ShopManagerName))
+            result.Add($"{nameof(ShopManagerName)}", "Cannot be empty");
         if (ShopManagerName.Length > 50)
             result.Add($"{nameof(ShopManagerName)}", "Manager name's length must be less than or equal to 50");
+        if (string.IsNullOrEmpty(ShopManagerAddress))
+            result.Add($"{nameof(ShopManagerAddress)}", "Cannot be empty");
         return result;
     }
 
