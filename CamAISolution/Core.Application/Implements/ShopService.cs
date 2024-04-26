@@ -237,7 +237,7 @@ public class ShopService(
             if (account == null)
             {
                 account = record.GetManager();
-                account.Password = Hasher.Hash($"{account.Email}@123");
+                account.Password = DomainHelper.GenerateDefaultPassword(account.Email);
                 account.AccountStatus = AccountStatus.New;
                 account = await unitOfWork.Accounts.AddAsync(account);
                 accountInserted.Add(account.Id);
