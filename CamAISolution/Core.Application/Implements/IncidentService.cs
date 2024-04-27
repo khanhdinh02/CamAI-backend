@@ -108,7 +108,7 @@ public class IncidentService(
             if (incidents.Any(i => i.ShopId != employee.ShopId))
                 throw new BadRequestException("Incident and employee are not in the same shop");
         }
-        var invalidIncidents = incidents.Where(i => i.IncidentType != IncidentType.Interaction).Select(i => i.Id);
+        var invalidIncidents = incidents.Where(i => i.IncidentType == IncidentType.Interaction).Select(i => i.Id);
         if (invalidIncidents.Any())
             throw new BadRequestException(
                 $"Cannot assign employee for interaction {String.Join(", ", invalidIncidents)}"
