@@ -10,8 +10,13 @@ using Core.Domain.Repositories;
 
 namespace Core.Application.Implements;
 
-public class EmployeeService(IUnitOfWork unitOfWork, IAccountService accountService, IReadFileService readFileService, IBaseMapping mapper)
-    : IEmployeeService
+public class EmployeeService(
+    INotificationService notificationService,
+    IUnitOfWork unitOfWork,
+    IAccountService accountService,
+    IReadFileService readFileService,
+    IBaseMapping mapper
+) : IEmployeeService
 {
     public async Task<PaginationResult<Employee>> GetEmployees(SearchEmployeeRequest req)
     {
@@ -160,6 +165,14 @@ public class EmployeeService(IUnitOfWork unitOfWork, IAccountService accountServ
         }
         await unitOfWork.CompleteAsync();
         await unitOfWork.CommitTransaction();
+        await notificationService.CreateNotification(new()
+        {
+            Priority = NotificationPriority.Normal,
+            Content = $"Inserted: {employeeInserted.Count}\nUpdated: {employeeUpdated.Count}\nFailed:{failedValidatedRecords.Count}",
+            Title = "Upsert employees completed",
+            Type = NotificationType.UpsertEmployee,
+            SentToId = [actorId],
+        });
         return new(
                 employeeInserted.Count,
                 employeeUpdated.Count,

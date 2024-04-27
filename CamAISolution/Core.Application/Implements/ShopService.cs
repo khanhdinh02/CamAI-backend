@@ -22,7 +22,8 @@ public class ShopService(
     IBaseMapping mapping,
     IAccountService accountService,
     EventManager eventManager,
-    IReadFileService readFileService
+    IReadFileService readFileService,
+    INotificationService notificationService
 ) : IShopService
 {
     public async Task<Shop> CreateShop(CreateOrUpdateShopDto shopDto)
@@ -277,9 +278,19 @@ public class ShopService(
         }
         await unitOfWork.CompleteAsync();
         await unitOfWork.CommitTransaction();
+        var totalOfInserted = shopInserted.Count + accountInserted.Count;
+        var totalOfUpdated = shopUpdated.Count + accountUpdated.Count;
+        await notificationService.CreateNotification(new()
+        {
+            Priority = NotificationPriority.Normal,
+            Content = $"Inserted: {totalOfInserted}\nUpdated: {totalOfUpdated}\nFailed:{failedValidatedRecords.Count}",
+            Title = "Upsert employees completed",
+            Type = NotificationType.UpsertEmployee,
+            SentToId = [actorId],
+        });
         var result = new BulkUpsertTaskResultResponse(
-                shopInserted.Count + accountInserted.Count,
-                shopUpdated.Count + accountUpdated.Count,
+                totalOfInserted,
+                totalOfUpdated,
                 failedValidatedRecords.Count,
                 new {ShopInserted = shopInserted},
                 new {AccountInserted = accountInserted},

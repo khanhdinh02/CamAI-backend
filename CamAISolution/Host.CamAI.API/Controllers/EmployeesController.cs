@@ -1,4 +1,3 @@
-using System.Collections.Concurrent;
 using Core.Domain;
 using Core.Domain.DTO;
 using Core.Domain.Entities;
@@ -7,6 +6,7 @@ using Core.Domain.Interfaces.Mappings;
 using Core.Domain.Interfaces.Services;
 using Core.Domain.Models;
 using Core.Domain.Services;
+using Host.CamAI.API.Utils;
 using Infrastructure.Jwt.Attribute;
 using Microsoft.AspNetCore.Mvc;
 
@@ -16,8 +16,6 @@ namespace Host.CamAI.API.Controllers;
 [ApiController]
 public class EmployeesController(IAccountService accountService, IServiceProvider serviceProvider, IEmployeeService employeeService, IBaseMapping mapper) : ControllerBase
 {
-    private static readonly ConcurrentDictionary<string, Task<BulkUpsertTaskResultResponse>> Tasks = new();
-
     /// <summary>
     /// Search employees
     /// </summary>
@@ -74,7 +72,7 @@ public class EmployeesController(IAccountService accountService, IServiceProvide
     [HttpPost("upsert")]
     [RequestSizeLimit(10_000_000)]
     [AccessTokenGuard(Role.ShopManager)]
-    public async Task<IActionResult> UpsertEmployees(IFormFile file)
+    public async Task<ActionResult<BulkResponse>> UpsertEmployees(IFormFile file)
     {
         var shopManagerId = accountService.GetCurrentAccount().Id;
         var bulkTaskId = Guid.NewGuid().ToString("N");
@@ -100,13 +98,12 @@ public class EmployeesController(IAccountService accountService, IServiceProvide
             finally
             {
                 await stream.DisposeAsync();
-                Tasks.TryRemove(bulkTaskId, out _);
+                ManageTaskHelper.RemoveTaskById(shopManagerId, bulkTaskId);
             }
 
             return new BulkUpsertTaskResultResponse(0 ,0, 0);
         });
-        Tasks.TryAdd(bulkTaskId, bulkTask);
-
+        ManageTaskHelper.AddUpsertTask(shopManagerId, bulkTask, bulkTaskId);
         var res = new BulkResponse()
         {
             TaskId = bulkTaskId,
@@ -122,17 +119,24 @@ public class EmployeesController(IAccountService accountService, IServiceProvide
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     [HttpGet("upsert/task/{taskId}/result")]
-    public async Task<IActionResult> GetUpsertTaskResult(string taskId, CancellationToken cancellationToken)
+    [AccessTokenGuard(Role.ShopManager)]
+    public async Task<ActionResult<BulkUpsertTaskResultResponse>> GetUpsertTaskResult(string taskId, CancellationToken cancellationToken)
     {
-        if (!Tasks.TryGetValue(taskId, out var bulkTask))
-            return NoContent();
+        ManageTaskHelper.GetTaskById(accountService.GetCurrentAccount().Id, taskId, out var bulkTask);
         using var tokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         tokenSource.CancelAfter(TimeSpan.FromMinutes(2));
-
         var timeoutTask = Task.Delay(-1, tokenSource.Token);
         var completedTask = await Task.WhenAny(timeoutTask, bulkTask);
         if (completedTask == bulkTask)
             return Ok(await bulkTask);
         return NoContent();
+    }
+
+    [HttpGet("upsert/task/")]
+    [AccessTokenGuard(Role.ShopManager)]
+    public ActionResult<List<string>> GetUpsertTaskIds()
+    {
+        ManageTaskHelper.GetTaskByActorId(accountService.GetCurrentAccount().Id, out var taskIds);
+        return taskIds;
     }
 }
