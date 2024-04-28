@@ -44,4 +44,16 @@ public static class BulkTaskManager
         if (UpsertTasks.TryGetValue(actorId, out var tasks) && tasks.TryRemove(taskId, out _) && !tasks.Any())
             UpsertTasks.TryRemove(actorId, out _);
     }
+
+    public static async Task<BulkUpsertTaskResultResponse?> GetBulkUpsertTaskResultResponse(Guid actorId, string taskId, CancellationToken cancellationToken, TimeSpan timeout)
+    {
+        GetTaskById(actorId, taskId, out var bulkTask);
+        using var tokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        tokenSource.CancelAfter(timeout);
+        var timeoutTask = Task.Delay(-1, tokenSource.Token);
+        var completedTask = await Task.WhenAny(timeoutTask, bulkTask);
+        if (completedTask == bulkTask)
+            return await bulkTask;
+        return null;
+    }
 }

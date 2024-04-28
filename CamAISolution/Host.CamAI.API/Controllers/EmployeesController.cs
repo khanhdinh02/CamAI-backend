@@ -125,13 +125,9 @@ public class EmployeesController(
         CancellationToken cancellationToken
     )
     {
-        BulkTaskManager.GetTaskById(accountService.GetCurrentAccount().Id, taskId, out var bulkTask);
-        using var tokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        tokenSource.CancelAfter(TimeSpan.FromMinutes(2));
-        var timeoutTask = Task.Delay(-1, tokenSource.Token);
-        var completedTask = await Task.WhenAny(timeoutTask, bulkTask);
-        if (completedTask == bulkTask)
-            return Ok(await bulkTask);
+        var result = await BulkTaskManager.GetBulkUpsertTaskResultResponse(accountService.GetCurrentAccount().Id, taskId, cancellationToken, TimeSpan.FromMinutes(2));
+        if( result != null)
+            return result;
         return NoContent();
     }
 
