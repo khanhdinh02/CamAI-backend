@@ -121,8 +121,9 @@ public class EmployeeService(
         var employeeUpdated = new HashSet<Guid>();
         var failedValidatedRecords = new Dictionary<int, object?>();
         var rowCount = 1;
-        var shop = (await unitOfWork.Shops.GetAsync(s => s.ShopManagerId == actorId)).Values.FirstOrDefault() ??
-                   throw new NotFoundException("Cannot found shop");
+        var shop =
+            (await unitOfWork.Shops.GetAsync(s => s.ShopManagerId == actorId)).Values.FirstOrDefault()
+            ?? throw new NotFoundException("Cannot found shop");
         await unitOfWork.BeginTransaction();
         foreach (var record in readFileService.ReadFromCsv<EmployeeFromImportFile>(stream))
         {
@@ -133,8 +134,14 @@ public class EmployeeService(
                 continue;
             }
 
-            var employee = (await unitOfWork.Employees.GetAsync(expression: e =>
-                    (record.ExternalId != null && record.ExternalId == e.ExternalId ) || (record.Email != null && record.Email == e.Email), disableTracking: false)).Values.FirstOrDefault();
+            var employee = (
+                await unitOfWork.Employees.GetAsync(
+                    expression: e =>
+                        (record.ExternalId != null && record.ExternalId == e.ExternalId)
+                        || (record.Email != null && record.Email == e.Email),
+                    disableTracking: false
+                )
+            ).Values.FirstOrDefault();
             if (employee == null)
             {
                 employee = new()
@@ -142,7 +149,7 @@ public class EmployeeService(
                     Name = record.Name,
                     Gender = record.Gender,
                     ExternalId = record.ExternalId,
-                    Email = record.Email,
+                    Email = record.Email == string.Empty ? null : record.Email,
                     ShopId = shop.Id,
                     Birthday = record.Birthday,
                     AddressLine = record.AddressLine
@@ -155,7 +162,7 @@ public class EmployeeService(
                 employee.Name = record.Name;
                 employee.Gender = record.Gender;
                 employee.ExternalId = record.ExternalId;
-                employee.Email = record.Email;
+                employee.Email = record.Email == string.Empty ? null : record.Email;
                 employee.ShopId = shop.Id;
                 employee.Birthday = record.Birthday;
                 employee.AddressLine = record.AddressLine;
@@ -165,22 +172,25 @@ public class EmployeeService(
         }
         await unitOfWork.CompleteAsync();
         await unitOfWork.CommitTransaction();
-        await notificationService.CreateNotification(new()
-        {
-            Priority = NotificationPriority.Normal,
-            Content = $"Inserted: {employeeInserted.Count}\nUpdated: {employeeUpdated.Count}\nFailed:{failedValidatedRecords.Count}",
-            Title = "Upsert employees completed",
-            Type = NotificationType.UpsertEmployee,
-            SentToId = [actorId],
-        });
+        await notificationService.CreateNotification(
+            new()
+            {
+                Priority = NotificationPriority.Normal,
+                Content =
+                    $"Inserted: {employeeInserted.Count}\nUpdated: {employeeUpdated.Count}\nFailed:{failedValidatedRecords.Count}",
+                Title = "Upsert employees completed",
+                Type = NotificationType.UpsertEmployee,
+                SentToId = [actorId],
+            }
+        );
         return new(
-                employeeInserted.Count,
-                employeeUpdated.Count,
-                failedValidatedRecords.Count,
-                new {EmployeeInserted = employeeInserted },
-                new {EmployeeUpdated = employeeUpdated},
-                new {Errors = failedValidatedRecords.Select(e => new {Row = e.Key, Reasons = e.Value })}
-            );
+            employeeInserted.Count,
+            employeeUpdated.Count,
+            failedValidatedRecords.Count,
+            new { EmployeeInserted = employeeInserted },
+            new { EmployeeUpdated = employeeUpdated },
+            new { Errors = failedValidatedRecords.Select(e => new { Row = e.Key, Reasons = e.Value }) }
+        );
     }
 
     private bool HasAuthority(Account user, Employee employee)

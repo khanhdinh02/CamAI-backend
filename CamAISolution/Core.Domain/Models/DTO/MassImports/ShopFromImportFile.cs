@@ -13,6 +13,7 @@ public class ShopFromImportFile
     public TimeOnly ShopOpenTime { get; set; }
     public TimeOnly ShopCloseTime { get; set; }
     public string? ShopPhone { get; set; }
+
     /// <summary>
     /// Shop's address line
     /// </summary>
@@ -21,6 +22,7 @@ public class ShopFromImportFile
     public string ShopManagerEmail { get; set; } = null!;
     public string ShopManagerName { get; set; } = null!;
     public Gender? ShopManagerGender { get; set; } = Gender.Male;
+
     /// <summary>
     /// Shop manager's address line
     /// </summary>
@@ -61,27 +63,34 @@ public class ShopFromImportFile
     public bool IsValid() => !ShopFromImportFileValidation().Any();
 
     public IDictionary<string, object?> ShopFromImportFileValidation() =>
-        AccountValidation().Aggregate(ShopValidation(), (aggregateDict, next) =>
-        {
-            aggregateDict[next.Key] = next.Value;
-            return aggregateDict;
-        });
-    public Account GetManager() => new()
-    {
-        Email = ShopManagerEmail,
-        Name = ShopManagerName,
-        Gender = ShopManagerGender,
-        AddressLine = ShopManagerAddress,
-        ExternalId = ExternalShopManagerId,
-    };
+        AccountValidation()
+            .Aggregate(
+                ShopValidation(),
+                (aggregateDict, next) =>
+                {
+                    aggregateDict[next.Key] = next.Value;
+                    return aggregateDict;
+                }
+            );
 
-    public Shop GetShop() => new()
-    {
-        ExternalId = ExternalShopId,
-        Name = ShopName,
-        OpenTime = ShopOpenTime,
-        CloseTime = ShopCloseTime,
-        Phone = ShopPhone,
-        AddressLine = ShopAddress
-    };
+    public Account GetManager() =>
+        new()
+        {
+            Email = ShopManagerEmail,
+            Name = ShopManagerName,
+            Gender = ShopManagerGender,
+            AddressLine = ShopManagerAddress,
+            ExternalId = ExternalShopManagerId == string.Empty ? null : ExternalShopManagerId,
+        };
+
+    public Shop GetShop() =>
+        new()
+        {
+            ExternalId = ExternalShopId == string.Empty ? null : ExternalShopId,
+            Name = ShopName,
+            OpenTime = ShopOpenTime,
+            CloseTime = ShopCloseTime,
+            Phone = ShopPhone == string.Empty ? null : ShopPhone,
+            AddressLine = ShopAddress
+        };
 }

@@ -14,7 +14,12 @@ namespace Host.CamAI.API.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class EmployeesController(IAccountService accountService, IServiceProvider serviceProvider, IEmployeeService employeeService, IBaseMapping mapper) : ControllerBase
+public class EmployeesController(
+    IAccountService accountService,
+    IServiceProvider serviceProvider,
+    IEmployeeService employeeService,
+    IBaseMapping mapper
+) : ControllerBase
 {
     /// <summary>
     /// Search employees
@@ -83,7 +88,6 @@ public class EmployeesController(IAccountService accountService, IServiceProvide
             using var scope = serviceProvider.CreateScope();
             try
             {
-                await Task.Delay(5000);
                 var scopeEmployeeService = scope.ServiceProvider.GetRequiredService<IEmployeeService>();
                 var jwtService = scope.ServiceProvider.GetRequiredService<IJwtService>();
                 stream.Seek(0, SeekOrigin.Begin);
@@ -98,17 +102,13 @@ public class EmployeesController(IAccountService accountService, IServiceProvide
             finally
             {
                 await stream.DisposeAsync();
-                ManageTaskHelper.RemoveTaskById(shopManagerId, bulkTaskId);
+                BulkTaskManager.RemoveTaskById(shopManagerId, bulkTaskId);
             }
 
-            return new BulkUpsertTaskResultResponse(0 ,0, 0);
+            return new BulkUpsertTaskResultResponse(0, 0, 0);
         });
-        ManageTaskHelper.AddUpsertTask(shopManagerId, bulkTask, bulkTaskId);
-        var res = new BulkResponse()
-        {
-            TaskId = bulkTaskId,
-            Message = "Task is accepted"
-        };
+        BulkTaskManager.AddUpsertTask(shopManagerId, bulkTask, bulkTaskId);
+        var res = new BulkResponse() { TaskId = bulkTaskId, Message = "Task is accepted" };
         return Ok(res);
     }
 
@@ -120,9 +120,12 @@ public class EmployeesController(IAccountService accountService, IServiceProvide
     /// <returns></returns>
     [HttpGet("upsert/task/{taskId}/result")]
     [AccessTokenGuard(Role.ShopManager)]
-    public async Task<ActionResult<BulkUpsertTaskResultResponse>> GetUpsertTaskResult(string taskId, CancellationToken cancellationToken)
+    public async Task<ActionResult<BulkUpsertTaskResultResponse>> GetUpsertTaskResult(
+        string taskId,
+        CancellationToken cancellationToken
+    )
     {
-        ManageTaskHelper.GetTaskById(accountService.GetCurrentAccount().Id, taskId, out var bulkTask);
+        BulkTaskManager.GetTaskById(accountService.GetCurrentAccount().Id, taskId, out var bulkTask);
         using var tokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         tokenSource.CancelAfter(TimeSpan.FromMinutes(2));
         var timeoutTask = Task.Delay(-1, tokenSource.Token);
@@ -136,7 +139,7 @@ public class EmployeesController(IAccountService accountService, IServiceProvide
     [AccessTokenGuard(Role.ShopManager)]
     public ActionResult<List<string>> GetUpsertTaskIds()
     {
-        ManageTaskHelper.GetTaskByActorId(accountService.GetCurrentAccount().Id, out var taskIds);
+        BulkTaskManager.GetTaskByActorId(accountService.GetCurrentAccount().Id, out var taskIds);
         return taskIds;
     }
 }

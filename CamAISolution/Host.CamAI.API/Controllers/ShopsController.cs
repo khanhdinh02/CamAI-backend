@@ -14,7 +14,13 @@ namespace Host.CamAI.API.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class ShopsController(IAppLogging<ShopsController> logger, IAccountService accountService, IServiceProvider serviceProvider, IShopService shopService, IBaseMapping baseMapping) : ControllerBase
+public class ShopsController(
+    IAppLogging<ShopsController> logger,
+    IAccountService accountService,
+    IServiceProvider serviceProvider,
+    IShopService shopService,
+    IBaseMapping baseMapping
+) : ControllerBase
 {
     /// <summary>
     /// Search Shop base on current account's roles.
@@ -122,17 +128,13 @@ public class ShopsController(IAppLogging<ShopsController> logger, IAccountServic
             finally
             {
                 await stream.DisposeAsync();
-                ManageTaskHelper.RemoveTaskById(brandManagerId, bulkTaskId);
+                BulkTaskManager.RemoveTaskById(brandManagerId, bulkTaskId);
             }
 
-            return new BulkUpsertTaskResultResponse(0 ,0, 0);
+            return new BulkUpsertTaskResultResponse(0, 0, 0);
         });
-        var res = new BulkResponse()
-        {
-            TaskId = bulkTaskId,
-            Message = "Task is accepted"
-        };
-        ManageTaskHelper.AddUpsertTask(brandManagerId, bulkTask, bulkTaskId);
+        var res = new BulkResponse() { TaskId = bulkTaskId, Message = "Task is accepted" };
+        BulkTaskManager.AddUpsertTask(brandManagerId, bulkTask, bulkTaskId);
         return Ok(res);
     }
 
@@ -144,9 +146,12 @@ public class ShopsController(IAppLogging<ShopsController> logger, IAccountServic
     /// <returns></returns>
     [HttpGet("upsert/task/{taskId}/result")]
     [AccessTokenGuard(Role.BrandManager)]
-    public async Task<ActionResult<BulkUpsertTaskResultResponse>> GetUpsertTaskResult(string taskId, CancellationToken cancellationToken)
+    public async Task<ActionResult<BulkUpsertTaskResultResponse>> GetUpsertTaskResult(
+        string taskId,
+        CancellationToken cancellationToken
+    )
     {
-        ManageTaskHelper.GetTaskById(accountService.GetCurrentAccount().Id, taskId, out var bulkTask);
+        BulkTaskManager.GetTaskById(accountService.GetCurrentAccount().Id, taskId, out var bulkTask);
         using var tokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         tokenSource.CancelAfter(TimeSpan.FromMinutes(2));
         var timeoutTask = Task.Delay(-1, tokenSource.Token);
@@ -160,7 +165,7 @@ public class ShopsController(IAppLogging<ShopsController> logger, IAccountServic
     [AccessTokenGuard(Role.BrandManager)]
     public ActionResult<List<string>> GetUpsertTaskIds()
     {
-        ManageTaskHelper.GetTaskByActorId(accountService.GetCurrentAccount().Id, out var taskIds);
+        BulkTaskManager.GetTaskByActorId(accountService.GetCurrentAccount().Id, out var taskIds);
         return taskIds;
     }
 }
