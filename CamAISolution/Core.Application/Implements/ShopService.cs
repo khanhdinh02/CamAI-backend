@@ -223,7 +223,9 @@ public class ShopService(
         var accountUpdated = new HashSet<Guid>();
         var failedValidatedRecords = new Dictionary<int, object?>();
         var rowCount = 1;
-        var brand = (await unitOfWork.Brands.GetAsync(expression: b => b.BrandManagerId == actorId)).Values.FirstOrDefault() ?? throw new NotFoundException("Cannot find brand manager when upsert");
+        var brand =
+            (await unitOfWork.Brands.GetAsync(expression: b => b.BrandManagerId == actorId)).Values.FirstOrDefault()
+            ?? throw new NotFoundException("Cannot find brand manager when upsert");
         await unitOfWork.BeginTransaction();
         foreach (var record in readFileService.ReadFromCsv<ShopFromImportFile>(stream))
         {
@@ -233,8 +235,18 @@ public class ShopService(
                 failedValidatedRecords.Add(rowCount, record.ShopFromImportFileValidation());
                 continue;
             }
-            var shop = (await unitOfWork.Shops.GetAsync(expression: s => record.ExternalShopId != null && s.ExternalId == record.ExternalShopId, disableTracking: false)).Values.FirstOrDefault();
-            var account = (await unitOfWork.Accounts.GetAsync(expression: a => a.ExternalId == record.ExternalShopManagerId || a.Email == record.ShopManagerEmail, disableTracking: false)).Values.FirstOrDefault();
+            var shop = (
+                await unitOfWork.Shops.GetAsync(
+                    expression: s => record.ExternalShopId != null && s.ExternalId == record.ExternalShopId,
+                    disableTracking: false
+                )
+            ).Values.FirstOrDefault();
+            var account = (
+                await unitOfWork.Accounts.GetAsync(
+                    expression: a => a.ExternalId == record.ExternalShopManagerId || a.Email == record.ShopManagerEmail,
+                    disableTracking: false
+                )
+            ).Values.FirstOrDefault();
             if (account == null)
             {
                 account = record.GetManager();
@@ -260,7 +272,6 @@ public class ShopService(
                 shop.ShopManagerId = account.Id;
                 shop.BrandId = brand.Id;
                 shop.ShopStatus = ShopStatus.Active;
-                //TODO[Dat]: insert 0 value to database
                 shop = await unitOfWork.Shops.AddAsync(shop);
                 shopInserted.Add(shop.Id);
             }
@@ -280,25 +291,30 @@ public class ShopService(
         await unitOfWork.CommitTransaction();
         var totalOfInserted = shopInserted.Count + accountInserted.Count;
         var totalOfUpdated = shopUpdated.Count + accountUpdated.Count;
-        await notificationService.CreateNotification(new()
-        {
-            Priority = NotificationPriority.Normal,
-            Content = $"Inserted: {totalOfInserted}\nUpdated: {totalOfUpdated}\nFailed:{failedValidatedRecords.Count}",
-            Title = "Upsert employees completed",
-            Type = NotificationType.UpsertEmployee,
-            SentToId = [actorId],
-        });
+        await notificationService.CreateNotification(
+            new()
+            {
+                Priority = NotificationPriority.Normal,
+                Content =
+                    $"Inserted: {totalOfInserted}\nUpdated: {totalOfUpdated}\nFailed:{failedValidatedRecords.Count}",
+                Title = "Upsert employees completed",
+                Type = NotificationType.UpsertEmployee,
+                SentToId = [actorId],
+            }
+        );
         var result = new BulkUpsertTaskResultResponse(
-                totalOfInserted,
-                totalOfUpdated,
-                failedValidatedRecords.Count,
-                new {ShopInserted = shopInserted},
-                new {AccountInserted = accountInserted},
-                new {ShopUpdated = shopUpdated},
-                new {AccountUpdated = accountUpdated},
-                new {Errors = failedValidatedRecords.Select(e => new {Row = e.Key, Reasons = e.Value })}
-            );
-        logger.Info($"Bulk upsert shop result:\nInserted: {result.Inserted}\nUpdated: {result.Updated}\nMetadata: {System.Text.Json.JsonSerializer.Serialize(result.Metadata)}");
+            totalOfInserted,
+            totalOfUpdated,
+            failedValidatedRecords.Count,
+            new { ShopInserted = shopInserted },
+            new { AccountInserted = accountInserted },
+            new { ShopUpdated = shopUpdated },
+            new { AccountUpdated = accountUpdated },
+            new { Errors = failedValidatedRecords.Select(e => new { Row = e.Key, Reasons = e.Value }) }
+        );
+        logger.Info(
+            $"Bulk upsert shop result:\nInserted: {result.Inserted}\nUpdated: {result.Updated}\nMetadata: {System.Text.Json.JsonSerializer.Serialize(result.Metadata)}"
+        );
         return result;
     }
 }

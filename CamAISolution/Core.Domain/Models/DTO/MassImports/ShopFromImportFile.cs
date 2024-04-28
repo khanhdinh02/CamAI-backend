@@ -49,7 +49,7 @@ public class ShopFromImportFile
         var result = new Dictionary<string, object?>();
         if (string.IsNullOrEmpty(ShopManagerEmail))
             result.Add($"{nameof(ShopManagerEmail)}", "Cannot be empty");
-        if (!MailAddress.TryCreate(ShopManagerEmail, out _))
+        else if (!MailAddress.TryCreate(ShopManagerEmail, out _))
             result.Add($"{nameof(ShopManagerEmail)}", $"{ShopManagerEmail} is wrong format");
         if (string.IsNullOrEmpty(ShopManagerName))
             result.Add($"{nameof(ShopManagerName)}", "Cannot be empty");
