@@ -97,4 +97,12 @@ public class AccountsController(IAccountService accountService, IBaseMapping map
         await accountService.DeleteAccount(id);
         return Accepted();
     }
+
+    [HttpPost("supervisor")]
+    [AccessTokenGuard(Role.ShopManager, Role.ShopHeadSupervisor)]
+    public async Task<AccountDto> CreateSupervisor(CreateSupervisorDto dto)
+    {
+        var newAccount = await accountService.CreateSupervisor(dto);
+        return mapper.Map<Account, AccountDto>(newAccount);
+    }
 }
