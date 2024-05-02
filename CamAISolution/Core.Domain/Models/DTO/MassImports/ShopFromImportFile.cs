@@ -31,8 +31,6 @@ public class ShopFromImportFile
     private IDictionary<string, object?> ShopValidation()
     {
         var result = new Dictionary<string, object?>();
-        if (ShopOpenTime >= ShopCloseTime)
-            result.Add($"{nameof(ShopOpenTime)}", "Shop open time cannot later or equal than close time");
         if (string.IsNullOrEmpty(ShopName))
             result.Add($"{nameof(ShopName)}", "Cannot be empty and length must be less than or equal to 50");
         else if (ShopName.Length > 50)
