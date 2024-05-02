@@ -40,5 +40,6 @@ public class Account : BusinessEntity
     [InverseProperty(nameof(Brand.BrandManager))]
     public virtual Brand? ManagingBrand { get; set; }
     public virtual Shop? ManagingShop { get; set; }
+    public virtual Employee? Employee { get; set; }
     public virtual ICollection<AccountNotification> ReceivedNotifications { get; set; }
 }

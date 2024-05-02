@@ -27,6 +27,7 @@ public class CamAIContext : DbContext
     public virtual DbSet<Notification> Notifications { get; set; } = null!;
     public virtual DbSet<AccountNotification> AccountNotifications { get; set; } = null!;
     public virtual DbSet<Image> Images { get; set; } = null!;
+    public virtual DbSet<SupervisorAssignment> SupervisorAssignments { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
