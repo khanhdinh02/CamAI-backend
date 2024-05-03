@@ -9,4 +9,5 @@ public enum NotificationType
     EdgeBoxInstallActivation = 1,
     EdgeBoxHealthy = 2,
     UpsertEmployee = 3,
+    UpsertShopAndManager = 4,
 }

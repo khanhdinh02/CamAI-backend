@@ -298,7 +298,7 @@ public class ShopService(
                 Content =
                     $"Inserted: {totalOfInserted}\nUpdated: {totalOfUpdated}\nFailed:{failedValidatedRecords.Count}",
                 Title = "Upsert employees completed",
-                Type = NotificationType.UpsertEmployee,
+                Type = NotificationType.UpsertShopAndManager,
                 SentToId = [actorId],
             }
         );
