@@ -137,8 +137,8 @@ public class EmployeeService(
             var employee = (
                 await unitOfWork.Employees.GetAsync(
                     expression: e =>
-                        (record.ExternalId != null && record.ExternalId == e.ExternalId)
-                        || (record.Email != null && record.Email == e.Email),
+                        (!string.IsNullOrEmpty(record.ExternalId) && record.ExternalId == e.ExternalId)
+                        || (!string.IsNullOrEmpty(record.Email) && record.Email == e.Email),
                     disableTracking: false
                 )
             ).Values.FirstOrDefault();

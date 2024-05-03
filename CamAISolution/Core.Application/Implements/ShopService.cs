@@ -237,13 +237,13 @@ public class ShopService(
             }
             var shop = (
                 await unitOfWork.Shops.GetAsync(
-                    expression: s => record.ExternalShopId != null && s.ExternalId == record.ExternalShopId,
+                    expression: s => s.ExternalId == record.GetShop().ExternalId,
                     disableTracking: false
                 )
             ).Values.FirstOrDefault();
             var account = (
                 await unitOfWork.Accounts.GetAsync(
-                    expression: a => a.ExternalId == record.ExternalShopManagerId || a.Email == record.ShopManagerEmail,
+                    expression: a => a.ExternalId == record.GetManager().ExternalId || a.Email == record.GetManager().Email,
                     disableTracking: false
                 )
             ).Values.FirstOrDefault();
@@ -311,9 +311,6 @@ public class ShopService(
             new { ShopUpdated = shopUpdated },
             new { AccountUpdated = accountUpdated },
             new { Errors = failedValidatedRecords.Select(e => new { Row = e.Key, Reasons = e.Value }) }
-        );
-        logger.Info(
-            $"Bulk upsert shop result:\nInserted: {result.Inserted}\nUpdated: {result.Updated}\nMetadata: {System.Text.Json.JsonSerializer.Serialize(result.Metadata)}"
         );
         return result;
     }
