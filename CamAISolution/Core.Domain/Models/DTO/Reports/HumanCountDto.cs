@@ -30,6 +30,6 @@ public class HumanCountItemDto
 
 public class InteractionCountDto
 {
-    public int Count;
+    public int Count { get; set; }
     public double? AverageDuration { get; set; }
 }
