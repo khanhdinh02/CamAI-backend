@@ -14,7 +14,7 @@ public class ReadFileService(IAppLogging<ReadFileService> logger) : IReadFileSer
     public IEnumerable<T> ReadFromCsv<T>(Stream stream)
     {
         using var reader = new StreamReader(stream);
-        using var helper = new CsvReader(reader, CultureInfo.InvariantCulture);
+        using var helper = new CsvReader(reader, CultureInfo.GetCultureInfo("vi-VN"));
         //TODO[Dat]: use factory pattern
         foreach (var classMap in ClassMaps)
             helper.Context.RegisterClassMap(classMap);

@@ -1,0 +1,2 @@
+ExternalId,Name,Email,Gender,Phone,Birthday,AddressLine
+Employees' identity in your system (can be empty),Name's max length is 50 (required),employee@email.com (can be empty),0 (0 is male, 1 is female, can be empty),0965784310 (text format, can be empty),22/03/2000 (dd/MM/yyyy, can be empty),
