@@ -128,7 +128,7 @@ public class ReportService(
                 var timeSpan = DateTimeHelper.MapTimeSpanFromTimeInterval(interval);
                 var data = lines.Select(l => JsonSerializer.Deserialize<HumanCountModel>(l)!).ToList();
                 Expression<Func<Incident, bool>> criteria = i =>
-                    i.IncidentType != IncidentType.Interaction
+                    i.IncidentType == IncidentType.Interaction
                     && i.ShopId == shopId
                     && i.StartTime >= startDateTime
                     && i.StartTime < endDateTime;
