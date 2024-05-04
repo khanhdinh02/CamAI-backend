@@ -269,7 +269,11 @@ public class IncidentService(
             var group = incidents.Where(i => i.StartTime >= time && i.StartTime < time + timeSpan);
             var count = group.Count();
             if (type != IncidentTypeRequestOption.Interaction)
-                items.Add(new IncidentCountItemDto(time, count));
+            {
+                var byStatus = group.GroupBy(x => x.Status).ToDictionary(x => x.Key, x => x.Count());
+                var byType = group.GroupBy(x => x.IncidentType).ToDictionary(x => x.Key, x => x.Count());
+                items.Add(new IncidentCountItemDto(time, count) { Type = byType, Status = byStatus });
+            }
             else
             {
                 var average = group
@@ -281,7 +285,7 @@ public class IncidentService(
             }
         }
 
-        return new IncidentCountDto
+        var incidentCountDto = new IncidentCountDto
         {
             ShopId = shopId.Value,
             Total = items.Sum(i => i.Count),
@@ -290,6 +294,12 @@ public class IncidentService(
             Interval = interval,
             Data = items
         };
+        if (type != IncidentTypeRequestOption.Interaction)
+        {
+            incidentCountDto.Status = incidents.GroupBy(x => x.Status).ToDictionary(x => x.Key, x => x.Count());
+            incidentCountDto.Type = incidents.GroupBy(x => x.IncidentType).ToDictionary(x => x.Key, x => x.Count());
+        }
+        return incidentCountDto;
     }
 
     public async Task<IncidentPercentDto> GetIncidentPercent(Guid? shopId, DateOnly startDate, DateOnly endDate)
