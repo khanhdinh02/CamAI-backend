@@ -7,5 +7,7 @@ public enum NotificationType
 {
     EdgeBoxUnhealthy = 0,
     EdgeBoxInstallActivation = 1,
-    EdgeBoxHealthy = 2
+    EdgeBoxHealthy = 2,
+    UpsertEmployee = 3,
+    UpsertShopAndManager = 4,
 }

@@ -4,6 +4,7 @@ using Infrastructure.Repositories.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Repositories.Migrations
 {
     [DbContext(typeof(CamAIContext))]
-    partial class CamAIContextModelSnapshot : ModelSnapshot
+    [Migration("20240423194431_ModifiedShopAccount")]
+    partial class ModifiedShopAccount
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -124,27 +127,8 @@ namespace Infrastructure.Repositories.Migrations
                     b.Property<int>("BrandStatus")
                         .HasColumnType("int");
 
-                    b.Property<string>("BrandWebsite")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("CompanyAddress")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<string>("CompanyName")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<int?>("CompanyWardId")
-                        .HasColumnType("int");
-
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Email")
                         .HasColumnType("nvarchar(max)");
@@ -176,8 +160,6 @@ namespace Infrastructure.Repositories.Migrations
                     b.HasIndex("BrandManagerId")
                         .IsUnique()
                         .HasFilter("[BrandManagerId] IS NOT NULL");
-
-                    b.HasIndex("CompanyWardId");
 
                     b.HasIndex("LogoId");
 
@@ -385,9 +367,6 @@ namespace Infrastructure.Repositories.Migrations
                     b.Property<DateTime>("ModifiedDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<bool>("NotificationSent")
-                        .HasColumnType("bit");
-
                     b.Property<string>("OperatingSystem")
                         .HasColumnType("nvarchar(max)");
 
@@ -479,9 +458,6 @@ namespace Infrastructure.Repositories.Migrations
                     b.Property<int>("EmployeeStatus")
                         .HasColumnType("int");
 
-                    b.Property<string>("ExternalId")
-                        .HasColumnType("nvarchar(450)");
-
                     b.Property<int>("Gender")
                         .HasColumnType("int");
 
@@ -516,8 +492,6 @@ namespace Infrastructure.Repositories.Migrations
                     b.HasIndex("ShopId");
 
                     b.HasIndex("WardId");
-
-                    b.HasIndex(new[] { "ExternalId" }, "IX_Employees_ExternalId");
 
                     b.ToTable("Employees");
                 });
@@ -747,7 +721,7 @@ namespace Infrastructure.Repositories.Migrations
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("rowversion");
 
-                    b.Property<int?>("WardId")
+                    b.Property<int>("WardId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
@@ -832,10 +806,6 @@ namespace Infrastructure.Repositories.Migrations
                         .WithOne("ManagingBrand")
                         .HasForeignKey("Core.Domain.Entities.Brand", "BrandManagerId");
 
-                    b.HasOne("Core.Domain.Entities.Ward", "CompanyWard")
-                        .WithMany()
-                        .HasForeignKey("CompanyWardId");
-
                     b.HasOne("Core.Domain.Entities.Image", "Logo")
                         .WithMany()
                         .HasForeignKey("LogoId");
@@ -843,8 +813,6 @@ namespace Infrastructure.Repositories.Migrations
                     b.Navigation("Banner");
 
                     b.Navigation("BrandManager");
-
-                    b.Navigation("CompanyWard");
 
                     b.Navigation("Logo");
                 });
@@ -1008,7 +976,9 @@ namespace Infrastructure.Repositories.Migrations
 
                     b.HasOne("Core.Domain.Entities.Ward", "Ward")
                         .WithMany()
-                        .HasForeignKey("WardId");
+                        .HasForeignKey("WardId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Brand");
 

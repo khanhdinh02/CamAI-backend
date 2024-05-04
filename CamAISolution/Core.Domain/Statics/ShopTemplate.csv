@@ -1,0 +1,2 @@
+External Shop Id,Shop Name,ShopOpenTime,Shop Close Time,Shop Phone,Shop Address,ExternalShopManagerId,ShopManagerEmail,ShopManagerName,ShopManagerGender,ShopManagerAddress
+Shops' identity in your system (can be empty),Shop's name (required),"12:27 (time only,  required)","23:27 (time only, required)","0965784310 (text format, can be empty)",(required),Shop managers’ identity in your system (can be empty),(required),(required),"(0 is male, 1 is female, can be empty)",(required

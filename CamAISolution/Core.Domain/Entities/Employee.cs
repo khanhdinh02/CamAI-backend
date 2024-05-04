@@ -6,6 +6,7 @@ namespace Core.Domain.Entities;
 
 public class Employee : BusinessEntity
 {
+    public string? ExternalId { get; set; }
     [StringLength(50)]
     public string Name { get; set; } = null!;
     public string? Email { get; set; }
@@ -13,7 +14,6 @@ public class Employee : BusinessEntity
 
     [StringLength(50)]
     public string? Phone { get; set; }
-
     // TODO: change this to table Image
     public Uri? Image { get; set; }
     public DateOnly? Birthday { get; set; }

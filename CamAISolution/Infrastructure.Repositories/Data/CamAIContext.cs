@@ -1,4 +1,5 @@
 using Core.Domain.Entities;
+using Infrastructure.Repositories.Data.Configurations;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Repositories.Data;
@@ -37,5 +38,8 @@ public class CamAIContext : DbContext
         modelBuilder.Entity<Incident>().HasOne(x => x.Shop).WithMany().OnDelete(DeleteBehavior.NoAction);
 
         modelBuilder.Entity<AccountNotification>().HasKey(an => new { an.AccountId, an.NotificationId });
+
+        modelBuilder.ApplyConfigurationsFromAssembly(this.GetType().Assembly);
     }
+
 }
