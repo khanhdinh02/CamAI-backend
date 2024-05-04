@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using System.Text.Json;
 using Core.Application.Events;
 using Core.Application.Exceptions;
@@ -81,7 +82,7 @@ public class ReportService(
         ReportInterval interval
     )
     {
-        List<HumanCountItemDto> columns = [];
+        List<EmployeeAndInteractionDto> columns = [];
 
         for (var date = startDate; date <= endDate; date = date.AddDays(1))
         {
@@ -121,45 +122,66 @@ public class ReportService(
                 //         };
                 //     });
 
+                var startDateTime = date.ToDateTime(TimeOnly.MinValue);
+                var endDateTime = endDate.AddDays(1).ToDateTime(TimeOnly.MinValue);
+
                 var timeSpan = DateTimeHelper.MapTimeSpanFromTimeInterval(interval);
-                var data = lines.Select(l => JsonSerializer.Deserialize<HumanCountModel>(l)!);
-                var resultForDate = new List<HumanCountItemDto>();
-                for (
-                    var time = date.ToDateTime(TimeOnly.MinValue);
-                    time < date.AddDays(1).ToDateTime(TimeOnly.MinValue);
-                    time += timeSpan
-                )
+                var data = lines.Select(l => JsonSerializer.Deserialize<HumanCountModel>(l)!).ToList();
+                Expression<Func<Incident, bool>> criteria = i =>
+                    i.IncidentType != IncidentType.Interaction
+                    && i.ShopId == shopId
+                    && i.StartTime >= startDateTime
+                    && i.StartTime < endDateTime;
+                var incidents = (await unitOfWork.Incidents.GetAsync(criteria, takeAll: true)).Values;
+                var resultForDate = new List<EmployeeAndInteractionDto>();
+                for (var time = startDateTime; time < date.AddDays(1).ToDateTime(TimeOnly.MinValue); time += timeSpan)
                 {
-                    var group = data.Where(r => r.Time >= time && r.Time < time + timeSpan).OrderBy(c => c.Time);
-                    if (!group.Any())
+                    var humanCountGroup = data.Where(r => r.Time >= time && r.Time < time + timeSpan)
+                        .OrderBy(c => c.Time)
+                        .ToList();
+                    HumanCountItemDto humanCountItemDto;
+                    if (!humanCountGroup.Any())
                     {
-                        resultForDate.Add(
-                            new HumanCountItemDto
-                            {
-                                Time = time,
-                                Low = 0,
-                                High = 0,
-                                Open = 0,
-                                Close = 0,
-                                Median = 0
-                            }
-                        );
-                        continue;
+                        humanCountItemDto = new HumanCountItemDto
+                        {
+                            Low = 0,
+                            High = 0,
+                            Open = 0,
+                            Close = 0,
+                            Median = 0
+                        };
                     }
-                    var count = group.Count();
-                    var orderedGroup = group.OrderBy(r => r.Total);
-                    var median = int.IsEvenInteger(count)
-                        ? (orderedGroup.ElementAt(count / 2).Total + orderedGroup.ElementAt(count / 2 - 1).Total) / 2.0f
-                        : orderedGroup.ElementAt(count / 2).Total;
+                    else
+                    {
+                        var orderedGroup = humanCountGroup.OrderBy(r => r.Total).ToList();
+                        var count = orderedGroup.Count;
+                        var median = int.IsEvenInteger(count)
+                            ? (orderedGroup[count / 2].Total + orderedGroup[count / 2 - 1].Total) / 2.0f
+                            : orderedGroup[count / 2].Total;
+                        humanCountItemDto = new HumanCountItemDto
+                        {
+                            Low = humanCountGroup.Min(r => r.Total),
+                            High = humanCountGroup.Max(r => r.Total),
+                            Open = humanCountGroup.First().Total,
+                            Close = humanCountGroup.Last().Total,
+                            Median = median
+                        };
+                    }
+
+                    var group = incidents.Where(i => i.StartTime >= time && i.StartTime < time + timeSpan).ToList();
+                    var average = group
+                        .Where(i => i.EndTime != null)
+                        .Select(i => (i.EndTime - i.StartTime)!.Value.TotalSeconds)
+                        .DefaultIfEmpty(0)
+                        .Average();
+                    var interactionDto = new InteractionCountDto { Count = group.Count, AverageDuration = average };
+
                     resultForDate.Add(
-                        new HumanCountItemDto
+                        new EmployeeAndInteractionDto
                         {
                             Time = time,
-                            Low = group.Min(r => r.Total),
-                            High = group.Max(r => r.Total),
-                            Open = group.First().Total,
-                            Close = group.Last().Total,
-                            Median = median
+                            HumanCount = humanCountItemDto,
+                            Interaction = interactionDto
                         }
                     );
                 }
