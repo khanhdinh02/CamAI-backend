@@ -1,3 +1,4 @@
+using Core.Application.Exceptions;
 using Core.Domain;
 using Core.Domain.DTO;
 using Core.Domain.Entities;
@@ -100,11 +101,18 @@ public class ShopsController(
         return Ok(baseMapping.Map<Shop, ShopDto>(shops));
     }
 
+    /// <summary>
+    /// only brand Manager upsert shop and shop manager
+    /// </summary>
+    /// <param name="file"></param>
+    /// <returns></returns>
     [HttpPost("upsert")]
     [RequestSizeLimit(10_000_000)]
     [AccessTokenGuard(Role.BrandManager)]
     public async Task<ActionResult<BulkResponse>> UpsertShopAndManager(IFormFile file)
     {
+        if (!file.ContentType.Contains(".csv", StringComparison.CurrentCultureIgnoreCase))
+            throw new BadRequestException("Accept.csv format only");
         var brandManagerId = accountService.GetCurrentAccount().Id;
         var bulkTaskId = Guid.NewGuid().ToString("N");
         var stream = new MemoryStream();
@@ -157,6 +165,10 @@ public class ShopsController(
         return NoContent();
     }
 
+    /// <summary>
+    /// Get all tasks are in process
+    /// </summary>
+    /// <returns></returns>
     [HttpGet("upsert/task")]
     [AccessTokenGuard(Role.BrandManager)]
     public ActionResult<List<string>> GetUpsertTaskIds()

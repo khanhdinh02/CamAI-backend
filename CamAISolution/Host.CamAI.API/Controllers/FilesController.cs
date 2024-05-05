@@ -8,6 +8,10 @@ namespace Host.CamAI.API.Controllers;
 [ApiController]
 public class FilesController : ControllerBase
 {
+    /// <summary>
+    /// Brand and shop manager only
+    /// </summary>
+    /// <returns></returns>
     [HttpGet("download/employee-csv")]
     [AccessTokenGuard(Role.BrandManager, Role.ShopManager)]
     public IActionResult DownloadEmployeeCsvTemplate()
@@ -19,6 +23,10 @@ public class FilesController : ControllerBase
         return File(stream, "text/csv", "EmployeeTemplate.csv");
     }
 
+    /// <summary>
+    /// Brand manager only
+    /// </summary>
+    /// <returns></returns>
     [HttpGet("download/shop-csv")]
     [AccessTokenGuard(Role.BrandManager)]
     public IActionResult DownloadShopCsvTemplate()
