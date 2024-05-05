@@ -48,6 +48,7 @@ public static class ApiDependencyInjection
         services.AddScoped<IEdgeBoxModelService, EdgeBoxModelService>();
         services.AddScoped<ILocationService, LocationService>();
         services.AddScoped<IEdgeBoxInstallService, EdgeBoxInstallService>();
+        services.AddScoped<ISupervisorAssignmentService, SupervisorAssignmentService>();
         services.AddSingleton<EventManager>();
         services.AddScoped<IReportService, ReportService>();
         services.AddScoped<INotificationService, NotificationService>();

@@ -90,4 +90,12 @@ public class ShopsController(IShopService shopService, IBaseMapping baseMapping)
         var shops = await shopService.GetShopsInstallingEdgeBox(q);
         return Ok(baseMapping.Map<Shop, ShopDto>(shops));
     }
+
+    [HttpPut("supervisor")]
+    [AccessTokenGuard(Role.ShopHeadSupervisor, Role.ShopManager)]
+    public async Task<SupervisorAssignmentDto> AssignShopSupervisor(AssignShopSupervisorDto dto)
+    {
+        var assignment = await shopService.AssignSupervisorRoles(dto.AccountId, dto.Role);
+        return baseMapping.Map<SupervisorAssignment, SupervisorAssignmentDto>(assignment);
+    }
 }

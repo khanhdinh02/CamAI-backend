@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using Core.Domain.DTO;
 using Core.Domain.Entities;
 using Core.Domain.Enums;
@@ -19,4 +20,9 @@ public interface IShopService
     Task DeleteShop(Guid id);
     Task<Shop> UpdateShopStatus(Guid shopId, ShopStatus shopStatus);
     Task<PaginationResult<Shop>> GetShopsInstallingEdgeBox(bool hasEdgeBoxInstalling);
+    Task<Account?> GetCurrentHeadSupervisor(Guid shopId);
+    Task<Account?> GetCurrentSupervisor(Guid shopId);
+    Task<SupervisorAssignment> AssignSupervisorRoles(Guid accountId, Role role);
+    Task<SupervisorAssignment> AssignHeadSupervisor(Account account);
+    Task<SupervisorAssignment> AssignSupervisor(Account account);
 }

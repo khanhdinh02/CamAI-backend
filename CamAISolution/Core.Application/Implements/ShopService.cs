@@ -11,6 +11,7 @@ using Core.Domain.Interfaces.Services;
 using Core.Domain.Models;
 using Core.Domain.Repositories;
 using Core.Domain.Services;
+using Core.Domain.Utilities;
 
 namespace Core.Application.Implements;
 
@@ -20,6 +21,7 @@ public class ShopService(
     IAppLogging<ShopService> logger,
     IBaseMapping mapping,
     IAccountService accountService,
+    ISupervisorAssignmentService supervisorAssignmentService,
     EventManager eventManager
 ) : IShopService
 {
@@ -210,5 +212,180 @@ public class ShopService(
         shop.ShopManagerId = shopManagerId;
         unitOfWork.Shops.Update(shop);
         await unitOfWork.CompleteAsync();
+    }
+
+    public async Task<Account?> GetCurrentHeadSupervisor(Guid shopId)
+    {
+        return (await supervisorAssignmentService.GetLatestHeadSupervisorAssignment(shopId))?.Assignee;
+    }
+
+    public async Task<Account?> GetCurrentSupervisor(Guid shopId)
+    {
+        return (await supervisorAssignmentService.GetLatestSupervisorAssignment(shopId))?.Assignee;
+    }
+
+    public async Task<SupervisorAssignment> AssignSupervisorRoles(Guid accountId, Role role)
+    {
+        var account =
+            await unitOfWork.Accounts.GetByIdAsync(accountId)
+            ?? throw new NotFoundException(typeof(Account), accountId);
+        switch (role)
+        {
+            case Role.ShopHeadSupervisor:
+                return await AssignHeadSupervisor(account);
+            case Role.ShopSupervisor:
+                return await AssignSupervisor(account);
+            default:
+                throw new ArgumentOutOfRangeException(nameof(role), role, null);
+        }
+    }
+
+    public async Task<SupervisorAssignment> AssignHeadSupervisor(Account account)
+    {
+        var user = accountService.GetCurrentAccount();
+        if (user.Role is not (Role.ShopManager or Role.SystemHandler))
+            throw new BadRequestException("User is not a shop manager or system handler");
+        var employee = (
+            await unitOfWork.Employees.GetAsync(
+                e => e.AccountId == account.Id,
+                includeProperties: [nameof(Employee.Shop)]
+            )
+        ).Values.FirstOrDefault();
+        if (employee?.ShopId == null)
+            throw new BadRequestException("Invalid employee account");
+
+        var latestAsm = await supervisorAssignmentService.GetLatestHeadSupervisorAssignment(employee.ShopId.Value);
+        var currentHeadSupervisor = latestAsm?.Assignee;
+        var currentTime = DateTimeHelper.VNDateTime;
+        var isShopOpening = IsShopOpeningAtTime(employee.Shop!, TimeOnly.FromDateTime(currentTime));
+
+        if (latestAsm != null)
+        {
+            if (isShopOpening)
+            {
+                if (currentHeadSupervisor?.Id == account.Id)
+                    return latestAsm;
+
+                latestAsm.EndTime = currentTime;
+                unitOfWork.SupervisorAssignments.Update(latestAsm);
+            }
+            else
+                unitOfWork.SupervisorAssignments.Delete(latestAsm);
+
+            if (currentHeadSupervisor != null && currentHeadSupervisor.Id != account.Id)
+            {
+                currentHeadSupervisor.Role = Role.ShopSupervisor;
+                unitOfWork.Accounts.Update(currentHeadSupervisor);
+            }
+        }
+
+        var supervisorAssignment = new SupervisorAssignment
+        {
+            ShopId = employee.ShopId,
+            AssignorId = user.Id,
+            AssigneeId = account.Id,
+            AssignedRole = Role.ShopHeadSupervisor,
+            StartTime = isShopOpening ? currentTime : GetNextOpenTime(employee.Shop!),
+            EndTime = GetNextCloseTime(employee.Shop!)
+        };
+        await unitOfWork.SupervisorAssignments.AddAsync(supervisorAssignment);
+
+        if (account.Role != Role.ShopHeadSupervisor)
+        {
+            account.Role = Role.ShopHeadSupervisor;
+            unitOfWork.Accounts.Update(account);
+        }
+
+        await unitOfWork.CompleteAsync();
+        return supervisorAssignment;
+    }
+
+    public async Task<SupervisorAssignment> AssignSupervisor(Account account)
+    {
+        var user = accountService.GetCurrentAccount();
+        if (user.Role is not Role.ShopHeadSupervisor)
+            throw new BadRequestException("User is not a head supervisor");
+        var employee = (
+            await unitOfWork.Employees.GetAsync(
+                e => e.AccountId == account.Id,
+                includeProperties: [nameof(Employee.Shop)]
+            )
+        ).Values.FirstOrDefault();
+        if (employee?.ShopId == null)
+            throw new BadRequestException("Invalid employee account");
+
+        var latestAsm = await supervisorAssignmentService.GetLatestSupervisorAssignment(employee.ShopId.Value);
+        var currentSupervisor = latestAsm?.Assignee;
+        var currentTime = DateTimeHelper.VNDateTime;
+        var isShopOpening = IsShopOpeningAtTime(employee.Shop!, TimeOnly.FromDateTime(currentTime));
+
+        if (latestAsm != null)
+        {
+            if (isShopOpening)
+            {
+                if (currentSupervisor?.Id == account.Id)
+                    return latestAsm;
+
+                latestAsm.EndTime = currentTime;
+                unitOfWork.SupervisorAssignments.Update(latestAsm);
+            }
+            else
+                unitOfWork.SupervisorAssignments.Delete(latestAsm);
+        }
+
+        var supervisorAssignment = new SupervisorAssignment
+        {
+            ShopId = employee.ShopId,
+            AssignorId = user.Id,
+            AssigneeId = account.Id,
+            AssignedRole = Role.ShopSupervisor,
+            StartTime = isShopOpening ? currentTime : GetNextOpenTime(employee.Shop!),
+            EndTime = GetNextCloseTime(employee.Shop!)
+        };
+        await unitOfWork.SupervisorAssignments.AddAsync(supervisorAssignment);
+
+        if (account.Role != Role.ShopSupervisor)
+        {
+            account.Role = Role.ShopSupervisor;
+            unitOfWork.Accounts.Update(account);
+        }
+
+        await unitOfWork.CompleteAsync();
+        return supervisorAssignment;
+    }
+
+    public static bool IsShopOpeningAtTime(Shop shop, TimeOnly time)
+    {
+        if (shop.OpenTime == shop.CloseTime)
+            return true;
+        if (shop.OpenTime < shop.CloseTime)
+            return shop.OpenTime <= time && time < shop.CloseTime;
+        return shop.OpenTime <= time || time < shop.CloseTime;
+    }
+
+    public static DateTime GetNextOpenTime(Shop shop)
+    {
+        var currentDateTime = DateTimeHelper.VNDateTime;
+        var currentTime = TimeOnly.FromDateTime(currentDateTime);
+        return new DateTime(
+            currentTime < shop.OpenTime
+                ? DateOnly.FromDateTime(currentDateTime)
+                : DateOnly.FromDateTime(currentDateTime).AddDays(1),
+            shop.OpenTime,
+            DateTimeKind.Unspecified
+        );
+    }
+
+    public static DateTime GetNextCloseTime(Shop shop)
+    {
+        var currentDateTime = DateTimeHelper.VNDateTime;
+        var currentTime = TimeOnly.FromDateTime(currentDateTime);
+        return new DateTime(
+            currentTime < shop.CloseTime
+                ? DateOnly.FromDateTime(currentDateTime)
+                : DateOnly.FromDateTime(currentDateTime).AddDays(1),
+            shop.CloseTime,
+            DateTimeKind.Unspecified
+        );
     }
 }
