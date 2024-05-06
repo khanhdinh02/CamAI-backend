@@ -111,7 +111,7 @@ public class ShopsController(
     [AccessTokenGuard(Role.BrandManager)]
     public async Task<ActionResult<BulkResponse>> UpsertShopAndManager(IFormFile file)
     {
-        if (!file.ContentType.Contains(".csv", StringComparison.CurrentCultureIgnoreCase))
+        if (!file.ContentType.Equals("text/csv", StringComparison.CurrentCultureIgnoreCase))
             throw new BadRequestException("Accept.csv format only");
         var brandManagerId = accountService.GetCurrentAccount().Id;
         var bulkTaskId = Guid.NewGuid().ToString("N");
