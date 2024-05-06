@@ -1,17 +1,12 @@
-using System.Net.Mime;
 using System.Text;
 using Core.Application.Events;
 using Core.Application.Events.Args;
-using Core.Domain.Constants;
 using Core.Domain.DTO;
 using Core.Domain.Entities;
-using Core.Domain.Enums;
 using Core.Domain.Interfaces.Mappings;
 using Core.Domain.Interfaces.Services;
 using Infrastructure.Observer.Messages;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
-using ContentType = MimeKit.ContentType;
 using ShopFromImportFile = Core.Domain.DTO.ShopFromImportFile;
 
 namespace Host.CamAI.API.Controllers;
@@ -30,11 +25,13 @@ public class TestsController(
     [HttpGet("download-csv")]
     public IActionResult DownloadFile()
     {
-        using var file = System.IO.File.OpenRead("../Core.Domain/Statics/EmployeeTemplate.csv");
+        var filename = Directory.EnumerateFiles(Directory.GetCurrentDirectory().Substring(0, Directory.GetCurrentDirectory().LastIndexOf('/')), "EmployeeTemplate.csv", SearchOption.AllDirectories).First();
+        using var file = System.IO.File.OpenRead(filename);
         var stream = new MemoryStream();
         file.CopyTo(stream);
         stream.Seek(0, SeekOrigin.Begin);
         return File(stream, "text/csv", "EmployeeTemplate.csv");
+
     }
 
     [HttpGet("text")]
