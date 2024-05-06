@@ -10,7 +10,7 @@ public class EmployeeFromImportFile
     public string? ExternalId { get; set; }
     public string Name { get; set; } = null!;
     public string? Email { get; set; }
-    public Gender Gender { get; set; }
+    public Gender? Gender { get; set; }
     public string? Phone { get; set; }
     public DateOnly? Birthday { get; set; }
     public string? AddressLine { get; set; }
