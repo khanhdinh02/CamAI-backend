@@ -6,7 +6,7 @@ namespace Host.CamAI.API.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class FilesController : ControllerBase
+public class FilesController(ILogger<FilesController> logger) : ControllerBase
 {
     /// <summary>
     /// Brand and shop manager only
@@ -14,9 +14,12 @@ public class FilesController : ControllerBase
     /// <returns></returns>
     [HttpGet("download/employee-csv")]
     [AccessTokenGuard(Role.BrandManager, Role.ShopManager)]
+
     public IActionResult DownloadEmployeeCsvTemplate()
     {
-        using var file = System.IO.File.OpenRead("../Core.Domain/Statics/EmployeeTemplate.csv");
+        var filename = Directory.EnumerateFiles(Directory.GetCurrentDirectory().Substring(0, Directory.GetCurrentDirectory().LastIndexOf('/')), "EmployeeTemplate.csv", SearchOption.AllDirectories).First();
+        logger.LogInformation("Searched files: {Parameter}", filename);
+        using var file = System.IO.File.OpenRead(filename);
         var stream = new MemoryStream();
         file.CopyTo(stream);
         stream.Seek(0, SeekOrigin.Begin);
@@ -31,7 +34,9 @@ public class FilesController : ControllerBase
     [AccessTokenGuard(Role.BrandManager)]
     public IActionResult DownloadShopCsvTemplate()
     {
-        using var file = System.IO.File.OpenRead("../Core.Domain/Statics/ShopTemplate.csv");
+        var filename = Directory.EnumerateFiles(Directory.GetCurrentDirectory().Substring(0, Directory.GetCurrentDirectory().LastIndexOf('/')), "ShopTemplate.csv", SearchOption.AllDirectories).First();
+        logger.LogInformation("Searched files: {Parameter}", filename);
+        using var file = System.IO.File.OpenRead(filename);
         var stream = new MemoryStream();
         file.CopyTo(stream);
         stream.Seek(0, SeekOrigin.Begin);
