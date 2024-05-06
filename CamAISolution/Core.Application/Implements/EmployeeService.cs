@@ -147,7 +147,7 @@ public class EmployeeService(
                 employee = new()
                 {
                     Name = record.Name,
-                    Gender = record.Gender,
+                    Gender = record.Gender ?? Gender.Male,
                     ExternalId = record.ExternalId,
                     Email = record.Email == string.Empty ? null : record.Email,
                     ShopId = shop.Id,
@@ -160,7 +160,7 @@ public class EmployeeService(
             else
             {
                 employee.Name = record.Name;
-                employee.Gender = record.Gender;
+                employee.Gender = record.Gender ?? Gender.Male;
                 employee.ExternalId = record.ExternalId;
                 employee.Email = record.Email == string.Empty ? null : record.Email;
                 employee.ShopId = shop.Id;

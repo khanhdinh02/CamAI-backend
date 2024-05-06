@@ -484,3 +484,5 @@ appsettings.*.json
 
 #environment
 .env
+
+**/.vscode
