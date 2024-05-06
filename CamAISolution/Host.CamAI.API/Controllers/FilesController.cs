@@ -17,7 +17,8 @@ public class FilesController(ILogger<FilesController> logger) : ControllerBase
 
     public IActionResult DownloadEmployeeCsvTemplate()
     {
-        var filename = Directory.EnumerateFiles(Directory.GetCurrentDirectory().Substring(0, Directory.GetCurrentDirectory().LastIndexOf('/')), "EmployeeTemplate.csv", SearchOption.AllDirectories).First();
+        var path = Directory.GetCurrentDirectory().Substring(0, Directory.GetCurrentDirectory().LastIndexOf('/'));
+        var filename = Directory.EnumerateFiles(string.IsNullOrEmpty(path) ? "/" : path, "EmployeeTemplate.csv", SearchOption.AllDirectories).First();
         logger.LogInformation("Searched files: {Parameter}", filename);
         using var file = System.IO.File.OpenRead(filename);
         var stream = new MemoryStream();
@@ -34,7 +35,8 @@ public class FilesController(ILogger<FilesController> logger) : ControllerBase
     [AccessTokenGuard(Role.BrandManager)]
     public IActionResult DownloadShopCsvTemplate()
     {
-        var filename = Directory.EnumerateFiles(Directory.GetCurrentDirectory().Substring(0, Directory.GetCurrentDirectory().LastIndexOf('/')), "ShopTemplate.csv", SearchOption.AllDirectories).First();
+        var path = Directory.GetCurrentDirectory().Substring(0, Directory.GetCurrentDirectory().LastIndexOf('/'));
+        var filename = Directory.EnumerateFiles(string.IsNullOrEmpty(path) ? "/" : path, "ShopTemplate.csv", SearchOption.AllDirectories).First();
         logger.LogInformation("Searched files: {Parameter}", filename);
         using var file = System.IO.File.OpenRead(filename);
         var stream = new MemoryStream();

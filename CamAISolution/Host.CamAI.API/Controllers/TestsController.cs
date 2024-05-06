@@ -25,7 +25,8 @@ public class TestsController(
     [HttpGet("download-csv")]
     public IActionResult DownloadFile()
     {
-        var filename = Directory.EnumerateFiles(Directory.GetCurrentDirectory().Substring(0, Directory.GetCurrentDirectory().LastIndexOf('/')), "EmployeeTemplate.csv", SearchOption.AllDirectories).First();
+        var path = Directory.GetCurrentDirectory().Substring(0, Directory.GetCurrentDirectory().LastIndexOf('/'));
+        var filename = Directory.EnumerateFiles(string.IsNullOrEmpty(path) ? "/" : path, "EmployeeTemplate.csv", SearchOption.AllDirectories).First();
         using var file = System.IO.File.OpenRead(filename);
         var stream = new MemoryStream();
         file.CopyTo(stream);
