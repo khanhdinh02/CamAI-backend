@@ -1,3 +1,4 @@
+using Core.Application.Exceptions;
 using Core.Domain;
 using Core.Domain.DTO;
 using Core.Domain.Entities;
@@ -74,11 +75,19 @@ public class EmployeesController(
         return Accepted();
     }
 
+    /// <summary>
+    /// Only shop manager con upsert employee for their current managed shop
+    /// </summary>
+    /// <param name="file"></param>
+    /// <returns></returns>
+    /// <exception cref="BadRequestException"></exception>
     [HttpPost("upsert")]
     [RequestSizeLimit(10_000_000)]
     [AccessTokenGuard(Role.ShopManager)]
     public async Task<ActionResult<BulkResponse>> UpsertEmployees(IFormFile file)
     {
+        if (!file.ContentType.Equals("text/csv", StringComparison.CurrentCultureIgnoreCase))
+            throw new BadRequestException("Accept.csv format only");
         var shopManagerId = accountService.GetCurrentAccount().Id;
         var bulkTaskId = Guid.NewGuid().ToString("N");
         var stream = new MemoryStream();
@@ -113,7 +122,7 @@ public class EmployeesController(
     }
 
     /// <summary>
-    /// Long polling to get result of upsert task
+    /// Long polling to get result of upsert task (Shop manager only)
     /// </summary>
     /// <param name="taskId">String value returned by /api/employees/upsert</param>
     /// <param name="cancellationToken"></param>
@@ -131,6 +140,10 @@ public class EmployeesController(
         return NoContent();
     }
 
+    /// <summary>
+    /// Shop manager get all upsert tasks are in process
+    /// </summary>
+    /// <returns></returns>
     [HttpGet("upsert/task/")]
     [AccessTokenGuard(Role.ShopManager)]
     public ActionResult<List<string>> GetUpsertTaskIds()

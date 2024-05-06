@@ -27,12 +27,15 @@ COPY ["Infrastructure.MessageQueue/Infrastructure.MessageQueue.csproj", "Infrast
 COPY ["Infrastructure.Repositories/Infrastructure.Repositories.csproj", "Infrastructure.Repositories/"]
 COPY ["Infrastructure.Logging/Infrastructure.Logging.csproj", "Infrastructure.Logging/"]
 RUN dotnet restore "./Host.CamAI.API/./Host.CamAI.API.csproj"
+COPY ["Core.Domain/Statics/*.csv", "Core.Domain/Statics/"]
 COPY . .
 WORKDIR "/src/Host.CamAI.API"
 RUN dotnet build "./Host.CamAI.API.csproj" -c Release -o /app/build
 
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
+RUN mkdir -p /app/publish/Core.Domain/Statics && \
+    mv /src/Core.Domain/Statics/*.csv /app/publish/Core.Domain/Statics
 RUN dotnet publish "./Host.CamAI.API.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
 FROM base AS final
