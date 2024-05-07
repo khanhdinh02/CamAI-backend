@@ -9,7 +9,7 @@ public class SupervisorAssignment : BaseEntity<Guid>
     public Guid? ShopId { get; set; }
     public Guid? AssignorId { get; set; }
     public Guid? AssigneeId { get; set; }
-    public Role AssignedRole { get; set; }
+    public Role AssigneeRole { get; set; }
     public DateTime StartTime { get; set; }
     public DateTime? EndTime { get; set; }
 

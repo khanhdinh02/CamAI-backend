@@ -14,7 +14,7 @@ public class SupervisorAssignmentService(IUnitOfWork unitOfWork) : ISupervisorAs
             a =>
                 a.ShopId == shopId
                 && a.StartTime.Date == DateTimeHelper.VNDateTime.Date
-                && a.AssignedRole == Role.ShopSupervisor,
+                && a.AssigneeRole == Role.ShopSupervisor,
             includeProperties: [nameof(SupervisorAssignment.Assignee)],
             orderBy: o => o.OrderByDescending(x => x.StartTime),
             pageSize: 1
@@ -27,7 +27,7 @@ public class SupervisorAssignmentService(IUnitOfWork unitOfWork) : ISupervisorAs
             a =>
                 a.ShopId == shopId
                 && a.StartTime.Date == DateTimeHelper.VNDateTime.Date
-                && a.AssignedRole == Role.ShopHeadSupervisor,
+                && a.AssigneeRole == Role.ShopHeadSupervisor,
             includeProperties: [nameof(SupervisorAssignment.Assignee)],
             orderBy: o => o.OrderByDescending(x => x.StartTime),
             pageSize: 1

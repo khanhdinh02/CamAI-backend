@@ -291,7 +291,7 @@ public class ShopService(
             ShopId = employee.ShopId,
             AssignorId = user.Id,
             AssigneeId = account.Id,
-            AssignedRole = Role.ShopHeadSupervisor,
+            AssigneeRole = Role.ShopHeadSupervisor,
             StartTime = isShopOpening ? currentTime : GetNextOpenTime(employee.Shop!),
             EndTime = GetNextCloseTime(employee.Shop!)
         };
@@ -345,7 +345,7 @@ public class ShopService(
             ShopId = employee.ShopId,
             AssignorId = user.Id,
             AssigneeId = account.Id,
-            AssignedRole = Role.ShopSupervisor,
+            AssigneeRole = Role.ShopSupervisor,
             StartTime = isShopOpening ? currentTime : GetNextOpenTime(employee.Shop!),
             EndTime = GetNextCloseTime(employee.Shop!)
         };
