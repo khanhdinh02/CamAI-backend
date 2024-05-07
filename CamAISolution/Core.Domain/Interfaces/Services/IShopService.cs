@@ -25,4 +25,5 @@ public interface IShopService
     Task<SupervisorAssignment> AssignSupervisorRoles(Guid accountId, Role role);
     Task<SupervisorAssignment> AssignHeadSupervisor(Account account);
     Task<SupervisorAssignment> AssignSupervisor(Account account);
+    Task<Account?> GetCurrentInCharge(Guid shopId);
 }
