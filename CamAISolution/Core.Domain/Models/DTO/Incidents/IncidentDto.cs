@@ -12,9 +12,13 @@ public class IncidentDto : BaseDto
     public Guid? EmployeeId { get; set; }
     public Guid? ShopId { get; set; }
     public IncidentStatus Status { get; set; } = IncidentStatus.New;
+    public Guid? InChargeAccountId { get; set; }
+    public Guid? AssigningAccountId { get; set; }
 
-    public virtual ShopDto Shop { get; set; } = null!;
-    public virtual EdgeBoxDto EdgeBox { get; set; } = null!;
-    public virtual EmployeeDto? Employee { get; set; } = null!;
-    public virtual ICollection<EvidenceDto> Evidences { get; set; } = new HashSet<EvidenceDto>();
+    public ShopDto Shop { get; set; } = null!;
+    public EdgeBoxDto EdgeBox { get; set; } = null!;
+    public EmployeeDto? Employee { get; set; } = null!;
+    public AccountDto? InChargeAccount { get; set; }
+    public AccountDto? AssigningAccount { get; set; }
+    public ICollection<EvidenceDto> Evidences { get; set; } = new HashSet<EvidenceDto>();
 }
