@@ -775,17 +775,11 @@ namespace Infrastructure.Repositories.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid?>("AssigneeId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<int>("AssigneeRole")
-                        .HasColumnType("int");
-
-                    b.Property<Guid?>("AssignorId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<DateTime?>("EndTime")
                         .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("HeadSupervisorId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid?>("ShopId")
                         .HasColumnType("uniqueidentifier");
@@ -793,13 +787,16 @@ namespace Infrastructure.Repositories.Migrations
                     b.Property<DateTime>("StartTime")
                         .HasColumnType("datetime2");
 
+                    b.Property<Guid?>("SupervisorId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.HasKey("Id");
 
-                    b.HasIndex("AssigneeId");
-
-                    b.HasIndex("AssignorId");
+                    b.HasIndex("HeadSupervisorId");
 
                     b.HasIndex("ShopId");
+
+                    b.HasIndex("SupervisorId");
 
                     b.ToTable("SupervisorAssignments");
                 });
@@ -1064,23 +1061,23 @@ namespace Infrastructure.Repositories.Migrations
 
             modelBuilder.Entity("Core.Domain.Entities.SupervisorAssignment", b =>
                 {
-                    b.HasOne("Core.Domain.Entities.Account", "Assignee")
+                    b.HasOne("Core.Domain.Entities.Account", "HeadSupervisor")
                         .WithMany()
-                        .HasForeignKey("AssigneeId");
-
-                    b.HasOne("Core.Domain.Entities.Account", "Assignor")
-                        .WithMany()
-                        .HasForeignKey("AssignorId");
+                        .HasForeignKey("HeadSupervisorId");
 
                     b.HasOne("Core.Domain.Entities.Shop", "Shop")
                         .WithMany()
                         .HasForeignKey("ShopId");
 
-                    b.Navigation("Assignee");
+                    b.HasOne("Core.Domain.Entities.Account", "Supervisor")
+                        .WithMany()
+                        .HasForeignKey("SupervisorId");
 
-                    b.Navigation("Assignor");
+                    b.Navigation("HeadSupervisor");
 
                     b.Navigation("Shop");
+
+                    b.Navigation("Supervisor");
                 });
 
             modelBuilder.Entity("Core.Domain.Entities.Ward", b =>

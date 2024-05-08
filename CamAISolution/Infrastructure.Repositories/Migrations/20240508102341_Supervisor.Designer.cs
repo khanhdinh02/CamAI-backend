@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Repositories.Migrations
 {
     [DbContext(typeof(CamAIContext))]
-    [Migration("20240507155426_Supervisor")]
+    [Migration("20240508102341_Supervisor")]
     partial class Supervisor
     {
         /// <inheritdoc />
@@ -50,6 +50,9 @@ namespace Infrastructure.Repositories.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("ExternalId")
+                        .HasColumnType("nvarchar(450)");
+
                     b.Property<int?>("Gender")
                         .HasColumnType("int");
 
@@ -85,6 +88,8 @@ namespace Infrastructure.Repositories.Migrations
                     b.HasIndex("BrandId");
 
                     b.HasIndex("WardId");
+
+                    b.HasIndex(new[] { "ExternalId" }, "IX_Accounts_ExternalId");
 
                     b.ToTable("Accounts");
                 });
@@ -480,6 +485,9 @@ namespace Infrastructure.Repositories.Migrations
                     b.Property<int>("EmployeeStatus")
                         .HasColumnType("int");
 
+                    b.Property<string>("ExternalId")
+                        .HasColumnType("nvarchar(450)");
+
                     b.Property<int>("Gender")
                         .HasColumnType("int");
 
@@ -515,6 +523,8 @@ namespace Infrastructure.Repositories.Migrations
                     b.HasIndex("ShopId");
 
                     b.HasIndex("WardId");
+
+                    b.HasIndex(new[] { "ExternalId" }, "IX_Employees_ExternalId");
 
                     b.ToTable("Employees");
                 });
@@ -715,6 +725,9 @@ namespace Infrastructure.Repositories.Migrations
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("ExternalId")
+                        .HasColumnType("nvarchar(450)");
+
                     b.Property<DateTime>("ModifiedDate")
                         .HasColumnType("datetime2");
 
@@ -741,7 +754,7 @@ namespace Infrastructure.Repositories.Migrations
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("rowversion");
 
-                    b.Property<int>("WardId")
+                    b.Property<int?>("WardId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
@@ -754,6 +767,8 @@ namespace Infrastructure.Repositories.Migrations
 
                     b.HasIndex("WardId");
 
+                    b.HasIndex(new[] { "ExternalId" }, "IX_Shops_ExternalId");
+
                     b.ToTable("Shops");
                 });
 
@@ -763,17 +778,11 @@ namespace Infrastructure.Repositories.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid?>("AssigneeId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<int>("AssigneeRole")
-                        .HasColumnType("int");
-
-                    b.Property<Guid?>("AssignorId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<DateTime?>("EndTime")
                         .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("HeadSupervisorId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid?>("ShopId")
                         .HasColumnType("uniqueidentifier");
@@ -781,13 +790,16 @@ namespace Infrastructure.Repositories.Migrations
                     b.Property<DateTime>("StartTime")
                         .HasColumnType("datetime2");
 
+                    b.Property<Guid?>("SupervisorId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.HasKey("Id");
 
-                    b.HasIndex("AssigneeId");
-
-                    b.HasIndex("AssignorId");
+                    b.HasIndex("HeadSupervisorId");
 
                     b.HasIndex("ShopId");
+
+                    b.HasIndex("SupervisorId");
 
                     b.ToTable("SupervisorAssignments");
                 });
@@ -1041,9 +1053,7 @@ namespace Infrastructure.Repositories.Migrations
 
                     b.HasOne("Core.Domain.Entities.Ward", "Ward")
                         .WithMany()
-                        .HasForeignKey("WardId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("WardId");
 
                     b.Navigation("Brand");
 
@@ -1054,23 +1064,23 @@ namespace Infrastructure.Repositories.Migrations
 
             modelBuilder.Entity("Core.Domain.Entities.SupervisorAssignment", b =>
                 {
-                    b.HasOne("Core.Domain.Entities.Account", "Assignee")
+                    b.HasOne("Core.Domain.Entities.Account", "HeadSupervisor")
                         .WithMany()
-                        .HasForeignKey("AssigneeId");
-
-                    b.HasOne("Core.Domain.Entities.Account", "Assignor")
-                        .WithMany()
-                        .HasForeignKey("AssignorId");
+                        .HasForeignKey("HeadSupervisorId");
 
                     b.HasOne("Core.Domain.Entities.Shop", "Shop")
                         .WithMany()
                         .HasForeignKey("ShopId");
 
-                    b.Navigation("Assignee");
+                    b.HasOne("Core.Domain.Entities.Account", "Supervisor")
+                        .WithMany()
+                        .HasForeignKey("SupervisorId");
 
-                    b.Navigation("Assignor");
+                    b.Navigation("HeadSupervisor");
 
                     b.Navigation("Shop");
+
+                    b.Navigation("Supervisor");
                 });
 
             modelBuilder.Entity("Core.Domain.Entities.Ward", b =>

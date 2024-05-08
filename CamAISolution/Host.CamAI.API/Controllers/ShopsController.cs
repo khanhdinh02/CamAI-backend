@@ -41,9 +41,7 @@ public class ShopsController(
     /// <returns></returns>
     [HttpGet]
     [AccessTokenGuard(Role.Admin, Role.BrandManager, Role.ShopManager)]
-    public async Task<ActionResult<PaginationResult<ShopDto>>> GetCurrentShop(
-        [FromQuery] ShopSearchRequest search
-    )
+    public async Task<ActionResult<PaginationResult<ShopDto>>> GetCurrentShop([FromQuery] ShopSearchRequest search)
     {
         var shops = await shopService.GetShops(search);
         return Ok(baseMapping.Map<Shop, ShopDto>(shops));
@@ -65,10 +63,7 @@ public class ShopsController(
 
     [HttpPut("{id:guid}")]
     [AccessTokenGuard(Role.BrandManager)]
-    public async Task<ActionResult<ShopDto>> UpdateShop(
-        Guid id,
-        [FromBody] CreateOrUpdateShopDto shopDto
-    )
+    public async Task<ActionResult<ShopDto>> UpdateShop(Guid id, [FromBody] CreateOrUpdateShopDto shopDto)
     {
         var updatedShop = await shopService.UpdateShop(id, shopDto);
         return Ok(baseMapping.Map<Shop, ShopDto>(updatedShop));
@@ -136,9 +131,7 @@ public class ShopsController(
             }
             catch (Exception ex)
             {
-                scope
-                    .ServiceProvider.GetRequiredService<IAppLogging<ShopsController>>()
-                    .Error(ex.Message, ex);
+                scope.ServiceProvider.GetRequiredService<IAppLogging<ShopsController>>().Error(ex.Message, ex);
             }
             finally
             {
@@ -189,7 +182,7 @@ public class ShopsController(
         return taskIds;
     }
 
-    [HttpPut("supervisor")]
+    [HttpPost("supervisor")]
     [AccessTokenGuard(Role.ShopHeadSupervisor, Role.ShopManager)]
     public async Task<SupervisorAssignmentDto> AssignShopSupervisor(AssignShopSupervisorDto dto)
     {

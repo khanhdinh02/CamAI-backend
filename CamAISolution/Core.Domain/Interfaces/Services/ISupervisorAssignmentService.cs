@@ -4,6 +4,6 @@ namespace Core.Domain.Services;
 
 public interface ISupervisorAssignmentService
 {
-    Task<SupervisorAssignment?> GetLatestSupervisorAssignment(Guid shopId);
-    Task<SupervisorAssignment?> GetLatestHeadSupervisorAssignment(Guid shopId);
+    Task<SupervisorAssignment?> GetLatestAssignmentByDate(Guid shopId, DateTime date);
+    Task<SupervisorAssignment?> GetLatestHeadSupervisorAssignmentByDate(Guid shopId, DateTime date);
 }

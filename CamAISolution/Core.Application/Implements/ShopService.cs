@@ -22,7 +22,7 @@ public class ShopService(
     IBaseMapping mapping,
     IAccountService accountService,
     IReadFileService readFileService,
-    INotificationService notificationService
+    INotificationService notificationService,
     ISupervisorAssignmentService supervisorAssignmentService,
     EventManager eventManager
 ) : IShopService
@@ -225,12 +225,16 @@ public class ShopService(
 
     public async Task<Account?> GetCurrentHeadSupervisor(Guid shopId)
     {
-        return (await supervisorAssignmentService.GetLatestHeadSupervisorAssignment(shopId))?.Assignee;
+        return (
+            await supervisorAssignmentService.GetLatestHeadSupervisorAssignmentByDate(shopId, DateTimeHelper.VNDateTime)
+        )?.HeadSupervisor;
     }
 
     public async Task<Account?> GetCurrentSupervisor(Guid shopId)
     {
-        return (await supervisorAssignmentService.GetLatestSupervisorAssignment(shopId))?.Assignee;
+        return (
+            await supervisorAssignmentService.GetLatestAssignmentByDate(shopId, DateTimeHelper.VNDateTime)
+        )?.Supervisor;
     }
 
     public async Task<SupervisorAssignment> AssignSupervisorRoles(Guid accountId, Role role)
@@ -263,8 +267,11 @@ public class ShopService(
         if (employee?.ShopId == null)
             throw new BadRequestException("Invalid employee account");
 
-        var latestAsm = await supervisorAssignmentService.GetLatestHeadSupervisorAssignment(employee.ShopId.Value);
-        var currentHeadSupervisor = latestAsm?.Assignee;
+        var latestAsm = await supervisorAssignmentService.GetLatestHeadSupervisorAssignmentByDate(
+            employee.ShopId.Value,
+            DateTimeHelper.VNDateTime
+        );
+        var currentHeadSupervisor = latestAsm?.HeadSupervisor;
         var currentTime = DateTimeHelper.VNDateTime;
         var isShopOpening = IsShopOpeningAtTime(employee.Shop!, TimeOnly.FromDateTime(currentTime));
 
@@ -291,9 +298,7 @@ public class ShopService(
         var supervisorAssignment = new SupervisorAssignment
         {
             ShopId = employee.ShopId,
-            AssignorId = user.Id,
-            AssigneeId = account.Id,
-            AssigneeRole = Role.ShopHeadSupervisor,
+            HeadSupervisorId = account.Id,
             StartTime = isShopOpening ? currentTime : GetNextOpenTime(employee.Shop!),
             EndTime = GetNextCloseTime(employee.Shop!)
         };
@@ -323,8 +328,11 @@ public class ShopService(
         if (employee?.ShopId == null)
             throw new BadRequestException("Invalid employee account");
 
-        var latestAsm = await supervisorAssignmentService.GetLatestSupervisorAssignment(employee.ShopId.Value);
-        var currentSupervisor = latestAsm?.Assignee;
+        var latestAsm = await supervisorAssignmentService.GetLatestAssignmentByDate(
+            employee.ShopId.Value,
+            DateTimeHelper.VNDateTime
+        );
+        var currentSupervisor = latestAsm?.Supervisor;
         var currentTime = DateTimeHelper.VNDateTime;
         var isShopOpening = IsShopOpeningAtTime(employee.Shop!, TimeOnly.FromDateTime(currentTime));
 
@@ -345,9 +353,8 @@ public class ShopService(
         var supervisorAssignment = new SupervisorAssignment
         {
             ShopId = employee.ShopId,
-            AssignorId = user.Id,
-            AssigneeId = account.Id,
-            AssigneeRole = Role.ShopSupervisor,
+            HeadSupervisorId = latestAsm?.HeadSupervisorId,
+            SupervisorId = account.Id,
             StartTime = isShopOpening ? currentTime : GetNextOpenTime(employee.Shop!),
             EndTime = GetNextCloseTime(employee.Shop!)
         };
@@ -426,7 +433,8 @@ public class ShopService(
             ).Values.FirstOrDefault();
             var account = (
                 await unitOfWork.Accounts.GetAsync(
-                    expression: a => a.ExternalId == record.GetManager().ExternalId || a.Email == record.GetManager().Email,
+                    expression: a =>
+                        a.ExternalId == record.GetManager().ExternalId || a.Email == record.GetManager().Email,
                     disableTracking: false
                 )
             ).Values.FirstOrDefault();

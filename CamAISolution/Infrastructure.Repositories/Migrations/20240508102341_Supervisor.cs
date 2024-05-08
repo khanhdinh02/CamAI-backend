@@ -27,9 +27,8 @@ namespace Infrastructure.Repositories.Migrations
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     ShopId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    AssignorId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    AssigneeId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    AssigneeRole = table.Column<int>(type: "int", nullable: false),
+                    HeadSupervisorId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    SupervisorId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     StartTime = table.Column<DateTime>(type: "datetime2", nullable: false),
                     EndTime = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
@@ -37,13 +36,13 @@ namespace Infrastructure.Repositories.Migrations
                 {
                     table.PrimaryKey("PK_SupervisorAssignments", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_SupervisorAssignments_Accounts_AssigneeId",
-                        column: x => x.AssigneeId,
+                        name: "FK_SupervisorAssignments_Accounts_HeadSupervisorId",
+                        column: x => x.HeadSupervisorId,
                         principalTable: "Accounts",
                         principalColumn: "Id");
                     table.ForeignKey(
-                        name: "FK_SupervisorAssignments_Accounts_AssignorId",
-                        column: x => x.AssignorId,
+                        name: "FK_SupervisorAssignments_Accounts_SupervisorId",
+                        column: x => x.SupervisorId,
                         principalTable: "Accounts",
                         principalColumn: "Id");
                     table.ForeignKey(
@@ -61,19 +60,19 @@ namespace Infrastructure.Repositories.Migrations
                 filter: "[AccountId] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
-                name: "IX_SupervisorAssignments_AssigneeId",
+                name: "IX_SupervisorAssignments_HeadSupervisorId",
                 table: "SupervisorAssignments",
-                column: "AssigneeId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_SupervisorAssignments_AssignorId",
-                table: "SupervisorAssignments",
-                column: "AssignorId");
+                column: "HeadSupervisorId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_SupervisorAssignments_ShopId",
                 table: "SupervisorAssignments",
                 column: "ShopId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_SupervisorAssignments_SupervisorId",
+                table: "SupervisorAssignments",
+                column: "SupervisorId");
 
             migrationBuilder.AddForeignKey(
                 name: "FK_Employees_Accounts_AccountId",
