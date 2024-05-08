@@ -442,6 +442,7 @@ public class ShopService(
             {
                 account = record.GetManager();
                 account.Password = Hasher.Hash(DomainHelper.GenerateDefaultPassword(account.Email));
+                account.BrandId = brand.Id;
                 account.AccountStatus = AccountStatus.New;
                 account = await unitOfWork.Accounts.AddAsync(account);
                 accountInserted.Add(account.Id);
@@ -475,6 +476,7 @@ public class ShopService(
                 shop.CloseTime = record.GetShop().CloseTime;
                 shop.Phone = record.GetShop().Phone;
                 shop.AddressLine = record.GetShop().AddressLine;
+                shop.BrandId = brand.Id;
                 unitOfWork.Shops.Update(shop);
                 shopUpdated.Add(shop.Id);
             }
