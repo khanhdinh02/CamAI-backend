@@ -443,6 +443,7 @@ public class ShopService(
                 account = record.GetManager();
                 account.Password = Hasher.Hash(DomainHelper.GenerateDefaultPassword(account.Email));
                 account.BrandId = brand.Id;
+                account.Role = Role.ShopManager;
                 account.AccountStatus = AccountStatus.New;
                 account = await unitOfWork.Accounts.AddAsync(account);
                 accountInserted.Add(account.Id);
