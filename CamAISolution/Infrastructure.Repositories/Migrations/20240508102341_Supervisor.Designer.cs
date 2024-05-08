@@ -4,6 +4,7 @@ using Infrastructure.Repositories.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Repositories.Migrations
 {
     [DbContext(typeof(CamAIContext))]
-    partial class CamAIContextModelSnapshot : ModelSnapshot
+    [Migration("20240508102341_Supervisor")]
+    partial class Supervisor
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -598,9 +601,6 @@ namespace Infrastructure.Repositories.Migrations
                     b.Property<int>("AiId")
                         .HasColumnType("int");
 
-                    b.Property<Guid?>("AssigningAccountId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
 
@@ -612,9 +612,6 @@ namespace Infrastructure.Repositories.Migrations
 
                     b.Property<DateTime?>("EndTime")
                         .HasColumnType("datetime2");
-
-                    b.Property<Guid?>("InChargeAccountId")
-                        .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("IncidentType")
                         .HasColumnType("int");
@@ -638,13 +635,9 @@ namespace Infrastructure.Repositories.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AssigningAccountId");
-
                     b.HasIndex("EdgeBoxId");
 
                     b.HasIndex("EmployeeId");
-
-                    b.HasIndex("InChargeAccountId");
 
                     b.HasIndex("ShopId");
 
@@ -1016,10 +1009,6 @@ namespace Infrastructure.Repositories.Migrations
 
             modelBuilder.Entity("Core.Domain.Entities.Incident", b =>
                 {
-                    b.HasOne("Core.Domain.Entities.Account", "AssigningAccount")
-                        .WithMany()
-                        .HasForeignKey("AssigningAccountId");
-
                     b.HasOne("Core.Domain.Entities.EdgeBox", "EdgeBox")
                         .WithMany()
                         .HasForeignKey("EdgeBoxId")
@@ -1030,23 +1019,15 @@ namespace Infrastructure.Repositories.Migrations
                         .WithMany("Incidents")
                         .HasForeignKey("EmployeeId");
 
-                    b.HasOne("Core.Domain.Entities.Account", "InChargeAccount")
-                        .WithMany()
-                        .HasForeignKey("InChargeAccountId");
-
                     b.HasOne("Core.Domain.Entities.Shop", "Shop")
                         .WithMany()
                         .HasForeignKey("ShopId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
-                    b.Navigation("AssigningAccount");
-
                     b.Navigation("EdgeBox");
 
                     b.Navigation("Employee");
-
-                    b.Navigation("InChargeAccount");
 
                     b.Navigation("Shop");
                 });

@@ -1,5 +1,4 @@
 using Core.Domain.Entities;
-using Infrastructure.Repositories.Data.Configurations;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Repositories.Data;
@@ -28,6 +27,7 @@ public class CamAIContext : DbContext
     public virtual DbSet<Notification> Notifications { get; set; } = null!;
     public virtual DbSet<AccountNotification> AccountNotifications { get; set; } = null!;
     public virtual DbSet<Image> Images { get; set; } = null!;
+    public virtual DbSet<SupervisorAssignment> SupervisorAssignments { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -39,7 +39,6 @@ public class CamAIContext : DbContext
 
         modelBuilder.Entity<AccountNotification>().HasKey(an => new { an.AccountId, an.NotificationId });
 
-        modelBuilder.ApplyConfigurationsFromAssembly(this.GetType().Assembly);
+        modelBuilder.ApplyConfigurationsFromAssembly(GetType().Assembly);
     }
-
 }

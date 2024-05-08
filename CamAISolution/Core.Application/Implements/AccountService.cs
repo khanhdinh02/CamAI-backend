@@ -152,6 +152,33 @@ public class AccountService(IUnitOfWork unitOfWork, IJwtService jwtService, IBas
         return account;
     }
 
+    public async Task<Account> CreateSupervisor(CreateSupervisorDto dto)
+    {
+        var employee =
+            (
+                await unitOfWork.Employees.GetAsync(
+                    e => e.Id == dto.EmployeeId,
+                    includeProperties: [nameof(Employee.Shop)],
+                    disableTracking: false
+                )
+            ).Values.FirstOrDefault() ?? throw new NotFoundException(typeof(Employee), dto.EmployeeId);
+        if (employee.AccountId != null)
+            throw new BadRequestException("Employee already has an account");
+        if (await unitOfWork.Accounts.CountAsync(a => a.Email == dto.Email) > 0)
+            throw new BadRequestException("Email is already taken");
+
+        var newAccount = mapper.Map<Employee, Account>(employee);
+        newAccount.Email = dto.Email;
+        newAccount.Password = Hasher.Hash(DomainHelper.GenerateDefaultPassword(dto.Email));
+        newAccount.Role = dto.IsHeadSupervisor ? Role.ShopHeadSupervisor : Role.ShopSupervisor;
+        newAccount.Employee = employee;
+        newAccount.BrandId = employee.Shop?.BrandId;
+        newAccount.AccountStatus = AccountStatus.New;
+        await unitOfWork.Accounts.AddAsync(newAccount);
+        await unitOfWork.CompleteAsync();
+        return newAccount;
+    }
+
     private async Task<Account> CreateBrandManager(Account newAccount)
     {
         if (newAccount.BrandId == null)
