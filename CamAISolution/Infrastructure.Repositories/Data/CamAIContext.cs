@@ -38,5 +38,7 @@ public class CamAIContext : DbContext
         modelBuilder.Entity<Incident>().HasOne(x => x.Shop).WithMany().OnDelete(DeleteBehavior.NoAction);
 
         modelBuilder.Entity<AccountNotification>().HasKey(an => new { an.AccountId, an.NotificationId });
+
+        modelBuilder.ApplyConfigurationsFromAssembly(GetType().Assembly);
     }
 }

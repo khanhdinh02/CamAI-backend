@@ -4,6 +4,7 @@ using Infrastructure.Repositories.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Repositories.Migrations
 {
     [DbContext(typeof(CamAIContext))]
-    partial class CamAIContextModelSnapshot : ModelSnapshot
+    [Migration("20240423194431_ModifiedShopAccount")]
+    partial class ModifiedShopAccount
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -124,27 +127,8 @@ namespace Infrastructure.Repositories.Migrations
                     b.Property<int>("BrandStatus")
                         .HasColumnType("int");
 
-                    b.Property<string>("BrandWebsite")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("CompanyAddress")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<string>("CompanyName")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<int?>("CompanyWardId")
-                        .HasColumnType("int");
-
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Email")
                         .HasColumnType("nvarchar(max)");
@@ -176,8 +160,6 @@ namespace Infrastructure.Repositories.Migrations
                     b.HasIndex("BrandManagerId")
                         .IsUnique()
                         .HasFilter("[BrandManagerId] IS NOT NULL");
-
-                    b.HasIndex("CompanyWardId");
 
                     b.HasIndex("LogoId");
 
@@ -385,9 +367,6 @@ namespace Infrastructure.Repositories.Migrations
                     b.Property<DateTime>("ModifiedDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<bool>("NotificationSent")
-                        .HasColumnType("bit");
-
                     b.Property<string>("OperatingSystem")
                         .HasColumnType("nvarchar(max)");
 
@@ -464,9 +443,6 @@ namespace Infrastructure.Repositories.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid?>("AccountId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<string>("AddressLine")
                         .HasColumnType("nvarchar(max)");
 
@@ -482,11 +458,11 @@ namespace Infrastructure.Repositories.Migrations
                     b.Property<int>("EmployeeStatus")
                         .HasColumnType("int");
 
-                    b.Property<string>("ExternalId")
-                        .HasColumnType("nvarchar(450)");
-
                     b.Property<int>("Gender")
                         .HasColumnType("int");
+
+                    b.Property<string>("Image")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("ModifiedDate")
                         .HasColumnType("datetime2");
@@ -513,15 +489,9 @@ namespace Infrastructure.Repositories.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AccountId")
-                        .IsUnique()
-                        .HasFilter("[AccountId] IS NOT NULL");
-
                     b.HasIndex("ShopId");
 
                     b.HasIndex("WardId");
-
-                    b.HasIndex(new[] { "ExternalId" }, "IX_Employees_ExternalId");
 
                     b.ToTable("Employees");
                 });
@@ -751,7 +721,7 @@ namespace Infrastructure.Repositories.Migrations
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("rowversion");
 
-                    b.Property<int?>("WardId")
+                    b.Property<int>("WardId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
@@ -767,41 +737,6 @@ namespace Infrastructure.Repositories.Migrations
                     b.HasIndex(new[] { "ExternalId" }, "IX_Shops_ExternalId");
 
                     b.ToTable("Shops");
-                });
-
-            modelBuilder.Entity("Core.Domain.Entities.SupervisorAssignment", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid?>("AssigneeId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<int>("AssigneeRole")
-                        .HasColumnType("int");
-
-                    b.Property<Guid?>("AssignorId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime?>("EndTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid?>("ShopId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("StartTime")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AssigneeId");
-
-                    b.HasIndex("AssignorId");
-
-                    b.HasIndex("ShopId");
-
-                    b.ToTable("SupervisorAssignments");
                 });
 
             modelBuilder.Entity("Core.Domain.Entities.Ward", b =>
@@ -871,10 +806,6 @@ namespace Infrastructure.Repositories.Migrations
                         .WithOne("ManagingBrand")
                         .HasForeignKey("Core.Domain.Entities.Brand", "BrandManagerId");
 
-                    b.HasOne("Core.Domain.Entities.Ward", "CompanyWard")
-                        .WithMany()
-                        .HasForeignKey("CompanyWardId");
-
                     b.HasOne("Core.Domain.Entities.Image", "Logo")
                         .WithMany()
                         .HasForeignKey("LogoId");
@@ -882,8 +813,6 @@ namespace Infrastructure.Repositories.Migrations
                     b.Navigation("Banner");
 
                     b.Navigation("BrandManager");
-
-                    b.Navigation("CompanyWard");
 
                     b.Navigation("Logo");
                 });
@@ -963,10 +892,6 @@ namespace Infrastructure.Repositories.Migrations
 
             modelBuilder.Entity("Core.Domain.Entities.Employee", b =>
                 {
-                    b.HasOne("Core.Domain.Entities.Account", "Account")
-                        .WithOne("Employee")
-                        .HasForeignKey("Core.Domain.Entities.Employee", "AccountId");
-
                     b.HasOne("Core.Domain.Entities.Shop", "Shop")
                         .WithMany("Employees")
                         .HasForeignKey("ShopId");
@@ -974,8 +899,6 @@ namespace Infrastructure.Repositories.Migrations
                     b.HasOne("Core.Domain.Entities.Ward", "Ward")
                         .WithMany()
                         .HasForeignKey("WardId");
-
-                    b.Navigation("Account");
 
                     b.Navigation("Shop");
 
@@ -1053,34 +976,15 @@ namespace Infrastructure.Repositories.Migrations
 
                     b.HasOne("Core.Domain.Entities.Ward", "Ward")
                         .WithMany()
-                        .HasForeignKey("WardId");
+                        .HasForeignKey("WardId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Brand");
 
                     b.Navigation("ShopManager");
 
                     b.Navigation("Ward");
-                });
-
-            modelBuilder.Entity("Core.Domain.Entities.SupervisorAssignment", b =>
-                {
-                    b.HasOne("Core.Domain.Entities.Account", "Assignee")
-                        .WithMany()
-                        .HasForeignKey("AssigneeId");
-
-                    b.HasOne("Core.Domain.Entities.Account", "Assignor")
-                        .WithMany()
-                        .HasForeignKey("AssignorId");
-
-                    b.HasOne("Core.Domain.Entities.Shop", "Shop")
-                        .WithMany()
-                        .HasForeignKey("ShopId");
-
-                    b.Navigation("Assignee");
-
-                    b.Navigation("Assignor");
-
-                    b.Navigation("Shop");
                 });
 
             modelBuilder.Entity("Core.Domain.Entities.Ward", b =>
@@ -1096,8 +1000,6 @@ namespace Infrastructure.Repositories.Migrations
 
             modelBuilder.Entity("Core.Domain.Entities.Account", b =>
                 {
-                    b.Navigation("Employee");
-
                     b.Navigation("ManagingBrand");
 
                     b.Navigation("ManagingShop");

@@ -6,6 +6,8 @@ namespace Core.Domain.Entities;
 
 public class Employee : BusinessEntity
 {
+    public string? ExternalId { get; set; }
+
     [StringLength(50)]
     public string Name { get; set; } = null!;
     public string? Email { get; set; }

@@ -10,6 +10,7 @@ using Core.Domain.Services;
 using Host.CamAI.API.BackgroundServices;
 using Host.CamAI.API.Events;
 using Host.CamAI.API.Sockets;
+using Infrastructure.Files;
 using Microsoft.OpenApi.Models;
 
 namespace Host.CamAI.API;
@@ -54,16 +55,22 @@ public static class ApiDependencyInjection
         services.AddScoped<INotificationService, NotificationService>();
         services.AddSingleton<EventManager>().AddSingleton<HumanCountSubject>();
         services.AddObserverPattern();
+        services.AddReadFile();
         return services;
     }
 
-    public static IServiceCollection AddServices(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddServices(
+        this IServiceCollection services,
+        IConfiguration configuration
+    )
     {
         var imgConfig =
             configuration.GetRequiredSection("ImageConfiguration").Get<ImageConfiguration>()
             ?? throw new ServiceUnavailableException("Cannot get image configuration");
         services.AddSingleton(imgConfig);
-        services.AddSingleton(configuration.GetSection("HealthCheckConfiguration").Get<HealthCheckConfiguration>()!);
+        services.AddSingleton(
+            configuration.GetSection("HealthCheckConfiguration").Get<HealthCheckConfiguration>()!
+        );
         services.AddScoped<IBlobService, BlobService>();
         return services;
     }
@@ -105,7 +112,11 @@ public static class ApiDependencyInjection
                     {
                         new OpenApiSecurityScheme
                         {
-                            Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Bearer" }
+                            Reference = new OpenApiReference
+                            {
+                                Type = ReferenceType.SecurityScheme,
+                                Id = "Bearer"
+                            }
                         },
                         Array.Empty<string>()
                     }

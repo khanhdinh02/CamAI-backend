@@ -1,9 +1,13 @@
+using Core.Application.Exceptions;
+using Core.Domain;
 using Core.Domain.DTO;
 using Core.Domain.Entities;
 using Core.Domain.Enums;
 using Core.Domain.Interfaces.Mappings;
+using Core.Domain.Interfaces.Services;
 using Core.Domain.Models;
 using Core.Domain.Services;
+using Host.CamAI.API.Utils;
 using Infrastructure.Jwt.Attribute;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,7 +15,13 @@ namespace Host.CamAI.API.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class ShopsController(IShopService shopService, IBaseMapping baseMapping) : ControllerBase
+public class ShopsController(
+    IAppLogging<ShopsController> logger,
+    IAccountService accountService,
+    IServiceProvider serviceProvider,
+    IShopService shopService,
+    IBaseMapping baseMapping
+) : ControllerBase
 {
     /// <summary>
     /// Search Shop base on current account's roles.
@@ -31,7 +41,9 @@ public class ShopsController(IShopService shopService, IBaseMapping baseMapping)
     /// <returns></returns>
     [HttpGet]
     [AccessTokenGuard(Role.Admin, Role.BrandManager, Role.ShopManager)]
-    public async Task<ActionResult<PaginationResult<ShopDto>>> GetCurrentShop([FromQuery] ShopSearchRequest search)
+    public async Task<ActionResult<PaginationResult<ShopDto>>> GetCurrentShop(
+        [FromQuery] ShopSearchRequest search
+    )
     {
         var shops = await shopService.GetShops(search);
         return Ok(baseMapping.Map<Shop, ShopDto>(shops));
@@ -53,7 +65,10 @@ public class ShopsController(IShopService shopService, IBaseMapping baseMapping)
 
     [HttpPut("{id:guid}")]
     [AccessTokenGuard(Role.BrandManager)]
-    public async Task<ActionResult<ShopDto>> UpdateShop(Guid id, [FromBody] CreateOrUpdateShopDto shopDto)
+    public async Task<ActionResult<ShopDto>> UpdateShop(
+        Guid id,
+        [FromBody] CreateOrUpdateShopDto shopDto
+    )
     {
         var updatedShop = await shopService.UpdateShop(id, shopDto);
         return Ok(baseMapping.Map<Shop, ShopDto>(updatedShop));
@@ -89,6 +104,89 @@ public class ShopsController(IShopService shopService, IBaseMapping baseMapping)
     {
         var shops = await shopService.GetShopsInstallingEdgeBox(q);
         return Ok(baseMapping.Map<Shop, ShopDto>(shops));
+    }
+
+    /// <summary>
+    /// only brand Manager upsert shop and shop manager
+    /// </summary>
+    /// <param name="file"></param>
+    /// <returns></returns>
+    [HttpPost("upsert")]
+    [RequestSizeLimit(10_000_000)]
+    [AccessTokenGuard(Role.BrandManager)]
+    public async Task<ActionResult<BulkResponse>> UpsertShopAndManager(IFormFile file)
+    {
+        if (!file.ContentType.Equals("text/csv", StringComparison.CurrentCultureIgnoreCase))
+            throw new BadRequestException("Accept.csv format only");
+        var brandManagerId = accountService.GetCurrentAccount().Id;
+        var bulkTaskId = Guid.NewGuid().ToString("N");
+        var stream = new MemoryStream();
+        await file.CopyToAsync(stream);
+        var bulkTask = Task.Run(async () =>
+        {
+            using var scope = serviceProvider.CreateScope();
+            try
+            {
+                var scopeShopService = scope.ServiceProvider.GetRequiredService<IShopService>();
+                var jwtService = scope.ServiceProvider.GetRequiredService<IJwtService>();
+                stream.Seek(0, SeekOrigin.Begin);
+                await jwtService.SetCurrentUserToSystemHandler();
+                var result = await scopeShopService.UpsertShops(brandManagerId, stream);
+                return result;
+            }
+            catch (Exception ex)
+            {
+                scope
+                    .ServiceProvider.GetRequiredService<IAppLogging<ShopsController>>()
+                    .Error(ex.Message, ex);
+            }
+            finally
+            {
+                await stream.DisposeAsync();
+                BulkTaskManager.RemoveTaskById(brandManagerId, bulkTaskId);
+            }
+
+            return new BulkUpsertTaskResultResponse(0, 0, 0);
+        });
+        var res = new BulkResponse() { TaskId = bulkTaskId, Message = "Task is accepted" };
+        BulkTaskManager.AddUpsertTask(brandManagerId, bulkTask, bulkTaskId);
+        return Ok(res);
+    }
+
+    /// <summary>
+    /// Long polling to get result of upsert task
+    /// </summary>
+    /// <param name="taskId">String value returned by /api/shops/upsert</param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    [HttpGet("upsert/task/{taskId}/result")]
+    [AccessTokenGuard(Role.BrandManager)]
+    public async Task<ActionResult<BulkUpsertTaskResultResponse>> GetUpsertTaskResult(
+        string taskId,
+        CancellationToken cancellationToken
+    )
+    {
+        var result = await BulkTaskManager.GetBulkUpsertTaskResultResponse(
+            accountService.GetCurrentAccount().Id,
+            taskId,
+            cancellationToken,
+            TimeSpan.FromMinutes(2)
+        );
+        if (result != null)
+            return result;
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Get all tasks are in process
+    /// </summary>
+    /// <returns></returns>
+    [HttpGet("upsert/task")]
+    [AccessTokenGuard(Role.BrandManager)]
+    public ActionResult<List<string>> GetUpsertTaskIds()
+    {
+        BulkTaskManager.GetTaskByActorId(accountService.GetCurrentAccount().Id, out var taskIds);
+        return taskIds;
     }
 
     [HttpPut("supervisor")]

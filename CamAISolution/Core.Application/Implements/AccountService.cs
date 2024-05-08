@@ -62,7 +62,7 @@ public class AccountService(IUnitOfWork unitOfWork, IJwtService jwtService, IBas
 
         if (dto.WardId != null && !await unitOfWork.Wards.IsExisted(dto.WardId))
             throw new NotFoundException(typeof(Ward), dto.WardId);
-        newAccount.Password = Hasher.Hash(GenerateDefaultPassword(dto.Email));
+        newAccount.Password = Hasher.Hash(DomainHelper.GenerateDefaultPassword(dto.Email));
         var currentUser = GetCurrentAccount();
 
         if (currentUser.Role == Role.Admin)
@@ -206,11 +206,5 @@ public class AccountService(IUnitOfWork unitOfWork, IJwtService jwtService, IBas
         newAccount.Role = Role.ShopManager;
         newAccount.AccountStatus = AccountStatus.New;
         return newAccount;
-    }
-
-    private string GenerateDefaultPassword(string email)
-    {
-        var emailName = email.Split('@')[0];
-        return $"{emailName}@123";
     }
 }

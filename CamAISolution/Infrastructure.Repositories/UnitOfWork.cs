@@ -16,22 +16,31 @@ public class UnitOfWork(CamAIContext context, IServiceProvider serviceProvider) 
 
     public IRepository<Brand> Brands => serviceProvider.GetRequiredService<IRepository<Brand>>();
 
-    public ICustomShopRepository Shops => serviceProvider.GetRequiredService<ICustomShopRepository>();
+    public ICustomShopRepository Shops =>
+        serviceProvider.GetRequiredService<ICustomShopRepository>();
 
-    public IRepository<Province> Provinces => serviceProvider.GetRequiredService<IRepository<Province>>();
-    public IRepository<District> Districts => serviceProvider.GetRequiredService<IRepository<District>>();
+    public IRepository<Province> Provinces =>
+        serviceProvider.GetRequiredService<IRepository<Province>>();
+    public IRepository<District> Districts =>
+        serviceProvider.GetRequiredService<IRepository<District>>();
     public IRepository<Ward> Wards => serviceProvider.GetRequiredService<IRepository<Ward>>();
 
-    public ICustomAccountRepository Accounts => serviceProvider.GetRequiredService<ICustomAccountRepository>();
-    public ICustomEmployeeRepository Employees => serviceProvider.GetRequiredService<ICustomEmployeeRepository>();
-    public IRepository<EdgeBox> EdgeBoxes => serviceProvider.GetRequiredService<IRepository<EdgeBox>>();
+    public ICustomAccountRepository Accounts =>
+        serviceProvider.GetRequiredService<ICustomAccountRepository>();
+    public ICustomEmployeeRepository Employees =>
+        serviceProvider.GetRequiredService<ICustomEmployeeRepository>();
+    public IRepository<EdgeBox> EdgeBoxes =>
+        serviceProvider.GetRequiredService<IRepository<EdgeBox>>();
     public IRepository<EdgeBoxActivity> EdgeBoxActivities =>
         serviceProvider.GetRequiredService<IRepository<EdgeBoxActivity>>();
     public ICustomEdgeBoxInstallRepository EdgeBoxInstalls =>
         serviceProvider.GetRequiredService<ICustomEdgeBoxInstallRepository>();
-    public IRepository<EdgeBoxModel> EdgeBoxModels => serviceProvider.GetRequiredService<IRepository<EdgeBoxModel>>();
-    public IRepository<Incident> Incidents => serviceProvider.GetRequiredService<IRepository<Incident>>();
-    public IRepository<Evidence> Evidences => serviceProvider.GetRequiredService<IRepository<Evidence>>();
+    public IRepository<EdgeBoxModel> EdgeBoxModels =>
+        serviceProvider.GetRequiredService<IRepository<EdgeBoxModel>>();
+    public IRepository<Incident> Incidents =>
+        serviceProvider.GetRequiredService<IRepository<Incident>>();
+    public IRepository<Evidence> Evidences =>
+        serviceProvider.GetRequiredService<IRepository<Evidence>>();
     public IRepository<Camera> Cameras => serviceProvider.GetRequiredService<IRepository<Camera>>();
     public IRepository<SupervisorAssignment> SupervisorAssignments =>
         serviceProvider.GetRequiredService<IRepository<SupervisorAssignment>>();
@@ -45,7 +54,10 @@ public class UnitOfWork(CamAIContext context, IServiceProvider serviceProvider) 
     public Task CommitTransaction()
     {
         if (haveTransaction)
+        {
+            UpdateAuditableEntities();
             return context.Database.CommitTransactionAsync();
+        }
         return Task.CompletedTask;
     }
 
@@ -60,6 +72,12 @@ public class UnitOfWork(CamAIContext context, IServiceProvider serviceProvider) 
     }
 
     public async Task<int> CompleteAsync()
+    {
+        UpdateAuditableEntities();
+        return await context.SaveChangesAsync();
+    }
+
+    private void UpdateAuditableEntities()
     {
         foreach (var entry in context.ChangeTracker.Entries<BusinessEntity>())
         {
@@ -81,7 +99,10 @@ public class UnitOfWork(CamAIContext context, IServiceProvider serviceProvider) 
                 entry.Entity.ModifiedTime = DateTimeHelper.VNDateTime;
                 try
                 {
-                    entry.Entity.ModifiedById = serviceProvider.GetRequiredService<IJwtService>().GetCurrentUser().Id;
+                    entry.Entity.ModifiedById = serviceProvider
+                        .GetRequiredService<IJwtService>()
+                        .GetCurrentUser()
+                        .Id;
                 }
                 catch (Exception)
                 {
@@ -89,7 +110,6 @@ public class UnitOfWork(CamAIContext context, IServiceProvider serviceProvider) 
                 }
             }
         }
-        return await context.SaveChangesAsync();
     }
 
     public void Dispose()

@@ -1,3 +1,4 @@
+using System.Text;
 using Core.Application.Events;
 using Core.Application.Events.Args;
 using Core.Domain.DTO;
@@ -6,6 +7,7 @@ using Core.Domain.Interfaces.Mappings;
 using Core.Domain.Interfaces.Services;
 using Infrastructure.Observer.Messages;
 using Microsoft.AspNetCore.Mvc;
+using ShopFromImportFile = Core.Domain.DTO.ShopFromImportFile;
 
 namespace Host.CamAI.API.Controllers;
 
@@ -15,10 +17,53 @@ public class TestsController(
     IBaseMapping mapping,
     IIncidentService incidentService,
     EventManager eventManager,
-    AccountNotificationSubject accountNotificationSubject,
-    IncidentSubject incidentSubject
+    IncidentSubject incidentSubject,
+    ILogger<TestsController> logger,
+    IReadFileService readFileService
 ) : ControllerBase
 {
+    [HttpGet("download-csv")]
+    public IActionResult DownloadFile()
+    {
+        var path = Directory.GetCurrentDirectory().Substring(0, Directory.GetCurrentDirectory().LastIndexOf('/'));
+        var filename = Directory.EnumerateFiles(string.IsNullOrEmpty(path) ? "/" : path, "EmployeeTemplate.csv", SearchOption.AllDirectories).First();
+        using var file = System.IO.File.OpenRead(filename);
+        var stream = new MemoryStream();
+        file.CopyTo(stream);
+        stream.Seek(0, SeekOrigin.Begin);
+        return File(stream, "text/csv", "EmployeeTemplate.csv");
+
+    }
+
+    [HttpGet("text")]
+    public object TestValidation()
+    {
+        var error = new StringBuilder("");
+        while (error.Length < 60)
+        {
+            error.Append("t");
+        }
+
+        var test = new ShopFromImportFile
+        {
+            ShopAddress = error.ToString(),
+            ShopManagerEmail = error.ToString(),
+            ShopManagerName = error.ToString(),
+            ShopName = error.ToString(),
+        };
+        return test.ShopFromImportFileValidation();
+    }
+    [HttpPost("readfile")]
+    public ActionResult ReadFile(IFormFile file)
+    {
+        using var stream = new MemoryStream();
+        file.CopyTo(stream);
+        stream.Seek(0, SeekOrigin.Begin);
+        foreach (var record in readFileService.ReadFromCsv<ShopFromImportFile>(stream))
+            logger.LogInformation($"{record.ShopName}, {record.ExternalShopId}");
+        return Ok();
+    }
+
     [HttpGet]
     public ActionResult<string> TestEndpoint()
     {
