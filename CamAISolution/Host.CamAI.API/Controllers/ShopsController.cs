@@ -159,8 +159,13 @@ public class ShopsController(
         CancellationToken cancellationToken
     )
     {
-        var result = await BulkTaskManager.GetBulkUpsertTaskResultResponse(accountService.GetCurrentAccount().Id, taskId, cancellationToken, TimeSpan.FromMinutes(2));
-        if( result != null)
+        var result = await BulkTaskManager.GetBulkUpsertTaskResultResponse(
+            accountService.GetCurrentAccount().Id,
+            taskId,
+            cancellationToken,
+            TimeSpan.FromMinutes(2)
+        );
+        if (result != null)
             return result;
         return NoContent();
     }
@@ -175,5 +180,13 @@ public class ShopsController(
     {
         BulkTaskManager.GetTaskByActorId(accountService.GetCurrentAccount().Id, out var taskIds);
         return taskIds;
+    }
+
+    [HttpPost("supervisor")]
+    [AccessTokenGuard(Role.ShopHeadSupervisor, Role.ShopManager)]
+    public async Task<SupervisorAssignmentDto> AssignShopSupervisor(AssignShopSupervisorDto dto)
+    {
+        var assignment = await shopService.AssignSupervisorRoles(dto.AccountId, dto.Role);
+        return baseMapping.Map<SupervisorAssignment, SupervisorAssignmentDto>(assignment);
     }
 }

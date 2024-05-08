@@ -11,7 +11,8 @@ namespace Host.CamAI.API.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class AccountsController(IAccountService accountService, IBaseMapping mapper) : ControllerBase
+public class AccountsController(IAccountService accountService, IBaseMapping mapper)
+    : ControllerBase
 {
     /// <summary>
     /// Search accounts
@@ -27,7 +28,9 @@ public class AccountsController(IAccountService accountService, IBaseMapping map
     /// <returns></returns>
     [HttpGet]
     [AccessTokenGuard(Role.Admin, Role.BrandManager)]
-    public async Task<ActionResult<PaginationResult<AccountDto>>> GetAccounts([FromQuery] SearchAccountRequest req)
+    public async Task<ActionResult<PaginationResult<AccountDto>>> GetAccounts(
+        [FromQuery] SearchAccountRequest req
+    )
     {
         var accounts = await accountService.GetAccounts(req);
         return mapper.Map<Account, AccountDto>(accounts);
@@ -96,5 +99,13 @@ public class AccountsController(IAccountService accountService, IBaseMapping map
     {
         await accountService.DeleteAccount(id);
         return Accepted();
+    }
+
+    [HttpPost("supervisor")]
+    [AccessTokenGuard(Role.ShopManager, Role.ShopHeadSupervisor)]
+    public async Task<AccountDto> CreateSupervisor(CreateSupervisorDto dto)
+    {
+        var newAccount = await accountService.CreateSupervisor(dto);
+        return mapper.Map<Account, AccountDto>(newAccount);
     }
 }
