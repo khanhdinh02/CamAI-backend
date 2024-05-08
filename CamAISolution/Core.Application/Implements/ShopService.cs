@@ -441,7 +441,7 @@ public class ShopService(
             if (account == null)
             {
                 account = record.GetManager();
-                account.Password = DomainHelper.GenerateDefaultPassword(account.Email);
+                account.Password = Hasher.Hash(DomainHelper.GenerateDefaultPassword(account.Email));
                 account.AccountStatus = AccountStatus.New;
                 account = await unitOfWork.Accounts.AddAsync(account);
                 accountInserted.Add(account.Id);
@@ -454,6 +454,7 @@ public class ShopService(
                 account.AddressLine = record.GetManager().AddressLine;
                 account.ExternalId = record.GetManager().ExternalId;
                 account.BrandId = brand.Id;
+                account.Role = Role.ShopManager;
                 unitOfWork.Accounts.Update(account);
                 accountUpdated.Add(account.Id);
             }

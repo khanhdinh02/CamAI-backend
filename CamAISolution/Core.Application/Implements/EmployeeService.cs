@@ -152,7 +152,8 @@ public class EmployeeService(
                     Email = record.Email == string.Empty ? null : record.Email,
                     ShopId = shop.Id,
                     Birthday = record.Birthday,
-                    AddressLine = record.AddressLine
+                    AddressLine = record.AddressLine,
+                    EmployeeStatus = EmployeeStatus.Active
                 };
                 employee = await unitOfWork.Employees.AddAsync(employee);
                 employeeInserted.Add(employee.Id);
