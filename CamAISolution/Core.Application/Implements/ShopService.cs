@@ -267,12 +267,12 @@ public class ShopService(
         if (employee?.ShopId == null)
             throw new BadRequestException("Invalid employee account");
 
+        var currentTime = DateTimeHelper.VNDateTime;
         var latestAsm = await supervisorAssignmentService.GetLatestHeadSupervisorAssignmentByDate(
             employee.ShopId.Value,
-            DateTimeHelper.VNDateTime
+            currentTime
         );
         var currentHeadSupervisor = latestAsm?.HeadSupervisor;
-        var currentTime = DateTimeHelper.VNDateTime;
         var isShopOpening = IsShopOpeningAtTime(employee.Shop!, TimeOnly.FromDateTime(currentTime));
 
         if (latestAsm != null)
@@ -281,6 +281,14 @@ public class ShopService(
             {
                 if (currentHeadSupervisor?.Id == account.Id)
                     return latestAsm;
+
+                if (currentTime - latestAsm.StartTime < TimeSpan.FromMinutes(5))
+                {
+                    latestAsm.HeadSupervisorId = account.Id;
+                    unitOfWork.SupervisorAssignments.Update(latestAsm);
+                    await unitOfWork.CompleteAsync();
+                    return latestAsm;
+                }
 
                 latestAsm.EndTime = currentTime;
                 unitOfWork.SupervisorAssignments.Update(latestAsm);
@@ -328,12 +336,9 @@ public class ShopService(
         if (employee?.ShopId == null)
             throw new BadRequestException("Invalid employee account");
 
-        var latestAsm = await supervisorAssignmentService.GetLatestAssignmentByDate(
-            employee.ShopId.Value,
-            DateTimeHelper.VNDateTime
-        );
-        var currentSupervisor = latestAsm?.Supervisor;
         var currentTime = DateTimeHelper.VNDateTime;
+        var latestAsm = await supervisorAssignmentService.GetLatestAssignmentByDate(employee.ShopId.Value, currentTime);
+        var currentSupervisor = latestAsm?.Supervisor;
         var isShopOpening = IsShopOpeningAtTime(employee.Shop!, TimeOnly.FromDateTime(currentTime));
 
         if (latestAsm != null)
@@ -342,6 +347,14 @@ public class ShopService(
             {
                 if (currentSupervisor?.Id == account.Id)
                     return latestAsm;
+
+                if (currentTime - latestAsm.StartTime < TimeSpan.FromMinutes(5))
+                {
+                    latestAsm.SupervisorId = account.Id;
+                    unitOfWork.SupervisorAssignments.Update(latestAsm);
+                    await unitOfWork.CompleteAsync();
+                    return latestAsm;
+                }
 
                 latestAsm.EndTime = currentTime;
                 unitOfWork.SupervisorAssignments.Update(latestAsm);
