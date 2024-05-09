@@ -7,7 +7,6 @@ using Core.Domain.Interfaces.Mappings;
 using Core.Domain.Interfaces.Services;
 using Core.Domain.Models;
 using Core.Domain.Services;
-using Host.CamAI.API.Utils;
 using Infrastructure.Jwt.Attribute;
 using Microsoft.AspNetCore.Mvc;
 
@@ -19,7 +18,8 @@ public class EmployeesController(
     IAccountService accountService,
     IServiceProvider serviceProvider,
     IEmployeeService employeeService,
-    IBaseMapping mapper
+    IBaseMapping mapper,
+    IBulkTaskService bulkTaskService
 ) : ControllerBase
 {
     /// <summary>
@@ -95,28 +95,19 @@ public class EmployeesController(
         var bulkTask = Task.Run(async () =>
         {
             using var scope = serviceProvider.CreateScope();
-            try
-            {
-                var scopeEmployeeService = scope.ServiceProvider.GetRequiredService<IEmployeeService>();
-                var jwtService = scope.ServiceProvider.GetRequiredService<IJwtService>();
-                stream.Seek(0, SeekOrigin.Begin);
-                await jwtService.SetCurrentUserToSystemHandler();
-                var result = await scopeEmployeeService.UpsertEmployees(shopManagerId, stream);
-                return result;
-            }
-            catch (Exception ex)
-            {
-                scope.ServiceProvider.GetRequiredService<IAppLogging<EmployeesController>>().Error(ex.Message, ex);
-            }
-            finally
-            {
-                await stream.DisposeAsync();
-                BulkTaskManager.RemoveTaskById(shopManagerId, bulkTaskId);
-            }
-
-            return new BulkUpsertTaskResultResponse(0, 0, 0);
+            var scopeEmployeeService = scope.ServiceProvider.GetRequiredService<IEmployeeService>();
+            var jwtService = scope.ServiceProvider.GetRequiredService<IJwtService>();
+            stream.Seek(0, SeekOrigin.Begin);
+            await jwtService.SetCurrentUserToSystemHandler();
+            var result = await scopeEmployeeService.UpsertEmployees(shopManagerId, stream)
+                .ContinueWith(t =>
+                {
+                    bulkTaskService.RemoveTaskById(shopManagerId, bulkTaskId);
+                    return t.Result;
+                });
+            return result;
         });
-        BulkTaskManager.AddUpsertTask(shopManagerId, bulkTask, bulkTaskId);
+        bulkTaskService.AddUpsertTask(shopManagerId, bulkTask, bulkTaskId);
         var res = new BulkResponse() { TaskId = bulkTaskId, Message = "Task is accepted" };
         return Ok(res);
     }
@@ -134,8 +125,13 @@ public class EmployeesController(
         CancellationToken cancellationToken
     )
     {
-        var result = await BulkTaskManager.GetBulkUpsertTaskResultResponse(accountService.GetCurrentAccount().Id, taskId, cancellationToken, TimeSpan.FromMinutes(2));
-        if( result != null)
+        var result = await bulkTaskService.GetBulkUpsertTaskResultResponse(
+            accountService.GetCurrentAccount().Id,
+            taskId,
+            cancellationToken,
+            TimeSpan.FromMinutes(5)
+        );
+        if (result != null)
             return result;
         return NoContent();
     }
@@ -148,7 +144,7 @@ public class EmployeesController(
     [AccessTokenGuard(Role.ShopManager)]
     public ActionResult<List<string>> GetUpsertTaskIds()
     {
-        BulkTaskManager.GetTaskByActorId(accountService.GetCurrentAccount().Id, out var taskIds);
+        bulkTaskService.GetTaskByActorId(accountService.GetCurrentAccount().Id, out var taskIds);
         return taskIds;
     }
 }
