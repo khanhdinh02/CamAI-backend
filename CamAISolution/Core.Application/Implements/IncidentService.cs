@@ -21,6 +21,7 @@ public class IncidentService(
     IAccountService accountService,
     IEmployeeService employeeService,
     ICameraService cameraService,
+    ISupervisorAssignmentService supervisorAssignmentService,
     IEdgeBoxInstallService edgeBoxInstallService,
     IUnitOfWork unitOfWork,
     IBaseMapping mapping,
@@ -74,6 +75,7 @@ public class IncidentService(
 
         incident.EmployeeId = employee.Id;
         incident.Status = IncidentStatus.Accepted;
+        incident.AssigningAccountId = accountService.GetCurrentAccount().Id;
         unitOfWork.Incidents.Update(incident);
         await unitOfWork.CompleteAsync();
     }
@@ -87,6 +89,7 @@ public class IncidentService(
         // if previously accepted then remove employee id
         incident.Status = IncidentStatus.Rejected;
         incident.EmployeeId = null;
+        incident.AssigningAccountId = accountService.GetCurrentAccount().Id;
         unitOfWork.Incidents.Update(incident);
         await unitOfWork.CompleteAsync();
     }
@@ -108,15 +111,19 @@ public class IncidentService(
             if (incidents.Any(i => i.ShopId != employee.ShopId))
                 throw new BadRequestException("Incident and employee are not in the same shop");
         }
-        var invalidIncidents = incidents.Where(i => i.IncidentType == IncidentType.Interaction).Select(i => i.Id);
-        if (invalidIncidents.Any())
+        var invalidIncidents = incidents
+            .Where(i => i.IncidentType == IncidentType.Interaction)
+            .Select(i => i.Id)
+            .ToList();
+        if (invalidIncidents.Count != 0)
             throw new BadRequestException(
-                $"Cannot assign employee for interaction {String.Join(", ", invalidIncidents)}"
+                $"Cannot assign employee for interaction {string.Join(", ", invalidIncidents)}"
             );
         foreach (var incident in incidents)
         {
             incident.EmployeeId = isAccept ? employeeId : null;
             incident.Status = isAccept ? IncidentStatus.Accepted : IncidentStatus.Rejected;
+            incident.AssigningAccountId = accountService.GetCurrentAccount().Id;
             unitOfWork.Incidents.Update(incident);
         }
 
@@ -146,6 +153,9 @@ public class IncidentService(
         {
             incident = mapping.Map<CreateIncidentDto, Incident>(incidentDto);
             incident.ShopId = ebInstall!.ShopId;
+            incident.InChargeAccountId = (
+                await supervisorAssignmentService.GetCurrentInChangeAccount(incident.ShopId)
+            )?.Id;
             incident.Evidences = [];
             incident = await unitOfWork.Incidents.AddAsync(incident);
         }

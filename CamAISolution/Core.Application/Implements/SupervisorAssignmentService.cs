@@ -1,5 +1,4 @@
 using Core.Domain.Entities;
-using Core.Domain.Enums;
 using Core.Domain.Repositories;
 using Core.Domain.Services;
 using Core.Domain.Utilities;
@@ -38,5 +37,13 @@ public class SupervisorAssignmentService(IUnitOfWork unitOfWork) : ISupervisorAs
                 pageSize: 1
             )
         ).Values.FirstOrDefault();
+    }
+
+    public async Task<Account?> GetCurrentInChangeAccount(Guid shopId)
+    {
+        var assignment = await GetLatestAssignmentByDate(shopId, DateTimeHelper.VNDateTime);
+        return assignment?.Supervisor
+            ?? assignment?.HeadSupervisor
+            ?? (await unitOfWork.Accounts.GetAsync(a => a.ManagingShop!.Id == shopId)).Values.FirstOrDefault();
     }
 }

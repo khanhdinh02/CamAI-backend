@@ -216,27 +216,6 @@ public class ShopService(
         await unitOfWork.CompleteAsync();
     }
 
-    public async Task<Account?> GetCurrentInCharge(Guid shopId)
-    {
-        return await GetCurrentSupervisor(shopId)
-            ?? await GetCurrentHeadSupervisor(shopId)
-            ?? (await unitOfWork.Accounts.GetAsync(a => a.ManagingShop!.Id == shopId)).Values.FirstOrDefault();
-    }
-
-    public async Task<Account?> GetCurrentHeadSupervisor(Guid shopId)
-    {
-        return (
-            await supervisorAssignmentService.GetLatestHeadSupervisorAssignmentByDate(shopId, DateTimeHelper.VNDateTime)
-        )?.HeadSupervisor;
-    }
-
-    public async Task<Account?> GetCurrentSupervisor(Guid shopId)
-    {
-        return (
-            await supervisorAssignmentService.GetLatestAssignmentByDate(shopId, DateTimeHelper.VNDateTime)
-        )?.Supervisor;
-    }
-
     public async Task<SupervisorAssignment> AssignSupervisorRoles(Guid accountId, Role role)
     {
         var account =
