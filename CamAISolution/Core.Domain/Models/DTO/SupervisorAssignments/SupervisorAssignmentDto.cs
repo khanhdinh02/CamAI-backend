@@ -1,5 +1,3 @@
-using Core.Domain.Enums;
-
 namespace Core.Domain.DTO;
 
 public class SupervisorAssignmentDto
@@ -10,4 +8,7 @@ public class SupervisorAssignmentDto
     public Guid? SupervisorId { get; set; }
     public DateTime StartTime { get; set; }
     public DateTime? EndTime { get; set; }
+    public AccountDto? HeadSupervisor { get; set; }
+    public AccountDto? Supervisor { get; set; }
+    public List<IncidentDto> Incidents { get; set; } = [];
 }
