@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using System.Dynamic;
 using System.Net.WebSockets;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Core.Application.Events;
 using Core.Application.Events.Args;
 using Core.Domain.DTO;
@@ -16,7 +17,7 @@ public class IncidentSocketManager : Core.Domain.Events.IObserver<CreatedOrUpdat
     private readonly ConcurrentDictionary<Guid, WebSocket> sockets = new();
     private readonly IncidentSubject incidentSubject;
     private readonly IServiceProvider serviceProvider;
-    private readonly JsonSerializerOptions options = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+    private readonly JsonSerializerOptions options = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase, Converters = { new JsonStringEnumConverter() } };
 
     public IncidentSocketManager(IncidentSubject incidentSubject, IServiceProvider serviceProvider)
     {
