@@ -206,6 +206,7 @@ public class EmployeeService(
         }
         finally
         {
+            await unitOfWork.RollBack();
             stream.Close();
         }
         await notificationService.CreateNotification(new()
@@ -216,7 +217,7 @@ public class EmployeeService(
             SentToId = [actorId],
             Title = "Upsert Failed",
         });
-        return new BulkUpsertTaskResultResponse(BulkUpsertStatus.Fail, 0, 0, 0);
+        return new BulkUpsertTaskResultResponse(BulkUpsertStatus.Fail, 0, 0, 0, "Employee upsert failed");
     }
 
     private bool HasAuthority(Account user, Employee employee)

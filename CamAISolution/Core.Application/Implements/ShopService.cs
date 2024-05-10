@@ -522,6 +522,7 @@ public class ShopService(
         }
         finally
         {
+            await unitOfWork.RollBack();
             stream.Close();
         }
         await notificationService.CreateNotification(new()
@@ -532,6 +533,6 @@ public class ShopService(
             SentToId = [actorId],
             Title = "Upsert Failed",
         });
-        return new BulkUpsertTaskResultResponse(BulkUpsertStatus.Fail, 0, 0, 0);
+        return new BulkUpsertTaskResultResponse(BulkUpsertStatus.Fail, 0, 0, 0, "Shop and shop manager upsert failed");
     }
 }

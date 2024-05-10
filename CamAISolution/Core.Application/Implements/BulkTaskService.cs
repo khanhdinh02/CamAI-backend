@@ -27,9 +27,14 @@ public class BulkTaskService(ICacheService cacheService) : IBulkTaskService
 
     public void GetTaskByActorId(Guid actorId, out List<string> taskIds)
     {
-        if (!upsertTasks.TryGetValue(actorId, out var tasks))
-            throw new NotFoundException("Not found any task");
-        taskIds = tasks.Keys.ToList();
+        taskIds = new();
+
+        if (upsertTasks.TryGetValue(actorId, out var tasks))
+            taskIds = tasks.Keys.ToList();
+
+        var cacheTaskIds = cacheService.Get<HashSet<string>>(actorId.ToString("N"));
+        if (cacheTaskIds != null && cacheTaskIds.Count > 0)
+            taskIds.AddRange(cacheTaskIds);
     }
 
     public void GetTaskById(Guid actorId, string taskId, out Task<BulkUpsertTaskResultResponse> result)
@@ -48,10 +53,28 @@ public class BulkTaskService(ICacheService cacheService) : IBulkTaskService
             return;
         }
 
-        if(tasks.IsEmpty)
+        if (tasks.IsEmpty)
             upsertTasks.TryRemove(actorId, out _);
 
-        cacheService.Set(taskId, task, TimeSpan.FromDays(1));
+        var removedTaskIds = cacheService.Get<HashSet<string>>(actorId.ToString("N"));
+        if (removedTaskIds == null)
+            removedTaskIds = new HashSet<string> { taskId };
+        else
+            removedTaskIds.Add(taskId);
+
+        cacheService.Set(actorId.ToString("N"), removedTaskIds, TimeSpan.FromDays(1));
+        cacheService.Set(taskId, task, TimeSpan.FromDays(1), (key, _) =>
+        {
+            // Clean up when data is evicted.
+            var tasks = cacheService.Get<HashSet<string>>(actorId.ToString("N"));
+            if (tasks == null)
+                return;
+            tasks.Remove(taskId);
+            if (tasks.Count == 0)
+                cacheService.Remove(actorId.ToString("N"));
+            else
+                cacheService.Set(actorId.ToString("N"), removedTaskIds, TimeSpan.FromDays(1));
+        });
     }
 
     public async Task<BulkUpsertTaskResultResponse?> GetBulkUpsertTaskResultResponse(
@@ -66,7 +89,7 @@ public class BulkTaskService(ICacheService cacheService) : IBulkTaskService
         if (finishedTaskResult != null)
             return await finishedTaskResult;
 
-        // check and wait for current task
+        // check and wait for current running task
         GetTaskById(actorId, taskId, out var bulkTask);
         using var tokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         tokenSource.CancelAfter(timeout);
