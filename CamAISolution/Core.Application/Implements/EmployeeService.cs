@@ -203,10 +203,11 @@ public class EmployeeService(
         catch (Exception ex)
         {
             logger.Error(ex.Message, ex);
+            await unitOfWork.RollBack();
         }
         finally
         {
-            await unitOfWork.RollBack();
+
             stream.Close();
         }
         await notificationService.CreateNotification(new()
