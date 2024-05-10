@@ -124,7 +124,7 @@ public class ShopsController(
             var jwtService = scope.ServiceProvider.GetRequiredService<IJwtService>();
             stream.Seek(0, SeekOrigin.Begin);
             await jwtService.SetCurrentUserToSystemHandler();
-            var result = await scopeShopService.UpsertShops(brandManagerId, stream)
+            var result = await scopeShopService.UpsertShops(brandManagerId, stream, bulkTaskId)
                 .ContinueWith(t =>
                 {
                     bulkTaskService.RemoveTaskById(brandManagerId, bulkTaskId);
@@ -159,6 +159,22 @@ public class ShopsController(
         if (result != null)
             return result;
         return NoContent();
+    }
+
+    /// <summary>
+    /// Get task progression
+    /// </summary>
+    /// <param name="taskId"></param>
+    /// <returns></returns>
+    [HttpGet("upsert/task/{taskId}/progress")]
+    public Task<IActionResult> GetTaskProgress(string taskId)
+    {
+        var progress = bulkTaskService.GetTaskProgress(taskId);
+        return Task.FromResult<IActionResult>(Ok(new
+        {
+            Percents = progress.CurrentFinishedRecord * 100f / progress.Total,
+            Detailed = new { progress.CurrentFinishedRecord, progress.Total }
+        }));
     }
 
     /// <summary>

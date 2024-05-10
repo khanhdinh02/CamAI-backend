@@ -11,5 +11,5 @@ public interface IEmployeeService
     Task<Employee> CreateEmployee(CreateEmployeeDto dto);
     Task<Employee> UpdateEmployee(Guid id, UpdateEmployeeDto dto);
     Task DeleteEmployee(Guid id);
-    Task<BulkUpsertTaskResultResponse> UpsertEmployees(Guid actorId, MemoryStream stream);
+    Task<BulkUpsertTaskResultResponse> UpsertEmployees(Guid actorId, MemoryStream stream, string taskId);
 }

@@ -99,7 +99,7 @@ public class EmployeesController(
             var jwtService = scope.ServiceProvider.GetRequiredService<IJwtService>();
             stream.Seek(0, SeekOrigin.Begin);
             await jwtService.SetCurrentUserToSystemHandler();
-            var result = await scopeEmployeeService.UpsertEmployees(shopManagerId, stream)
+            var result = await scopeEmployeeService.UpsertEmployees(shopManagerId, stream, bulkTaskId)
                 .ContinueWith(t =>
                 {
                     bulkTaskService.RemoveTaskById(shopManagerId, bulkTaskId);
@@ -134,6 +134,22 @@ public class EmployeesController(
         if (result != null)
             return result;
         return NoContent();
+    }
+
+    /// <summary>
+    /// Get task progression
+    /// </summary>
+    /// <param name="taskId"></param>
+    /// <returns></returns>
+    [HttpGet("upsert/task/{taskId}/progress")]
+    public Task<IActionResult> GetTaskProgress(string taskId)
+    {
+        var progress = bulkTaskService.GetTaskProgress(taskId);
+        return Task.FromResult<IActionResult>(Ok(new
+        {
+            Percent = progress.CurrentFinishedRecord * 100f / progress.Total,
+            Detailed = new { progress.CurrentFinishedRecord, progress.Total }
+        }));
     }
 
     /// <summary>
