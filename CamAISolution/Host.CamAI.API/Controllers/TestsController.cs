@@ -3,8 +3,10 @@ using Core.Application.Events;
 using Core.Application.Events.Args;
 using Core.Domain.DTO;
 using Core.Domain.Entities;
+using Core.Domain.Enums;
 using Core.Domain.Interfaces.Mappings;
 using Core.Domain.Interfaces.Services;
+using Core.Domain.Repositories;
 using Core.Domain.Services;
 using Core.Domain.Utilities;
 using Infrastructure.Observer.Messages;
@@ -21,6 +23,7 @@ public class TestsController(
     IncidentSubject incidentSubject,
     ILogger<TestsController> logger,
     ICacheService cacheService,
+    IUnitOfWork unitOfWork
 ) : ControllerBase
 {
     [HttpGet]
@@ -91,15 +94,20 @@ public class TestsController(
         return Ok(cacheService.Get<string>("change"));
     }
 
-    [HttpGet("noti-incident/{sentTo:guid}")]
-    public IActionResult NotificationIncident(Guid sentTo)
+    [HttpGet("noti-incident/")]
+    public async Task<IActionResult> NotificationIncident([FromQuery] Role sentTo)
     {
-        incidentSubject.Notify(new CreatedOrUpdatedIncidentArgs(new()
+        var result = (await unitOfWork.Accounts.GetAsync(expression: a => a.Role == sentTo, takeAll: true)).Values;
+        foreach (var value in result)
         {
-            CreatedDate = DateTimeHelper.VNDateTime,
-            IncidentType = Core.Domain.Enums.IncidentType.Uniform,
-            Status = Core.Domain.Enums.IncidentStatus.New,
-        }, IncidentEventType.NewIncident, sentTo));
+            incidentSubject.Notify(new CreatedOrUpdatedIncidentArgs(new()
+            {
+                CreatedDate = DateTimeHelper.VNDateTime,
+                IncidentType = IncidentType.Uniform,
+                Status = IncidentStatus.New,
+            }, IncidentEventType.NewIncident, value.Id));
+        }
+
         return Ok();
     }
 }
