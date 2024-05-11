@@ -9,7 +9,6 @@ using Core.Domain.Services;
 using Core.Domain.Utilities;
 using Infrastructure.Observer.Messages;
 using Microsoft.AspNetCore.Mvc;
-using ShopFromImportFile = Core.Domain.DTO.ShopFromImportFile;
 
 namespace Host.CamAI.API.Controllers;
 
@@ -21,8 +20,7 @@ public class TestsController(
     EventManager eventManager,
     IncidentSubject incidentSubject,
     ILogger<TestsController> logger,
-    IReadFileService readFileService,
-    ICacheService cacheService
+    ICacheService cacheService,
 ) : ControllerBase
 {
     [HttpGet]
@@ -91,5 +89,17 @@ public class TestsController(
     public IActionResult TestGetCache()
     {
         return Ok(cacheService.Get<string>("change"));
+    }
+
+    [HttpGet("noti-incident")]
+    public IActionResult NotificationIncident(Guid sentTo)
+    {
+        incidentSubject.Notify(new CreatedOrUpdatedIncidentArgs(new()
+        {
+            CreatedDate = DateTimeHelper.VNDateTime,
+            IncidentType = Core.Domain.Enums.IncidentType.Uniform,
+            Status = Core.Domain.Enums.IncidentStatus.New,
+        }, IncidentEventType.NewIncident, sentTo));
+        return Ok();
     }
 }
