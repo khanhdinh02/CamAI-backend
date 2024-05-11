@@ -24,4 +24,5 @@ public interface IIncidentService
 
     Task AcceptOrRejectAllIncidents(List<Guid> incidentIds, Guid employeeId, bool isAccept);
     Task<IncidentPercentDto> GetIncidentPercent(Guid? shopId, DateOnly startDate, DateOnly endDate);
+    Task<IList<Incident>> GetIncidentsByAssignment(Guid assignmentId);
 }

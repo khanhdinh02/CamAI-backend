@@ -3,11 +3,14 @@ using Core.Application.Events;
 using Core.Application.Events.Args;
 using Core.Domain.DTO;
 using Core.Domain.Entities;
+using Core.Domain.Enums;
 using Core.Domain.Interfaces.Mappings;
 using Core.Domain.Interfaces.Services;
+using Core.Domain.Repositories;
+using Core.Domain.Services;
+using Core.Domain.Utilities;
 using Infrastructure.Observer.Messages;
 using Microsoft.AspNetCore.Mvc;
-using ShopFromImportFile = Core.Domain.DTO.ShopFromImportFile;
 
 namespace Host.CamAI.API.Controllers;
 
@@ -19,51 +22,10 @@ public class TestsController(
     EventManager eventManager,
     IncidentSubject incidentSubject,
     ILogger<TestsController> logger,
-    IReadFileService readFileService
+    ICacheService cacheService,
+    IUnitOfWork unitOfWork
 ) : ControllerBase
 {
-    [HttpGet("download-csv")]
-    public IActionResult DownloadFile()
-    {
-        var path = Directory.GetCurrentDirectory().Substring(0, Directory.GetCurrentDirectory().LastIndexOf('/'));
-        var filename = Directory.EnumerateFiles(string.IsNullOrEmpty(path) ? "/" : path, "EmployeeTemplate.csv", SearchOption.AllDirectories).First();
-        using var file = System.IO.File.OpenRead(filename);
-        var stream = new MemoryStream();
-        file.CopyTo(stream);
-        stream.Seek(0, SeekOrigin.Begin);
-        return File(stream, "text/csv", "EmployeeTemplate.csv");
-
-    }
-
-    [HttpGet("text")]
-    public object TestValidation()
-    {
-        var error = new StringBuilder("");
-        while (error.Length < 60)
-        {
-            error.Append("t");
-        }
-
-        var test = new ShopFromImportFile
-        {
-            ShopAddress = error.ToString(),
-            ShopManagerEmail = error.ToString(),
-            ShopManagerName = error.ToString(),
-            ShopName = error.ToString(),
-        };
-        return test.ShopFromImportFileValidation();
-    }
-    [HttpPost("readfile")]
-    public ActionResult ReadFile(IFormFile file)
-    {
-        using var stream = new MemoryStream();
-        file.CopyTo(stream);
-        stream.Seek(0, SeekOrigin.Begin);
-        foreach (var record in readFileService.ReadFromCsv<ShopFromImportFile>(stream))
-            logger.LogInformation($"{record.ShopName}, {record.ExternalShopId}");
-        return Ok();
-    }
-
     [HttpGet]
     public ActionResult<string> TestEndpoint()
     {
@@ -111,6 +73,41 @@ public class TestsController(
                 Guid.Parse("8A6E9252-E300-4546-9BDB-E01144266B0F")
             )
         );
+        return Ok();
+    }
+
+    [HttpGet("cache")]
+    public ActionResult TestAddCache()
+    {
+        var keyChange = "change";
+        cacheService.Set("test", "test", TimeSpan.FromSeconds(1), (key, value) =>
+        {
+            logger.LogInformation($"{key} and {value}");
+            cacheService.Set(keyChange, $"{key} changed at {DateTimeHelper.VNDateTime}", TimeSpan.FromDays(1));
+        });
+        return Ok();
+    }
+
+    [HttpGet("cache-value")]
+    public IActionResult TestGetCache()
+    {
+        return Ok(cacheService.Get<string>("change"));
+    }
+
+    [HttpGet("noti-incident/")]
+    public async Task<IActionResult> NotificationIncident([FromQuery] Role sentTo)
+    {
+        var result = (await unitOfWork.Accounts.GetAsync(expression: a => a.Role == sentTo, takeAll: true)).Values;
+        foreach (var value in result)
+        {
+            incidentSubject.Notify(new CreatedOrUpdatedIncidentArgs(new()
+            {
+                CreatedDate = DateTimeHelper.VNDateTime,
+                IncidentType = IncidentType.Uniform,
+                Status = IncidentStatus.New,
+            }, IncidentEventType.NewIncident, value.Id));
+        }
+
         return Ok();
     }
 }

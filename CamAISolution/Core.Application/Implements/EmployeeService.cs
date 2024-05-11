@@ -1,5 +1,7 @@
+using Core.Application.Events;
 using Core.Application.Exceptions;
 using Core.Application.Specifications.Repositories;
+using Core.Domain;
 using Core.Domain.DTO;
 using Core.Domain.Entities;
 using Core.Domain.Enums;
@@ -15,7 +17,9 @@ public class EmployeeService(
     IUnitOfWork unitOfWork,
     IAccountService accountService,
     IReadFileService readFileService,
-    IBaseMapping mapper
+    IAppLogging<EmployeeService> logger,
+    IBaseMapping mapper,
+    BulkUpsertProgressSubject bulkUpsertProgressSubject
 ) : IEmployeeService
 {
     public async Task<PaginationResult<Employee>> GetEmployees(SearchEmployeeRequest req)
@@ -115,7 +119,7 @@ public class EmployeeService(
         await unitOfWork.CompleteAsync();
     }
 
-    public async Task<BulkUpsertTaskResultResponse> UpsertEmployees(Guid actorId, MemoryStream stream)
+    public async Task<BulkUpsertTaskResultResponse> UpsertEmployees(Guid actorId, MemoryStream stream, string taskId)
     {
         var employeeInserted = new HashSet<Guid>();
         var employeeUpdated = new HashSet<Guid>();
@@ -125,73 +129,98 @@ public class EmployeeService(
             (await unitOfWork.Shops.GetAsync(s => s.ShopManagerId == actorId)).Values.FirstOrDefault()
             ?? throw new NotFoundException("Cannot found shop");
         await unitOfWork.BeginTransaction();
-        foreach (var record in readFileService.ReadFromCsv<EmployeeFromImportFile>(stream))
+        try
         {
-            rowCount++;
-            if (!record.IsValid())
+            foreach (var record in readFileService.ReadFromCsv<EmployeeFromImportFile>(stream, true, $"total-records-{taskId}"))
             {
-                failedValidatedRecords.Add(rowCount, record.EmployeeFromImportFileValidation());
-                continue;
+                bulkUpsertProgressSubject.Notify(new(rowCount++, taskId));
+                if (!record.IsValid())
+                {
+                    failedValidatedRecords.Add(rowCount, record.EmployeeFromImportFileValidation());
+                    continue;
+                }
+
+                var employee = (
+                    await unitOfWork.Employees.GetAsync(
+                        expression: e =>
+                            (!string.IsNullOrEmpty(record.ExternalId) && record.ExternalId == e.ExternalId)
+                            || (!string.IsNullOrEmpty(record.Email) && record.Email == e.Email),
+                        disableTracking: false
+                    )
+                ).Values.FirstOrDefault();
+                if (employee == null)
+                {
+                    employee = new()
+                    {
+                        Name = record.Name,
+                        Gender = record.Gender ?? Gender.Male,
+                        ExternalId = record.ExternalId,
+                        Email = record.Email == string.Empty ? null : record.Email,
+                        ShopId = shop.Id,
+                        Birthday = record.Birthday,
+                        AddressLine = record.AddressLine,
+                        EmployeeStatus = EmployeeStatus.Active
+                    };
+                    employee = await unitOfWork.Employees.AddAsync(employee);
+                    employeeInserted.Add(employee.Id);
+                }
+                else
+                {
+                    employee.Name = record.Name;
+                    employee.Gender = record.Gender ?? Gender.Male;
+                    employee.ExternalId = record.ExternalId;
+                    employee.Email = record.Email == string.Empty ? null : record.Email;
+                    employee.ShopId = shop.Id;
+                    employee.Birthday = record.Birthday;
+                    employee.AddressLine = record.AddressLine;
+                    unitOfWork.Employees.Update(employee);
+                    employeeUpdated.Add(employee.Id);
+                }
             }
 
-            var employee = (
-                await unitOfWork.Employees.GetAsync(
-                    expression: e =>
-                        (!string.IsNullOrEmpty(record.ExternalId) && record.ExternalId == e.ExternalId)
-                        || (!string.IsNullOrEmpty(record.Email) && record.Email == e.Email),
-                    disableTracking: false
-                )
-            ).Values.FirstOrDefault();
-            if (employee == null)
-            {
-                employee = new()
+            await unitOfWork.CompleteAsync();
+            await unitOfWork.CommitTransaction();
+            await notificationService.CreateNotification(
+                new()
                 {
-                    Name = record.Name,
-                    Gender = record.Gender ?? Gender.Male,
-                    ExternalId = record.ExternalId,
-                    Email = record.Email == string.Empty ? null : record.Email,
-                    ShopId = shop.Id,
-                    Birthday = record.Birthday,
-                    AddressLine = record.AddressLine,
-                    EmployeeStatus = EmployeeStatus.Active
-                };
-                employee = await unitOfWork.Employees.AddAsync(employee);
-                employeeInserted.Add(employee.Id);
-            }
-            else
-            {
-                employee.Name = record.Name;
-                employee.Gender = record.Gender ?? Gender.Male;
-                employee.ExternalId = record.ExternalId;
-                employee.Email = record.Email == string.Empty ? null : record.Email;
-                employee.ShopId = shop.Id;
-                employee.Birthday = record.Birthday;
-                employee.AddressLine = record.AddressLine;
-                unitOfWork.Employees.Update(employee);
-                employeeUpdated.Add(employee.Id);
-            }
+                    Priority = NotificationPriority.Normal,
+                    Content =
+                        $"Inserted: {employeeInserted.Count}\nUpdated: {employeeUpdated.Count}\nFailed:{failedValidatedRecords.Count}",
+                    Title = "Upsert employees completed",
+                    Type = NotificationType.UpsertEmployee,
+                    SentToId = [actorId],
+                }
+            );
+            return new(
+                BulkUpsertStatus.Success,
+                employeeInserted.Count,
+                employeeUpdated.Count,
+                failedValidatedRecords.Count,
+                "",
+                new { EmployeeInserted = employeeInserted },
+                new { EmployeeUpdated = employeeUpdated },
+                new { Errors = failedValidatedRecords.Select(e => new { Row = e.Key, Reasons = e.Value }) }
+            );
         }
-        await unitOfWork.CompleteAsync();
-        await unitOfWork.CommitTransaction();
-        await notificationService.CreateNotification(
-            new()
-            {
-                Priority = NotificationPriority.Normal,
-                Content =
-                    $"Inserted: {employeeInserted.Count}\nUpdated: {employeeUpdated.Count}\nFailed:{failedValidatedRecords.Count}",
-                Title = "Upsert employees completed",
-                Type = NotificationType.UpsertEmployee,
-                SentToId = [actorId],
-            }
-        );
-        return new(
-            employeeInserted.Count,
-            employeeUpdated.Count,
-            failedValidatedRecords.Count,
-            new { EmployeeInserted = employeeInserted },
-            new { EmployeeUpdated = employeeUpdated },
-            new { Errors = failedValidatedRecords.Select(e => new { Row = e.Key, Reasons = e.Value }) }
-        );
+        catch (Exception ex)
+        {
+            logger.Error(ex.Message, ex);
+            await unitOfWork.RollBack();
+        }
+        finally
+        {
+
+            stream.Close();
+        }
+        await notificationService.CreateNotification(new()
+        {
+            Priority = NotificationPriority.Urgent,
+            Content = "Upsert failed",
+            Type = NotificationType.UpsertEmployee,
+            SentToId = [actorId],
+            Title = "Upsert Failed",
+        });
+        return new BulkUpsertTaskResultResponse(BulkUpsertStatus.Fail, 0, 0, 0, "Employee upsert failed");
     }
 
     private bool HasAuthority(Account user, Employee employee)

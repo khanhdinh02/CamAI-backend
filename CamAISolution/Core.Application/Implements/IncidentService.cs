@@ -456,4 +456,18 @@ public class IncidentService(
             Types = percentByType
         };
     }
+
+    public async Task<IList<Incident>> GetIncidentsByAssignment(Guid assignmentId)
+    {
+        var assignment =
+            await unitOfWork.SupervisorAssignments.GetByIdAsync(assignmentId)
+            ?? throw new NotFoundException(typeof(SupervisorAssignment), assignmentId);
+        var startTime = assignment.StartTime;
+        var endTime = assignment.EndTime ?? startTime.Date.AddDays(1).AddTicks(-1);
+        var incidents = await unitOfWork.Incidents.GetAsync(
+            x => startTime <= x.StartTime && x.StartTime <= endTime,
+            takeAll: true
+        );
+        return incidents.Values;
+    }
 }

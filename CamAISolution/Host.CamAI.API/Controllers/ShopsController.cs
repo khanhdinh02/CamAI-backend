@@ -7,7 +7,6 @@ using Core.Domain.Interfaces.Mappings;
 using Core.Domain.Interfaces.Services;
 using Core.Domain.Models;
 using Core.Domain.Services;
-using Host.CamAI.API.Utils;
 using Infrastructure.Jwt.Attribute;
 using Microsoft.AspNetCore.Mvc;
 
@@ -20,7 +19,8 @@ public class ShopsController(
     IAccountService accountService,
     IServiceProvider serviceProvider,
     IShopService shopService,
-    IBaseMapping baseMapping
+    IBaseMapping baseMapping,
+    IBulkTaskService bulkTaskService
 ) : ControllerBase
 {
     /// <summary>
@@ -120,29 +120,20 @@ public class ShopsController(
         var bulkTask = Task.Run(async () =>
         {
             using var scope = serviceProvider.CreateScope();
-            try
-            {
-                var scopeShopService = scope.ServiceProvider.GetRequiredService<IShopService>();
-                var jwtService = scope.ServiceProvider.GetRequiredService<IJwtService>();
-                stream.Seek(0, SeekOrigin.Begin);
-                await jwtService.SetCurrentUserToSystemHandler();
-                var result = await scopeShopService.UpsertShops(brandManagerId, stream);
-                return result;
-            }
-            catch (Exception ex)
-            {
-                scope.ServiceProvider.GetRequiredService<IAppLogging<ShopsController>>().Error(ex.Message, ex);
-            }
-            finally
-            {
-                await stream.DisposeAsync();
-                BulkTaskManager.RemoveTaskById(brandManagerId, bulkTaskId);
-            }
-
-            return new BulkUpsertTaskResultResponse(0, 0, 0);
+            var scopeShopService = scope.ServiceProvider.GetRequiredService<IShopService>();
+            var jwtService = scope.ServiceProvider.GetRequiredService<IJwtService>();
+            stream.Seek(0, SeekOrigin.Begin);
+            await jwtService.SetCurrentUserToSystemHandler();
+            var result = await scopeShopService.UpsertShops(brandManagerId, stream, bulkTaskId)
+                .ContinueWith(t =>
+                {
+                    bulkTaskService.RemoveTaskById(brandManagerId, bulkTaskId);
+                    return t.Result;
+                });
+            return result;
         });
-        var res = new BulkResponse() { TaskId = bulkTaskId, Message = "Task is accepted" };
-        BulkTaskManager.AddUpsertTask(brandManagerId, bulkTask, bulkTaskId);
+        var res = new BulkResponse { TaskId = bulkTaskId, Message = "Task is accepted" };
+        bulkTaskService.AddUpsertTask(brandManagerId, bulkTask, bulkTaskId);
         return Ok(res);
     }
 
@@ -159,15 +150,31 @@ public class ShopsController(
         CancellationToken cancellationToken
     )
     {
-        var result = await BulkTaskManager.GetBulkUpsertTaskResultResponse(
+        var result = await bulkTaskService.GetBulkUpsertTaskResultResponse(
             accountService.GetCurrentAccount().Id,
             taskId,
             cancellationToken,
-            TimeSpan.FromMinutes(2)
+            TimeSpan.FromMinutes(5)
         );
         if (result != null)
             return result;
         return NoContent();
+    }
+
+    /// <summary>
+    /// Get task progression
+    /// </summary>
+    /// <param name="taskId"></param>
+    /// <returns></returns>
+    [HttpGet("upsert/task/{taskId}/progress")]
+    public Task<IActionResult> GetTaskProgress(string taskId)
+    {
+        var progress = bulkTaskService.GetTaskProgress(taskId);
+        return Task.FromResult<IActionResult>(Ok(new
+        {
+            Percents = progress.CurrentFinishedRecord * 100f / progress.Total,
+            Detailed = new { progress.CurrentFinishedRecord, progress.Total }
+        }));
     }
 
     /// <summary>
@@ -178,7 +185,7 @@ public class ShopsController(
     [AccessTokenGuard(Role.BrandManager)]
     public ActionResult<List<string>> GetUpsertTaskIds()
     {
-        BulkTaskManager.GetTaskByActorId(accountService.GetCurrentAccount().Id, out var taskIds);
+        bulkTaskService.GetTaskByActorId(accountService.GetCurrentAccount().Id, out var taskIds);
         return taskIds;
     }
 

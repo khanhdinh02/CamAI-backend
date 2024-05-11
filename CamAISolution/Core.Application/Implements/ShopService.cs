@@ -24,7 +24,8 @@ public class ShopService(
     IReadFileService readFileService,
     INotificationService notificationService,
     ISupervisorAssignmentService supervisorAssignmentService,
-    EventManager eventManager
+    EventManager eventManager,
+    BulkUpsertProgressSubject bulkUpsertProgressSubject
 ) : IShopService
 {
     public async Task<Shop> CreateShop(CreateOrUpdateShopDto shopDto)
@@ -397,7 +398,7 @@ public class ShopService(
         );
     }
 
-    public async Task<BulkUpsertTaskResultResponse> UpsertShops(Guid actorId, Stream stream)
+    public async Task<BulkUpsertTaskResultResponse> UpsertShops(Guid actorId, Stream stream, string taskId)
     {
         var shopInserted = new HashSet<Guid>();
         var shopUpdated = new HashSet<Guid>();
@@ -409,96 +410,126 @@ public class ShopService(
             (await unitOfWork.Brands.GetAsync(expression: b => b.BrandManagerId == actorId)).Values.FirstOrDefault()
             ?? throw new NotFoundException("Cannot find brand manager when upsert");
         await unitOfWork.BeginTransaction();
-        foreach (var record in readFileService.ReadFromCsv<ShopFromImportFile>(stream))
+        try
         {
-            rowCount++;
-            if (!record.IsValid())
+            foreach (
+                var record in readFileService.ReadFromCsv<ShopFromImportFile>(stream, true, $"total-records-{taskId}")
+            )
             {
-                failedValidatedRecords.Add(rowCount, record.ShopFromImportFileValidation());
-                continue;
+                bulkUpsertProgressSubject.Notify(new(rowCount++, taskId));
+                if (!record.IsValid())
+                {
+                    failedValidatedRecords.Add(rowCount, record.ShopFromImportFileValidation());
+                    continue;
+                }
+
+                var shop = (
+                    await unitOfWork.Shops.GetAsync(
+                        expression: s => s.ExternalId == record.GetShop().ExternalId,
+                        disableTracking: false
+                    )
+                ).Values.FirstOrDefault();
+                var account = (
+                    await unitOfWork.Accounts.GetAsync(
+                        expression: a =>
+                            a.ExternalId == record.GetManager().ExternalId || a.Email == record.GetManager().Email,
+                        disableTracking: false
+                    )
+                ).Values.FirstOrDefault();
+                if (account == null)
+                {
+                    account = record.GetManager();
+                    account.Password = Hasher.Hash(DomainHelper.GenerateDefaultPassword(account.Email));
+                    account.BrandId = brand.Id;
+                    account.Role = Role.ShopManager;
+                    account.AccountStatus = AccountStatus.New;
+                    account = await unitOfWork.Accounts.AddAsync(account);
+                    accountInserted.Add(account.Id);
+                }
+                else
+                {
+                    account.Email = record.GetManager().Email;
+                    account.Name = record.GetManager().Name;
+                    account.Gender = record.GetManager().Gender;
+                    account.AddressLine = record.GetManager().AddressLine;
+                    account.ExternalId = record.GetManager().ExternalId;
+                    account.BrandId = brand.Id;
+                    account.Role = Role.ShopManager;
+                    unitOfWork.Accounts.Update(account);
+                    accountUpdated.Add(account.Id);
+                }
+
+                if (shop == null)
+                {
+                    shop = record.GetShop();
+                    shop.ShopManagerId = account.Id;
+                    shop.BrandId = brand.Id;
+                    shop.ShopStatus = ShopStatus.Active;
+                    shop = await unitOfWork.Shops.AddAsync(shop);
+                    shopInserted.Add(shop.Id);
+                }
+                else
+                {
+                    shop.ExternalId = record.GetShop().ExternalId;
+                    shop.Name = record.GetShop().Name;
+                    shop.OpenTime = record.GetShop().OpenTime;
+                    shop.CloseTime = record.GetShop().CloseTime;
+                    shop.Phone = record.GetShop().Phone;
+                    shop.AddressLine = record.GetShop().AddressLine;
+                    shop.BrandId = brand.Id;
+                    unitOfWork.Shops.Update(shop);
+                    shopUpdated.Add(shop.Id);
+                }
             }
-            var shop = (
-                await unitOfWork.Shops.GetAsync(
-                    expression: s => s.ExternalId == record.GetShop().ExternalId,
-                    disableTracking: false
-                )
-            ).Values.FirstOrDefault();
-            var account = (
-                await unitOfWork.Accounts.GetAsync(
-                    expression: a =>
-                        a.ExternalId == record.GetManager().ExternalId || a.Email == record.GetManager().Email,
-                    disableTracking: false
-                )
-            ).Values.FirstOrDefault();
-            if (account == null)
-            {
-                account = record.GetManager();
-                account.Password = Hasher.Hash(DomainHelper.GenerateDefaultPassword(account.Email));
-                account.BrandId = brand.Id;
-                account.Role = Role.ShopManager;
-                account.AccountStatus = AccountStatus.New;
-                account = await unitOfWork.Accounts.AddAsync(account);
-                accountInserted.Add(account.Id);
-            }
-            else
-            {
-                account.Email = record.GetManager().Email;
-                account.Name = record.GetManager().Name;
-                account.Gender = record.GetManager().Gender;
-                account.AddressLine = record.GetManager().AddressLine;
-                account.ExternalId = record.GetManager().ExternalId;
-                account.BrandId = brand.Id;
-                account.Role = Role.ShopManager;
-                unitOfWork.Accounts.Update(account);
-                accountUpdated.Add(account.Id);
-            }
-            if (shop == null)
-            {
-                shop = record.GetShop();
-                shop.ShopManagerId = account.Id;
-                shop.BrandId = brand.Id;
-                shop.ShopStatus = ShopStatus.Active;
-                shop = await unitOfWork.Shops.AddAsync(shop);
-                shopInserted.Add(shop.Id);
-            }
-            else
-            {
-                shop.ExternalId = record.GetShop().ExternalId;
-                shop.Name = record.GetShop().Name;
-                shop.OpenTime = record.GetShop().OpenTime;
-                shop.CloseTime = record.GetShop().CloseTime;
-                shop.Phone = record.GetShop().Phone;
-                shop.AddressLine = record.GetShop().AddressLine;
-                shop.BrandId = brand.Id;
-                unitOfWork.Shops.Update(shop);
-                shopUpdated.Add(shop.Id);
-            }
+
+            await unitOfWork.CompleteAsync();
+            await unitOfWork.CommitTransaction();
+            var totalOfInserted = shopInserted.Count + accountInserted.Count;
+            var totalOfUpdated = shopUpdated.Count + accountUpdated.Count;
+            await notificationService.CreateNotification(
+                new()
+                {
+                    Priority = NotificationPriority.Normal,
+                    Content =
+                        $"Inserted: {totalOfInserted}\nUpdated: {totalOfUpdated}\nFailed:{failedValidatedRecords.Count}",
+                    Title = "Upsert employees completed",
+                    Type = NotificationType.UpsertShopAndManager,
+                    SentToId = [actorId],
+                }
+            );
+            var result = new BulkUpsertTaskResultResponse(
+                BulkUpsertStatus.Success,
+                totalOfInserted,
+                totalOfUpdated,
+                failedValidatedRecords.Count,
+                "",
+                new { ShopInserted = shopInserted },
+                new { AccountInserted = accountInserted },
+                new { ShopUpdated = shopUpdated },
+                new { AccountUpdated = accountUpdated },
+                new { Errors = failedValidatedRecords.Select(e => new { Row = e.Key, Reasons = e.Value }) }
+            );
+            return result;
         }
-        await unitOfWork.CompleteAsync();
-        await unitOfWork.CommitTransaction();
-        var totalOfInserted = shopInserted.Count + accountInserted.Count;
-        var totalOfUpdated = shopUpdated.Count + accountUpdated.Count;
+        catch (Exception ex)
+        {
+            logger.Error(ex.Message, ex);
+            await unitOfWork.RollBack();
+        }
+        finally
+        {
+            stream.Close();
+        }
         await notificationService.CreateNotification(
             new()
             {
-                Priority = NotificationPriority.Normal,
-                Content =
-                    $"Inserted: {totalOfInserted}\nUpdated: {totalOfUpdated}\nFailed:{failedValidatedRecords.Count}",
-                Title = "Upsert employees completed",
+                Priority = NotificationPriority.Urgent,
+                Content = "Upsert failed",
                 Type = NotificationType.UpsertShopAndManager,
                 SentToId = [actorId],
+                Title = "Upsert Failed",
             }
         );
-        var result = new BulkUpsertTaskResultResponse(
-            totalOfInserted,
-            totalOfUpdated,
-            failedValidatedRecords.Count,
-            new { ShopInserted = shopInserted },
-            new { AccountInserted = accountInserted },
-            new { ShopUpdated = shopUpdated },
-            new { AccountUpdated = accountUpdated },
-            new { Errors = failedValidatedRecords.Select(e => new { Row = e.Key, Reasons = e.Value }) }
-        );
-        return result;
+        return new BulkUpsertTaskResultResponse(BulkUpsertStatus.Fail, 0, 0, 0, "Shop and shop manager upsert failed");
     }
 }

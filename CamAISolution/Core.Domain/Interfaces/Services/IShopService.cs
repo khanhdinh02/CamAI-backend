@@ -23,5 +23,5 @@ public interface IShopService
     Task<SupervisorAssignment> AssignSupervisorRoles(Guid accountId, Role role);
     Task<SupervisorAssignment> AssignHeadSupervisor(Account account);
     Task<SupervisorAssignment> AssignSupervisor(Account account);
-    Task<BulkUpsertTaskResultResponse> UpsertShops(Guid actorId, Stream stream);
+    Task<BulkUpsertTaskResultResponse> UpsertShops(Guid actorId, Stream stream, string taskId);
 }
