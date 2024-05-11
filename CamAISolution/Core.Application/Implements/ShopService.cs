@@ -217,27 +217,6 @@ public class ShopService(
         await unitOfWork.CompleteAsync();
     }
 
-    public async Task<Account?> GetCurrentInCharge(Guid shopId)
-    {
-        return await GetCurrentSupervisor(shopId)
-            ?? await GetCurrentHeadSupervisor(shopId)
-            ?? (await unitOfWork.Accounts.GetAsync(a => a.ManagingShop!.Id == shopId)).Values.FirstOrDefault();
-    }
-
-    public async Task<Account?> GetCurrentHeadSupervisor(Guid shopId)
-    {
-        return (
-            await supervisorAssignmentService.GetLatestHeadSupervisorAssignmentByDate(shopId, DateTimeHelper.VNDateTime)
-        )?.HeadSupervisor;
-    }
-
-    public async Task<Account?> GetCurrentSupervisor(Guid shopId)
-    {
-        return (
-            await supervisorAssignmentService.GetLatestAssignmentByDate(shopId, DateTimeHelper.VNDateTime)
-        )?.Supervisor;
-    }
-
     public async Task<SupervisorAssignment> AssignSupervisorRoles(Guid accountId, Role role)
     {
         var account =
@@ -268,12 +247,12 @@ public class ShopService(
         if (employee?.ShopId == null)
             throw new BadRequestException("Invalid employee account");
 
+        var currentTime = DateTimeHelper.VNDateTime;
         var latestAsm = await supervisorAssignmentService.GetLatestHeadSupervisorAssignmentByDate(
             employee.ShopId.Value,
-            DateTimeHelper.VNDateTime
+            currentTime
         );
         var currentHeadSupervisor = latestAsm?.HeadSupervisor;
-        var currentTime = DateTimeHelper.VNDateTime;
         var isShopOpening = IsShopOpeningAtTime(employee.Shop!, TimeOnly.FromDateTime(currentTime));
 
         if (latestAsm != null)
@@ -282,6 +261,14 @@ public class ShopService(
             {
                 if (currentHeadSupervisor?.Id == account.Id)
                     return latestAsm;
+
+                if (currentTime - latestAsm.StartTime < TimeSpan.FromMinutes(5))
+                {
+                    latestAsm.HeadSupervisorId = account.Id;
+                    unitOfWork.SupervisorAssignments.Update(latestAsm);
+                    await unitOfWork.CompleteAsync();
+                    return latestAsm;
+                }
 
                 latestAsm.EndTime = currentTime;
                 unitOfWork.SupervisorAssignments.Update(latestAsm);
@@ -329,12 +316,9 @@ public class ShopService(
         if (employee?.ShopId == null)
             throw new BadRequestException("Invalid employee account");
 
-        var latestAsm = await supervisorAssignmentService.GetLatestAssignmentByDate(
-            employee.ShopId.Value,
-            DateTimeHelper.VNDateTime
-        );
-        var currentSupervisor = latestAsm?.Supervisor;
         var currentTime = DateTimeHelper.VNDateTime;
+        var latestAsm = await supervisorAssignmentService.GetLatestAssignmentByDate(employee.ShopId.Value, currentTime);
+        var currentSupervisor = latestAsm?.Supervisor;
         var isShopOpening = IsShopOpeningAtTime(employee.Shop!, TimeOnly.FromDateTime(currentTime));
 
         if (latestAsm != null)
@@ -343,6 +327,14 @@ public class ShopService(
             {
                 if (currentSupervisor?.Id == account.Id)
                     return latestAsm;
+
+                if (currentTime - latestAsm.StartTime < TimeSpan.FromMinutes(5))
+                {
+                    latestAsm.SupervisorId = account.Id;
+                    unitOfWork.SupervisorAssignments.Update(latestAsm);
+                    await unitOfWork.CompleteAsync();
+                    return latestAsm;
+                }
 
                 latestAsm.EndTime = currentTime;
                 unitOfWork.SupervisorAssignments.Update(latestAsm);
@@ -420,7 +412,9 @@ public class ShopService(
         await unitOfWork.BeginTransaction();
         try
         {
-            foreach (var record in readFileService.ReadFromCsv<ShopFromImportFile>(stream, true, $"total-records-{taskId}"))
+            foreach (
+                var record in readFileService.ReadFromCsv<ShopFromImportFile>(stream, true, $"total-records-{taskId}")
+            )
             {
                 bulkUpsertProgressSubject.Notify(new(rowCount++, taskId));
                 if (!record.IsValid())
@@ -526,14 +520,16 @@ public class ShopService(
         {
             stream.Close();
         }
-        await notificationService.CreateNotification(new()
-        {
-            Priority = NotificationPriority.Urgent,
-            Content = "Upsert failed",
-            Type = NotificationType.UpsertShopAndManager,
-            SentToId = [actorId],
-            Title = "Upsert Failed",
-        });
+        await notificationService.CreateNotification(
+            new()
+            {
+                Priority = NotificationPriority.Urgent,
+                Content = "Upsert failed",
+                Type = NotificationType.UpsertShopAndManager,
+                SentToId = [actorId],
+                Title = "Upsert Failed",
+            }
+        );
         return new BulkUpsertTaskResultResponse(BulkUpsertStatus.Fail, 0, 0, 0, "Shop and shop manager upsert failed");
     }
 }
