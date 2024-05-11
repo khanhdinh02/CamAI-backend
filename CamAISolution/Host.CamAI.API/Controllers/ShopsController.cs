@@ -117,9 +117,9 @@ public class ShopsController(
         var bulkTaskId = Guid.NewGuid().ToString("N");
         var stream = new MemoryStream();
         await file.CopyToAsync(stream);
+        var scope = serviceProvider.CreateScope();
         var bulkTask = Task.Run(async () =>
         {
-            using var scope = serviceProvider.CreateScope();
             var scopeShopService = scope.ServiceProvider.GetRequiredService<IShopService>();
             var jwtService = scope.ServiceProvider.GetRequiredService<IJwtService>();
             stream.Seek(0, SeekOrigin.Begin);
@@ -128,6 +128,7 @@ public class ShopsController(
                 .ContinueWith(t =>
                 {
                     bulkTaskService.RemoveTaskById(brandManagerId, bulkTaskId);
+                    scope.Dispose();
                     return t.Result;
                 });
             return result;

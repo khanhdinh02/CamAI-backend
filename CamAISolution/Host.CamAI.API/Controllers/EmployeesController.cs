@@ -92,9 +92,9 @@ public class EmployeesController(
         var bulkTaskId = Guid.NewGuid().ToString("N");
         var stream = new MemoryStream();
         await file.CopyToAsync(stream);
+        var scope = serviceProvider.CreateScope();
         var bulkTask = Task.Run(async () =>
         {
-            using var scope = serviceProvider.CreateScope();
             var scopeEmployeeService = scope.ServiceProvider.GetRequiredService<IEmployeeService>();
             var jwtService = scope.ServiceProvider.GetRequiredService<IJwtService>();
             stream.Seek(0, SeekOrigin.Begin);
@@ -103,6 +103,7 @@ public class EmployeesController(
                 .ContinueWith(t =>
                 {
                     bulkTaskService.RemoveTaskById(shopManagerId, bulkTaskId);
+                    scope.Dispose();
                     return t.Result;
                 });
             return result;
