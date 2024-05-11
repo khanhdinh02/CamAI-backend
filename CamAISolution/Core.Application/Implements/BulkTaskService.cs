@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using Core.Application.Events;
 using Core.Application.Events.Args;
 using Core.Application.Exceptions;
+using Core.Domain;
 using Core.Domain.DTO;
 using Core.Domain.Interfaces.Services;
 using Core.Domain.Services;
@@ -12,10 +13,12 @@ public class BulkTaskService : IBulkTaskService, Domain.Events.IObserver<BulkUps
 {
     private readonly ICacheService cacheService;
     private readonly BulkUpsertProgressSubject bulkUpsertProgressSubject;
-    public BulkTaskService(ICacheService cacheService, BulkUpsertProgressSubject bulkUpsertProgressSubject)
+    private readonly IAppLogging<BulkTaskService> logger;
+    public BulkTaskService(ICacheService cacheService, BulkUpsertProgressSubject bulkUpsertProgressSubject, IAppLogging<BulkTaskService> logger)
     {
         this.cacheService = cacheService;
         this.bulkUpsertProgressSubject = bulkUpsertProgressSubject;
+        this.logger = logger;
         bulkUpsertProgressSubject.Attach(this);
     }
     private readonly ConcurrentDictionary<Guid, ConcurrentDictionary<string, Task<BulkUpsertTaskResultResponse>>> upsertTasks = new();
@@ -121,6 +124,7 @@ public class BulkTaskService : IBulkTaskService, Domain.Events.IObserver<BulkUps
 
     public void Update(object? sender, BulkUpsertCurrentProgressArgs args)
     {
+        logger.Info($"task {args.TaskId}, current finished records: {args.CurrentFinishedRecord}");
         bulkTaskProgresses[args.TaskId] = args.CurrentFinishedRecord;
     }
 
