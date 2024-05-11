@@ -91,7 +91,7 @@ public class TestsController(
         return Ok(cacheService.Get<string>("change"));
     }
 
-    [HttpGet("noti-incident")]
+    [HttpGet("noti-incident/{sentTo:guid}")]
     public IActionResult NotificationIncident(Guid sentTo)
     {
         incidentSubject.Notify(new CreatedOrUpdatedIncidentArgs(new()
