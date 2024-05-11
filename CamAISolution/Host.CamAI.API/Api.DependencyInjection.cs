@@ -22,6 +22,7 @@ public static class ApiDependencyInjection
         //Subject
         services.AddSingleton<AccountNotificationSubject>();
         services.AddSingleton<IncidentSubject>();
+        services.AddSingleton<BulkUpsertProgressSubject>();
 
         //Observer
         services.AddSingleton<NotificationSocketManager>();

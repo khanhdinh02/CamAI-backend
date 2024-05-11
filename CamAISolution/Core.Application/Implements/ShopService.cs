@@ -24,7 +24,8 @@ public class ShopService(
     IReadFileService readFileService,
     INotificationService notificationService,
     ISupervisorAssignmentService supervisorAssignmentService,
-    EventManager eventManager
+    EventManager eventManager,
+    BulkUpsertProgressSubject bulkUpsertProgressSubject
 ) : IShopService
 {
     public async Task<Shop> CreateShop(CreateOrUpdateShopDto shopDto)
@@ -405,7 +406,7 @@ public class ShopService(
         );
     }
 
-    public async Task<BulkUpsertTaskResultResponse> UpsertShops(Guid actorId, Stream stream)
+    public async Task<BulkUpsertTaskResultResponse> UpsertShops(Guid actorId, Stream stream, string taskId)
     {
         var shopInserted = new HashSet<Guid>();
         var shopUpdated = new HashSet<Guid>();
@@ -419,9 +420,9 @@ public class ShopService(
         await unitOfWork.BeginTransaction();
         try
         {
-            foreach (var record in readFileService.ReadFromCsv<ShopFromImportFile>(stream))
+            foreach (var record in readFileService.ReadFromCsv<ShopFromImportFile>(stream, true, $"total-records-{taskId}"))
             {
-                rowCount++;
+                bulkUpsertProgressSubject.Notify(new(rowCount++, taskId));
                 if (!record.IsValid())
                 {
                     failedValidatedRecords.Add(rowCount, record.ShopFromImportFileValidation());

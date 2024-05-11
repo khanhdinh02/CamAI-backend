@@ -1,3 +1,4 @@
+using Core.Application.Events;
 using Core.Application.Exceptions;
 using Core.Application.Specifications.Repositories;
 using Core.Domain;
@@ -17,7 +18,8 @@ public class EmployeeService(
     IAccountService accountService,
     IReadFileService readFileService,
     IAppLogging<EmployeeService> logger,
-    IBaseMapping mapper
+    IBaseMapping mapper,
+    BulkUpsertProgressSubject bulkUpsertProgressSubject
 ) : IEmployeeService
 {
     public async Task<PaginationResult<Employee>> GetEmployees(SearchEmployeeRequest req)
@@ -117,7 +119,7 @@ public class EmployeeService(
         await unitOfWork.CompleteAsync();
     }
 
-    public async Task<BulkUpsertTaskResultResponse> UpsertEmployees(Guid actorId, MemoryStream stream)
+    public async Task<BulkUpsertTaskResultResponse> UpsertEmployees(Guid actorId, MemoryStream stream, string taskId)
     {
         var employeeInserted = new HashSet<Guid>();
         var employeeUpdated = new HashSet<Guid>();
@@ -129,9 +131,9 @@ public class EmployeeService(
         await unitOfWork.BeginTransaction();
         try
         {
-            foreach (var record in readFileService.ReadFromCsv<EmployeeFromImportFile>(stream))
+            foreach (var record in readFileService.ReadFromCsv<EmployeeFromImportFile>(stream, true, $"total-records-{taskId}"))
             {
-                rowCount++;
+                bulkUpsertProgressSubject.Notify(new(rowCount++, taskId));
                 if (!record.IsValid())
                 {
                     failedValidatedRecords.Add(rowCount, record.EmployeeFromImportFileValidation());

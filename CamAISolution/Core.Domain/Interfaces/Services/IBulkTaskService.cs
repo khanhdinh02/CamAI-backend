@@ -15,4 +15,13 @@ public interface IBulkTaskService
         CancellationToken cancellationToken,
         TimeSpan timeout
     );
+
+    /// <summary>
+    ///
+    /// </summary>
+    /// <param name="taskId"></param>
+    /// <returns>
+    /// Tuple{T1, T2} with <c>Tuple.T1</c> is current number of finished record and <c>Tuple.T2</c> is total records that have to be processed
+    /// </returns>
+    public (int CurrentFinishedRecord, int Total) GetTaskProgress(string taskId);
 }

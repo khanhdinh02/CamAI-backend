@@ -1,4 +1,6 @@
 using System.Collections.Concurrent;
+using Core.Application.Events;
+using Core.Application.Events.Args;
 using Core.Application.Exceptions;
 using Core.Domain.DTO;
 using Core.Domain.Interfaces.Services;
@@ -6,12 +8,19 @@ using Core.Domain.Services;
 
 namespace Core.Application.Implements;
 
-public class BulkTaskService(ICacheService cacheService) : IBulkTaskService
+public class BulkTaskService : IBulkTaskService, Domain.Events.IObserver<BulkUpsertCurrentProgressArgs>
 {
-    private readonly ConcurrentDictionary<
-        Guid,
-        ConcurrentDictionary<string, Task<BulkUpsertTaskResultResponse>>
-    > upsertTasks = new();
+    private readonly ICacheService cacheService;
+    private readonly BulkUpsertProgressSubject bulkUpsertProgressSubject;
+    public BulkTaskService(ICacheService cacheService, BulkUpsertProgressSubject bulkUpsertProgressSubject)
+    {
+        this.cacheService = cacheService;
+        this.bulkUpsertProgressSubject = bulkUpsertProgressSubject;
+        bulkUpsertProgressSubject.Attach(this);
+    }
+    private readonly ConcurrentDictionary<Guid, ConcurrentDictionary<string, Task<BulkUpsertTaskResultResponse>>> upsertTasks = new();
+
+    private readonly ConcurrentDictionary<string, int> bulkTaskProgresses = new();
 
     public void AddUpsertTask(Guid actorId, Task<BulkUpsertTaskResultResponse> task, string taskId)
     {
@@ -61,7 +70,7 @@ public class BulkTaskService(ICacheService cacheService) : IBulkTaskService
             removedTaskIds = new HashSet<string> { taskId };
         else
             removedTaskIds.Add(taskId);
-
+        bulkTaskProgresses.TryRemove(taskId, out _);
         cacheService.Set(actorId.ToString("N"), removedTaskIds, TimeSpan.FromDays(1));
         cacheService.Set(taskId, task, TimeSpan.FromDays(1), (key, _) =>
         {
@@ -98,5 +107,25 @@ public class BulkTaskService(ICacheService cacheService) : IBulkTaskService
         if (completedTask == bulkTask)
             return await bulkTask;
         return null;
+    }
+
+    public (int, int) GetTaskProgress(string taskId)
+    {
+        var total = cacheService.Get<int>($"total-records-{taskId}");
+        if (total == 0)
+            return new(1, 1);
+        if (!bulkTaskProgresses.TryGetValue(taskId, out var currentFinishedRecords))
+            return new(1, 1);
+        return new(currentFinishedRecords, total);
+    }
+
+    public void Update(object? sender, BulkUpsertCurrentProgressArgs args)
+    {
+        bulkTaskProgresses[args.TaskId] = args.CurrentFinishedRecord;
+    }
+
+    ~BulkTaskService()
+    {
+        bulkUpsertProgressSubject.Detach(this);
     }
 }
