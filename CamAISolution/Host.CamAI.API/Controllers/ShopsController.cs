@@ -236,4 +236,11 @@ public class ShopsController(
     {
         await supervisorAssignmentService.RemoveSupervisor();
     }
+
+    [HttpGet("isIncharge")]
+    [AccessTokenGuard(Role.ShopManager, Role.ShopSupervisor, Role.ShopHeadSupervisor)]
+    public async Task<bool> IsInCharge()
+    {
+        return await shopService.IsInCharge();
+    }
 }
