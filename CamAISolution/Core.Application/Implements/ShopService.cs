@@ -244,15 +244,16 @@ public class ShopService(
         var accountId = employee.AccountId;
         if (employee.AccountId == null)
         {
-            var currentAccount = accountService.GetCurrentAccount();
-            await accountService.CreateSupervisor(
-                new CreateSupervisorDto
-                {
-                    EmployeeId = employeeId,
-                    Email = employee.Email,
-                    IsHeadSupervisor = currentAccount.Role == Role.ShopManager
-                }
-            );
+            accountId = (
+                await accountService.CreateSupervisor(
+                    new CreateSupervisorDto
+                    {
+                        EmployeeId = employeeId,
+                        Email = employee.Email,
+                        IsHeadSupervisor = role == Role.ShopHeadSupervisor
+                    }
+                )
+            ).Id;
         }
         return await AssignSupervisorRoles(accountId!.Value, role);
     }

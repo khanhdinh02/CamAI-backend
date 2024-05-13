@@ -179,7 +179,7 @@ public class AccountService(IUnitOfWork unitOfWork, IJwtService jwtService, IBas
         newAccount.Employee = employee;
         newAccount.BrandId = employee.Shop?.BrandId;
         newAccount.AccountStatus = AccountStatus.New;
-        await unitOfWork.Accounts.AddAsync(newAccount);
+        newAccount = await unitOfWork.Accounts.AddAsync(newAccount);
         await unitOfWork.CompleteAsync();
         return newAccount;
     }
