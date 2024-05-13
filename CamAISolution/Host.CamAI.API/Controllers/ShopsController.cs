@@ -201,7 +201,20 @@ public class ShopsController(
     public async Task<SupervisorAssignmentDto> AssignShopSupervisor(AssignShopSupervisorDto dto)
     {
         var assignment = await shopService.AssignSupervisorRoles(dto.AccountId, dto.Role);
-        return baseMapping.Map<SupervisorAssignment, SupervisorAssignmentDto>(assignment);
+        return ToSupervisorAssignmentDto(assignment);
+    }
+
+    private SupervisorAssignmentDto ToSupervisorAssignmentDto(SupervisorAssignment supervisorAssignment)
+    {
+        var dto = baseMapping.Map<SupervisorAssignment, SupervisorAssignmentDto>(supervisorAssignment);
+        var inCharge =
+            supervisorAssignment.Supervisor
+            ?? supervisorAssignment.HeadSupervisor
+            ?? accountService.GetCurrentAccount();
+        dto.InCharge = baseMapping.Map<Account, AccountDto>(inCharge);
+        dto.InChargeId = inCharge.Id;
+        dto.InChargeRole = inCharge.Role;
+        return dto;
     }
 
     /// <summary>
@@ -214,7 +227,7 @@ public class ShopsController(
     public async Task<SupervisorAssignmentDto> AssignShopSupervisorFromEmployee(AssignShopSupervisorFromEmployeeDto dto)
     {
         var assignment = await shopService.AssignSupervisorRolesFromEmployee(dto.EmployeeId, dto.Role);
-        return baseMapping.Map<SupervisorAssignment, SupervisorAssignmentDto>(assignment);
+        return ToSupervisorAssignmentDto(assignment);
     }
 
     /// <summary>
