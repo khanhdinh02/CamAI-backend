@@ -52,7 +52,11 @@ public class AccountService(IUnitOfWork unitOfWork, IJwtService jwtService, IBas
         else
         {
             newEntity = false;
-            if (accountThatHasTheSameMail.AccountStatus != AccountStatus.Inactive)
+            var employee = (await unitOfWork.Employees.GetAsync(x => x.Email == dto.Email)).Values.FirstOrDefault();
+            if (
+                accountThatHasTheSameMail.AccountStatus != AccountStatus.Inactive
+                || (employee != null && employee.EmployeeStatus != EmployeeStatus.Inactive)
+            )
                 throw new BadRequestException("Email is already taken");
             accountThatHasTheSameMail.BrandId = null;
             accountThatHasTheSameMail.ManagingShop = null;
@@ -101,6 +105,7 @@ public class AccountService(IUnitOfWork unitOfWork, IJwtService jwtService, IBas
         if (dto.WardId != null && !await unitOfWork.Wards.IsExisted(dto.WardId))
             throw new NotFoundException(typeof(Ward), dto.WardId);
 
+        // TODO: update employee as well
         mapper.Map(dto, account);
         var user = GetCurrentAccount();
         switch (user.Role)

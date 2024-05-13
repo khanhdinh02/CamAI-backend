@@ -58,7 +58,11 @@ public class EmployeeService(
 
         if (oldEmp != null && dto.Email != null)
         {
-            if (oldEmp.EmployeeStatus != EmployeeStatus.Inactive)
+            var account = (await unitOfWork.Accounts.GetAsync(x => x.Email == dto.Email)).Values.FirstOrDefault();
+            if (
+                oldEmp.EmployeeStatus != EmployeeStatus.Inactive
+                || (account != null && account.AccountStatus != AccountStatus.Inactive)
+            )
                 throw new BadRequestException($"Email {dto.Email} is already taken");
             newEmp = new Employee { Id = oldEmp.Id, Timestamp = oldEmp.Timestamp };
         }
@@ -87,9 +91,13 @@ public class EmployeeService(
     {
         var employee = await GetEmployeeById(id);
 
+        var account = (await unitOfWork.Accounts.GetAsync(x => x.Email == dto.Email)).Values.FirstOrDefault();
         if (
-            (await unitOfWork.Employees.GetAsync(e => e.Email == dto.Email)).Values.FirstOrDefault() is { } oldEmp
-            && oldEmp.Id != id
+            (
+                (await unitOfWork.Employees.GetAsync(e => e.Email == dto.Email)).Values.FirstOrDefault() is { } oldEmp
+                && oldEmp.Id != id
+            )
+            || (account != null && account.AccountStatus != AccountStatus.Inactive && employee.AccountId != account.Id)
         )
             throw new BadRequestException($"Email {dto.Email} is already taken");
 
@@ -97,6 +105,16 @@ public class EmployeeService(
             throw new NotFoundException(typeof(Ward), dto.WardId);
 
         unitOfWork.Employees.Update(mapper.Map(dto, employee));
+        if (employee.AccountId != null)
+        {
+            var updateAccount = await accountService.GetAccountById(employee.AccountId.Value);
+            updateAccount.Email = dto.Email;
+            updateAccount.Name = dto.Name;
+            updateAccount.Phone = dto.Phone;
+            updateAccount.AddressLine = dto.AddressLine;
+            updateAccount.WardId = dto.WardId;
+            unitOfWork.Accounts.Update(updateAccount);
+        }
         await unitOfWork.CompleteAsync();
         return employee;
     }
@@ -116,6 +134,9 @@ public class EmployeeService(
             employee.EmployeeStatus = EmployeeStatus.Inactive;
             unitOfWork.Employees.Update(employee);
         }
+
+        if (employee.AccountId != null)
+            await accountService.DeleteAccount(employee.AccountId.Value);
         await unitOfWork.CompleteAsync();
     }
 
@@ -131,7 +152,13 @@ public class EmployeeService(
         await unitOfWork.BeginTransaction();
         try
         {
-            foreach (var record in readFileService.ReadFromCsv<EmployeeFromImportFile>(stream, true, $"total-records-{taskId}"))
+            foreach (
+                var record in readFileService.ReadFromCsv<EmployeeFromImportFile>(
+                    stream,
+                    true,
+                    $"total-records-{taskId}"
+                )
+            )
             {
                 bulkUpsertProgressSubject.Notify(new(rowCount++, taskId));
                 if (!record.IsValid())
@@ -173,6 +200,41 @@ public class EmployeeService(
                     employee.ShopId = shop.Id;
                     employee.Birthday = record.Birthday;
                     employee.AddressLine = record.AddressLine;
+                    if (employee.AccountId != null)
+                    {
+                        var account = await unitOfWork.Accounts.GetByIdAsync(employee.AccountId);
+                        if (account == null)
+                        {
+                            failedValidatedRecords.Add(
+                                rowCount,
+                                new Dictionary<string, object?>
+                                {
+                                    { "Account not found", "Account related to employee not found" }
+                                }
+                            );
+                            continue;
+                        }
+
+                        if (record.Email == null)
+                        {
+                            failedValidatedRecords.Add(
+                                rowCount,
+                                new Dictionary<string, object?>
+                                {
+                                    {
+                                        "Email is empty",
+                                        "Employee is linked with an account so email must not be empty"
+                                    }
+                                }
+                            );
+                            continue;
+                        }
+
+                        account.Email = record.Email;
+                        account.Phone = record.Phone;
+                        account.AddressLine = record.AddressLine;
+                        account.Name = record.Name;
+                    }
                     unitOfWork.Employees.Update(employee);
                     employeeUpdated.Add(employee.Id);
                 }
@@ -209,17 +271,18 @@ public class EmployeeService(
         }
         finally
         {
-
             stream.Close();
         }
-        await notificationService.CreateNotification(new()
-        {
-            Priority = NotificationPriority.Urgent,
-            Content = "Upsert failed",
-            Type = NotificationType.UpsertEmployee,
-            SentToId = [actorId],
-            Title = "Upsert Failed",
-        });
+        await notificationService.CreateNotification(
+            new()
+            {
+                Priority = NotificationPriority.Urgent,
+                Content = "Upsert failed",
+                Type = NotificationType.UpsertEmployee,
+                SentToId = [actorId],
+                Title = "Upsert Failed",
+            }
+        );
         return new BulkUpsertTaskResultResponse(BulkUpsertStatus.Fail, 0, 0, 0, "Employee upsert failed");
     }
 
