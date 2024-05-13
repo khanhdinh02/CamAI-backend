@@ -17,6 +17,7 @@ namespace Host.CamAI.API.Controllers;
 public class ShopsController(
     IAppLogging<ShopsController> logger,
     IAccountService accountService,
+    ISupervisorAssignmentService supervisorAssignmentService,
     IServiceProvider serviceProvider,
     IShopService shopService,
     IBaseMapping baseMapping,
@@ -214,5 +215,25 @@ public class ShopsController(
     {
         var assignment = await shopService.AssignSupervisorRolesFromEmployee(dto.EmployeeId, dto.Role);
         return baseMapping.Map<SupervisorAssignment, SupervisorAssignmentDto>(assignment);
+    }
+
+    /// <summary>
+    /// Remove current head supervisor and set in charge to shop manager
+    /// </summary>
+    [HttpDelete("headsupervisor")]
+    [AccessTokenGuard(Role.ShopManager)]
+    public async Task RemoveHeadSupervisor()
+    {
+        await supervisorAssignmentService.RemoveHeadSupervisor();
+    }
+
+    /// <summary>
+    /// Remove current supervisor and set in charge to head supervisor
+    /// </summary>
+    [HttpDelete("supervisor")]
+    [AccessTokenGuard(Role.ShopManager)]
+    public async Task RemoveSupervisor()
+    {
+        await supervisorAssignmentService.RemoveSupervisor();
     }
 }

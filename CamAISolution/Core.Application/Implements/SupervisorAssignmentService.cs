@@ -83,4 +83,96 @@ public class SupervisorAssignmentService(IAccountService accountService, IUnitOf
             )
         ).Values;
     }
+
+    public async Task RemoveHeadSupervisor()
+    {
+        var account = accountService.GetCurrentAccount();
+        var shop = account.ManagingShop!;
+        if (ShopService.IsShopOpeningAtTime(shop, TimeOnly.FromDateTime(DateTime.Now)))
+        {
+            var latestAssignment = await GetLatestAssignmentByDate(shop.Id, DateTime.Now);
+            if (latestAssignment == null)
+                return;
+
+            var now = DateTimeHelper.VNDateTime;
+            if (now - latestAssignment.StartTime < TimeSpan.FromMinutes(5))
+            {
+                latestAssignment.HeadSupervisorId = null;
+                latestAssignment.SupervisorId = null;
+                unitOfWork.SupervisorAssignments.Update(latestAssignment);
+                await unitOfWork.CompleteAsync();
+            }
+            else
+            {
+                latestAssignment.EndTime = now;
+                unitOfWork.SupervisorAssignments.Update(latestAssignment);
+                var newAssignment = new SupervisorAssignment
+                {
+                    ShopId = shop.Id,
+                    StartTime = latestAssignment.EndTime.Value
+                };
+                await unitOfWork.SupervisorAssignments.AddAsync(newAssignment);
+                await unitOfWork.CompleteAsync();
+            }
+        }
+        else
+        {
+            var newAssignment = new SupervisorAssignment
+            {
+                ShopId = shop.Id,
+                StartTime = ShopService.GetNextOpenTime(shop)
+            };
+            await unitOfWork.SupervisorAssignments.AddAsync(newAssignment);
+            await unitOfWork.CompleteAsync();
+        }
+    }
+
+    public async Task RemoveSupervisor()
+    {
+        var account = accountService.GetCurrentAccount();
+        var employee = (
+            await unitOfWork.Employees.GetAsync(x => x.AccountId == account.Id, includeProperties: ["Shop"])
+        ).Values[0];
+        var shop = employee.Shop!;
+        var latestAssignment = await GetLatestAssignmentByDate(shop.Id, DateTime.Now);
+        if (latestAssignment == null)
+            throw new ForbiddenException("Shop does not have any assignment");
+        if (latestAssignment.HeadSupervisorId != account.Id)
+            throw new ForbiddenException("Account is not current head supervisor");
+
+        if (ShopService.IsShopOpeningAtTime(shop, TimeOnly.FromDateTime(DateTime.Now)))
+        {
+            var now = DateTimeHelper.VNDateTime;
+            if (now - latestAssignment.StartTime < TimeSpan.FromMinutes(5))
+            {
+                latestAssignment.SupervisorId = null;
+                unitOfWork.SupervisorAssignments.Update(latestAssignment);
+                await unitOfWork.CompleteAsync();
+            }
+            else
+            {
+                latestAssignment.EndTime = DateTimeHelper.VNDateTime;
+                unitOfWork.SupervisorAssignments.Update(latestAssignment);
+                var newAssignment = new SupervisorAssignment
+                {
+                    ShopId = shop.Id,
+                    StartTime = latestAssignment.EndTime.Value,
+                    HeadSupervisorId = account.Id
+                };
+                await unitOfWork.SupervisorAssignments.AddAsync(newAssignment);
+                await unitOfWork.CompleteAsync();
+            }
+        }
+        else
+        {
+            var newAssignment = new SupervisorAssignment
+            {
+                ShopId = shop.Id,
+                StartTime = ShopService.GetNextOpenTime(shop),
+                HeadSupervisorId = account.Id
+            };
+            await unitOfWork.SupervisorAssignments.AddAsync(newAssignment);
+            await unitOfWork.CompleteAsync();
+        }
+    }
 }
