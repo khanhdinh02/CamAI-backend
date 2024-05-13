@@ -36,7 +36,7 @@ public class EmployeesController(
     /// <param name="req"></param>
     /// <returns></returns>
     [HttpGet]
-    [AccessTokenGuard(Role.ShopManager, Role.BrandManager, Role.Admin)]
+    [AccessTokenGuard(Role.ShopManager, Role.BrandManager, Role.Admin, Role.ShopHeadSupervisor, Role.ShopSupervisor)]
     public async Task<PaginationResult<EmployeeDto>> Get([FromQuery] SearchEmployeeRequest req)
     {
         return mapper.Map<Employee, EmployeeDto>(await employeeService.GetEmployees(req));
@@ -99,7 +99,8 @@ public class EmployeesController(
             var jwtService = scope.ServiceProvider.GetRequiredService<IJwtService>();
             stream.Seek(0, SeekOrigin.Begin);
             await jwtService.SetCurrentUserToSystemHandler();
-            var result = await scopeEmployeeService.UpsertEmployees(shopManagerId, stream, bulkTaskId)
+            var result = await scopeEmployeeService
+                .UpsertEmployees(shopManagerId, stream, bulkTaskId)
                 .ContinueWith(t =>
                 {
                     bulkTaskService.RemoveTaskById(shopManagerId, bulkTaskId);
@@ -146,11 +147,15 @@ public class EmployeesController(
     public Task<IActionResult> GetTaskProgress(string taskId)
     {
         var progress = bulkTaskService.GetTaskProgress(taskId);
-        return Task.FromResult<IActionResult>(Ok(new
-        {
-            Percent = progress.CurrentFinishedRecord * 100f / progress.Total,
-            Detailed = new { progress.CurrentFinishedRecord, progress.Total }
-        }));
+        return Task.FromResult<IActionResult>(
+            Ok(
+                new
+                {
+                    Percent = progress.CurrentFinishedRecord * 100f / progress.Total,
+                    Detailed = new { progress.CurrentFinishedRecord, progress.Total }
+                }
+            )
+        );
     }
 
     /// <summary>
