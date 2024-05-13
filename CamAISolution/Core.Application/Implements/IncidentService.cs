@@ -57,6 +57,10 @@ public class IncidentService(
                 searchRequest.BrandId = null;
                 searchRequest.ShopId = account.ManagingShop!.Id;
                 break;
+            case Role.ShopHeadSupervisor
+            or Role.ShopSupervisor:
+                searchRequest.InChargeId = account.Id;
+                break;
         }
 
         var includeShop = account.Role == Role.BrandManager;
@@ -155,6 +159,9 @@ public class IncidentService(
             incident.ShopId = ebInstall!.ShopId;
             incident.InChargeAccountId = (
                 await supervisorAssignmentService.GetCurrentInChangeAccount(incident.ShopId)
+            )?.Id;
+            incident.HeadSupervisorId = (
+                await supervisorAssignmentService.GetCurrentInChangeHeadSupervisorAccount(incident.ShopId)
             )?.Id;
             incident.Evidences = [];
             incident = await unitOfWork.Incidents.AddAsync(incident);

@@ -25,4 +25,5 @@ public interface IShopService
     Task<SupervisorAssignment> AssignHeadSupervisor(Account account);
     Task<SupervisorAssignment> AssignSupervisor(Account account);
     Task<BulkUpsertTaskResultResponse> UpsertShops(Guid actorId, Stream stream, string taskId);
+    Task<bool> IsInCharge();
 }

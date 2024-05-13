@@ -556,4 +556,28 @@ public class ShopService(
         );
         return new BulkUpsertTaskResultResponse(BulkUpsertStatus.Fail, 0, 0, 0, "Shop and shop manager upsert failed");
     }
+
+    public async Task<bool> IsInCharge()
+    {
+        var user = accountService.GetCurrentAccount();
+        var shopId = user.ManagingShop?.Id;
+        if (shopId == null)
+        {
+            var employee = (
+                await unitOfWork.Employees.GetAsync(
+                    e => e.AccountId == user.Id,
+                    includeProperties: [nameof(Employee.Shop)]
+                )
+            ).Values.FirstOrDefault();
+            if (employee?.ShopId == null)
+                throw new BadRequestException("Invalid employee account");
+            shopId = employee.ShopId;
+        }
+        var currentTime = DateTimeHelper.VNDateTime;
+        var latestAsm = await supervisorAssignmentService.GetLatestAssignmentByDate(shopId.Value, currentTime);
+        var inChargeId = latestAsm?.SupervisorId ?? latestAsm?.HeadSupervisorId;
+        if (inChargeId == null)
+            return user.Role == Role.ShopManager;
+        return inChargeId == user.Id;
+    }
 }
