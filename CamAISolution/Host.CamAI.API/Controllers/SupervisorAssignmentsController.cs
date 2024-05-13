@@ -19,7 +19,7 @@ public class SupervisorAssignmentsController(
 ) : Controller
 {
     [HttpGet]
-    [AccessTokenGuard(Role.ShopManager, Role.ShopHeadSupervisor)]
+    [AccessTokenGuard(Role.ShopManager, Role.ShopHeadSupervisor, Role.ShopSupervisor)]
     public async Task<List<SupervisorAssignmentDto>> GetCalendar(DateTime date)
     {
         var assignments = await supervisorAssignmentService.GetSupervisorAssignmentByDate(date);
