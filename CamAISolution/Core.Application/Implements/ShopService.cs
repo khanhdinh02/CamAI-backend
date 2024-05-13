@@ -365,8 +365,6 @@ public class ShopService(
 
     public static bool IsShopOpeningAtTime(Shop shop, TimeOnly time)
     {
-        if (shop.OpenTime == shop.CloseTime)
-            return true;
         if (shop.OpenTime < shop.CloseTime)
             return shop.OpenTime <= time && time < shop.CloseTime;
         return shop.OpenTime <= time || time < shop.CloseTime;
@@ -394,6 +392,19 @@ public class ShopService(
                 ? DateOnly.FromDateTime(currentDateTime)
                 : DateOnly.FromDateTime(currentDateTime).AddDays(1),
             shop.CloseTime,
+            DateTimeKind.Unspecified
+        );
+    }
+
+    public static DateTime GetLastOpenTime(Shop shop)
+    {
+        var currentDateTime = DateTimeHelper.VNDateTime;
+        var currentTime = TimeOnly.FromDateTime(currentDateTime);
+        return new DateTime(
+            currentTime < shop.OpenTime
+                ? DateOnly.FromDateTime(currentDateTime).AddDays(-1)
+                : DateOnly.FromDateTime(currentDateTime),
+            shop.OpenTime,
             DateTimeKind.Unspecified
         );
     }
