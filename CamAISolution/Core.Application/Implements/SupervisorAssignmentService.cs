@@ -65,6 +65,11 @@ public class SupervisorAssignmentService(IAccountService accountService, IUnitOf
             _ => throw new ForbiddenException("Cannot get supervisor assignments")
         };
 
-        return (await unitOfWork.SupervisorAssignments.GetAsync(criteria)).Values;
+        return (
+            await unitOfWork.SupervisorAssignments.GetAsync(
+                criteria,
+                includeProperties: ["HeadSupervisor", "Supervisor"]
+            )
+        ).Values;
     }
 }

@@ -124,7 +124,8 @@ public class ShopsController(
             var jwtService = scope.ServiceProvider.GetRequiredService<IJwtService>();
             stream.Seek(0, SeekOrigin.Begin);
             await jwtService.SetCurrentUserToSystemHandler();
-            var result = await scopeShopService.UpsertShops(brandManagerId, stream, bulkTaskId)
+            var result = await scopeShopService
+                .UpsertShops(brandManagerId, stream, bulkTaskId)
                 .ContinueWith(t =>
                 {
                     bulkTaskService.RemoveTaskById(brandManagerId, bulkTaskId);
@@ -170,11 +171,15 @@ public class ShopsController(
     public Task<IActionResult> GetTaskProgress(string taskId)
     {
         var progress = bulkTaskService.GetTaskProgress(taskId);
-        return Task.FromResult<IActionResult>(Ok(new
-        {
-            Percents = progress.CurrentFinishedRecord * 100f / progress.Total,
-            Detailed = new { progress.CurrentFinishedRecord, progress.Total }
-        }));
+        return Task.FromResult<IActionResult>(
+            Ok(
+                new
+                {
+                    Percents = progress.CurrentFinishedRecord * 100f / progress.Total,
+                    Detailed = new { progress.CurrentFinishedRecord, progress.Total }
+                }
+            )
+        );
     }
 
     /// <summary>
@@ -194,6 +199,19 @@ public class ShopsController(
     public async Task<SupervisorAssignmentDto> AssignShopSupervisor(AssignShopSupervisorDto dto)
     {
         var assignment = await shopService.AssignSupervisorRoles(dto.AccountId, dto.Role);
+        return baseMapping.Map<SupervisorAssignment, SupervisorAssignmentDto>(assignment);
+    }
+
+    /// <summary>
+    /// Assign supervisor from employee Id
+    /// </summary>
+    /// <param name="dto"></param>
+    /// <returns></returns>
+    [HttpPost("employee/supervisor")]
+    [AccessTokenGuard(Role.ShopHeadSupervisor, Role.ShopManager)]
+    public async Task<SupervisorAssignmentDto> AssignShopSupervisorFromEmployee(AssignShopSupervisorFromEmployeeDto dto)
+    {
+        var assignment = await shopService.AssignSupervisorRolesFromEmployee(dto.EmployeeId, dto.Role);
         return baseMapping.Map<SupervisorAssignment, SupervisorAssignmentDto>(assignment);
     }
 }

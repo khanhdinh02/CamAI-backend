@@ -233,6 +233,30 @@ public class ShopService(
         }
     }
 
+    public async Task<SupervisorAssignment> AssignSupervisorRolesFromEmployee(Guid employeeId, Role role)
+    {
+        var employee =
+            await unitOfWork.Employees.GetByIdAsync(employeeId)
+            ?? throw new NotFoundException(typeof(Employee), employeeId);
+
+        if (employee.Email == null)
+            throw new BadRequestException("Employee email must not be empty");
+        var accountId = employee.AccountId;
+        if (employee.AccountId == null)
+        {
+            var currentAccount = accountService.GetCurrentAccount();
+            await accountService.CreateSupervisor(
+                new CreateSupervisorDto
+                {
+                    EmployeeId = employeeId,
+                    Email = employee.Email,
+                    IsHeadSupervisor = currentAccount.Role == Role.ShopManager
+                }
+            );
+        }
+        return await AssignSupervisorRoles(accountId!.Value, role);
+    }
+
     public async Task<SupervisorAssignment> AssignHeadSupervisor(Account account)
     {
         var user = accountService.GetCurrentAccount();
