@@ -52,6 +52,12 @@ public class SupervisorAssignmentService(IAccountService accountService, IUnitOf
             ?? (await unitOfWork.Accounts.GetAsync(a => a.ManagingShop!.Id == shopId)).Values.FirstOrDefault();
     }
 
+    public async Task<Account?> GetCurrentInChangeHeadSupervisorAccount(Guid shopId)
+    {
+        var assignment = await GetLatestAssignmentByDate(shopId, DateTimeHelper.VNDateTime);
+        return assignment?.HeadSupervisor;
+    }
+
     public async Task<IList<SupervisorAssignment>> GetSupervisorAssignmentByDate(DateTime date)
     {
         var startTime = date.Date;
@@ -61,13 +67,18 @@ public class SupervisorAssignmentService(IAccountService accountService, IUnitOf
         {
             Role.ShopManager => x => startTime <= x.StartTime && x.StartTime <= endTime,
             Role.ShopHeadSupervisor
-                => x => startTime <= x.StartTime && x.StartTime <= endTime && x.HeadSupervisorId == account.Id,
+            or Role.ShopSupervisor
+                => x =>
+                    startTime <= x.StartTime
+                    && x.StartTime <= endTime
+                    && (x.HeadSupervisorId == account.Id || x.SupervisorId == account.Id),
             _ => throw new ForbiddenException("Cannot get supervisor assignments")
         };
 
         return (
             await unitOfWork.SupervisorAssignments.GetAsync(
                 criteria,
+                orderBy: x => x.OrderBy(e => e.StartTime),
                 includeProperties: ["HeadSupervisor", "Supervisor"]
             )
         ).Values;

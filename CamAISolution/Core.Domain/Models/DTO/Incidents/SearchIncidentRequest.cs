@@ -13,4 +13,5 @@ public class SearchIncidentRequest : BaseSearchRequest
     public Guid? ShopId { get; set; }
     public Guid? BrandId { get; set; }
     public Guid? EmployeeId { get; set; }
+    public Guid? InChargeId { get; set; }
 }

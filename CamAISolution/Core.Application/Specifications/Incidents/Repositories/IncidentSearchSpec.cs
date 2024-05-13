@@ -20,6 +20,9 @@ public class IncidentSearchSpec : RepositorySpec<Incident>
         if (search.BrandId.HasValue)
             baseSpec.And(new IncidentByBrandIdSpec(search.BrandId.Value));
 
+        if (search.InChargeId.HasValue)
+            baseSpec.And(new IncidentByInChargeIdSpec(search.InChargeId.Value));
+
         if (search.EdgeBoxId.HasValue)
             baseSpec.And(new IncidentByEdgeBoxIdSpec(search.EdgeBoxId.Value));
 
