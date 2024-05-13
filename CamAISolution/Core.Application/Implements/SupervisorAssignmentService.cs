@@ -14,9 +14,12 @@ public class SupervisorAssignmentService(IAccountService accountService, IUnitOf
 {
     public async Task<SupervisorAssignment?> GetLatestAssignmentByDate(Guid shopId, DateTime date)
     {
+        var shop = await unitOfWork.Shops.GetByIdAsync(shopId) ?? throw new NotFoundException(typeof(Shop), shopId);
+        var openTime = date.Date.Add(shop.OpenTime.ToTimeSpan());
+        var closeTime = openTime.AddDays(1);
         return (
             await unitOfWork.SupervisorAssignments.GetAsync(
-                a => a.ShopId == shopId && a.StartTime.Date == date.Date,
+                a => a.ShopId == shopId && openTime <= a.StartTime && a.StartTime < closeTime,
                 includeProperties:
                 [
                     nameof(SupervisorAssignment.HeadSupervisor),
@@ -30,9 +33,12 @@ public class SupervisorAssignmentService(IAccountService accountService, IUnitOf
 
     public async Task<SupervisorAssignment?> GetLatestHeadSupervisorAssignmentByDate(Guid shopId, DateTime date)
     {
+        var shop = await unitOfWork.Shops.GetByIdAsync(shopId) ?? throw new NotFoundException(typeof(Shop), shopId);
+        var openTime = date.Date.Add(shop.OpenTime.ToTimeSpan());
+        var closeTime = openTime.AddDays(1);
         return (
             await unitOfWork.SupervisorAssignments.GetAsync(
-                a => a.ShopId == shopId && a.StartTime.Date == date.Date && a.SupervisorId == null,
+                a => a.ShopId == shopId && openTime <= a.StartTime && a.StartTime < closeTime && a.SupervisorId == null,
                 includeProperties:
                 [
                     nameof(SupervisorAssignment.HeadSupervisor),
