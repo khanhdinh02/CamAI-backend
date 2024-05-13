@@ -8,7 +8,7 @@ namespace Host.CamAI.API.BackgroundServices;
 
 public class AutoAssignHeadSupervisorService(IServiceProvider provider) : BackgroundService
 {
-    private static readonly TimeSpan Period = TimeSpan.FromSeconds(60);
+    private static readonly TimeSpan Period = TimeSpan.FromMinutes(5);
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -20,7 +20,11 @@ public class AutoAssignHeadSupervisorService(IServiceProvider provider) : Backgr
             var shops = (
                 await unitOfWork.Shops.GetAsync(shop => shop.ShopStatus == ShopStatus.Active, takeAll: true)
             ).Values;
-            await Parallel.ForEachAsync(shops, stoppingToken, (shop, _) => AssignHeadSupervisorService(shop));
+            await Parallel.ForEachAsync(
+                shops,
+                stoppingToken,
+                async (shop, _) => await AssignHeadSupervisorService(shop)
+            );
         } while (await timer.WaitForNextTickAsync(stoppingToken));
     }
 
