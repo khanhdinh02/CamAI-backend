@@ -10,6 +10,7 @@ public class EmployeeDto : BaseDto
     public string? Phone { get; set; }
     public DateOnly? Birthday { get; set; }
     public string? AddressLine { get; set; }
+    public EmployeeRole? EmployeeRole { get; set; }
     public int? WardId { get; set; }
     public Guid? ShopId { get; set; }
     public EmployeeStatus EmployeeStatus { get; set; }

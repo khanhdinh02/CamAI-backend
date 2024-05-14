@@ -294,6 +294,11 @@ public class EmployeeService(
         return new BulkUpsertTaskResultResponse(BulkUpsertStatus.Fail, 0, 0, 0, "Employee upsert failed");
     }
 
+    public async Task<Employee?> GetEmployeeAccount(Guid accountId)
+    {
+        return (await unitOfWork.Employees.GetAsync(x => x.AccountId == accountId)).Values.FirstOrDefault();
+    }
+
     private bool HasAuthority(Account user, Employee employee)
     {
         if (user.Role == Role.Admin)

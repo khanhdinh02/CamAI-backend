@@ -7,7 +7,7 @@ public class EmployeeByIdRepoSpec : EntityByIdSpec<Employee, Guid>
     public EmployeeByIdRepoSpec(Guid id)
         : base(e => e.Id == id)
     {
-        AddIncludes(e => e.Shop);
+        AddIncludes(e => e.Shop, e => e.Account);
         AddIncludes(e => e.Ward!.District.Province);
     }
 }

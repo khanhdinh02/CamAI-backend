@@ -13,6 +13,7 @@ namespace Host.CamAI.API.Controllers;
 [ApiController]
 public class SupervisorAssignmentsController(
     ISupervisorAssignmentService supervisorAssignmentService,
+    IEmployeeService employeeService,
     IIncidentService incidentService,
     IAccountService accountService,
     IBaseMapping mapping
@@ -25,12 +26,25 @@ public class SupervisorAssignmentsController(
         var assignments = await supervisorAssignmentService.GetSupervisorAssignmentByDate(date);
         FillEmptyAssignmentWithShopManager(assignments);
         var incidents = await GetIncidentsInDate(date);
-        var assignmentDtos = assignments.Select(ToSupervisorAssignmentDto).ToList();
+        var assignmentDtos = assignments
+            .Select(async assignment => await ToSupervisorAssignmentDto(assignment))
+            .Select(x => x.Result)
+            .ToList();
         foreach (var dto in assignmentDtos)
         {
             var endTime = dto.EndTime ?? dto.StartTime.Date.AddDays(1).AddTicks(-1);
             dto.Incidents = incidents
-                .Where(x => dto.StartTime <= x.StartTime && x.StartTime <= endTime)
+                .Where(x =>
+                    dto.StartTime <= x.StartTime
+                    && x.StartTime <= endTime
+                    && x.IncidentType is IncidentType.Phone or IncidentType.Uniform
+                )
+                .Select(mapping.Map<Incident, IncidentDto>)
+                .ToList();
+            dto.Interactions = incidents
+                .Where(x =>
+                    dto.StartTime <= x.StartTime && x.StartTime <= endTime && x.IncidentType == IncidentType.Interaction
+                )
                 .Select(mapping.Map<Incident, IncidentDto>)
                 .ToList();
         }
@@ -100,7 +114,7 @@ public class SupervisorAssignmentsController(
         }
     }
 
-    private SupervisorAssignmentDto ToSupervisorAssignmentDto(SupervisorAssignment supervisorAssignment)
+    private async Task<SupervisorAssignmentDto> ToSupervisorAssignmentDto(SupervisorAssignment supervisorAssignment)
     {
         var dto = mapping.Map<SupervisorAssignment, SupervisorAssignmentDto>(supervisorAssignment);
         var inCharge =
@@ -108,8 +122,10 @@ public class SupervisorAssignmentsController(
             ?? supervisorAssignment.HeadSupervisor
             ?? accountService.GetCurrentAccount();
         dto.InCharge = mapping.Map<Account, AccountDto>(inCharge);
-        dto.InChargeId = inCharge.Id;
-        dto.InChargeRole = inCharge.Role;
+        dto.InChargeAccountId = inCharge.Id;
+        dto.InChargeAccountRole = inCharge.Role;
+        var employee = await employeeService.GetEmployeeAccount(inCharge.Id);
+        dto.InChargeEmployeeId = employee?.Id;
         return dto;
     }
 

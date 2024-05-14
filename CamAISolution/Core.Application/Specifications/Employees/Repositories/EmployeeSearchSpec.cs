@@ -9,7 +9,7 @@ public class EmployeeSearchSpec : RepositorySpec<Employee>
     public EmployeeSearchSpec(SearchEmployeeRequest req)
         : base(GetExpression(req))
     {
-        AddIncludes(e => e.Shop);
+        AddIncludes(e => e.Shop, e => e.Account);
         AddIncludes(e => e.Ward!.District.Province);
         ApplyingPaging(req);
     }
