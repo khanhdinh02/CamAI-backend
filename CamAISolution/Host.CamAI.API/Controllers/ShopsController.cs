@@ -8,6 +8,7 @@ using Core.Domain.Interfaces.Services;
 using Core.Domain.Models;
 using Core.Domain.Services;
 using Infrastructure.Jwt.Attribute;
+using Infrastructure.Mapping.Profiles;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Host.CamAI.API.Controllers;
@@ -202,22 +203,12 @@ public class ShopsController(
     public async Task<SupervisorAssignmentDto> AssignShopSupervisor(AssignShopSupervisorDto dto)
     {
         var assignment = await shopService.AssignSupervisorRoles(dto.AccountId, dto.Role);
-        return await ToSupervisorAssignmentDto(assignment);
-    }
-
-    private async Task<SupervisorAssignmentDto> ToSupervisorAssignmentDto(SupervisorAssignment supervisorAssignment)
-    {
-        var dto = baseMapping.Map<SupervisorAssignment, SupervisorAssignmentDto>(supervisorAssignment);
-        var inCharge =
-            supervisorAssignment.Supervisor
-            ?? supervisorAssignment.HeadSupervisor
-            ?? accountService.GetCurrentAccount();
-        dto.InCharge = baseMapping.Map<Account, AccountDto>(inCharge);
-        dto.InChargeAccountId = inCharge.Id;
-        dto.InChargeAccountRole = inCharge.Role;
-        var employee = await employeeService.GetEmployeeAccount(inCharge.Id);
-        dto.InChargeEmployeeId = employee?.Id;
-        return dto;
+        return await SupervisorAssignmentProfile.ToSupervisorAssignmentDto(
+            baseMapping,
+            accountService,
+            employeeService,
+            assignment
+        );
     }
 
     /// <summary>
@@ -230,7 +221,12 @@ public class ShopsController(
     public async Task<SupervisorAssignmentDto> AssignShopSupervisorFromEmployee(AssignShopSupervisorFromEmployeeDto dto)
     {
         var assignment = await shopService.AssignSupervisorRolesFromEmployee(dto.EmployeeId, dto.Role);
-        return await ToSupervisorAssignmentDto(assignment);
+        return await SupervisorAssignmentProfile.ToSupervisorAssignmentDto(
+            baseMapping,
+            accountService,
+            employeeService,
+            assignment
+        );
     }
 
     /// <summary>

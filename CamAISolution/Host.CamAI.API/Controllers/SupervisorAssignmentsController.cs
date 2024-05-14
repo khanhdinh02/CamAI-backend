@@ -5,6 +5,7 @@ using Core.Domain.Interfaces.Mappings;
 using Core.Domain.Interfaces.Services;
 using Core.Domain.Services;
 using Infrastructure.Jwt.Attribute;
+using Infrastructure.Mapping.Profiles;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Host.CamAI.API.Controllers;
@@ -27,7 +28,14 @@ public class SupervisorAssignmentsController(
         FillEmptyAssignmentWithShopManager(assignments);
         var incidents = await GetIncidentsInDate(date);
         var assignmentDtos = assignments
-            .Select(async assignment => await ToSupervisorAssignmentDto(assignment))
+            .Select(async assignment =>
+                await SupervisorAssignmentProfile.ToSupervisorAssignmentDto(
+                    mapping,
+                    accountService,
+                    employeeService,
+                    assignment
+                )
+            )
             .Select(x => x.Result)
             .ToList();
         foreach (var dto in assignmentDtos)
@@ -112,21 +120,6 @@ public class SupervisorAssignmentsController(
                 }
             );
         }
-    }
-
-    private async Task<SupervisorAssignmentDto> ToSupervisorAssignmentDto(SupervisorAssignment supervisorAssignment)
-    {
-        var dto = mapping.Map<SupervisorAssignment, SupervisorAssignmentDto>(supervisorAssignment);
-        var inCharge =
-            supervisorAssignment.Supervisor
-            ?? supervisorAssignment.HeadSupervisor
-            ?? accountService.GetCurrentAccount();
-        dto.InCharge = mapping.Map<Account, AccountDto>(inCharge);
-        dto.InChargeAccountId = inCharge.Id;
-        dto.InChargeAccountRole = inCharge.Role;
-        var employee = await employeeService.GetEmployeeAccount(inCharge.Id);
-        dto.InChargeEmployeeId = employee?.Id;
-        return dto;
     }
 
     private async Task<IList<Incident>> GetIncidentsInDate(DateTime date)
