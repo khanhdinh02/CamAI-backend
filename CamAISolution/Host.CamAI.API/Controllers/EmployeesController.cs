@@ -151,7 +151,7 @@ public class EmployeesController(
             Ok(
                 new
                 {
-                    Percent = progress.CurrentFinishedRecord * 100f / progress.Total,
+                    Percents = progress.CurrentFinishedRecord * 100f / progress.Total,
                     Detailed = new { progress.CurrentFinishedRecord, progress.Total }
                 }
             )
