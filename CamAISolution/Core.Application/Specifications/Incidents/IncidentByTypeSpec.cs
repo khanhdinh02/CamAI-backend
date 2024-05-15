@@ -6,16 +6,16 @@ namespace Core.Application.Specifications;
 
 public class IncidentByTypeSpec : Specification<Incident>
 {
-    private readonly IncidentType status;
+    private readonly IncidentType[] types;
 
-    public IncidentByTypeSpec(IncidentType status)
+    public IncidentByTypeSpec(IncidentType[] types)
     {
-        this.status = status;
+        this.types = types;
         Expr = GetExpression();
     }
 
     public override Expression<Func<Incident, bool>> GetExpression()
     {
-        return s => s.IncidentType == status;
+        return s => types.Contains(s.IncidentType);
     }
 }
