@@ -5,7 +5,7 @@ namespace Core.Domain.DTO;
 public class SearchIncidentRequest : BaseSearchRequest
 {
     // shop, brand, edge box, employee,...
-    public IncidentType? IncidentType { get; set; }
+    public IncidentTypeRequestOption? IncidentType { get; set; }
     public DateTime? FromTime { get; set; }
     public DateTime? ToTime { get; set; }
     public Guid? EdgeBoxId { get; set; }

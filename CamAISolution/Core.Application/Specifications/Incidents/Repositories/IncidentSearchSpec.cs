@@ -15,7 +15,7 @@ public class IncidentSearchSpec : RepositorySpec<Incident>
             baseSpec.And(new IncidentByStatusSpec(search.Status.Value));
 
         if (search.IncidentType.HasValue)
-            baseSpec.And(new IncidentByTypeSpec(search.IncidentType.Value));
+            baseSpec.And(new IncidentByTypeSpec(search.IncidentType.Value.ToIncidentTypes()));
 
         if (search.BrandId.HasValue)
             baseSpec.And(new IncidentByBrandIdSpec(search.BrandId.Value));
