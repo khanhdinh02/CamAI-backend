@@ -241,10 +241,9 @@ public class ShopService(
 
         if (employee.Email == null)
             throw new BadRequestException("Employee email must not be empty");
-        var accountId = employee.AccountId;
-        if (employee.AccountId == null)
-        {
-            accountId = (
+        var accountId =
+            employee.AccountId
+            ?? (
                 await accountService.CreateSupervisor(
                     new CreateSupervisorDto
                     {
@@ -254,8 +253,7 @@ public class ShopService(
                     }
                 )
             ).Id;
-        }
-        return await AssignSupervisorRoles(accountId!.Value, role);
+        return await AssignSupervisorRoles(accountId, role);
     }
 
     public async Task<SupervisorAssignment> AssignHeadSupervisor(Account account)
@@ -329,9 +327,6 @@ public class ShopService(
 
     public async Task<SupervisorAssignment> AssignSupervisor(Account account)
     {
-        var user = accountService.GetCurrentAccount();
-        if (user.Role is not Role.ShopHeadSupervisor)
-            throw new BadRequestException("User is not a head supervisor");
         var employee = (
             await unitOfWork.Employees.GetAsync(
                 e => e.AccountId == account.Id,
@@ -342,7 +337,11 @@ public class ShopService(
             throw new BadRequestException("Invalid employee account");
 
         var currentTime = DateTimeHelper.VNDateTime;
-        var latestAsm = await supervisorAssignmentService.GetLatestAssignmentByDate(employee.ShopId.Value, currentTime);
+        var latestAsm = await supervisorAssignmentService.GetLatestAssignmentByDate(
+            employee.ShopId.Value,
+            currentTime,
+            includeAll: false
+        );
         var currentSupervisor = latestAsm?.Supervisor;
         var isShopOpening = IsShopOpeningAtTime(employee.Shop!, TimeOnly.FromDateTime(currentTime));
 

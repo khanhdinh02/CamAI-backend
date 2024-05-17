@@ -133,6 +133,6 @@ public class Repository<T>(CamAIContext context, IRepositorySpecificationEvaluat
         return context.Set<T>().GroupBy(groupKey);
     }
 
-    public Task<bool> IsExisted(Expression<Func<T, bool>> predicate) => context.Set<T>().Where(predicate).AsNoTracking().AnyAsync();
-
+    public Task<bool> IsExisted(Expression<Func<T, bool>> predicate) =>
+        context.Set<T>().Where(predicate).AsNoTracking().AnyAsync();
 }
