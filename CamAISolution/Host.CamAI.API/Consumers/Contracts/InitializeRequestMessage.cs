@@ -10,4 +10,5 @@ public class InitializeRequestMessage
     public string Version { get; set; } = null!;
     public string OperatingSystem { get; set; } = null!;
     public string IpAddress { get; set; } = null!;
+    public string SerialNumber {get;set; } = null!;
 }
