@@ -92,6 +92,6 @@ public class NotificationsController(
                 CancellationToken.None
             );
         }
-        notificationSocketManager.RemoveSocket(account.Id);
+        notificationSocketManager.RemoveSocket(account.Id, socket);
     }
 }

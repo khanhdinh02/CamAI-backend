@@ -3,6 +3,7 @@ using System.Net.WebSockets;
 using System.Text.Json;
 using Core.Application.Events;
 using Core.Application.Events.Args;
+using Core.Domain;
 using Core.Domain.DTO;
 using Core.Domain.Entities;
 using Core.Domain.Interfaces.Mappings;
@@ -11,29 +12,54 @@ namespace Host.CamAI.API.Sockets;
 
 public class NotificationSocketManager : Core.Domain.Events.IObserver<CreatedAccountNotificationArgs>
 {
-    // user id and websocket object
-    private readonly ConcurrentDictionary<Guid, WebSocket> sockets = new();
+    // user id and user's websockets
+    private readonly ConcurrentDictionary<Guid, HashSet<WebSocket>> sockets = new();
     private readonly IServiceProvider serviceProvider;
     private readonly AccountNotificationSubject accountNotificationSubject;
+    private readonly IAppLogging<NotificationSocketManager> logger;
 
     private readonly JsonSerializerOptions options = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
 
     public NotificationSocketManager(
         IServiceProvider serviceProvider,
-        AccountNotificationSubject accountNotificationSubject
-    )
+        AccountNotificationSubject accountNotificationSubject, IAppLogging<NotificationSocketManager> logger)
     {
         this.serviceProvider = serviceProvider;
         this.accountNotificationSubject = accountNotificationSubject;
+        this.logger = logger;
         this.accountNotificationSubject.Attach(this);
     }
 
-    public bool AddSocket(Guid accountId, WebSocket socket) => sockets.TryAdd(accountId, socket);
+    public bool AddSocket(Guid accountId, WebSocket socket)
+    {
+        logger.Info($"Add a new notification websocket");
+        if (sockets.TryGetValue(accountId, out var userSockets))
+        {
+            return userSockets.Add(socket);
+        }
 
-    public bool RemoveSocket(Guid accountId) => sockets.TryRemove(accountId, out _);
+        return sockets.TryAdd(accountId, new() { socket });
+    }
+
+    public bool RemoveSocket(Guid accountId, WebSocket socket)
+    {
+        logger.Info("Remove a notification websocket");
+        if (!sockets.TryGetValue(accountId, out var userSockets))
+            return false;
+
+        if (!userSockets.Remove(socket))
+            return false;
+        if (!userSockets.Any())
+        {
+            logger.Info($"All websockets for notification of user {accountId} have been removed, trying to remove user {accountId}");
+            return sockets.TryRemove(accountId, out _);
+        }
+        return true;
+    }
 
     public async void Update(object? sender, CreatedAccountNotificationArgs args)
     {
+        logger.Info($"New notification has been notified");
         using var scope = serviceProvider.CreateScope();
         try
         {
@@ -47,14 +73,19 @@ public class NotificationSocketManager : Core.Domain.Events.IObserver<CreatedAcc
                         options
                     );
                     var sentData = System.Text.Encoding.UTF8.GetBytes(jsonObj);
-                    await socket.SendAsync(sentData, WebSocketMessageType.Text, true, CancellationToken.None);
+                    if (sockets.TryGetValue(userId, out var userSockets))
+                    {
+                        foreach (var websocket in userSockets)
+                        {
+                            await websocket.SendAsync(sentData, WebSocketMessageType.Text, true, CancellationToken.None);
+                        }
+                    }
                 }
             }
         }
         catch (Exception ex)
         {
-            var logger = scope.ServiceProvider.GetRequiredService<ILogger<NotificationSocketManager>>();
-            logger.LogError(ex, ex.Message);
+            logger.Error(ex.Message, ex);
         }
     }
 
