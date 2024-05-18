@@ -48,7 +48,7 @@ public class IncidentSocketManager : Core.Domain.Events.IObserver<CreatedOrUpdat
 
         if (!userSockets.Remove(socket))
             return false;
-        if (userSockets.Any())
+        if (!userSockets.Any())
         {
             logger.Info($"All websockets for incident of user {accountId} have been removed, trying to remove user {accountId}");
             return sockets.TryRemove(accountId, out _);
