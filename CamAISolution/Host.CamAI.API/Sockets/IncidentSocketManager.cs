@@ -72,7 +72,7 @@ public class IncidentSocketManager : Core.Domain.Events.IObserver<CreatedOrUpdat
             {
                 foreach (var socket in userSockets)
                 {
-                    socket.SendAsync(data, WebSocketMessageType.Text, true, CancellationToken.None);
+                    await socket.SendAsync(data, WebSocketMessageType.Text, true, CancellationToken.None);
                 }
             }
         }
