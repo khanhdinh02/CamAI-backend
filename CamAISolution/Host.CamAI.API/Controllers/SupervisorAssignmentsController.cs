@@ -131,4 +131,13 @@ public class SupervisorAssignmentsController(
         );
         return incidents.Values;
     }
+
+    [HttpGet("{assignmentId}/Incidents")]
+    [AccessTokenGuard(Role.ShopManager, Role.BrandManager, Role.ShopHeadSupervisor, Role.ShopSupervisor)]
+    public async Task<List<IncidentDto>> GetIncidentByAssignment(Guid assignmentId)
+    {
+        return (await incidentService.GetIncidentsByAssignment(assignmentId))
+            .Select(mapping.Map<Incident, IncidentDto>)
+            .ToList();
+    }
 }

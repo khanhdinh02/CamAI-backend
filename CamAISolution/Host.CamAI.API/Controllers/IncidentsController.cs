@@ -53,7 +53,7 @@ public class IncidentsController(
     /// <param name="searchRequest"></param>
     /// <returns></returns>
     [HttpGet]
-    [AccessTokenGuard(Role.ShopManager, Role.BrandManager)]
+    [AccessTokenGuard(Role.ShopManager, Role.BrandManager, Role.ShopHeadSupervisor, Role.ShopManager)]
     public async Task<PaginationResult<IncidentDto>> GetIncident([FromQuery] SearchIncidentRequest searchRequest)
     {
         return mapping.Map<Incident, IncidentDto>(await incidentService.GetIncidents(searchRequest));
@@ -161,14 +161,5 @@ public class IncidentsController(
     public async Task<IncidentPercentDto> GetIncidentPercent(Guid? shopId, DateOnly startDate, DateOnly endDate)
     {
         return await incidentService.GetIncidentPercent(shopId, startDate, endDate);
-    }
-
-    [HttpGet("assignment/{assignmentId}")]
-    [AccessTokenGuard(Role.ShopManager, Role.BrandManager)]
-    public async Task<List<IncidentDto>> GetIncidentByAssigment(Guid assignmentId)
-    {
-        return (await incidentService.GetIncidentsByAssignment(assignmentId))
-            .Select(mapping.Map<Incident, IncidentDto>)
-            .ToList();
     }
 }

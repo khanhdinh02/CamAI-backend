@@ -41,4 +41,9 @@ public class CamAIContext : DbContext
 
         modelBuilder.ApplyConfigurationsFromAssembly(GetType().Assembly);
     }
+
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        optionsBuilder.EnableSensitiveDataLogging();
+    }
 }

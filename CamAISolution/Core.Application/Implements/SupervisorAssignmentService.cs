@@ -12,23 +12,36 @@ namespace Core.Application.Implements;
 public class SupervisorAssignmentService(IAccountService accountService, IUnitOfWork unitOfWork)
     : ISupervisorAssignmentService
 {
-    public async Task<SupervisorAssignment?> GetLatestAssignmentByDate(Guid shopId, DateTime date)
+    public async Task<SupervisorAssignment?> GetLatestAssignmentByDate(
+        Guid shopId,
+        DateTime date,
+        bool includeAll = true
+    )
     {
         var shop = await unitOfWork.Shops.GetByIdAsync(shopId) ?? throw new NotFoundException(typeof(Shop), shopId);
         var openTime = date.Date.Add(shop.OpenTime.ToTimeSpan());
         var closeTime = openTime.AddDays(1);
-        return (
-            await unitOfWork.SupervisorAssignments.GetAsync(
-                a => a.ShopId == shopId && openTime <= a.StartTime && a.StartTime < closeTime,
-                includeProperties:
-                [
-                    nameof(SupervisorAssignment.HeadSupervisor),
-                    nameof(SupervisorAssignment.Supervisor)
-                ],
-                orderBy: o => o.OrderByDescending(x => x.StartTime),
-                pageSize: 1
-            )
-        ).Values.FirstOrDefault();
+        if (includeAll)
+            return (
+                await unitOfWork.SupervisorAssignments.GetAsync(
+                    a => a.ShopId == shopId && openTime <= a.StartTime && a.StartTime < closeTime,
+                    includeProperties:
+                    [
+                        nameof(SupervisorAssignment.HeadSupervisor),
+                        nameof(SupervisorAssignment.Supervisor)
+                    ],
+                    orderBy: o => o.OrderByDescending(x => x.StartTime),
+                    pageSize: 1
+                )
+            ).Values.FirstOrDefault();
+        else
+            return (
+                await unitOfWork.SupervisorAssignments.GetAsync(
+                    a => a.ShopId == shopId && openTime <= a.StartTime && a.StartTime < closeTime,
+                    orderBy: o => o.OrderByDescending(x => x.StartTime),
+                    pageSize: 1
+                )
+            ).Values.FirstOrDefault();
     }
 
     public async Task<SupervisorAssignment?> GetLatestHeadSupervisorAssignmentByDate(Guid shopId, DateTime date)
@@ -71,7 +84,8 @@ public class SupervisorAssignmentService(IAccountService accountService, IUnitOf
         var account = accountService.GetCurrentAccount();
         Expression<Func<SupervisorAssignment, bool>> criteria = account.Role switch
         {
-            Role.ShopManager => x => startTime <= x.StartTime && x.StartTime <= endTime,
+            Role.ShopManager
+                => x => startTime <= x.StartTime && x.StartTime <= endTime && x.ShopId == account.ManagingShop!.Id,
             Role.ShopHeadSupervisor
             or Role.ShopSupervisor
                 => x =>
@@ -136,15 +150,21 @@ public class SupervisorAssignmentService(IAccountService accountService, IUnitOf
     public async Task RemoveSupervisor()
     {
         var account = accountService.GetCurrentAccount();
-        var employee = (
-            await unitOfWork.Employees.GetAsync(x => x.AccountId == account.Id, includeProperties: ["Shop"])
-        ).Values[0];
-        var shop = employee.Shop!;
-        var latestAssignment = await GetLatestAssignmentByDate(shop.Id, DateTime.Now);
+        var shop = account.ManagingShop;
+        if (account.Role != Role.ShopManager)
+        {
+            var employee =
+                (
+                    await unitOfWork.Employees.GetAsync(x => x.AccountId == account.Id, includeProperties: ["Shop"])
+                ).Values.FirstOrDefault()
+                ?? throw new NotFoundException($"Cannot find employee associated with account id {account.Id}");
+            shop = employee.Shop!;
+        }
+        var latestAssignment = await GetLatestAssignmentByDate(shop.Id, DateTime.Now, includeAll: false);
         if (latestAssignment == null)
             throw new ForbiddenException("Shop does not have any assignment");
-        if (latestAssignment.HeadSupervisorId != account.Id)
-            throw new ForbiddenException("Account is not current head supervisor");
+        if (account.Role != Role.ShopManager && latestAssignment.HeadSupervisorId != account.Id)
+            throw new ForbiddenException("Account is not current head supervisor or shop manager");
 
         if (ShopService.IsShopOpeningAtTime(shop, TimeOnly.FromDateTime(DateTime.Now)))
         {

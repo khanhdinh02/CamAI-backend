@@ -26,4 +26,5 @@ public interface IUnitOfWork : IDisposable, IAsyncDisposable
     Task<int> CompleteAsync();
 
     IRepository<T> GetRepository<T>();
+    void Detach(object entity);
 }
