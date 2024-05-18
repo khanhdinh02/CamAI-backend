@@ -84,7 +84,8 @@ public class SupervisorAssignmentService(IAccountService accountService, IUnitOf
         var account = accountService.GetCurrentAccount();
         Expression<Func<SupervisorAssignment, bool>> criteria = account.Role switch
         {
-            Role.ShopManager => x => startTime <= x.StartTime && x.StartTime <= endTime,
+            Role.ShopManager
+                => x => startTime <= x.StartTime && x.StartTime <= endTime && x.ShopId == account.ManagingShop!.Id,
             Role.ShopHeadSupervisor
             or Role.ShopSupervisor
                 => x =>
