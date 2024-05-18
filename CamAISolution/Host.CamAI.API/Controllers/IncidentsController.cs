@@ -162,13 +162,4 @@ public class IncidentsController(
     {
         return await incidentService.GetIncidentPercent(shopId, startDate, endDate);
     }
-
-    [HttpGet("assignment/{assignmentId}")]
-    [AccessTokenGuard(Role.ShopManager, Role.BrandManager)]
-    public async Task<List<IncidentDto>> GetIncidentByAssigment(Guid assignmentId)
-    {
-        return (await incidentService.GetIncidentsByAssignment(assignmentId))
-            .Select(mapping.Map<Incident, IncidentDto>)
-            .ToList();
-    }
 }
