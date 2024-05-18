@@ -130,7 +130,7 @@ public class IncidentsController(
                 CancellationToken.None
             );
         }
-        incidentSocketManager.RemoveSocket(account.Id);
+        incidentSocketManager.RemoveSocket(account.Id, socket);
     }
 
     /// <summary>
