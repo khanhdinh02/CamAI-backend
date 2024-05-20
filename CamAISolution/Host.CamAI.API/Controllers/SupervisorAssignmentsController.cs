@@ -127,7 +127,12 @@ public class SupervisorAssignmentsController(
         var startTime = date.Date;
         var endTime = startTime.AddDays(1).AddTicks(-1);
         var incidents = await incidentService.GetIncidents(
-            new SearchIncidentRequest { FromTime = startTime, ToTime = endTime }
+            new SearchIncidentRequest
+            {
+                FromTime = startTime,
+                ToTime = endTime,
+                Size = 100
+            }
         );
         return incidents.Values;
     }
