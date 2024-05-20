@@ -15,6 +15,6 @@ public class IncidentByInChargeIdSpec : Specification<Incident>
 
     public override Expression<Func<Incident, bool>> GetExpression()
     {
-        return i => i.InChargeAccountId == inChargeId || i.HeadSupervisorId == inChargeId;
+        return i => i.InChargeAccountId == inChargeId;
     }
 }

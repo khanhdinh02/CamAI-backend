@@ -33,7 +33,7 @@ public class IncidentsController(
     /// <param name="id"></param>
     /// <returns></returns>
     [HttpGet("{id}")]
-    [AccessTokenGuard(Role.ShopManager, Role.BrandManager)]
+    [AccessTokenGuard(Role.ShopManager, Role.BrandManager, Role.ShopSupervisor)]
     public async Task<IncidentDto> GetIncidentById(Guid id)
     {
         return mapping.Map<Incident, IncidentDto>(await incidentService.GetIncidentById(id, true));
@@ -53,14 +53,14 @@ public class IncidentsController(
     /// <param name="searchRequest"></param>
     /// <returns></returns>
     [HttpGet]
-    [AccessTokenGuard(Role.ShopManager, Role.BrandManager, Role.ShopHeadSupervisor, Role.ShopManager)]
+    [AccessTokenGuard(Role.ShopManager, Role.BrandManager, Role.ShopManager)]
     public async Task<PaginationResult<IncidentDto>> GetIncident([FromQuery] SearchIncidentRequest searchRequest)
     {
         return mapping.Map<Incident, IncidentDto>(await incidentService.GetIncidents(searchRequest));
     }
 
     [HttpPost("accept")]
-    [AccessTokenGuard(Role.ShopManager)]
+    [AccessTokenGuard(Role.ShopManager, Role.ShopSupervisor)]
     public async Task<IActionResult> AcceptAllIncidents(AcceptAllIncidentsRequest request)
     {
         await incidentService.AcceptOrRejectAllIncidents(request.IncidentIds, request.EmployeeId, true);
@@ -68,7 +68,7 @@ public class IncidentsController(
     }
 
     [HttpPost("reject")]
-    [AccessTokenGuard(Role.ShopManager)]
+    [AccessTokenGuard(Role.ShopManager, Role.ShopSupervisor)]
     public async Task<IActionResult> RejectAllIncidents(RejectAllIncidentsRequest request)
     {
         await incidentService.AcceptOrRejectAllIncidents(request.IncidentIds, Guid.Empty, false);
@@ -82,7 +82,7 @@ public class IncidentsController(
     /// <param name="id"></param>
     /// <param name="employeeId"></param>
     [HttpPut("{id}/employee/{employeeId}")]
-    [AccessTokenGuard(Role.ShopManager)]
+    [AccessTokenGuard(Role.ShopManager, Role.ShopSupervisor)]
     public async Task AssignIncidentToEmployee([FromRoute] Guid id, [FromRoute] Guid employeeId)
     {
         await incidentService.AssignIncidentToEmployee(id, employeeId);
@@ -95,7 +95,7 @@ public class IncidentsController(
     /// </summary>
     /// <param name="id"></param>
     [HttpPut("{id}/reject")]
-    [AccessTokenGuard(Role.ShopManager)]
+    [AccessTokenGuard(Role.ShopManager, Role.ShopSupervisor)]
     public async Task RejectIncident([FromRoute] Guid id)
     {
         await incidentService.RejectIncident(id);

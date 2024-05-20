@@ -25,11 +25,7 @@ public class SupervisorAssignmentService(IAccountService accountService, IUnitOf
             return (
                 await unitOfWork.SupervisorAssignments.GetAsync(
                     a => a.ShopId == shopId && openTime <= a.StartTime && a.StartTime < closeTime,
-                    includeProperties:
-                    [
-                        nameof(SupervisorAssignment.HeadSupervisor),
-                        nameof(SupervisorAssignment.Supervisor)
-                    ],
+                    includeProperties: [nameof(SupervisorAssignment.Supervisor)],
                     orderBy: o => o.OrderByDescending(x => x.StartTime),
                     pageSize: 1
                 )
@@ -67,7 +63,6 @@ public class SupervisorAssignmentService(IAccountService accountService, IUnitOf
     {
         var assignment = await GetLatestAssignmentByDate(shopId, DateTimeHelper.VNDateTime);
         return assignment?.Supervisor
-            ?? assignment?.HeadSupervisor
             ?? (await unitOfWork.Accounts.GetAsync(a => a.ManagingShop!.Id == shopId)).Values.FirstOrDefault();
     }
 
@@ -86,12 +81,8 @@ public class SupervisorAssignmentService(IAccountService accountService, IUnitOf
         {
             Role.ShopManager
                 => x => startTime <= x.StartTime && x.StartTime <= endTime && x.ShopId == account.ManagingShop!.Id,
-            Role.ShopHeadSupervisor
-            or Role.ShopSupervisor
-                => x =>
-                    startTime <= x.StartTime
-                    && x.StartTime <= endTime
-                    && (x.HeadSupervisorId == account.Id || x.SupervisorId == account.Id),
+            Role.ShopSupervisor
+                => x => startTime <= x.StartTime && x.StartTime <= endTime && x.SupervisorId == account.Id,
             _ => throw new ForbiddenException("Cannot get supervisor assignments")
         };
 
@@ -99,7 +90,7 @@ public class SupervisorAssignmentService(IAccountService accountService, IUnitOf
             await unitOfWork.SupervisorAssignments.GetAsync(
                 criteria,
                 orderBy: x => x.OrderBy(e => e.StartTime),
-                includeProperties: ["HeadSupervisor", "Supervisor"]
+                includeProperties: [nameof(SupervisorAssignment.Supervisor)]
             )
         ).Values;
     }
@@ -160,13 +151,13 @@ public class SupervisorAssignmentService(IAccountService accountService, IUnitOf
                 ?? throw new NotFoundException($"Cannot find employee associated with account id {account.Id}");
             shop = employee.Shop!;
         }
-        var latestAssignment = await GetLatestAssignmentByDate(shop.Id, DateTime.Now, includeAll: false);
+        var latestAssignment = await GetLatestAssignmentByDate(shop.Id, DateTimeHelper.VNDateTime, includeAll: false);
         if (latestAssignment == null)
             throw new ForbiddenException("Shop does not have any assignment");
-        if (account.Role != Role.ShopManager && latestAssignment.HeadSupervisorId != account.Id)
-            throw new ForbiddenException("Account is not current head supervisor or shop manager");
+        if (account.Role != Role.ShopManager)
+            throw new ForbiddenException("Account is not shop manager");
 
-        if (ShopService.IsShopOpeningAtTime(shop, TimeOnly.FromDateTime(DateTime.Now)))
+        if (ShopService.IsShopOpeningAtTime(shop, TimeOnly.FromDateTime(DateTimeHelper.VNDateTime)))
         {
             var now = DateTimeHelper.VNDateTime;
             if (now - latestAssignment.StartTime < TimeSpan.FromMinutes(5))
@@ -182,8 +173,7 @@ public class SupervisorAssignmentService(IAccountService accountService, IUnitOf
                 var newAssignment = new SupervisorAssignment
                 {
                     ShopId = shop.Id,
-                    StartTime = latestAssignment.EndTime.Value,
-                    HeadSupervisorId = account.Id
+                    StartTime = latestAssignment.EndTime.Value
                 };
                 await unitOfWork.SupervisorAssignments.AddAsync(newAssignment);
                 await unitOfWork.CompleteAsync();
@@ -194,8 +184,7 @@ public class SupervisorAssignmentService(IAccountService accountService, IUnitOf
             var newAssignment = new SupervisorAssignment
             {
                 ShopId = shop.Id,
-                StartTime = ShopService.GetNextOpenTime(shop),
-                HeadSupervisorId = account.Id
+                StartTime = ShopService.GetNextOpenTime(shop)
             };
             await unitOfWork.SupervisorAssignments.AddAsync(newAssignment);
             await unitOfWork.CompleteAsync();

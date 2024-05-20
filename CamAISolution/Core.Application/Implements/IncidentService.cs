@@ -41,6 +41,7 @@ public class IncidentService(
         {
             Role.BrandManager when currentAccount.BrandId == incident.Shop.BrandId => incident,
             Role.ShopManager when currentAccount.Id == incident.Shop.ShopManagerId => incident,
+            Role.ShopSupervisor when currentAccount.Id == incident.InChargeAccountId => incident,
             _ => throw new NotFoundException(typeof(Incident), id)
         };
     }
@@ -57,8 +58,7 @@ public class IncidentService(
                 searchRequest.BrandId = null;
                 searchRequest.ShopId = account.ManagingShop!.Id;
                 break;
-            case Role.ShopHeadSupervisor
-            or Role.ShopSupervisor:
+            case Role.ShopSupervisor:
                 searchRequest.InChargeId = account.Id;
                 break;
         }
@@ -159,9 +159,6 @@ public class IncidentService(
             incident.ShopId = ebInstall!.ShopId;
             incident.InChargeAccountId = (
                 await supervisorAssignmentService.GetCurrentInChangeAccount(incident.ShopId)
-            )?.Id;
-            incident.HeadSupervisorId = (
-                await supervisorAssignmentService.GetCurrentInChangeHeadSupervisorAccount(incident.ShopId)
             )?.Id;
             incident.Evidences = [];
             incident = await unitOfWork.Incidents.AddAsync(incident);

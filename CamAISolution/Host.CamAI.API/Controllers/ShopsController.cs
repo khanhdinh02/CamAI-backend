@@ -199,7 +199,7 @@ public class ShopsController(
     }
 
     [HttpPost("supervisor")]
-    [AccessTokenGuard(Role.ShopHeadSupervisor, Role.ShopManager)]
+    [AccessTokenGuard(Role.ShopManager)]
     public async Task<SupervisorAssignmentDto> AssignShopSupervisor(AssignShopSupervisorDto dto)
     {
         var assignment = await shopService.AssignSupervisorRoles(dto.AccountId, dto.Role);
@@ -217,7 +217,7 @@ public class ShopsController(
     /// <param name="dto"></param>
     /// <returns></returns>
     [HttpPost("employee/supervisor")]
-    [AccessTokenGuard(Role.ShopHeadSupervisor, Role.ShopManager)]
+    [AccessTokenGuard(Role.ShopManager)]
     public async Task<SupervisorAssignmentDto> AssignShopSupervisorFromEmployee(AssignShopSupervisorFromEmployeeDto dto)
     {
         var assignment = await shopService.AssignSupervisorRolesFromEmployee(dto.EmployeeId, dto.Role);
@@ -243,14 +243,14 @@ public class ShopsController(
     /// Remove current supervisor and set in charge to head supervisor
     /// </summary>
     [HttpDelete("supervisor")]
-    [AccessTokenGuard(Role.ShopManager, Role.ShopHeadSupervisor)]
+    [AccessTokenGuard(Role.ShopManager)]
     public async Task RemoveSupervisor()
     {
         await supervisorAssignmentService.RemoveSupervisor();
     }
 
     [HttpGet("isIncharge")]
-    [AccessTokenGuard(Role.ShopManager, Role.ShopSupervisor, Role.ShopHeadSupervisor)]
+    [AccessTokenGuard(Role.ShopManager, Role.ShopSupervisor)]
     public async Task<bool> IsInCharge()
     {
         return await shopService.IsInCharge();
