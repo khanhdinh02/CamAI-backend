@@ -37,7 +37,8 @@ public class InitializeRequestConsumer(
                 new SerialNumberMismatchMessage
                 {
                     RoutingKey = edgeBoxId.ToString("N"),
-                    SerialNumber = ebInstall.EdgeBox.SerialNumber ?? ""
+                    SerialNumber = ebInstall.EdgeBox.SerialNumber ?? "",
+                    RequestId = message.RequestId
                 }
             );
             return;
