@@ -20,11 +20,7 @@ public class AutoAssignSupervisorService(IServiceProvider provider) : Background
             var shops = (
                 await unitOfWork.Shops.GetAsync(shop => shop.ShopStatus == ShopStatus.Active, takeAll: true)
             ).Values;
-            await Parallel.ForEachAsync(
-                shops,
-                stoppingToken,
-                async (shop, _) => await AssignSupervisor(shop)
-            );
+            await Parallel.ForEachAsync(shops, stoppingToken, async (shop, _) => await AssignSupervisor(shop));
         } while (await timer.WaitForNextTickAsync(stoppingToken));
     }
 
@@ -55,7 +51,6 @@ public class AutoAssignSupervisorService(IServiceProvider provider) : Background
                 new SupervisorAssignment
                 {
                     ShopId = shop.Id,
-                    SupervisorId = latestAsm.SupervisorId,
                     StartTime = lastOpenTime,
                     EndTime = ShopService.GetNextCloseTime(shop)
                 }
@@ -70,7 +65,6 @@ public class AutoAssignSupervisorService(IServiceProvider provider) : Background
                 new SupervisorAssignment
                 {
                     ShopId = shop.Id,
-                    SupervisorId = latestAsm.SupervisorId,
                     StartTime = nextOpenTime,
                     EndTime = ShopService.GetNextCloseTime(shop)
                 }
