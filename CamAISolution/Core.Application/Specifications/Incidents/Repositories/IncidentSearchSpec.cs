@@ -48,6 +48,7 @@ public class IncidentSearchSpec : RepositorySpec<Incident>
             AddIncludes(x => x.Shop);
         AddIncludes(x => x.Employee);
         AddIncludes(x => x.Evidences);
+        AddIncludes(x => x.InChargeAccount);
         ApplyingPaging(search);
         ApplyOrderByDescending(s => s.CreatedDate);
     }

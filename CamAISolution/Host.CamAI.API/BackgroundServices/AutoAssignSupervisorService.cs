@@ -6,7 +6,7 @@ using Core.Domain.Utilities;
 
 namespace Host.CamAI.API.BackgroundServices;
 
-public class AutoAssignHeadSupervisorService(IServiceProvider provider) : BackgroundService
+public class AutoAssignSupervisorService(IServiceProvider provider) : BackgroundService
 {
     private static readonly TimeSpan Period = TimeSpan.FromMinutes(5);
 
@@ -23,12 +23,12 @@ public class AutoAssignHeadSupervisorService(IServiceProvider provider) : Backgr
             await Parallel.ForEachAsync(
                 shops,
                 stoppingToken,
-                async (shop, _) => await AssignHeadSupervisorService(shop)
+                async (shop, _) => await AssignSupervisor(shop)
             );
         } while (await timer.WaitForNextTickAsync(stoppingToken));
     }
 
-    private async ValueTask AssignHeadSupervisorService(Shop shop)
+    private async ValueTask AssignSupervisor(Shop shop)
     {
         var scope = provider.CreateScope();
         var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
@@ -43,19 +43,20 @@ public class AutoAssignHeadSupervisorService(IServiceProvider provider) : Backgr
             )
         ).Values.FirstOrDefault();
 
-        if (latestAsm?.HeadSupervisorId == null)
+        if (latestAsm?.SupervisorId == null)
             return;
 
         if (ShopService.IsShopOpeningAtTime(shop, currentTime))
         {
+            // If there is an assignment after the shop opened, do nothing
             if (lastOpenTime <= latestAsm.StartTime)
                 return;
             await unitOfWork.SupervisorAssignments.AddAsync(
                 new SupervisorAssignment
                 {
                     ShopId = shop.Id,
-                    HeadSupervisorId = latestAsm.HeadSupervisorId,
-                    StartTime = currentDateTime,
+                    SupervisorId = latestAsm.SupervisorId,
+                    StartTime = lastOpenTime,
                     EndTime = ShopService.GetNextCloseTime(shop)
                 }
             );
@@ -69,7 +70,7 @@ public class AutoAssignHeadSupervisorService(IServiceProvider provider) : Backgr
                 new SupervisorAssignment
                 {
                     ShopId = shop.Id,
-                    HeadSupervisorId = latestAsm.HeadSupervisorId,
+                    SupervisorId = latestAsm.SupervisorId,
                     StartTime = nextOpenTime,
                     EndTime = ShopService.GetNextCloseTime(shop)
                 }

@@ -9,6 +9,7 @@ public enum Role
     BrandManager = 3,
     ShopManager = 4,
     SystemHandler = 5,
+    [Obsolete]
     ShopHeadSupervisor = 6,
     ShopSupervisor = 7
 }
