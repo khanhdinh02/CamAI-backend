@@ -10,4 +10,5 @@ public class EdgeBoxModelDto : BaseDto
     public string? RAM { get; set; }
     public string? Storage { get; set; }
     public string? OS { get; set; }
+    public int MaxNumberOfRunningAi { get; set; }
 }
