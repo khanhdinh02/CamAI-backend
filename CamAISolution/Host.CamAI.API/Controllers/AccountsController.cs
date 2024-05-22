@@ -99,7 +99,7 @@ public class AccountsController(IAccountService accountService, IBaseMapping map
     }
 
     [HttpPost("supervisor")]
-    [AccessTokenGuard(Role.ShopManager, Role.ShopHeadSupervisor)]
+    [AccessTokenGuard(Role.ShopManager)]
     public async Task<AccountDto> CreateSupervisor(CreateSupervisorDto dto)
     {
         var newAccount = await accountService.CreateSupervisor(dto);

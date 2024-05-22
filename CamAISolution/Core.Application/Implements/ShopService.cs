@@ -224,8 +224,6 @@ public class ShopService(
             ?? throw new NotFoundException(typeof(Account), accountId);
         switch (role)
         {
-            case Role.ShopHeadSupervisor:
-                return await AssignHeadSupervisor(account);
             case Role.ShopSupervisor:
                 return await AssignSupervisor(account);
             default:
@@ -245,12 +243,7 @@ public class ShopService(
             employee.AccountId
             ?? (
                 await accountService.CreateSupervisor(
-                    new CreateSupervisorDto
-                    {
-                        EmployeeId = employeeId,
-                        Email = employee.Email,
-                        IsHeadSupervisor = role == Role.ShopHeadSupervisor
-                    }
+                    new CreateSupervisorDto { EmployeeId = employeeId, Email = employee.Email }
                 )
             ).Id;
         return await AssignSupervisorRoles(accountId, role);
@@ -370,7 +363,6 @@ public class ShopService(
         var supervisorAssignment = new SupervisorAssignment
         {
             ShopId = employee.ShopId,
-            HeadSupervisorId = latestAsm?.HeadSupervisorId,
             SupervisorId = account.Id,
             StartTime = isShopOpening ? currentTime : GetNextOpenTime(employee.Shop!),
             EndTime = GetNextCloseTime(employee.Shop!)
@@ -586,7 +578,7 @@ public class ShopService(
         }
         var currentTime = DateTimeHelper.VNDateTime;
         var latestAsm = await supervisorAssignmentService.GetLatestAssignmentByDate(shopId.Value, currentTime);
-        var inChargeId = latestAsm?.SupervisorId ?? latestAsm?.HeadSupervisorId;
+        var inChargeId = latestAsm?.SupervisorId;
         if (inChargeId == null)
             return user.Role == Role.ShopManager;
         return inChargeId == user.Id;

@@ -21,7 +21,7 @@ public class SupervisorAssignmentsController(
 ) : Controller
 {
     [HttpGet]
-    [AccessTokenGuard(Role.ShopManager, Role.ShopHeadSupervisor, Role.ShopSupervisor)]
+    [AccessTokenGuard(Role.ShopManager, Role.ShopSupervisor)]
     public async Task<List<SupervisorAssignmentDto>> GetCalendar(DateTime date)
     {
         var assignments = await supervisorAssignmentService.GetSupervisorAssignmentByDate(date);
@@ -127,13 +127,18 @@ public class SupervisorAssignmentsController(
         var startTime = date.Date;
         var endTime = startTime.AddDays(1).AddTicks(-1);
         var incidents = await incidentService.GetIncidents(
-            new SearchIncidentRequest { FromTime = startTime, ToTime = endTime }
+            new SearchIncidentRequest
+            {
+                FromTime = startTime,
+                ToTime = endTime,
+                Size = 100
+            }
         );
         return incidents.Values;
     }
 
     [HttpGet("{assignmentId}/Incidents")]
-    [AccessTokenGuard(Role.ShopManager, Role.BrandManager, Role.ShopHeadSupervisor, Role.ShopSupervisor)]
+    [AccessTokenGuard(Role.ShopManager, Role.BrandManager, Role.ShopSupervisor)]
     public async Task<List<IncidentDto>> GetIncidentByAssignment(Guid assignmentId)
     {
         return (await incidentService.GetIncidentsByAssignment(assignmentId))

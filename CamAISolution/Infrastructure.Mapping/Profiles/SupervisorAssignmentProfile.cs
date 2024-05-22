@@ -22,17 +22,8 @@ public class SupervisorAssignmentProfile : Profile
     )
     {
         var dto = mapping.Map<SupervisorAssignment, SupervisorAssignmentDto>(supervisorAssignment);
-        var inCharge =
-            supervisorAssignment.Supervisor
-            ?? supervisorAssignment.HeadSupervisor
-            ?? accountService.GetCurrentAccount();
-        Role inChargeRole;
-        if (supervisorAssignment.Supervisor != null)
-            inChargeRole = Role.ShopSupervisor;
-        else if (supervisorAssignment.HeadSupervisor != null)
-            inChargeRole = Role.ShopHeadSupervisor;
-        else
-            inChargeRole = Role.ShopManager;
+        var inCharge = supervisorAssignment.Supervisor ?? accountService.GetCurrentAccount();
+        var inChargeRole = supervisorAssignment.Supervisor != null ? Role.ShopSupervisor : Role.ShopManager;
         dto.InChargeAccount = mapping.Map<Account, AccountDto>(inCharge);
         dto.InChargeAccountId = inCharge.Id;
         dto.InChargeAccountRole = inChargeRole;

@@ -175,7 +175,7 @@ public class AccountService(IUnitOfWork unitOfWork, IJwtService jwtService, IBas
         var newAccount = mapper.Map<Employee, Account>(employee);
         newAccount.Email = dto.Email;
         newAccount.Password = Hasher.Hash(DomainHelper.GenerateDefaultPassword(dto.Email));
-        newAccount.Role = dto.IsHeadSupervisor ? Role.ShopHeadSupervisor : Role.ShopSupervisor;
+        newAccount.Role = Role.ShopSupervisor;
         newAccount.Employee = employee;
         newAccount.BrandId = employee.Shop?.BrandId;
         newAccount.AccountStatus = AccountStatus.New;

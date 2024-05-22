@@ -77,7 +77,7 @@ public static class ApiDependencyInjection
     public static IServiceCollection AddBackgroundService(this IServiceCollection services)
     {
         services.AddHostedService<EdgeBoxHealthCheckService>();
-        services.AddHostedService<AutoAssignHeadSupervisorService>();
+        services.AddHostedService<AutoAssignSupervisorService>();
         return services;
     }
 
