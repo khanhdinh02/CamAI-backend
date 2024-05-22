@@ -9,7 +9,7 @@ public sealed class ShopFromImportFileMap : ClassMap<ShopFromImportFile>
 {
     public ShopFromImportFileMap()
     {
-        foreach (var propertyInfo in typeof(ShopFromImportFile).GetProperties())
+        foreach (var propertyInfo in typeof(ShopFromImportFile).GetProperties().Where(p => p.GetMethod.IsPublic))
         {
             var name = propertyInfo.Name.Replace("get_", "");
             Map(typeof(ShopFromImportFile), propertyInfo, false).Name(name, name.PascalCaseToSeparateWords(), name.ToLower(), name.ToUpper());

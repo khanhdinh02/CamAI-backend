@@ -68,13 +68,12 @@ public class HealthCheckResponseConsumer(
         CreateNotificationDto dto;
         if (message.Status == EdgeBoxInstallStatus.Unhealthy)
         {
-            dto = new CreateNotificationDto
+            dto = new CreateNotificationDto(ebInstall.Id)
             {
                 Title = "Edge box is unhealthy failed",
                 Content = $"Edge box does not response. Status changed to {EdgeBoxInstallStatus.Unhealthy}",
                 Priority = NotificationPriority.Urgent,
                 Type = NotificationType.EdgeBoxUnhealthy,
-                RelatedEntityId = ebInstall.Id,
             };
         }
         else
@@ -83,13 +82,12 @@ public class HealthCheckResponseConsumer(
             var content = "Edge box is now connected to server";
             if (retryActivateEdgeBox)
                 content += "Retrying to activate edge box";
-            dto = new CreateNotificationDto
+            dto = new CreateNotificationDto(ebInstall.Id)
             {
                 Title = "Edge box is now connected to server",
                 Content = content,
                 Priority = NotificationPriority.Urgent,
                 Type = NotificationType.EdgeBoxHealthy,
-                RelatedEntityId = ebInstall.Id,
             };
         }
 

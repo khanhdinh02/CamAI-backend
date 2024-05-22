@@ -8,4 +8,5 @@ namespace Host.CamAI.API.Consumers.Messages;
 public class SerialNumberMismatchMessage : RoutingKeyMessage
 {
     public string SerialNumber { get; set; } = null!;
+    public string RequestId { get; set; } = null!;
 }

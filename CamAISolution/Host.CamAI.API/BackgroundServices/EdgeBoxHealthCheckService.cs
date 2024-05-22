@@ -77,13 +77,12 @@ public class EdgeBoxHealthCheckService(
         if (edgeBoxInstall.Shop.ShopManagerId.HasValue)
             sentTo.Add(edgeBoxInstall.Shop.ShopManagerId.Value);
 
-        var dto = new CreateNotificationDto
+        var dto = new CreateNotificationDto(edgeBoxInstall.Id)
         {
             Title = "Edge box is unhealthy failed",
             Content = $"Edge box does not response. Status changed to {EdgeBoxInstallStatus.Unhealthy}",
             Priority = NotificationPriority.Urgent,
             Type = NotificationType.EdgeBoxUnhealthy,
-            RelatedEntityId = edgeBoxInstall.Id,
             SentToId = sentTo
         };
         return dto;

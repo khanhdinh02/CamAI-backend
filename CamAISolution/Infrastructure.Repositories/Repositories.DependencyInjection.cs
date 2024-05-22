@@ -17,7 +17,7 @@ public static class RepositoriesDependencyInjection
 
         services.AddDbContext<CamAIContext>(options =>
         {
-            options.LogTo(Console.WriteLine, LogLevel.Information);
+            // options.LogTo(Console.WriteLine, LogLevel.Information);
             options.UseSqlServer(connectionString);
         });
         services.AddScoped(typeof(IRepositorySpecificationEvaluator<>), typeof(RepositorySpecificationEvaluator<>));
