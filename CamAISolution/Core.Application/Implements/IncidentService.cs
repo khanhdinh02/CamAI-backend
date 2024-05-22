@@ -467,7 +467,7 @@ public class IncidentService(
         var startTime = assignment.StartTime;
         var endTime = assignment.EndTime ?? startTime.Date.AddDays(1).AddTicks(-1);
         var incidents = await unitOfWork.Incidents.GetAsync(
-            x => startTime <= x.StartTime && x.StartTime <= endTime,
+            x => startTime <= x.StartTime && x.StartTime <= endTime && x.ShopId == assignment.ShopId,
             takeAll: true,
             includeProperties: [nameof(Incident.InChargeAccount), "Evidences"]
         );
