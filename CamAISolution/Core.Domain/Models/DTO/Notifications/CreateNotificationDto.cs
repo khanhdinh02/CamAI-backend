@@ -12,6 +12,17 @@ public class CreateNotificationDto
     public string Content { get; set; } = null!;
     public NotificationPriority Priority { get; set; }
     public NotificationType Type { get; set; }
-    public Guid? RelatedEntityId { get; set; }
+    public string? RelatedEntityId { get; private set; }
     public IEnumerable<Guid> SentToId { get; set; } = new HashSet<Guid>();
+
+    public CreateNotificationDto() { }
+    public CreateNotificationDto(Guid relatedEntityId)
+    {
+        RelatedEntityId = relatedEntityId.ToString();
+    }
+
+    public CreateNotificationDto(string relatedEntityId)
+    {
+        RelatedEntityId = relatedEntityId;
+    }
 }

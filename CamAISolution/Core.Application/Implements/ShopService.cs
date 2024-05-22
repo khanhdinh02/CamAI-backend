@@ -522,7 +522,7 @@ public class ShopService(
             var totalOfInserted = shopInserted.Count + accountInserted.Count;
             var totalOfUpdated = shopUpdated.Count + accountUpdated.Count;
             await notificationService.CreateNotification(
-                new()
+                new(taskId)
                 {
                     Priority = NotificationPriority.Normal,
                     Content =
@@ -556,7 +556,7 @@ public class ShopService(
             stream.Close();
         }
         await notificationService.CreateNotification(
-            new()
+            new(taskId)
             {
                 Priority = NotificationPriority.Urgent,
                 Content = "Upsert failed",
