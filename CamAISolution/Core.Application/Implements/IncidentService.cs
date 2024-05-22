@@ -469,7 +469,7 @@ public class IncidentService(
         var incidents = await unitOfWork.Incidents.GetAsync(
             x => startTime <= x.StartTime && x.StartTime <= endTime,
             takeAll: true,
-            includeProperties: [nameof(Incident.InChargeAccount)]
+            includeProperties: [nameof(Incident.InChargeAccount), "Evidences"]
         );
         return incidents.Values;
     }
