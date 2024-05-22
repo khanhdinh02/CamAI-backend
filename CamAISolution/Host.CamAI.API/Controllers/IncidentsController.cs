@@ -53,7 +53,7 @@ public class IncidentsController(
     /// <param name="searchRequest"></param>
     /// <returns></returns>
     [HttpGet]
-    [AccessTokenGuard(Role.ShopManager, Role.BrandManager, Role.ShopManager)]
+    [AccessTokenGuard(Role.ShopManager, Role.BrandManager, Role.ShopSupervisor)]
     public async Task<PaginationResult<IncidentDto>> GetIncident([FromQuery] SearchIncidentRequest searchRequest)
     {
         return mapping.Map<Incident, IncidentDto>(await incidentService.GetIncidents(searchRequest));
