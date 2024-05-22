@@ -15,5 +15,6 @@ public class AccountByIdRepoSpec : EntityByIdSpec<Account, Guid>
         AddIncludes(a => a.Brand!.Logo, a => a.Brand!.Banner, a => a.Brand!.BrandManager, a => a.ManagingShop);
         AddIncludes(a => a.Ward!.District.Province);
         AddIncludes(a => a.ManagingShop);
+        AddIncludes(a => a.Employee);
     }
 }
