@@ -472,8 +472,17 @@ public class IncidentService(
             ?? throw new NotFoundException(typeof(SupervisorAssignment), assignmentId);
         var startTime = assignment.StartTime;
         var endTime = assignment.EndTime ?? startTime.Date.AddDays(1).AddTicks(-1);
+        var account = accountService.GetCurrentAccount();
+        Expression<Func<Incident, bool>> criteria = account.Role switch
+        {
+            Role.ShopManager
+                => x => startTime <= x.StartTime && x.StartTime <= endTime && x.ShopId == assignment.ShopId,
+            Role.ShopSupervisor
+                => x => startTime <= x.StartTime && x.StartTime <= endTime && x.InChargeAccountId == account.Id,
+            _ => throw new ForbiddenException("Account must be shop manager or shop supervisor")
+        };
         var incidents = await unitOfWork.Incidents.GetAsync(
-            x => startTime <= x.StartTime && x.StartTime <= endTime && x.ShopId == assignment.ShopId,
+            criteria,
             takeAll: true,
             includeProperties: [nameof(Incident.InChargeAccount), "Evidences"]
         );
