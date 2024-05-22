@@ -48,13 +48,12 @@ public class EdgeBoxAfterActivationFailedDelayEvent(TimeSpan delay, Guid edgeBox
                 );
 
                 await NotificationService.CreateNotification(
-                    new CreateNotificationDto
+                    new CreateNotificationDto(edgeBoxInstallId)
                     {
                         Content =
                             $"Edge box install #{edgeBoxInstallId} activation was failed due to not receiving any response from edge box.",
                         Title = "Edge box install activation was failed",
                         SentToId = sentToAdmin,
-                        RelatedEntityId = edgeBoxInstallId,
                         Priority = NotificationPriority.Urgent,
                         Type = NotificationType.EdgeBoxInstallActivation
                     }
