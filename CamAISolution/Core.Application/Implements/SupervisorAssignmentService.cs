@@ -164,6 +164,19 @@ public class SupervisorAssignmentService(IAccountService accountService, IUnitOf
             {
                 latestAssignment.SupervisorId = null;
                 unitOfWork.SupervisorAssignments.Update(latestAssignment);
+
+                // assign new in charge account to all incidents
+                var incidents = (
+                    await unitOfWork.Incidents.GetAsync(
+                        i => latestAssignment.StartTime <= i.StartTime && i.StartTime <= now,
+                        takeAll: true
+                    )
+                ).Values;
+                foreach (var incident in incidents)
+                {
+                    incident.InChargeAccountId = shop.ShopManagerId;
+                    unitOfWork.Incidents.Update(incident);
+                }
             }
             else
             {

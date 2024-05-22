@@ -349,6 +349,20 @@ public class ShopService(
                 {
                     latestAsm.SupervisorId = account.Id;
                     unitOfWork.SupervisorAssignments.Update(latestAsm);
+
+                    // assign new in charge account to all incidents
+                    var incidents = (
+                        await unitOfWork.Incidents.GetAsync(
+                            i => latestAsm.StartTime <= i.StartTime && i.StartTime <= currentTime,
+                            takeAll: true
+                        )
+                    ).Values;
+                    foreach (var incident in incidents)
+                    {
+                        incident.InChargeAccountId = account.Id;
+                        unitOfWork.Incidents.Update(incident);
+                    }
+
                     await unitOfWork.CompleteAsync();
                     return latestAsm;
                 }
