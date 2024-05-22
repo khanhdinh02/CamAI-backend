@@ -25,7 +25,7 @@ public class SupervisorAssignmentsController(
     public async Task<List<SupervisorAssignmentDto>> GetCalendar(DateTime date)
     {
         var assignments = await supervisorAssignmentService.GetSupervisorAssignmentByDate(date);
-        FillEmptyAssignmentWithShopManager(assignments);
+        // FillEmptyAssignmentWithShopManager(assignments);
         var incidents = await GetIncidentsInDate(date);
         var assignmentDtos = assignments
             .Select(async assignment =>
