@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Globalization;
 using System.Net.Mail;
 using Core.Domain.Constants;
 using Core.Domain.Entities;
@@ -10,8 +11,8 @@ public class ShopFromImportFile
 {
     public string? ExternalShopId { get; set; }
     public string ShopName { get; set; } = string.Empty;
-    public TimeOnly ShopOpenTime { get; set; }
-    public TimeOnly ShopCloseTime { get; set; }
+    public string ShopOpenTime { get; set; } = string.Empty;
+    public string ShopCloseTime { get; set; } = string.Empty;
     public string? ShopPhone { get; set; }
 
     /// <summary>
@@ -39,6 +40,17 @@ public class ShopFromImportFile
             result.Add($"{nameof(ShopPhone)}", $"{ShopPhone} is wrong");
         if (string.IsNullOrEmpty(ShopAddress))
             result.Add($"{nameof(ShopAddress)}", "Cannot be empty");
+
+        if (string.IsNullOrEmpty(ShopOpenTime))
+            result.Add($"{nameof(ShopOpenTime)}", "Cannot be empty");
+        else if (!TimeOnly.TryParseExact(ShopOpenTime, "HH:mm", CultureInfo.InvariantCulture, DateTimeStyles.None, out _))
+            result.Add($"{nameof(ShopOpenTime)}", "wrong format, valid format is hh:mm");
+
+        if (string.IsNullOrEmpty(ShopCloseTime))
+            result.Add($"{nameof(ShopCloseTime)}", "Cannot be empty");
+        else if (!TimeOnly.TryParseExact(ShopCloseTime, "HH:mm", CultureInfo.InvariantCulture, DateTimeStyles.None, out _))
+            result.Add($"{nameof(ShopCloseTime)}", "wrong format, valid format is hh:mm");
+
         return result;
     }
 
@@ -86,8 +98,8 @@ public class ShopFromImportFile
         {
             ExternalId = ExternalShopId == string.Empty ? null : ExternalShopId,
             Name = ShopName,
-            OpenTime = ShopOpenTime,
-            CloseTime = ShopCloseTime,
+            OpenTime = TimeOnly.ParseExact(ShopOpenTime, "HH:mm", CultureInfo.InvariantCulture, DateTimeStyles.None),
+            CloseTime = TimeOnly.ParseExact(ShopCloseTime, "HH:mm", CultureInfo.InvariantCulture, DateTimeStyles.None),
             Phone = ShopPhone == string.Empty ? null : ShopPhone,
             AddressLine = ShopAddress
         };
