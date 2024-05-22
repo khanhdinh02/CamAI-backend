@@ -251,7 +251,7 @@ public class EmployeeService(
             await unitOfWork.CompleteAsync();
             await unitOfWork.CommitTransaction();
             await notificationService.CreateNotification(
-                new()
+                new(taskId)
                 {
                     Priority = NotificationPriority.Normal,
                     Content =
@@ -282,7 +282,7 @@ public class EmployeeService(
             stream.Close();
         }
         await notificationService.CreateNotification(
-            new()
+            new(taskId)
             {
                 Priority = NotificationPriority.Urgent,
                 Content = "Upsert failed",

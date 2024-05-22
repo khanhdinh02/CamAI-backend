@@ -11,7 +11,7 @@ public class Notification : BusinessEntity
     public string Content { get; set; } = null!;
     public NotificationPriority Priority { get; set; }
     public NotificationType Type { get; set; }
-    public Guid? RelatedEntityId { get; set; }
+    public string? RelatedEntityId { get; set; }
 
     public virtual ICollection<AccountNotification> SentTo { get; set; } = new HashSet<AccountNotification>();
 }
