@@ -34,13 +34,12 @@ public class EmployeeService(
             req.BrandId = null;
             req.ShopId = user.ManagingShop.Id;
         }
-        else if (user.Role is Role.ShopSupervisor or Role.ShopHeadSupervisor)
+        else if (user.Role is Role.ShopSupervisor)
         {
-            var employee = (await unitOfWork.Employees.GetAsync(x => x.AccountId == user.Id)).Values.FirstOrDefault();
-            if (employee == null)
+            if (user.Employee == null)
                 throw new BadRequestException($"{user.Role} is not linked to any employee");
 
-            req.ShopId = employee.ShopId;
+            req.ShopId = user.Employee.ShopId;
         }
 
         return await unitOfWork.Employees.GetAsync(new EmployeeSearchSpec(req));
@@ -307,6 +306,8 @@ public class EmployeeService(
             return user.BrandId == employee.Shop?.BrandId;
         if (user is { Role: Role.ShopManager, ManagingShop: not null })
             return user.ManagingShop.Id == employee.ShopId;
+        if (user is { Role: Role.ShopSupervisor } && employee.ShopId != null)
+            return user.Employee?.ShopId == employee.ShopId;
         return false;
     }
 }
