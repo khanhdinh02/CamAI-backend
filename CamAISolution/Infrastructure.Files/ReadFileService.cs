@@ -1,6 +1,7 @@
 ﻿using System.Globalization;
 using System.Reflection;
 using Core.Application.Exceptions;
+using Core.Domain;
 using Core.Domain.Interfaces.Services;
 using Core.Domain.Services;
 using CsvHelper;
@@ -8,29 +9,53 @@ using CsvHelper.Configuration;
 
 namespace Infrastructure.Files;
 
-public class ReadFileService(ICacheService cacheService) : IReadFileService
+public class ReadFileService(ICacheService cacheService, IAppLogging<ReadFileService> logger) : IReadFileService
 {
     private static readonly IEnumerable<Type> ClassMaps = Assembly.GetAssembly(typeof(ReadFileService))!.GetTypes().Where(type => type.IsClass && !type.IsAbstract && type.IsSubclassOf(typeof(ClassMap)));
-    public IEnumerable<T> ReadFromCsv<T>(Stream stream, bool isCacheCountRecords = false, string cachedKey = "")
+    public IEnumerable<T> ReadFromCsv<T>(Stream stream, string cachedFaledRecordsKey, bool isCacheCountRecords = false, string cachedProgressKey = "")
     {
+        var unhandleFailedRecords = new List<string>();
+        bool isBadRecord = false;
         using var reader = new StreamReader(stream);
-        using var helper = new CsvReader(reader, CultureInfo.GetCultureInfo("vi-VN"));
+        var csvReaderConfig = new CsvConfiguration(CultureInfo.GetCultureInfo("vi-VN"))
+        {
+            ReadingExceptionOccurred = re =>
+            {
+                logger.Error(re.Exception.Message, re.Exception);
+                return false;
+            },
+            BadDataFound = context =>
+            {
+                isBadRecord = true;
+                logger.Warn($"{context.RawRecord}");
+                unhandleFailedRecords.Add(context.RawRecord);
+            }
+        };
+        var rowCount = reader.ReadToEnd().Split('\n').Count() - 1; // exclude header
+        reader.BaseStream.Seek(0, SeekOrigin.Begin);
+        using var helper = new CsvReader(reader, csvReaderConfig);
         //TODO[Dat]: use factory pattern
         foreach (var classMap in ClassMaps)
             helper.Context.RegisterClassMap(classMap);
-        var records = helper.GetRecords<T>().ToList();
         if (isCacheCountRecords)
         {
-            if (string.IsNullOrEmpty(cachedKey))
+            if (string.IsNullOrEmpty(cachedProgressKey))
                 throw new ServiceUnavailableException("cached key for count records is not set");
-            cacheService.Set(cachedKey, records.Count(), TimeSpan.FromMinutes(1));
+            cacheService.Set(cachedProgressKey, rowCount > 0 ? rowCount : 1, TimeSpan.FromMinutes(1));
+        }
+        while (helper.Read())
+        {
+            if (!isBadRecord)
+            {
+                yield return helper.GetRecord<T>();
+            }
+            isBadRecord = false;
         }
 
-        foreach (var record in records)
-            yield return record;
+        cacheService.Set(cachedFaledRecordsKey, unhandleFailedRecords, TimeSpan.FromMinutes(1));
 
-        if (isCacheCountRecords && !string.IsNullOrEmpty(cachedKey))
-            cacheService.Remove(cachedKey);
+        if (isCacheCountRecords && !string.IsNullOrEmpty(cachedProgressKey))
+            cacheService.Remove(cachedProgressKey);
     }
 
     public T ReadFromJson<T>(Stream stream)

@@ -37,7 +37,7 @@ public class ShopFromImportFile
         else if (ShopName.Length > 50)
             result.Add($"{nameof(ShopName)}", "Shop name's length must be less than or equal to 50");
         if (!string.IsNullOrEmpty(ShopPhone) && !RegexHelper.VietNamPhoneNumber.IsMatch(ShopPhone))
-            result.Add($"{nameof(ShopPhone)}", $"{ShopPhone} is wrong");
+            result.Add($"{nameof(ShopPhone)}", $"{ShopPhone} is wrong, phone must start with +84|84|0 and then 3|5|7|8|9 and then 8 digits from 0-9. E.g: 0982335536");
         if (string.IsNullOrEmpty(ShopAddress))
             result.Add($"{nameof(ShopAddress)}", "Cannot be empty");
 
@@ -60,7 +60,7 @@ public class ShopFromImportFile
         if (string.IsNullOrEmpty(ShopManagerEmail))
             result.Add($"{nameof(ShopManagerEmail)}", "Cannot be empty");
         else if (!MailAddress.TryCreate(ShopManagerEmail, out _))
-            result.Add($"{nameof(ShopManagerEmail)}", $"{ShopManagerEmail} is wrong format");
+            result.Add($"{nameof(ShopManagerEmail)}", $"{ShopManagerEmail} is wrong format, e.g: example@gmail.com");
         if (string.IsNullOrEmpty(ShopManagerName))
             result.Add($"{nameof(ShopManagerName)}", "Cannot be empty");
         if (ShopManagerName.Length > 50)
