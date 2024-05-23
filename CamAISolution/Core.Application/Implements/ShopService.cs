@@ -152,8 +152,11 @@ public class ShopService(
         var oldShopManagerId = foundShop.ShopManagerId;
         mapping.Map(shopDto, foundShop);
         foundShop.ShopManagerId = oldShopManagerId;
-        await AssignShopManager(foundShop, shopDto.ShopManagerId);
-        eventManager.NotifyShopChanged(foundShop);
+        if (await unitOfWork.CompleteAsync() > 0)
+        {
+            await AssignShopManager(foundShop, shopDto.ShopManagerId);
+            eventManager.NotifyShopChanged(foundShop);
+        }
         return foundShop;
     }
 
