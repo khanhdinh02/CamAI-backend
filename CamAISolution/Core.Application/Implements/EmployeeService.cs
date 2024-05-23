@@ -9,6 +9,7 @@ using Core.Domain.Interfaces.Mappings;
 using Core.Domain.Interfaces.Services;
 using Core.Domain.Models;
 using Core.Domain.Repositories;
+using Core.Domain.Services;
 
 namespace Core.Application.Implements;
 
@@ -19,7 +20,8 @@ public class EmployeeService(
     IReadFileService readFileService,
     IAppLogging<EmployeeService> logger,
     IBaseMapping mapper,
-    BulkUpsertProgressSubject bulkUpsertProgressSubject
+    BulkUpsertProgressSubject bulkUpsertProgressSubject,
+    ICacheService cacheService
 ) : IEmployeeService
 {
     public async Task<PaginationResult<Employee>> GetEmployees(SearchEmployeeRequest req)
@@ -163,12 +165,18 @@ public class EmployeeService(
             foreach (
                 var record in readFileService.ReadFromCsv<EmployeeFromImportFile>(
                     stream,
+                    $"failed-records-{taskId}",
                     true,
                     $"total-records-{taskId}"
                 )
             )
             {
                 bulkUpsertProgressSubject.Notify(new(rowCount++, taskId));
+                if (record is null)
+                {
+                    failedValidatedRecords.Add(rowCount, new { Failed = "Cannot parse record" });
+                    continue;
+                }
                 if (!record.IsValid())
                 {
                     failedValidatedRecords.Add(rowCount, record.EmployeeFromImportFileValidation());
@@ -269,28 +277,32 @@ public class EmployeeService(
                 "",
                 new { EmployeeInserted = employeeInserted },
                 new { EmployeeUpdated = employeeUpdated },
-                new { Errors = failedValidatedRecords.Select(e => new { Row = e.Key, Reasons = e.Value }) }
+                new { Errors = failedValidatedRecords.Select(e => new { Row = e.Key, Reasons = e.Value }) },
+                new
+                {
+                    UnhandledErrors = cacheService.Get<List<string>>($"failed-records-{taskId}", isRemoveAfterGet: true) ?? new List<string>()
+                }
             );
         }
         catch (Exception ex)
         {
             logger.Error(ex.Message, ex);
             await unitOfWork.RollBack();
+            await notificationService.CreateNotification(
+                new(taskId)
+                {
+                    Priority = NotificationPriority.Urgent,
+                    Content = "Upsert failed",
+                    Type = NotificationType.UpsertEmployee,
+                    SentToId = [actorId],
+                    Title = "Upsert Failed",
+                }
+            );
         }
         finally
         {
             stream.Close();
         }
-        await notificationService.CreateNotification(
-            new(taskId)
-            {
-                Priority = NotificationPriority.Urgent,
-                Content = "Upsert failed",
-                Type = NotificationType.UpsertEmployee,
-                SentToId = [actorId],
-                Title = "Upsert Failed",
-            }
-        );
         return new BulkUpsertTaskResultResponse(BulkUpsertStatus.Fail, 0, 0, 0, "Employee upsert failed");
     }
 

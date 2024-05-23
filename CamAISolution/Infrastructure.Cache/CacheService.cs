@@ -3,17 +3,20 @@ using Core.Domain.Repositories;
 using Core.Domain.Services;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 
 namespace Infrastructure.Cache;
 
-public class CacheService(IServiceProvider provider, IMemoryCache cache) : ICacheService
+public class CacheService(IServiceProvider provider, IMemoryCache cache, ILogger<CacheService> logger) : ICacheService
 {
     private Mutex cacheMutex = new();
 
-    public T? Get<T>(string key)
+    public T? Get<T>(string key, bool isRemoveAfterGet = false)
     {
         _ = cache.TryGetValue<T>(key, out var value);
+        if (isRemoveAfterGet)
+            Remove(key);
         return value;
     }
 
@@ -42,7 +45,11 @@ public class CacheService(IServiceProvider provider, IMemoryCache cache) : ICach
         return cache.Set(key, value, memoryOptions);
     }
 
-    public void Remove(string key) => cache.Remove(key);
+    public void Remove(string key)
+    {
+        cache.Remove(key);
+        logger.LogWarning("{Key} is removed from cache", key);
+    }
 
     public async Task<Guid> GetAdminAccount()
     {

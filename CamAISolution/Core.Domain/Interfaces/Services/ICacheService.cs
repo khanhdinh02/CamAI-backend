@@ -8,7 +8,7 @@ public interface ICacheService
     /// <param name="key"></param>
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
-    T? Get<T>(string key);
+    T? Get<T>(string key, bool isRemoveAfterGet = false);
     T Set<T>(string key, T value, TimeSpan expired);
     T Set<T>(string key, T value, TimeSpan expired, Action<string, object?> postEvictionCallBack);
     void Remove(string key);

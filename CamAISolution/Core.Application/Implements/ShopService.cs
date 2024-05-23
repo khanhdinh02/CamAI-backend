@@ -25,7 +25,8 @@ public class ShopService(
     INotificationService notificationService,
     ISupervisorAssignmentService supervisorAssignmentService,
     EventManager eventManager,
-    BulkUpsertProgressSubject bulkUpsertProgressSubject
+    BulkUpsertProgressSubject bulkUpsertProgressSubject,
+    ICacheService cacheService
 ) : IShopService
 {
     public async Task<Shop> CreateShop(CreateOrUpdateShopDto shopDto)
@@ -440,10 +441,15 @@ public class ShopService(
         try
         {
             foreach (
-                var record in readFileService.ReadFromCsv<ShopFromImportFile>(stream, true, $"total-records-{taskId}")
+                var record in readFileService.ReadFromCsv<ShopFromImportFile>(stream, $"failed-records-{taskId}", true, $"total-records-{taskId}")
             )
             {
                 bulkUpsertProgressSubject.Notify(new(rowCount++, taskId));
+                if (record is null)
+                {
+                    failedValidatedRecords.Add(rowCount, new { Failed = "Cannot parse record" });
+                    continue;
+                }
                 if (!record.IsValid())
                 {
                     failedValidatedRecords.Add(rowCount, record.ShopFromImportFileValidation());
@@ -451,7 +457,7 @@ public class ShopService(
                 }
 
                 var shop = (
-                    await unitOfWork.Shops.GetAsync(
+                     await unitOfWork.Shops.GetAsync(
                         expression: s => s.ExternalId == record.GetShop().ExternalId,
                         disableTracking: false
                     )
@@ -534,7 +540,11 @@ public class ShopService(
                 new { AccountInserted = accountInserted },
                 new { ShopUpdated = shopUpdated },
                 new { AccountUpdated = accountUpdated },
-                new { Errors = failedValidatedRecords.Select(e => new { Row = e.Key, Reasons = e.Value }) }
+                new { Errors = failedValidatedRecords.Select(e => new { Row = e.Key, Reasons = e.Value }) },
+                new
+                {
+                    UnhandledErrors = cacheService.Get<List<string>>($"failed-records-{taskId}", isRemoveAfterGet: true) ?? new List<string>()
+                }
             );
             return result;
         }
@@ -542,21 +552,21 @@ public class ShopService(
         {
             logger.Error(ex.Message, ex);
             await unitOfWork.RollBack();
+            await notificationService.CreateNotification(
+                new(taskId)
+                {
+                    Priority = NotificationPriority.Urgent,
+                    Content = "Upsert failed",
+                    Type = NotificationType.UpsertShopAndManager,
+                    SentToId = [actorId],
+                    Title = "Upsert Failed",
+                }
+            );
         }
         finally
         {
             stream.Close();
         }
-        await notificationService.CreateNotification(
-            new(taskId)
-            {
-                Priority = NotificationPriority.Urgent,
-                Content = "Upsert failed",
-                Type = NotificationType.UpsertShopAndManager,
-                SentToId = [actorId],
-                Title = "Upsert Failed",
-            }
-        );
         return new BulkUpsertTaskResultResponse(BulkUpsertStatus.Fail, 0, 0, 0, "Shop and shop manager upsert failed");
     }
 
