@@ -36,14 +36,14 @@ public class EmployeesController(
     /// <param name="req"></param>
     /// <returns></returns>
     [HttpGet]
-    [AccessTokenGuard(Role.ShopManager, Role.BrandManager, Role.Admin, Role.ShopHeadSupervisor, Role.ShopSupervisor)]
+    [AccessTokenGuard(Role.ShopManager, Role.BrandManager, Role.Admin, Role.ShopSupervisor)]
     public async Task<PaginationResult<EmployeeDto>> Get([FromQuery] SearchEmployeeRequest req)
     {
         return mapper.Map<Employee, EmployeeDto>(await employeeService.GetEmployees(req));
     }
 
     [HttpGet("{id}")]
-    [AccessTokenGuard(Role.ShopManager, Role.BrandManager, Role.Admin)]
+    [AccessTokenGuard(Role.ShopManager, Role.BrandManager, Role.Admin, Role.ShopSupervisor)]
     public async Task<EmployeeDto> Get(Guid id)
     {
         return mapper.Map<Employee, EmployeeDto>(await employeeService.GetEmployeeById(id));

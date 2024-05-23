@@ -76,7 +76,8 @@ public class SyncObserver(EventManager eventManager, IServiceProvider provider)
                 SerialNumber = edgeBox.SerialNumber,
                 Name = edgeBox.Name,
                 Model = edgeBox.EdgeBoxModel.Name,
-                ActivationStatus = edgeBoxInstall.ActivationStatus
+                ActivationStatus = edgeBoxInstall.ActivationStatus,
+                MaxNumberOfRunningAi = edgeBox.EdgeBoxModel.MaxNumberOfRunningAi
             }
         );
     }

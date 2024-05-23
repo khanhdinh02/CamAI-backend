@@ -17,6 +17,7 @@ public class EdgeBoxModel : BusinessEntity
     public string? RAM { get; set; }
     public string? Storage { get; set; }
     public string? OS { get; set; }
+    public int MaxNumberOfRunningAi { get; set; }
 
     public virtual ICollection<EdgeBox> EdgeBoxes { get; set; } = new HashSet<EdgeBox>();
 }

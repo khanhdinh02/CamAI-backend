@@ -142,7 +142,13 @@ public class IncidentService(
 
     public async Task<Incident?> UpsertIncident(CreateIncidentDto incidentDto)
     {
-        var incident = await unitOfWork.Incidents.GetByIdAsync(incidentDto.Id);
+        var incident = (
+            await unitOfWork.Incidents.GetAsync(
+                i => i.Id == incidentDto.Id,
+                includeProperties: [nameof(Incident.InChargeAccount)]
+            )
+        ).Values.FirstOrDefault();
+        var inChargeAccount = incident?.InChargeAccount;
         var isNewIncident = incident == null;
 
         var ebInstall = await edgeBoxInstallService.GetLatestInstallingByEdgeBox(incidentDto.EdgeBoxId);
@@ -156,10 +162,9 @@ public class IncidentService(
         if (incident == null)
         {
             incident = mapping.Map<CreateIncidentDto, Incident>(incidentDto);
-            incident.ShopId = ebInstall!.ShopId;
-            incident.InChargeAccountId = (
-                await supervisorAssignmentService.GetCurrentInChangeAccount(incident.ShopId)
-            )?.Id;
+            inChargeAccount = await supervisorAssignmentService.GetCurrentInChangeAccount(incident.ShopId);
+            incident.ShopId = ebInstall.ShopId;
+            incident.InChargeAccountId = inChargeAccount?.Id;
             incident.Evidences = [];
             incident = await unitOfWork.Incidents.AddAsync(incident);
         }
@@ -167,7 +172,7 @@ public class IncidentService(
         if (incidentDto.EndTime != null)
             incident.EndTime = incidentDto.EndTime;
 
-        HashSet<Evidence> newEvidences = new();
+        HashSet<Evidence> newEvidences = [];
         foreach (var evidenceDto in incidentDto.Evidences)
         {
             var evidence = mapping.Map<CreateEvidenceDto, Evidence>(evidenceDto);
@@ -188,7 +193,8 @@ public class IncidentService(
 
         var eventType = isNewIncident ? IncidentEventType.NewIncident : IncidentEventType.MoreEvidence;
 
-        if (isNewIncident is false)
+        incident.InChargeAccount = inChargeAccount;
+        if (!isNewIncident)
             incident.Evidences = newEvidences;
 
         var shopManager =
@@ -197,7 +203,7 @@ public class IncidentService(
                     a.ManagingShop != null && a.ManagingShop.Id == incident.ShopId
                 )
             ).Values.FirstOrDefault() ?? throw new NotFoundException("Couldn't find shop manager");
-        incidentSubject.Notify(new(incident, eventType, shopManager.Id));
+        incidentSubject.Notify(new CreatedOrUpdatedIncidentArgs(incident, eventType, shopManager.Id));
         return incident;
     }
 
@@ -466,10 +472,19 @@ public class IncidentService(
             ?? throw new NotFoundException(typeof(SupervisorAssignment), assignmentId);
         var startTime = assignment.StartTime;
         var endTime = assignment.EndTime ?? startTime.Date.AddDays(1).AddTicks(-1);
+        var account = accountService.GetCurrentAccount();
+        Expression<Func<Incident, bool>> criteria = account.Role switch
+        {
+            Role.ShopManager
+                => x => startTime <= x.StartTime && x.StartTime <= endTime && x.ShopId == assignment.ShopId,
+            Role.ShopSupervisor
+                => x => startTime <= x.StartTime && x.StartTime <= endTime && x.InChargeAccountId == account.Id,
+            _ => throw new ForbiddenException("Account must be shop manager or shop supervisor")
+        };
         var incidents = await unitOfWork.Incidents.GetAsync(
-            x => startTime <= x.StartTime && x.StartTime <= endTime,
+            criteria,
             takeAll: true,
-            includeProperties: [nameof(Incident.InChargeAccount)]
+            includeProperties: [nameof(Incident.InChargeAccount), "Evidences"]
         );
         return incidents.Values;
     }
