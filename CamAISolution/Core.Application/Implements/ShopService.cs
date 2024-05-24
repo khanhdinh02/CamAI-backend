@@ -59,16 +59,12 @@ public class ShopService(
 
         var shop = await GetShopById(id);
         if (
-            (
-                await unitOfWork.EdgeBoxInstalls.GetAsync(x => x.ShopId == id, takeAll: true)
-            ).Values is
+            (await unitOfWork.EdgeBoxInstalls.GetAsync(x => x.ShopId == id, takeAll: true)).Values is
             { Count: > 0 } installs
         )
         {
             if (installs.Any(i => i.EdgeBoxInstallStatus != EdgeBoxInstallStatus.Disabled))
-                throw new BadRequestException(
-                    "Cannot delete shop that currently has installed edge boxes"
-                );
+                throw new BadRequestException("Cannot delete shop that currently has installed edge boxes");
             shop.ShopStatus = ShopStatus.Inactive;
         }
         else
@@ -91,9 +87,7 @@ public class ShopService(
         if (account.Role == Role.Admin)
             return shop;
         if (account.Role == Role.BrandManager)
-            return account.Brand != null && shop.BrandId == account.Brand.Id
-                ? shop
-                : throw notFoundException;
+            return account.Brand != null && shop.BrandId == account.Brand.Id ? shop : throw notFoundException;
         if (account.Role == Role.ShopManager && shop.ShopManagerId == account.Id)
             return shop;
         throw notFoundException;
@@ -121,9 +115,8 @@ public class ShopService(
         var installingEdgeBoxShops = (
             await unitOfWork.Shops.GetAsync(
                 s =>
-                    s.EdgeBoxInstalls.Any(i =>
-                        i.EdgeBoxInstallStatus != EdgeBoxInstallStatus.Disabled
-                    ) == hasEdgeBoxInstalling,
+                    s.EdgeBoxInstalls.Any(i => i.EdgeBoxInstallStatus != EdgeBoxInstallStatus.Disabled)
+                    == hasEdgeBoxInstalling,
                 takeAll: true
             )
         ).Values.ToList();
@@ -139,9 +132,8 @@ public class ShopService(
     public async Task<Shop> UpdateShop(Guid id, CreateOrUpdateShopDto shopDto)
     {
         var foundShop =
-            (
-                await unitOfWork.Shops.GetAsync(new ShopByIdRepoSpec(id, false))
-            ).Values.FirstOrDefault() ?? throw new NotFoundException(typeof(Shop), id);
+            (await unitOfWork.Shops.GetAsync(new ShopByIdRepoSpec(id, false))).Values.FirstOrDefault()
+            ?? throw new NotFoundException(typeof(Shop), id);
         var currentAccount = accountService.GetCurrentAccount();
         if (!(currentAccount.BrandId.HasValue && foundShop.BrandId == currentAccount.BrandId.Value))
             throw new ForbiddenException("Current user not allowed to do this action.");
@@ -167,8 +159,7 @@ public class ShopService(
             throw new NotFoundException(typeof(Shop), shopId);
 
         var currentAccount = accountService.GetCurrentAccount();
-        var isBrandManager =
-            currentAccount.BrandId.HasValue && foundShop.BrandId == currentAccount.BrandId.Value;
+        var isBrandManager = currentAccount.BrandId.HasValue && foundShop.BrandId == currentAccount.BrandId.Value;
         if (!isBrandManager)
             throw new ForbiddenException("Current user not allowed to do this action.");
         // If shop's status is Inactive, only admin can update status
@@ -188,14 +179,10 @@ public class ShopService(
                 await unitOfWork.Accounts.GetAsync(
                     expression: a =>
                         a.Id == shopDto.ShopManagerId
-                        && (
-                            a.AccountStatus == AccountStatus.Active
-                            || a.AccountStatus == AccountStatus.New
-                        ),
+                        && (a.AccountStatus == AccountStatus.Active || a.AccountStatus == AccountStatus.New),
                     includeProperties: [nameof(Account.ManagingShop)]
                 )
-            ).Values.FirstOrDefault()
-            ?? throw new NotFoundException(typeof(Account), shopDto.ShopManagerId);
+            ).Values.FirstOrDefault() ?? throw new NotFoundException(typeof(Account), shopDto.ShopManagerId);
         if (account.Role != Role.ShopManager)
             throw new BadRequestException("Account is not a shop manager");
 
@@ -217,8 +204,7 @@ public class ShopService(
                     a => a.Id == shopManagerId,
                     includeProperties: [nameof(Account.ManagingShop)]
                 )
-            ).Values.FirstOrDefault()
-            ?? throw new NotFoundException(typeof(Account), shopManagerId);
+            ).Values.FirstOrDefault() ?? throw new NotFoundException(typeof(Account), shopManagerId);
         if (shopManager.Role != Role.ShopManager)
             throw new BadRequestException("Account is not a shop manager");
 
@@ -249,10 +235,7 @@ public class ShopService(
         }
     }
 
-    public async Task<SupervisorAssignment> AssignSupervisorRolesFromEmployee(
-        Guid employeeId,
-        Role role
-    )
+    public async Task<SupervisorAssignment> AssignSupervisorRolesFromEmployee(Guid employeeId, Role role)
     {
         var employee =
             await unitOfWork.Employees.GetByIdAsync(employeeId)
@@ -351,13 +334,13 @@ public class ShopService(
             throw new BadRequestException("Invalid employee account");
 
         var currentTime = DateTimeHelper.VNDateTime;
+        var isShopOpening = IsShopOpeningAtTime(employee.Shop!, TimeOnly.FromDateTime(currentTime));
         var latestAsm = await supervisorAssignmentService.GetLatestAssignmentByDate(
             employee.ShopId.Value,
-            currentTime,
+            isShopOpening ? GetLastOpenTime(employee.Shop!) : GetNextOpenTime(employee.Shop!),
             includeAll: false
         );
         var currentSupervisor = latestAsm?.Supervisor;
-        var isShopOpening = IsShopOpeningAtTime(employee.Shop!, TimeOnly.FromDateTime(currentTime));
 
         if (latestAsm != null)
         {
@@ -460,11 +443,7 @@ public class ShopService(
         );
     }
 
-    public async Task<BulkUpsertTaskResultResponse> UpsertShops(
-        Guid actorId,
-        Stream stream,
-        string taskId
-    )
+    public async Task<BulkUpsertTaskResultResponse> UpsertShops(Guid actorId, Stream stream, string taskId)
     {
         var shopInserted = new HashSet<Guid>();
         var shopUpdated = new HashSet<Guid>();
@@ -473,15 +452,18 @@ public class ShopService(
         var failedValidatedRecords = new Dictionary<int, object?>();
         var rowCount = 1;
         var brand =
-            (
-                await unitOfWork.Brands.GetAsync(expression: b => b.BrandManagerId == actorId)
-            ).Values.FirstOrDefault()
+            (await unitOfWork.Brands.GetAsync(expression: b => b.BrandManagerId == actorId)).Values.FirstOrDefault()
             ?? throw new NotFoundException("Cannot find brand manager when upsert");
         await unitOfWork.BeginTransaction();
         try
         {
             foreach (
-                var record in readFileService.ReadFromCsv<ShopFromImportFile>(stream, $"failed-records-{taskId}", true, $"total-records-{taskId}")
+                var record in readFileService.ReadFromCsv<ShopFromImportFile>(
+                    stream,
+                    $"failed-records-{taskId}",
+                    true,
+                    $"total-records-{taskId}"
+                )
             )
             {
                 bulkUpsertProgressSubject.Notify(new(rowCount++, taskId));
@@ -505,17 +487,14 @@ public class ShopService(
                 var account = (
                     await unitOfWork.Accounts.GetAsync(
                         expression: a =>
-                            a.ExternalId == record.GetManager().ExternalId
-                            || a.Email == record.GetManager().Email,
+                            a.ExternalId == record.GetManager().ExternalId || a.Email == record.GetManager().Email,
                         disableTracking: false
                     )
                 ).Values.FirstOrDefault();
                 if (account == null)
                 {
                     account = record.GetManager();
-                    account.Password = Hasher.Hash(
-                        DomainHelper.GenerateDefaultPassword(account.Email)
-                    );
+                    account.Password = Hasher.Hash(DomainHelper.GenerateDefaultPassword(account.Email));
                     account.BrandId = brand.Id;
                     account.Role = Role.ShopManager;
                     account.AccountStatus = AccountStatus.New;
@@ -586,7 +565,8 @@ public class ShopService(
                 new { Errors = failedValidatedRecords.Select(e => new { Row = e.Key, Reasons = e.Value }) },
                 new
                 {
-                    UnhandledErrors = cacheService.Get<List<string>>($"failed-records-{taskId}", isRemoveAfterGet: true) ?? new List<string>()
+                    UnhandledErrors = cacheService.Get<List<string>>($"failed-records-{taskId}", isRemoveAfterGet: true)
+                        ?? new List<string>()
                 }
             );
             return result;
@@ -616,8 +596,8 @@ public class ShopService(
     public async Task<bool> IsInCharge()
     {
         var user = accountService.GetCurrentAccount();
-        var shopId = user.ManagingShop?.Id;
-        if (shopId == null)
+        var shop = user.ManagingShop;
+        if (shop == null)
         {
             var employee = (
                 await unitOfWork.Employees.GetAsync(
@@ -625,15 +605,9 @@ public class ShopService(
                     includeProperties: [nameof(Employee.Shop)]
                 )
             ).Values.FirstOrDefault();
-            if (employee?.ShopId == null)
-                throw new BadRequestException("Invalid employee account");
-            shopId = employee.ShopId;
+            shop = employee?.Shop ?? throw new BadRequestException("Invalid employee account");
         }
-        var currentTime = DateTimeHelper.VNDateTime;
-        var latestAsm = await supervisorAssignmentService.GetLatestAssignmentByDate(
-            shopId.Value,
-            currentTime
-        );
+        var latestAsm = await supervisorAssignmentService.GetLatestAssignmentByDate(shop.Id, GetLastOpenTime(shop));
         var inChargeId = latestAsm?.SupervisorId;
         if (inChargeId == null)
             return user.Role == Role.ShopManager;

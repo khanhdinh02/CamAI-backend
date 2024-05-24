@@ -39,13 +39,10 @@ public class AutoAssignSupervisorService(IServiceProvider provider) : Background
             )
         ).Values.FirstOrDefault();
 
-        if (latestAsm?.SupervisorId == null)
-            return;
-
         if (ShopService.IsShopOpeningAtTime(shop, currentTime))
         {
             // If there is an assignment after the shop opened, do nothing
-            if (lastOpenTime <= latestAsm.StartTime)
+            if (latestAsm != null && lastOpenTime <= latestAsm.StartTime)
                 return;
             await unitOfWork.SupervisorAssignments.AddAsync(
                 new SupervisorAssignment
@@ -59,7 +56,7 @@ public class AutoAssignSupervisorService(IServiceProvider provider) : Background
         else
         {
             var nextOpenTime = lastOpenTime.AddDays(1);
-            if (nextOpenTime <= latestAsm.StartTime)
+            if (latestAsm != null && nextOpenTime <= latestAsm.StartTime)
                 return;
             await unitOfWork.SupervisorAssignments.AddAsync(
                 new SupervisorAssignment
