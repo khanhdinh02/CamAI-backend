@@ -11,4 +11,5 @@ public interface ISupervisorAssignmentService
     Task<Account?> GetCurrentInChangeHeadSupervisorAccount(Guid shopId);
     Task RemoveHeadSupervisor();
     Task RemoveSupervisor();
+    Task<SupervisorAssignment?> GetLatestAssignment(Guid shopId);
 }

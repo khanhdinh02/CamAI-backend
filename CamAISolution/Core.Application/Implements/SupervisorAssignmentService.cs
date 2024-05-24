@@ -12,6 +12,18 @@ namespace Core.Application.Implements;
 public class SupervisorAssignmentService(IAccountService accountService, IUnitOfWork unitOfWork)
     : ISupervisorAssignmentService
 {
+    public async Task<SupervisorAssignment?> GetLatestAssignment(Guid shopId)
+    {
+        return (
+            await unitOfWork.SupervisorAssignments.GetAsync(
+                a => a.ShopId == shopId,
+                orderBy: o => o.OrderByDescending(x => x.StartTime),
+                includeProperties: [nameof(SupervisorAssignment.Supervisor)],
+                pageSize: 1
+            )
+        ).Values.FirstOrDefault();
+    }
+
     public async Task<SupervisorAssignment?> GetLatestAssignmentByDate(
         Guid shopId,
         DateTime date,
@@ -61,7 +73,7 @@ public class SupervisorAssignmentService(IAccountService accountService, IUnitOf
 
     public async Task<Account?> GetCurrentInChangeAccount(Guid shopId)
     {
-        var assignment = await GetLatestAssignmentByDate(shopId, DateTimeHelper.VNDateTime);
+        var assignment = await GetLatestAssignment(shopId);
         return assignment?.Supervisor
             ?? (await unitOfWork.Accounts.GetAsync(a => a.ManagingShop!.Id == shopId)).Values.FirstOrDefault();
     }
@@ -153,8 +165,7 @@ public class SupervisorAssignmentService(IAccountService accountService, IUnitOf
             shop = employee.Shop!;
         }
         var latestAssignment =
-            await GetLatestAssignmentByDate(shop.Id, now, includeAll: false)
-            ?? throw new ForbiddenException("Shop does not have any assignment");
+            await GetLatestAssignment(shop.Id) ?? throw new ForbiddenException("Shop does not have any assignment");
         if (account.Role != Role.ShopManager)
             throw new ForbiddenException("Account is not shop manager");
 
