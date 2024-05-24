@@ -335,7 +335,11 @@ public class ShopService(
 
         var currentTime = DateTimeHelper.VNDateTime;
         var isShopOpening = IsShopOpeningAtTime(employee.Shop!, TimeOnly.FromDateTime(currentTime));
-        var latestAsm = await supervisorAssignmentService.GetLatestAssignment(employee.ShopId.Value);
+        var latestAsm = await supervisorAssignmentService.GetLatestAssignmentByDate(
+            employee.ShopId.Value,
+            isShopOpening ? GetLastOpenTime(employee.Shop!) : GetNextOpenTime(employee.Shop!),
+            includeAll: false
+        );
         var currentSupervisor = latestAsm?.Supervisor;
 
         if (latestAsm != null)
@@ -592,8 +596,8 @@ public class ShopService(
     public async Task<bool> IsInCharge()
     {
         var user = accountService.GetCurrentAccount();
-        var shopId = user.ManagingShop?.Id;
-        if (shopId == null)
+        var shop = user.ManagingShop;
+        if (shop == null)
         {
             var employee = (
                 await unitOfWork.Employees.GetAsync(
@@ -601,12 +605,9 @@ public class ShopService(
                     includeProperties: [nameof(Employee.Shop)]
                 )
             ).Values.FirstOrDefault();
-            if (employee?.ShopId == null)
-                throw new BadRequestException("Invalid employee account");
-            shopId = employee.ShopId;
+            shop = employee?.Shop ?? throw new BadRequestException("Invalid employee account");
         }
-
-        var latestAsm = await supervisorAssignmentService.GetLatestAssignment(shopId.Value);
+        var latestAsm = await supervisorAssignmentService.GetLatestAssignmentByDate(shop.Id, GetLastOpenTime(shop));
         var inChargeId = latestAsm?.SupervisorId;
         if (inChargeId == null)
             return user.Role == Role.ShopManager;

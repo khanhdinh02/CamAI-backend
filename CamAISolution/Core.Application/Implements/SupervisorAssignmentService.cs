@@ -12,18 +12,6 @@ namespace Core.Application.Implements;
 public class SupervisorAssignmentService(IAccountService accountService, IUnitOfWork unitOfWork)
     : ISupervisorAssignmentService
 {
-    public async Task<SupervisorAssignment?> GetLatestAssignment(Guid shopId)
-    {
-        return (
-            await unitOfWork.SupervisorAssignments.GetAsync(
-                a => a.ShopId == shopId,
-                orderBy: o => o.OrderByDescending(x => x.StartTime),
-                includeProperties: [nameof(SupervisorAssignment.Supervisor)],
-                pageSize: 1
-            )
-        ).Values.FirstOrDefault();
-    }
-
     public async Task<SupervisorAssignment?> GetLatestAssignmentByDate(
         Guid shopId,
         DateTime date,
@@ -73,7 +61,8 @@ public class SupervisorAssignmentService(IAccountService accountService, IUnitOf
 
     public async Task<Account?> GetCurrentInChangeAccount(Guid shopId)
     {
-        var assignment = await GetLatestAssignment(shopId);
+        var shop = await unitOfWork.Shops.GetByIdAsync(shopId) ?? throw new NotFoundException(typeof(Shop), shopId);
+        var assignment = await GetLatestAssignmentByDate(shopId, ShopService.GetLastOpenTime(shop));
         return assignment?.Supervisor
             ?? (await unitOfWork.Accounts.GetAsync(a => a.ManagingShop!.Id == shopId)).Values.FirstOrDefault();
     }
@@ -152,24 +141,22 @@ public class SupervisorAssignmentService(IAccountService accountService, IUnitOf
 
     public async Task RemoveSupervisor()
     {
-        var now = DateTimeHelper.VNDateTime;
         var account = accountService.GetCurrentAccount();
         var shop = account.ManagingShop;
-        if (account.Role != Role.ShopManager)
-        {
-            var employee =
-                (
-                    await unitOfWork.Employees.GetAsync(x => x.AccountId == account.Id, includeProperties: ["Shop"])
-                ).Values.FirstOrDefault()
-                ?? throw new NotFoundException($"Cannot find employee associated with account id {account.Id}");
-            shop = employee.Shop!;
-        }
-        var latestAssignment =
-            await GetLatestAssignment(shop.Id) ?? throw new ForbiddenException("Shop does not have any assignment");
-        if (account.Role != Role.ShopManager)
+
+        if (account.Role != Role.ShopManager || shop == null)
             throw new ForbiddenException("Account is not shop manager");
 
-        if (ShopService.IsShopOpeningAtTime(shop, TimeOnly.FromDateTime(now)))
+        var now = DateTimeHelper.VNDateTime;
+        var isShopOpening = ShopService.IsShopOpeningAtTime(shop, TimeOnly.FromDateTime(now));
+        var latestAssignment =
+            await GetLatestAssignmentByDate(
+                shop.Id,
+                isShopOpening ? ShopService.GetLastOpenTime(shop) : ShopService.GetNextOpenTime(shop),
+                includeAll: false
+            ) ?? throw new ForbiddenException("Shop does not have any assignment");
+
+        if (isShopOpening)
         {
             if (now - latestAssignment.StartTime < TimeSpan.FromMinutes(5))
             {
