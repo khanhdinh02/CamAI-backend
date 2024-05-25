@@ -469,7 +469,10 @@ public class ShopService(
                 bulkUpsertProgressSubject.Notify(new(rowCount++, taskId));
                 if (record is null)
                 {
-                    failedValidatedRecords.Add(rowCount, new { Failed = "Cannot parse record" });
+                    failedValidatedRecords.Add(
+                        rowCount,
+                        new { Failed = "Cannot read data. maybe missing fields or wrong format. Please check again" }
+                    );
                     continue;
                 }
                 if (!record.IsValid())
@@ -491,6 +494,13 @@ public class ShopService(
                         disableTracking: false
                     )
                 ).Values.FirstOrDefault();
+
+                if (account != null && account.BrandId != brand.Id && account.AccountStatus == AccountStatus.Active)
+                {
+                    failedValidatedRecords.Add(rowCount, new { ConflictAccount = $"Account is currently active in another shop" });
+                    continue;
+                }
+
                 if (account == null)
                 {
                     account = record.GetManager();
@@ -532,6 +542,7 @@ public class ShopService(
                     shop.Phone = record.GetShop().Phone;
                     shop.AddressLine = record.GetShop().AddressLine;
                     shop.BrandId = brand.Id;
+                    shop.ShopManagerId = account.Id;
                     unitOfWork.Shops.Update(shop);
                     shopUpdated.Add(shop.Id);
                 }

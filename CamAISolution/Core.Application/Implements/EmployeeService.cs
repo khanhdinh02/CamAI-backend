@@ -173,7 +173,10 @@ public class EmployeeService(
                 bulkUpsertProgressSubject.Notify(new(rowCount++, taskId));
                 if (record is null)
                 {
-                    failedValidatedRecords.Add(rowCount, new { Failed = "Cannot parse record" });
+                    failedValidatedRecords.Add(
+                        rowCount,
+                        new { Failed = "Cannot read data. maybe missing fields or wrong format. Please check again" }
+                    );
                     continue;
                 }
                 if (!record.IsValid())
@@ -190,6 +193,11 @@ public class EmployeeService(
                         disableTracking: false
                     )
                 ).Values.FirstOrDefault();
+                if (employee != null && employee.ShopId != shop.Id && employee.EmployeeStatus == EmployeeStatus.Active)
+                {
+                    failedValidatedRecords.Add(rowCount, new { ConflictAccount = $"Account is currently active in another shop" });
+                    continue;
+                }
                 if (employee == null)
                 {
                     employee = new()
