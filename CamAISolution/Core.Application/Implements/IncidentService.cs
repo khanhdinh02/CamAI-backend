@@ -162,8 +162,8 @@ public class IncidentService(
         if (incident == null)
         {
             incident = mapping.Map<CreateIncidentDto, Incident>(incidentDto);
-            inChargeAccount = await supervisorAssignmentService.GetCurrentInChangeAccount(incident.ShopId);
             incident.ShopId = ebInstall.ShopId;
+            inChargeAccount = await supervisorAssignmentService.GetCurrentInChangeAccount(incident.ShopId);
             incident.InChargeAccountId = inChargeAccount?.Id;
             incident.Evidences = [];
             incident = await unitOfWork.Incidents.AddAsync(incident);
