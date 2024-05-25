@@ -1,3 +1,4 @@
+using System.Runtime.Intrinsics.Arm;
 using Core.Application.Events;
 using Core.Application.Exceptions;
 using Core.Application.Specifications.Repositories;
@@ -188,14 +189,21 @@ public class EmployeeService(
                 var employee = (
                     await unitOfWork.Employees.GetAsync(
                         expression: e =>
-                            (!string.IsNullOrEmpty(record.ExternalId) && record.ExternalId == e.ExternalId)
-                            || (!string.IsNullOrEmpty(record.Email) && record.Email == e.Email),
+                            (
+                                !string.IsNullOrEmpty(record.ExternalId)
+                                && record.ExternalId == e.ExternalId
+                                && e.ShopId.HasValue
+                                && e.ShopId.Value == shop.Id
+                            ) || (!string.IsNullOrEmpty(record.Email) && record.Email == e.Email),
                         disableTracking: false
                     )
                 ).Values.FirstOrDefault();
                 if (employee != null && employee.ShopId != shop.Id && employee.EmployeeStatus == EmployeeStatus.Active)
                 {
-                    failedValidatedRecords.Add(rowCount, new { ConflictAccount = $"Account is currently active in another shop" });
+                    failedValidatedRecords.Add(
+                        rowCount,
+                        new { ConflictAccount = $"Account is currently active in another shop" }
+                    );
                     continue;
                 }
                 if (employee == null)
@@ -287,7 +295,8 @@ public class EmployeeService(
                 new { Errors = failedValidatedRecords.Select(e => new { Row = e.Key, Reasons = e.Value }) },
                 new
                 {
-                    UnhandledErrors = cacheService.Get<List<string>>($"failed-records-{taskId}", isRemoveAfterGet: true) ?? new List<string>()
+                    UnhandledErrors = cacheService.Get<List<string>>($"failed-records-{taskId}", isRemoveAfterGet: true)
+                        ?? new List<string>()
                 }
             );
         }

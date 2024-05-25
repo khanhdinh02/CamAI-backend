@@ -490,14 +490,22 @@ public class ShopService(
                 var account = (
                     await unitOfWork.Accounts.GetAsync(
                         expression: a =>
-                            a.ExternalId == record.GetManager().ExternalId || a.Email == record.GetManager().Email,
+                            (
+                                a.ExternalId == record.GetManager().ExternalId
+                                && a.BrandId.HasValue
+                                && a.BrandId.Value == brand.Id
+                            )
+                            || a.Email == record.GetManager().Email,
                         disableTracking: false
                     )
                 ).Values.FirstOrDefault();
 
                 if (account != null && account.BrandId != brand.Id && account.AccountStatus == AccountStatus.Active)
                 {
-                    failedValidatedRecords.Add(rowCount, new { ConflictAccount = $"Account is currently active in another shop" });
+                    failedValidatedRecords.Add(
+                        rowCount,
+                        new { ConflictAccount = $"Account is currently active in another shop" }
+                    );
                     continue;
                 }
 
