@@ -81,9 +81,19 @@ public class SupervisorAssignmentService(IAccountService accountService, IUnitOf
         Expression<Func<SupervisorAssignment, bool>> criteria = account.Role switch
         {
             Role.ShopManager
-                => x => startTime <= x.StartTime && x.StartTime <= endTime && x.ShopId == account.ManagingShop!.Id,
+                => x =>
+                    (
+                        (startTime <= x.StartTime && x.StartTime <= endTime)
+                        || (startTime <= x.EndTime && x.EndTime <= endTime)
+                    )
+                    && x.ShopId == account.ManagingShop!.Id,
             Role.ShopSupervisor
-                => x => startTime <= x.StartTime && x.StartTime <= endTime && x.SupervisorId == account.Id,
+                => x =>
+                    (
+                        (startTime <= x.StartTime && x.StartTime <= endTime)
+                        || (startTime <= x.EndTime && x.EndTime <= endTime)
+                    )
+                    && x.SupervisorId == account.Id,
             _ => throw new ForbiddenException("Cannot get supervisor assignments")
         };
 
