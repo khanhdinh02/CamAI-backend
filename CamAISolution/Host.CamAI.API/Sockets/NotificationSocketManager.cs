@@ -22,7 +22,9 @@ public class NotificationSocketManager : Core.Domain.Events.IObserver<CreatedAcc
 
     public NotificationSocketManager(
         IServiceProvider serviceProvider,
-        AccountNotificationSubject accountNotificationSubject, IAppLogging<NotificationSocketManager> logger)
+        AccountNotificationSubject accountNotificationSubject,
+        IAppLogging<NotificationSocketManager> logger
+    )
     {
         this.serviceProvider = serviceProvider;
         this.accountNotificationSubject = accountNotificationSubject;
@@ -49,9 +51,15 @@ public class NotificationSocketManager : Core.Domain.Events.IObserver<CreatedAcc
 
         if (!userSockets.Remove(socket))
             return false;
+
+        logger.Info($"Close a websocket of {accountId}");
+        socket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, null, CancellationToken.None);
+
         if (!userSockets.Any())
         {
-            logger.Info($"All websockets for notification of user {accountId} have been removed, trying to remove user {accountId}");
+            logger.Info(
+                $"All websockets for notification of user {accountId} have been removed, trying to remove user {accountId}"
+            );
             return sockets.TryRemove(accountId, out _);
         }
         return true;
@@ -77,7 +85,12 @@ public class NotificationSocketManager : Core.Domain.Events.IObserver<CreatedAcc
                     {
                         foreach (var websocket in userSockets)
                         {
-                            await websocket.SendAsync(sentData, WebSocketMessageType.Text, true, CancellationToken.None);
+                            await websocket.SendAsync(
+                                sentData,
+                                WebSocketMessageType.Text,
+                                true,
+                                CancellationToken.None
+                            );
                         }
                     }
                 }
