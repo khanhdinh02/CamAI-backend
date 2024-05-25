@@ -468,7 +468,7 @@ public class ShopService(
                 {
                     failedValidatedRecords.Add(
                         rowCount,
-                        new { Failed = "Cannot parse record. maybe missing field or wrong format. Please check again" }
+                        new { Failed = "Cannot read data. maybe missing fields or wrong format. Please check again" }
                     );
                     continue;
                 }
@@ -491,6 +491,13 @@ public class ShopService(
                         disableTracking: false
                     )
                 ).Values.FirstOrDefault();
+
+                if (account != null && account.BrandId != brand.Id && account.AccountStatus == AccountStatus.Active)
+                {
+                    failedValidatedRecords.Add(rowCount, new { ConflictAccount = $"Account is currently active in another shop" });
+                    continue;
+                }
+
                 if (account == null)
                 {
                     account = record.GetManager();
