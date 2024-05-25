@@ -18,10 +18,15 @@ public class IncidentSocketManager : Core.Domain.Events.IObserver<CreatedOrUpdat
     private readonly ConcurrentDictionary<Guid, HashSet<WebSocket>> sockets = new();
     private readonly IncidentSubject incidentSubject;
     private readonly IServiceProvider serviceProvider;
-    private readonly JsonSerializerOptions options = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase, Converters = { new JsonStringEnumConverter() } };
+    private readonly JsonSerializerOptions options =
+        new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase, Converters = { new JsonStringEnumConverter() } };
     private readonly IAppLogging<IncidentSocketManager> logger;
 
-    public IncidentSocketManager(IncidentSubject incidentSubject, IServiceProvider serviceProvider, IAppLogging<IncidentSocketManager> logger)
+    public IncidentSocketManager(
+        IncidentSubject incidentSubject,
+        IServiceProvider serviceProvider,
+        IAppLogging<IncidentSocketManager> logger
+    )
     {
         this.incidentSubject = incidentSubject;
         this.serviceProvider = serviceProvider;
@@ -48,9 +53,15 @@ public class IncidentSocketManager : Core.Domain.Events.IObserver<CreatedOrUpdat
 
         if (!userSockets.Remove(socket))
             return false;
+
+        logger.Info($"Close a websocket of {accountId}");
+        socket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, null, CancellationToken.None);
+
         if (!userSockets.Any())
         {
-            logger.Info($"All websockets for incident of user {accountId} have been removed, trying to remove user {accountId}");
+            logger.Info(
+                $"All websockets for incident of user {accountId} have been removed, trying to remove user {accountId}"
+            );
             return sockets.TryRemove(accountId, out _);
         }
         return true;
