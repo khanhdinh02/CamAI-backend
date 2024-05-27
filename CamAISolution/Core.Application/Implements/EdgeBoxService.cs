@@ -138,6 +138,7 @@ public class EdgeBoxService(IUnitOfWork unitOfWork, IAccountService accountServi
 
         if (edgeBox.Installs.Count == 0)
         {
+            unitOfWork.EdgeBoxActivities.DeleteActivityByEdgeBoxId(edgeBox.Id);
             unitOfWork.EdgeBoxes.Delete(edgeBox);
             await unitOfWork.CompleteAsync();
         }
