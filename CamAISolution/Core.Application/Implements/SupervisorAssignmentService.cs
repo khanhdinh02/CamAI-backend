@@ -40,21 +40,6 @@ public class SupervisorAssignmentService(IAccountService accountService, IUnitOf
             ).Values.FirstOrDefault();
     }
 
-    public async Task<SupervisorAssignment?> GetLatestHeadSupervisorAssignmentByDate(Guid shopId, DateTime date)
-    {
-        var shop = await unitOfWork.Shops.GetByIdAsync(shopId) ?? throw new NotFoundException(typeof(Shop), shopId);
-        var openTime = date.Date.Add(shop.OpenTime.ToTimeSpan());
-        var closeTime = openTime.AddDays(1);
-        return (
-            await unitOfWork.SupervisorAssignments.GetAsync(
-                a => a.ShopId == shopId && openTime <= a.StartTime && a.StartTime < closeTime && a.SupervisorId == null,
-                includeProperties: [nameof(SupervisorAssignment.Supervisor)],
-                orderBy: o => o.OrderByDescending(x => x.StartTime),
-                pageSize: 1
-            )
-        ).Values.FirstOrDefault();
-    }
-
     public async Task<Account?> GetCurrentInChangeAccount(Guid shopId)
     {
         var shop = await unitOfWork.Shops.GetByIdAsync(shopId) ?? throw new NotFoundException(typeof(Shop), shopId);
@@ -106,19 +91,32 @@ public class SupervisorAssignmentService(IAccountService accountService, IUnitOf
 
         var now = DateTimeHelper.VNDateTime;
         var isShopOpening = ShopService.IsShopOpeningAtTime(shop, TimeOnly.FromDateTime(now));
+        var assignments = (
+            await GetSupervisorAssignmentByDate(
+                isShopOpening ? ShopService.GetLastOpenTime(shop) : ShopService.GetNextOpenTime(shop)
+            )
+        )
+            .OrderByDescending(x => x.StartTime)
+            .ToList();
         var latestAssignment =
-            await GetLatestAssignmentByDate(
-                shop.Id,
-                isShopOpening ? ShopService.GetLastOpenTime(shop) : ShopService.GetNextOpenTime(shop),
-                includeAll: false
-            ) ?? throw new ForbiddenException("Shop does not have any assignment");
+            assignments.Count > 0 ? assignments[0] : throw new ForbiddenException("Shop does not have any assignment");
+        var prevAssignment = assignments.Count > 1 ? assignments[1] : null;
 
         if (isShopOpening)
         {
             if (now - latestAssignment.StartTime < TimeSpan.FromMinutes(5))
             {
                 latestAssignment.SupervisorId = shop.ShopManagerId;
-                unitOfWork.SupervisorAssignments.Update(latestAssignment);
+                if (prevAssignment != null && prevAssignment.SupervisorId == latestAssignment.SupervisorId)
+                {
+                    // merge latest assignment with previous assignment if both of them have the same supervisor
+                    prevAssignment.EndTime = latestAssignment.EndTime;
+                    unitOfWork.Incidents.UpdateIncidentAssignment(latestAssignment.Id, prevAssignment.Id);
+                    unitOfWork.SupervisorAssignments.Update(prevAssignment);
+                    unitOfWork.SupervisorAssignments.Delete(latestAssignment);
+                }
+                else
+                    unitOfWork.SupervisorAssignments.Update(latestAssignment);
             }
             else
             {
@@ -140,7 +138,17 @@ public class SupervisorAssignmentService(IAccountService accountService, IUnitOf
             if (nextOpenTime <= latestAssignment.StartTime)
             {
                 latestAssignment.SupervisorId = shop.ShopManagerId;
-                unitOfWork.SupervisorAssignments.Update(latestAssignment);
+                if (prevAssignment != null && prevAssignment.SupervisorId == latestAssignment.SupervisorId)
+                {
+                    prevAssignment.EndTime = latestAssignment.EndTime;
+                    // TODO: update incident assignment id
+                    unitOfWork.SupervisorAssignments.Update(prevAssignment);
+                    unitOfWork.SupervisorAssignments.Delete(latestAssignment);
+                }
+                else
+                {
+                    unitOfWork.SupervisorAssignments.Update(latestAssignment);
+                }
             }
             else
             {

@@ -14,7 +14,7 @@ public interface IUnitOfWork : IDisposable, IAsyncDisposable
     IRepository<EdgeBox> EdgeBoxes { get; }
     ICustomEdgeBoxInstallRepository EdgeBoxInstalls { get; }
     IRepository<EdgeBoxModel> EdgeBoxModels { get; }
-    IRepository<Incident> Incidents { get; }
+    ICustomIncidentRepository Incidents { get; }
     IRepository<Evidence> Evidences { get; }
     IRepository<Camera> Cameras { get; }
     ICustomEdgeBoxActivityRepository EdgeBoxActivities { get; }
