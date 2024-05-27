@@ -11,7 +11,8 @@ public class SupervisorAssignmentProfile : Profile
 {
     public SupervisorAssignmentProfile()
     {
-        CreateMap<SupervisorAssignment, SupervisorAssignmentDto>();
+        CreateMap<SupervisorAssignment, SupervisorAssignmentDto>()
+            .ForMember(x => x.Incidents, opts => opts.MapFrom(assignment => new List<IncidentDto>()));
     }
 
     public static async Task<SupervisorAssignmentDto> ToSupervisorAssignmentDto(
