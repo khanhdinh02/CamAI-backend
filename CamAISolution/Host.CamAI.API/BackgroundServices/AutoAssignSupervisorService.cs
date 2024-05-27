@@ -49,7 +49,8 @@ public class AutoAssignSupervisorService(IServiceProvider provider) : Background
                 {
                     ShopId = shop.Id,
                     StartTime = lastOpenTime,
-                    EndTime = ShopService.GetNextCloseTime(shop)
+                    EndTime = ShopService.GetNextCloseTime(shop),
+                    SupervisorId = shop.ShopManagerId
                 }
             );
         }
@@ -63,7 +64,8 @@ public class AutoAssignSupervisorService(IServiceProvider provider) : Background
                 {
                     ShopId = shop.Id,
                     StartTime = nextOpenTime,
-                    EndTime = ShopService.GetNextCloseTime(shop)
+                    EndTime = ShopService.GetNextCloseTime(shop),
+                    SupervisorId = shop.ShopManagerId
                 }
             );
         }

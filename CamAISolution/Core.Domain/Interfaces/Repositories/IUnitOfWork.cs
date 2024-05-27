@@ -17,7 +17,7 @@ public interface IUnitOfWork : IDisposable, IAsyncDisposable
     IRepository<Incident> Incidents { get; }
     IRepository<Evidence> Evidences { get; }
     IRepository<Camera> Cameras { get; }
-    IRepository<EdgeBoxActivity> EdgeBoxActivities { get; }
+    ICustomEdgeBoxActivityRepository EdgeBoxActivities { get; }
     IRepository<SupervisorAssignment> SupervisorAssignments { get; }
     Task BeginTransaction();
     Task CommitTransaction();

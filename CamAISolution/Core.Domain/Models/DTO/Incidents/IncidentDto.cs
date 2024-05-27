@@ -14,11 +14,13 @@ public class IncidentDto : BaseDto
     public IncidentStatus Status { get; set; } = IncidentStatus.New;
     public Guid? InChargeAccountId { get; set; }
     public Guid? AssigningAccountId { get; set; }
+    public Guid? AssignmentId { get; set; }
 
     public ShopDto Shop { get; set; } = null!;
     public EdgeBoxDto EdgeBox { get; set; } = null!;
     public EmployeeDto? Employee { get; set; } = null!;
     public AccountDto? InChargeAccount { get; set; }
     public AccountDto? AssigningAccount { get; set; }
+    public SupervisorAssignmentDto? Assignment { get; set; }
     public ICollection<EvidenceDto> Evidences { get; set; } = new HashSet<EvidenceDto>();
 }

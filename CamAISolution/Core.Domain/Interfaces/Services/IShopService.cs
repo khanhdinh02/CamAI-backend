@@ -22,7 +22,6 @@ public interface IShopService
     Task<PaginationResult<Shop>> GetShopsInstallingEdgeBox(bool hasEdgeBoxInstalling);
     Task<SupervisorAssignment> AssignSupervisorRoles(Guid accountId, Role role);
     Task<SupervisorAssignment> AssignSupervisorRolesFromEmployee(Guid employeeId, Role role);
-    Task<SupervisorAssignment> AssignHeadSupervisor(Account account);
     Task<SupervisorAssignment> AssignSupervisor(Account account);
     Task<BulkUpsertTaskResultResponse> UpsertShops(Guid actorId, Stream stream, string taskId);
     Task<bool> IsInCharge();
