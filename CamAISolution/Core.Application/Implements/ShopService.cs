@@ -454,7 +454,6 @@ public class ShopService(
         var brand =
             (await unitOfWork.Brands.GetAsync(expression: b => b.BrandManagerId == actorId)).Values.FirstOrDefault()
             ?? throw new NotFoundException("Cannot find brand manager when upsert");
-        await unitOfWork.BeginTransaction();
         try
         {
             foreach (
@@ -500,7 +499,7 @@ public class ShopService(
                     )
                 ).Values.FirstOrDefault();
 
-                if (account != null && account.BrandId != brand.Id && account.AccountStatus == AccountStatus.Active)
+                if (account != null && account.BrandId != brand.Id)
                 {
                     failedValidatedRecords.Add(
                         rowCount,
@@ -532,6 +531,19 @@ public class ShopService(
                     accountUpdated.Add(account.Id);
                 }
 
+                var oldManagingShop = (
+                    await unitOfWork.Shops.GetAsync(
+                        expression: s => s.ShopManagerId == account.Id,
+                        disableTracking: false
+                    )
+                ).Values.FirstOrDefault();
+
+                if (oldManagingShop != null)
+                {
+                    oldManagingShop.ShopManagerId = null;
+                    unitOfWork.Shops.Update(oldManagingShop);
+                }
+
                 if (shop == null)
                 {
                     shop = record.GetShop();
@@ -555,9 +567,7 @@ public class ShopService(
                     shopUpdated.Add(shop.Id);
                 }
             }
-
             await unitOfWork.CompleteAsync();
-            await unitOfWork.CommitTransaction();
             var totalOfInserted = shopInserted.Count + accountInserted.Count;
             var totalOfUpdated = shopUpdated.Count + accountUpdated.Count;
             await notificationService.CreateNotification(

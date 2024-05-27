@@ -198,7 +198,7 @@ public class EmployeeService(
                         disableTracking: false
                     )
                 ).Values.FirstOrDefault();
-                if (employee != null && employee.ShopId != shop.Id && employee.EmployeeStatus == EmployeeStatus.Active)
+                if (employee != null && employee.ShopId != shop.Id)
                 {
                     failedValidatedRecords.Add(
                         rowCount,
