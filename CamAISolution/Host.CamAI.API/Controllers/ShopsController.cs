@@ -230,16 +230,6 @@ public class ShopsController(
     }
 
     /// <summary>
-    /// Remove current head supervisor and set in charge to shop manager
-    /// </summary>
-    [HttpDelete("headsupervisor")]
-    [AccessTokenGuard(Role.ShopManager)]
-    public async Task RemoveHeadSupervisor()
-    {
-        await supervisorAssignmentService.RemoveHeadSupervisor();
-    }
-
-    /// <summary>
     /// Remove current supervisor and set in charge to head supervisor
     /// </summary>
     [HttpDelete("supervisor")]

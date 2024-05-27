@@ -48,11 +48,7 @@ public class SupervisorAssignmentService(IAccountService accountService, IUnitOf
         return (
             await unitOfWork.SupervisorAssignments.GetAsync(
                 a => a.ShopId == shopId && openTime <= a.StartTime && a.StartTime < closeTime && a.SupervisorId == null,
-                includeProperties:
-                [
-                    nameof(SupervisorAssignment.HeadSupervisor),
-                    nameof(SupervisorAssignment.Supervisor)
-                ],
+                includeProperties: [nameof(SupervisorAssignment.Supervisor)],
                 orderBy: o => o.OrderByDescending(x => x.StartTime),
                 pageSize: 1
             )
@@ -65,12 +61,6 @@ public class SupervisorAssignmentService(IAccountService accountService, IUnitOf
         var assignment = await GetLatestAssignmentByDate(shopId, ShopService.GetLastOpenTime(shop));
         return assignment?.Supervisor
             ?? (await unitOfWork.Accounts.GetAsync(a => a.ManagingShop!.Id == shopId)).Values.FirstOrDefault();
-    }
-
-    public async Task<Account?> GetCurrentInChangeHeadSupervisorAccount(Guid shopId)
-    {
-        var assignment = await GetLatestAssignmentByDate(shopId, DateTimeHelper.VNDateTime);
-        return assignment?.HeadSupervisor;
     }
 
     public async Task<IList<SupervisorAssignment>> GetSupervisorAssignmentByDate(DateTime date)
@@ -106,49 +96,6 @@ public class SupervisorAssignmentService(IAccountService accountService, IUnitOf
         ).Values;
     }
 
-    public async Task RemoveHeadSupervisor()
-    {
-        var account = accountService.GetCurrentAccount();
-        var shop = account.ManagingShop!;
-        if (ShopService.IsShopOpeningAtTime(shop, TimeOnly.FromDateTime(DateTime.Now)))
-        {
-            var latestAssignment = await GetLatestAssignmentByDate(shop.Id, DateTime.Now);
-            if (latestAssignment == null)
-                return;
-
-            var now = DateTimeHelper.VNDateTime;
-            if (now - latestAssignment.StartTime < TimeSpan.FromMinutes(5))
-            {
-                latestAssignment.HeadSupervisorId = null;
-                latestAssignment.SupervisorId = null;
-                unitOfWork.SupervisorAssignments.Update(latestAssignment);
-                await unitOfWork.CompleteAsync();
-            }
-            else
-            {
-                latestAssignment.EndTime = now;
-                unitOfWork.SupervisorAssignments.Update(latestAssignment);
-                var newAssignment = new SupervisorAssignment
-                {
-                    ShopId = shop.Id,
-                    StartTime = latestAssignment.EndTime.Value
-                };
-                await unitOfWork.SupervisorAssignments.AddAsync(newAssignment);
-                await unitOfWork.CompleteAsync();
-            }
-        }
-        else
-        {
-            var newAssignment = new SupervisorAssignment
-            {
-                ShopId = shop.Id,
-                StartTime = ShopService.GetNextOpenTime(shop)
-            };
-            await unitOfWork.SupervisorAssignments.AddAsync(newAssignment);
-            await unitOfWork.CompleteAsync();
-        }
-    }
-
     public async Task RemoveSupervisor()
     {
         var account = accountService.GetCurrentAccount();
@@ -170,21 +117,8 @@ public class SupervisorAssignmentService(IAccountService accountService, IUnitOf
         {
             if (now - latestAssignment.StartTime < TimeSpan.FromMinutes(5))
             {
-                latestAssignment.SupervisorId = null;
+                latestAssignment.SupervisorId = shop.ShopManagerId;
                 unitOfWork.SupervisorAssignments.Update(latestAssignment);
-
-                // assign new in charge account to all incidents
-                var incidents = (
-                    await unitOfWork.Incidents.GetAsync(
-                        i => latestAssignment.StartTime <= i.StartTime && i.StartTime <= now,
-                        takeAll: true
-                    )
-                ).Values;
-                foreach (var incident in incidents)
-                {
-                    incident.InChargeAccountId = shop.ShopManagerId;
-                    unitOfWork.Incidents.Update(incident);
-                }
             }
             else
             {
@@ -194,7 +128,8 @@ public class SupervisorAssignmentService(IAccountService accountService, IUnitOf
                 {
                     ShopId = shop.Id,
                     StartTime = latestAssignment.EndTime.Value,
-                    EndTime = ShopService.GetNextCloseTime(shop)
+                    EndTime = ShopService.GetNextCloseTime(shop),
+                    SupervisorId = shop.ShopManagerId,
                 };
                 await unitOfWork.SupervisorAssignments.AddAsync(newAssignment);
             }
@@ -204,7 +139,7 @@ public class SupervisorAssignmentService(IAccountService accountService, IUnitOf
             var nextOpenTime = ShopService.GetNextOpenTime(shop);
             if (nextOpenTime <= latestAssignment.StartTime)
             {
-                latestAssignment.SupervisorId = null;
+                latestAssignment.SupervisorId = shop.ShopManagerId;
                 unitOfWork.SupervisorAssignments.Update(latestAssignment);
             }
             else
@@ -212,6 +147,7 @@ public class SupervisorAssignmentService(IAccountService accountService, IUnitOf
                 var newAssignment = new SupervisorAssignment
                 {
                     ShopId = shop.Id,
+                    SupervisorId = shop.ShopManagerId,
                     StartTime = ShopService.GetNextOpenTime(shop),
                     EndTime = ShopService.GetNextCloseTime(shop)
                 };

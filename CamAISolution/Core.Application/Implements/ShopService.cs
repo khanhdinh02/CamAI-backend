@@ -47,6 +47,16 @@ public class ShopService(
         shop = await unitOfWork.Shops.AddAsync(shop);
         await AssignShopManager(shop, shopDto.ShopManagerId);
 
+        var isShopOpening = IsShopOpeningAtTime(shop, TimeOnly.FromDateTime(DateTimeHelper.VNDateTime));
+        await unitOfWork.SupervisorAssignments.AddAsync(
+            new SupervisorAssignment
+            {
+                ShopId = shop.Id,
+                StartTime = isShopOpening ? DateTime.Now.Date.Add(shop.OpenTime.ToTimeSpan()) : GetNextOpenTime(shop),
+                EndTime = GetNextCloseTime(shop),
+                SupervisorId = shopDto.ShopManagerId
+            }
+        );
         await unitOfWork.CommitTransaction();
         return shop;
     }
@@ -253,75 +263,6 @@ public class ShopService(
         return await AssignSupervisorRoles(accountId, role);
     }
 
-    public async Task<SupervisorAssignment> AssignHeadSupervisor(Account account)
-    {
-        var user = accountService.GetCurrentAccount();
-        if (user.Role is not (Role.ShopManager or Role.SystemHandler))
-            throw new BadRequestException("User is not a shop manager or system handler");
-        var employee = (
-            await unitOfWork.Employees.GetAsync(
-                e => e.AccountId == account.Id,
-                includeProperties: [nameof(Employee.Shop)]
-            )
-        ).Values.FirstOrDefault();
-        if (employee?.ShopId == null)
-            throw new BadRequestException("Invalid employee account");
-
-        var currentTime = DateTimeHelper.VNDateTime;
-        var latestAsm = await supervisorAssignmentService.GetLatestHeadSupervisorAssignmentByDate(
-            employee.ShopId.Value,
-            currentTime
-        );
-        var currentHeadSupervisor = latestAsm?.HeadSupervisor;
-        var isShopOpening = IsShopOpeningAtTime(employee.Shop!, TimeOnly.FromDateTime(currentTime));
-
-        if (latestAsm != null)
-        {
-            if (isShopOpening)
-            {
-                if (currentHeadSupervisor?.Id == account.Id)
-                    return latestAsm;
-
-                if (currentTime - latestAsm.StartTime < TimeSpan.FromMinutes(5))
-                {
-                    latestAsm.HeadSupervisorId = account.Id;
-                    unitOfWork.SupervisorAssignments.Update(latestAsm);
-                    await unitOfWork.CompleteAsync();
-                    return latestAsm;
-                }
-
-                latestAsm.EndTime = currentTime;
-                unitOfWork.SupervisorAssignments.Update(latestAsm);
-            }
-            else
-                unitOfWork.SupervisorAssignments.Delete(latestAsm);
-
-            if (currentHeadSupervisor != null && currentHeadSupervisor.Id != account.Id)
-            {
-                currentHeadSupervisor.Role = Role.ShopSupervisor;
-                unitOfWork.Accounts.Update(currentHeadSupervisor);
-            }
-        }
-
-        var supervisorAssignment = new SupervisorAssignment
-        {
-            ShopId = employee.ShopId,
-            HeadSupervisorId = account.Id,
-            StartTime = isShopOpening ? currentTime : GetNextOpenTime(employee.Shop!),
-            EndTime = GetNextCloseTime(employee.Shop!)
-        };
-        await unitOfWork.SupervisorAssignments.AddAsync(supervisorAssignment);
-
-        if (account.Role != Role.ShopHeadSupervisor)
-        {
-            account.Role = Role.ShopHeadSupervisor;
-            unitOfWork.Accounts.Update(account);
-        }
-
-        await unitOfWork.CompleteAsync();
-        return supervisorAssignment;
-    }
-
     public async Task<SupervisorAssignment> AssignSupervisor(Account account)
     {
         var employee = (
@@ -353,20 +294,6 @@ public class ShopService(
                 {
                     latestAsm.SupervisorId = account.Id;
                     unitOfWork.SupervisorAssignments.Update(latestAsm);
-
-                    // assign new in charge account to all incidents
-                    var incidents = (
-                        await unitOfWork.Incidents.GetAsync(
-                            i => latestAsm.StartTime <= i.StartTime && i.StartTime <= currentTime,
-                            takeAll: true
-                        )
-                    ).Values;
-                    foreach (var incident in incidents)
-                    {
-                        incident.InChargeAccountId = account.Id;
-                        unitOfWork.Incidents.Update(incident);
-                    }
-
                     await unitOfWork.CompleteAsync();
                     return latestAsm;
                 }
