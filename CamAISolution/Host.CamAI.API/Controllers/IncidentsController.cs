@@ -103,7 +103,7 @@ public class IncidentsController(
     }
 
     [HttpGet("new")]
-    [AccessTokenGuard(Role.ShopManager)]
+    [AccessTokenGuard(Role.ShopManager, Role.ShopSupervisor)]
     public async Task GetNewestIncident()
     {
         if (HttpContext.WebSockets.IsWebSocketRequest is false)
