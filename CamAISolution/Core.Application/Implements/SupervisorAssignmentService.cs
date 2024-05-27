@@ -111,6 +111,7 @@ public class SupervisorAssignmentService(IAccountService accountService, IUnitOf
                 {
                     // merge latest assignment with previous assignment if both of them have the same supervisor
                     prevAssignment.EndTime = latestAssignment.EndTime;
+                    prevAssignment.Supervisor = null;
                     unitOfWork.Incidents.UpdateIncidentAssignment(latestAssignment.Id, prevAssignment.Id);
                     unitOfWork.SupervisorAssignments.Update(prevAssignment);
                     unitOfWork.SupervisorAssignments.Delete(latestAssignment);
