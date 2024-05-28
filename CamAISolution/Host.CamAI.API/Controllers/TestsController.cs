@@ -156,7 +156,7 @@ public class TestsController(
     [HttpGet("clean-incident")]
     public async Task<IActionResult> ClearIncients()
     {
-        var incidents = await unitOfWork.Incidents.GetAsync(expression: i => i.Evidences.Any(), takeAll: true);
+        var incidents = await unitOfWork.Incidents.GetAsync(expression: i => i.Evidences.Count == 0, takeAll: true);
         foreach (var incident in incidents.Values)
         {
             unitOfWork.Incidents.Delete(incident);
