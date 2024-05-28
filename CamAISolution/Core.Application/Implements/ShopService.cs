@@ -47,6 +47,16 @@ public class ShopService(
         shop = await unitOfWork.Shops.AddAsync(shop);
         await AssignShopManager(shop, shopDto.ShopManagerId);
 
+        var isShopOpening = IsShopOpeningAtTime(shop, TimeOnly.FromDateTime(DateTimeHelper.VNDateTime));
+        await unitOfWork.SupervisorAssignments.AddAsync(
+            new SupervisorAssignment
+            {
+                ShopId = shop.Id,
+                StartTime = isShopOpening ? DateTime.Now.Date.Add(shop.OpenTime.ToTimeSpan()) : GetNextOpenTime(shop),
+                EndTime = GetNextCloseTime(shop),
+                SupervisorId = shopDto.ShopManagerId
+            }
+        );
         await unitOfWork.CommitTransaction();
         return shop;
     }
@@ -257,75 +267,6 @@ public class ShopService(
         return await AssignSupervisorRoles(accountId, role);
     }
 
-    public async Task<SupervisorAssignment> AssignHeadSupervisor(Account account)
-    {
-        var user = accountService.GetCurrentAccount();
-        if (user.Role is not (Role.ShopManager or Role.SystemHandler))
-            throw new BadRequestException("User is not a shop manager or system handler");
-        var employee = (
-            await unitOfWork.Employees.GetAsync(
-                e => e.AccountId == account.Id,
-                includeProperties: [nameof(Employee.Shop)]
-            )
-        ).Values.FirstOrDefault();
-        if (employee?.ShopId == null)
-            throw new BadRequestException("Invalid employee account");
-
-        var currentTime = DateTimeHelper.VNDateTime;
-        var latestAsm = await supervisorAssignmentService.GetLatestHeadSupervisorAssignmentByDate(
-            employee.ShopId.Value,
-            currentTime
-        );
-        var currentHeadSupervisor = latestAsm?.HeadSupervisor;
-        var isShopOpening = IsShopOpeningAtTime(employee.Shop!, TimeOnly.FromDateTime(currentTime));
-
-        if (latestAsm != null)
-        {
-            if (isShopOpening)
-            {
-                if (currentHeadSupervisor?.Id == account.Id)
-                    return latestAsm;
-
-                if (currentTime - latestAsm.StartTime < TimeSpan.FromMinutes(5))
-                {
-                    latestAsm.HeadSupervisorId = account.Id;
-                    unitOfWork.SupervisorAssignments.Update(latestAsm);
-                    await unitOfWork.CompleteAsync();
-                    return latestAsm;
-                }
-
-                latestAsm.EndTime = currentTime;
-                unitOfWork.SupervisorAssignments.Update(latestAsm);
-            }
-            else
-                unitOfWork.SupervisorAssignments.Delete(latestAsm);
-
-            if (currentHeadSupervisor != null && currentHeadSupervisor.Id != account.Id)
-            {
-                currentHeadSupervisor.Role = Role.ShopSupervisor;
-                unitOfWork.Accounts.Update(currentHeadSupervisor);
-            }
-        }
-
-        var supervisorAssignment = new SupervisorAssignment
-        {
-            ShopId = employee.ShopId,
-            HeadSupervisorId = account.Id,
-            StartTime = isShopOpening ? currentTime : GetNextOpenTime(employee.Shop!),
-            EndTime = GetNextCloseTime(employee.Shop!)
-        };
-        await unitOfWork.SupervisorAssignments.AddAsync(supervisorAssignment);
-
-        if (account.Role != Role.ShopHeadSupervisor)
-        {
-            account.Role = Role.ShopHeadSupervisor;
-            unitOfWork.Accounts.Update(account);
-        }
-
-        await unitOfWork.CompleteAsync();
-        return supervisorAssignment;
-    }
-
     public async Task<SupervisorAssignment> AssignSupervisor(Account account)
     {
         var employee = (
@@ -338,13 +279,13 @@ public class ShopService(
             throw new BadRequestException("Invalid employee account");
 
         var currentTime = DateTimeHelper.VNDateTime;
+        var isShopOpening = IsShopOpeningAtTime(employee.Shop!, TimeOnly.FromDateTime(currentTime));
         var latestAsm = await supervisorAssignmentService.GetLatestAssignmentByDate(
             employee.ShopId.Value,
-            currentTime,
+            isShopOpening ? GetLastOpenTime(employee.Shop!) : GetNextOpenTime(employee.Shop!),
             includeAll: false
         );
         var currentSupervisor = latestAsm?.Supervisor;
-        var isShopOpening = IsShopOpeningAtTime(employee.Shop!, TimeOnly.FromDateTime(currentTime));
 
         if (latestAsm != null)
         {
@@ -357,20 +298,6 @@ public class ShopService(
                 {
                     latestAsm.SupervisorId = account.Id;
                     unitOfWork.SupervisorAssignments.Update(latestAsm);
-
-                    // assign new in charge account to all incidents
-                    var incidents = (
-                        await unitOfWork.Incidents.GetAsync(
-                            i => latestAsm.StartTime <= i.StartTime && i.StartTime <= currentTime,
-                            takeAll: true
-                        )
-                    ).Values;
-                    foreach (var incident in incidents)
-                    {
-                        incident.InChargeAccountId = account.Id;
-                        unitOfWork.Incidents.Update(incident);
-                    }
-
                     await unitOfWork.CompleteAsync();
                     return latestAsm;
                 }
@@ -458,7 +385,6 @@ public class ShopService(
         var brand =
             (await unitOfWork.Brands.GetAsync(expression: b => b.BrandManagerId == actorId)).Values.FirstOrDefault()
             ?? throw new NotFoundException("Cannot find brand manager when upsert");
-        await unitOfWork.BeginTransaction();
         try
         {
             foreach (
@@ -473,7 +399,10 @@ public class ShopService(
                 bulkUpsertProgressSubject.Notify(new(rowCount++, taskId));
                 if (record is null)
                 {
-                    failedValidatedRecords.Add(rowCount, new { Failed = "Cannot parse record" });
+                    failedValidatedRecords.Add(
+                        rowCount,
+                        new { Failed = "Cannot read data. maybe missing fields or wrong format. Please check again" }
+                    );
                     continue;
                 }
                 if (!record.IsValid())
@@ -491,10 +420,25 @@ public class ShopService(
                 var account = (
                     await unitOfWork.Accounts.GetAsync(
                         expression: a =>
-                            a.ExternalId == record.GetManager().ExternalId || a.Email == record.GetManager().Email,
+                            (
+                                a.ExternalId == record.GetManager().ExternalId
+                                && a.BrandId.HasValue
+                                && a.BrandId.Value == brand.Id
+                            )
+                            || a.Email == record.GetManager().Email,
                         disableTracking: false
                     )
                 ).Values.FirstOrDefault();
+
+                if (account != null && account.BrandId != brand.Id)
+                {
+                    failedValidatedRecords.Add(
+                        rowCount,
+                        new { ConflictAccount = $"Account is currently active in another shop" }
+                    );
+                    continue;
+                }
+
                 if (account == null)
                 {
                     account = record.GetManager();
@@ -518,6 +462,19 @@ public class ShopService(
                     accountUpdated.Add(account.Id);
                 }
 
+                var oldManagingShop = (
+                    await unitOfWork.Shops.GetAsync(
+                        expression: s => s.ShopManagerId == account.Id,
+                        disableTracking: false
+                    )
+                ).Values.FirstOrDefault();
+
+                if (oldManagingShop != null)
+                {
+                    oldManagingShop.ShopManagerId = null;
+                    unitOfWork.Shops.Update(oldManagingShop);
+                }
+
                 if (shop == null)
                 {
                     shop = record.GetShop();
@@ -536,13 +493,12 @@ public class ShopService(
                     shop.Phone = record.GetShop().Phone;
                     shop.AddressLine = record.GetShop().AddressLine;
                     shop.BrandId = brand.Id;
+                    shop.ShopManagerId = account.Id;
                     unitOfWork.Shops.Update(shop);
                     shopUpdated.Add(shop.Id);
                 }
             }
-
             await unitOfWork.CompleteAsync();
-            await unitOfWork.CommitTransaction();
             var totalOfInserted = shopInserted.Count + accountInserted.Count;
             var totalOfUpdated = shopUpdated.Count + accountUpdated.Count;
             await notificationService.CreateNotification(
@@ -600,8 +556,8 @@ public class ShopService(
     public async Task<bool> IsInCharge()
     {
         var user = accountService.GetCurrentAccount();
-        var shopId = user.ManagingShop?.Id;
-        if (shopId == null)
+        var shop = user.ManagingShop;
+        if (shop == null)
         {
             var employee = (
                 await unitOfWork.Employees.GetAsync(
@@ -609,12 +565,9 @@ public class ShopService(
                     includeProperties: [nameof(Employee.Shop)]
                 )
             ).Values.FirstOrDefault();
-            if (employee?.ShopId == null)
-                throw new BadRequestException("Invalid employee account");
-            shopId = employee.ShopId;
+            shop = employee?.Shop ?? throw new BadRequestException("Invalid employee account");
         }
-        var currentTime = DateTimeHelper.VNDateTime;
-        var latestAsm = await supervisorAssignmentService.GetLatestAssignmentByDate(shopId.Value, currentTime);
+        var latestAsm = await supervisorAssignmentService.GetLatestAssignmentByDate(shop.Id, GetLastOpenTime(shop));
         var inChargeId = latestAsm?.SupervisorId;
         if (inChargeId == null)
             return user.Role == Role.ShopManager;

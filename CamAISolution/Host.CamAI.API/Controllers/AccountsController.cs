@@ -105,4 +105,12 @@ public class AccountsController(IAccountService accountService, IBaseMapping map
         var newAccount = await accountService.CreateSupervisor(dto);
         return mapper.Map<Account, AccountDto>(newAccount);
     }
+
+    [HttpPut("{id}/activate")]
+    [AccessTokenGuard(Role.Admin, Role.BrandManager)]
+    public async Task<AccountDto> ActivateAccount(Guid id)
+    {
+        var account = await accountService.ActivateAccount(id);
+        return mapper.Map<Account, AccountDto>(account);
+    }
 }

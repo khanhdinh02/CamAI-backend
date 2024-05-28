@@ -14,10 +14,10 @@ public interface IUnitOfWork : IDisposable, IAsyncDisposable
     IRepository<EdgeBox> EdgeBoxes { get; }
     ICustomEdgeBoxInstallRepository EdgeBoxInstalls { get; }
     IRepository<EdgeBoxModel> EdgeBoxModels { get; }
-    IRepository<Incident> Incidents { get; }
+    ICustomIncidentRepository Incidents { get; }
     IRepository<Evidence> Evidences { get; }
-    IRepository<Camera> Cameras { get; }
-    IRepository<EdgeBoxActivity> EdgeBoxActivities { get; }
+    ICustomCameraRepository Cameras { get; }
+    ICustomEdgeBoxActivityRepository EdgeBoxActivities { get; }
     IRepository<SupervisorAssignment> SupervisorAssignments { get; }
     Task BeginTransaction();
     Task CommitTransaction();

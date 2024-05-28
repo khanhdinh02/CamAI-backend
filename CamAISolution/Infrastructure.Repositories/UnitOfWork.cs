@@ -25,14 +25,14 @@ public class UnitOfWork(CamAIContext context, IServiceProvider serviceProvider) 
     public ICustomAccountRepository Accounts => serviceProvider.GetRequiredService<ICustomAccountRepository>();
     public ICustomEmployeeRepository Employees => serviceProvider.GetRequiredService<ICustomEmployeeRepository>();
     public IRepository<EdgeBox> EdgeBoxes => serviceProvider.GetRequiredService<IRepository<EdgeBox>>();
-    public IRepository<EdgeBoxActivity> EdgeBoxActivities =>
-        serviceProvider.GetRequiredService<IRepository<EdgeBoxActivity>>();
+    public ICustomEdgeBoxActivityRepository EdgeBoxActivities =>
+        serviceProvider.GetRequiredService<ICustomEdgeBoxActivityRepository>();
     public ICustomEdgeBoxInstallRepository EdgeBoxInstalls =>
         serviceProvider.GetRequiredService<ICustomEdgeBoxInstallRepository>();
     public IRepository<EdgeBoxModel> EdgeBoxModels => serviceProvider.GetRequiredService<IRepository<EdgeBoxModel>>();
-    public IRepository<Incident> Incidents => serviceProvider.GetRequiredService<IRepository<Incident>>();
+    public ICustomIncidentRepository Incidents => serviceProvider.GetRequiredService<ICustomIncidentRepository>();
     public IRepository<Evidence> Evidences => serviceProvider.GetRequiredService<IRepository<Evidence>>();
-    public IRepository<Camera> Cameras => serviceProvider.GetRequiredService<IRepository<Camera>>();
+    public ICustomCameraRepository Cameras => serviceProvider.GetRequiredService<ICustomCameraRepository>();
     public IRepository<SupervisorAssignment> SupervisorAssignments =>
         serviceProvider.GetRequiredService<IRepository<SupervisorAssignment>>();
 

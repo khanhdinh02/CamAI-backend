@@ -4,6 +4,7 @@ using Infrastructure.Repositories.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Repositories.Migrations
 {
     [DbContext(typeof(CamAIContext))]
-    partial class CamAIContextModelSnapshot : ModelSnapshot
+    [Migration("20240527151316_UpdateSupervisorAssignment")]
+    partial class UpdateSupervisorAssignment
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -619,6 +622,12 @@ namespace Infrastructure.Repositories.Migrations
                     b.Property<DateTime?>("EndTime")
                         .HasColumnType("datetime2");
 
+                    b.Property<Guid?>("HeadSupervisorId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("InChargeAccountId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<int>("IncidentType")
                         .HasColumnType("int");
 
@@ -648,6 +657,10 @@ namespace Infrastructure.Repositories.Migrations
                     b.HasIndex("EdgeBoxId");
 
                     b.HasIndex("EmployeeId");
+
+                    b.HasIndex("HeadSupervisorId");
+
+                    b.HasIndex("InChargeAccountId");
 
                     b.HasIndex("ShopId");
 
@@ -1032,6 +1045,14 @@ namespace Infrastructure.Repositories.Migrations
                         .WithMany("Incidents")
                         .HasForeignKey("EmployeeId");
 
+                    b.HasOne("Core.Domain.Entities.Account", "HeadSupervisor")
+                        .WithMany()
+                        .HasForeignKey("HeadSupervisorId");
+
+                    b.HasOne("Core.Domain.Entities.Account", "InChargeAccount")
+                        .WithMany()
+                        .HasForeignKey("InChargeAccountId");
+
                     b.HasOne("Core.Domain.Entities.Shop", "Shop")
                         .WithMany()
                         .HasForeignKey("ShopId")
@@ -1045,6 +1066,10 @@ namespace Infrastructure.Repositories.Migrations
                     b.Navigation("EdgeBox");
 
                     b.Navigation("Employee");
+
+                    b.Navigation("HeadSupervisor");
+
+                    b.Navigation("InChargeAccount");
 
                     b.Navigation("Shop");
                 });

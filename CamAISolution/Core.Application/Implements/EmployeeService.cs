@@ -1,3 +1,4 @@
+using System.Runtime.Intrinsics.Arm;
 using Core.Application.Events;
 using Core.Application.Exceptions;
 using Core.Application.Specifications.Repositories;
@@ -173,7 +174,10 @@ public class EmployeeService(
                 bulkUpsertProgressSubject.Notify(new(rowCount++, taskId));
                 if (record is null)
                 {
-                    failedValidatedRecords.Add(rowCount, new { Failed = "Cannot parse record" });
+                    failedValidatedRecords.Add(
+                        rowCount,
+                        new { Failed = "Cannot read data. maybe missing fields or wrong format. Please check again" }
+                    );
                     continue;
                 }
                 if (!record.IsValid())
@@ -185,11 +189,23 @@ public class EmployeeService(
                 var employee = (
                     await unitOfWork.Employees.GetAsync(
                         expression: e =>
-                            (!string.IsNullOrEmpty(record.ExternalId) && record.ExternalId == e.ExternalId)
-                            || (!string.IsNullOrEmpty(record.Email) && record.Email == e.Email),
+                            (
+                                !string.IsNullOrEmpty(record.ExternalId)
+                                && record.ExternalId == e.ExternalId
+                                && e.ShopId.HasValue
+                                && e.ShopId.Value == shop.Id
+                            ) || (!string.IsNullOrEmpty(record.Email) && record.Email == e.Email),
                         disableTracking: false
                     )
                 ).Values.FirstOrDefault();
+                if (employee != null && employee.ShopId != shop.Id)
+                {
+                    failedValidatedRecords.Add(
+                        rowCount,
+                        new { ConflictAccount = $"Account is currently active in another shop" }
+                    );
+                    continue;
+                }
                 if (employee == null)
                 {
                     employee = new()
@@ -279,7 +295,8 @@ public class EmployeeService(
                 new { Errors = failedValidatedRecords.Select(e => new { Row = e.Key, Reasons = e.Value }) },
                 new
                 {
-                    UnhandledErrors = cacheService.Get<List<string>>($"failed-records-{taskId}", isRemoveAfterGet: true) ?? new List<string>()
+                    UnhandledErrors = cacheService.Get<List<string>>($"failed-records-{taskId}", isRemoveAfterGet: true)
+                        ?? new List<string>()
                 }
             );
         }

@@ -26,6 +26,11 @@ public class AuthService(IJwtService jwtService, IAccountService accountService,
             throw new UnauthorizedException("Wrong email or password");
 
         var account = foundAccount.Values[0];
+
+        var acceptanceRoles = new Role[] { Role.BrandManager, Role.Admin, Role.ShopManager, Role.ShopSupervisor };
+        if (!acceptanceRoles.Contains(account.Role))
+            throw new UnauthorizedException("Wrong email or password");
+
         var isHashedCorrect = Hasher.Verify(password, account.Password);
         if (!isHashedCorrect)
             throw new UnauthorizedException("Wrong email or password");

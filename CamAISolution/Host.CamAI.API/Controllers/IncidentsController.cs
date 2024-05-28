@@ -16,7 +16,8 @@ namespace Host.CamAI.API.Controllers;
 public class IncidentsController(
     IBaseMapping mapping,
     IIncidentService incidentService,
-    IncidentSocketManager incidentSocketManager
+    IncidentSocketManager incidentSocketManager,
+    ILogger<IncidentsController> logger
 ) : ControllerBase
 {
     /// <summary>
@@ -102,35 +103,46 @@ public class IncidentsController(
     }
 
     [HttpGet("new")]
-    [AccessTokenGuard(Role.ShopManager)]
+    [AccessTokenGuard(Role.ShopManager, Role.ShopSupervisor)]
     public async Task GetNewestIncident()
     {
         if (HttpContext.WebSockets.IsWebSocketRequest is false)
             return;
         var account = (Account)HttpContext.Items[nameof(Account)]!;
         var socket = await HttpContext.WebSockets.AcceptWebSocketAsync();
-        incidentSocketManager.AddSocket(account.Id, socket);
-        await socket.SendAsync(
-            System.Text.Encoding.UTF8.GetBytes("Connected"),
-            WebSocketMessageType.Text,
-            true,
-            CancellationToken.None
-        );
-        var buffer = new byte[1024 * 4];
-        var result = await socket.ReceiveAsync(
-            new ArraySegment<byte>(buffer, 0, buffer.Length),
-            CancellationToken.None
-        );
-
-        // wait until have close message
-        while (result.MessageType != WebSocketMessageType.Close)
+        try
         {
-            result = await socket.ReceiveAsync(
+            incidentSocketManager.AddSocket(account.Id, socket);
+            await socket.SendAsync(
+                System.Text.Encoding.UTF8.GetBytes("Connected"),
+                WebSocketMessageType.Text,
+                true,
+                CancellationToken.None
+            );
+            var buffer = new byte[1024 * 4];
+            var result = await socket.ReceiveAsync(
                 new ArraySegment<byte>(buffer, 0, buffer.Length),
                 CancellationToken.None
             );
+
+            // wait until have close message
+            while (result.MessageType != WebSocketMessageType.Close)
+            {
+                result = await socket.ReceiveAsync(
+                    new ArraySegment<byte>(buffer, 0, buffer.Length),
+                    CancellationToken.None
+                );
+            }
         }
-        incidentSocketManager.RemoveSocket(account.Id, socket);
+        catch (Exception ex) when (ex is WebSocketException)
+        {
+            logger.LogWarning("Websocket exception occurred");
+            logger.LogError(ex, ex.Message);
+        }
+        finally
+        {
+            incidentSocketManager.RemoveSocket(account.Id, socket);
+        }
     }
 
     /// <summary>

@@ -334,6 +334,7 @@ public class EdgeBoxInstallService(
         install.EdgeBoxInstallStatus = EdgeBoxInstallStatus.Disabled;
         unitOfWork.EdgeBoxInstalls.Update(install);
         unitOfWork.EdgeBoxes.Update(edgeBox);
+        unitOfWork.Cameras.DisconnectCamerasForShop(install.ShopId);
         await unitOfWork.EdgeBoxActivities.AddAsync(
             new EdgeBoxActivity
             {

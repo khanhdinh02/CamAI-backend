@@ -40,36 +40,12 @@ public class SupervisorAssignmentService(IAccountService accountService, IUnitOf
             ).Values.FirstOrDefault();
     }
 
-    public async Task<SupervisorAssignment?> GetLatestHeadSupervisorAssignmentByDate(Guid shopId, DateTime date)
-    {
-        var shop = await unitOfWork.Shops.GetByIdAsync(shopId) ?? throw new NotFoundException(typeof(Shop), shopId);
-        var openTime = date.Date.Add(shop.OpenTime.ToTimeSpan());
-        var closeTime = openTime.AddDays(1);
-        return (
-            await unitOfWork.SupervisorAssignments.GetAsync(
-                a => a.ShopId == shopId && openTime <= a.StartTime && a.StartTime < closeTime && a.SupervisorId == null,
-                includeProperties:
-                [
-                    nameof(SupervisorAssignment.HeadSupervisor),
-                    nameof(SupervisorAssignment.Supervisor)
-                ],
-                orderBy: o => o.OrderByDescending(x => x.StartTime),
-                pageSize: 1
-            )
-        ).Values.FirstOrDefault();
-    }
-
     public async Task<Account?> GetCurrentInChangeAccount(Guid shopId)
     {
-        var assignment = await GetLatestAssignmentByDate(shopId, DateTimeHelper.VNDateTime);
+        var shop = await unitOfWork.Shops.GetByIdAsync(shopId) ?? throw new NotFoundException(typeof(Shop), shopId);
+        var assignment = await GetLatestAssignmentByDate(shopId, ShopService.GetLastOpenTime(shop));
         return assignment?.Supervisor
             ?? (await unitOfWork.Accounts.GetAsync(a => a.ManagingShop!.Id == shopId)).Values.FirstOrDefault();
-    }
-
-    public async Task<Account?> GetCurrentInChangeHeadSupervisorAccount(Guid shopId)
-    {
-        var assignment = await GetLatestAssignmentByDate(shopId, DateTimeHelper.VNDateTime);
-        return assignment?.HeadSupervisor;
     }
 
     public async Task<IList<SupervisorAssignment>> GetSupervisorAssignmentByDate(DateTime date)
@@ -80,9 +56,19 @@ public class SupervisorAssignmentService(IAccountService accountService, IUnitOf
         Expression<Func<SupervisorAssignment, bool>> criteria = account.Role switch
         {
             Role.ShopManager
-                => x => startTime <= x.StartTime && x.StartTime <= endTime && x.ShopId == account.ManagingShop!.Id,
+                => x =>
+                    (
+                        (startTime <= x.StartTime && x.StartTime <= endTime)
+                        || (startTime <= x.EndTime && x.EndTime <= endTime)
+                    )
+                    && x.ShopId == account.ManagingShop!.Id,
             Role.ShopSupervisor
-                => x => startTime <= x.StartTime && x.StartTime <= endTime && x.SupervisorId == account.Id,
+                => x =>
+                    (
+                        (startTime <= x.StartTime && x.StartTime <= endTime)
+                        || (startTime <= x.EndTime && x.EndTime <= endTime)
+                    )
+                    && x.SupervisorId == account.Id,
             _ => throw new ForbiddenException("Cannot get supervisor assignments")
         };
 
@@ -95,88 +81,43 @@ public class SupervisorAssignmentService(IAccountService accountService, IUnitOf
         ).Values;
     }
 
-    public async Task RemoveHeadSupervisor()
-    {
-        var account = accountService.GetCurrentAccount();
-        var shop = account.ManagingShop!;
-        if (ShopService.IsShopOpeningAtTime(shop, TimeOnly.FromDateTime(DateTime.Now)))
-        {
-            var latestAssignment = await GetLatestAssignmentByDate(shop.Id, DateTime.Now);
-            if (latestAssignment == null)
-                return;
-
-            var now = DateTimeHelper.VNDateTime;
-            if (now - latestAssignment.StartTime < TimeSpan.FromMinutes(5))
-            {
-                latestAssignment.HeadSupervisorId = null;
-                latestAssignment.SupervisorId = null;
-                unitOfWork.SupervisorAssignments.Update(latestAssignment);
-                await unitOfWork.CompleteAsync();
-            }
-            else
-            {
-                latestAssignment.EndTime = now;
-                unitOfWork.SupervisorAssignments.Update(latestAssignment);
-                var newAssignment = new SupervisorAssignment
-                {
-                    ShopId = shop.Id,
-                    StartTime = latestAssignment.EndTime.Value
-                };
-                await unitOfWork.SupervisorAssignments.AddAsync(newAssignment);
-                await unitOfWork.CompleteAsync();
-            }
-        }
-        else
-        {
-            var newAssignment = new SupervisorAssignment
-            {
-                ShopId = shop.Id,
-                StartTime = ShopService.GetNextOpenTime(shop)
-            };
-            await unitOfWork.SupervisorAssignments.AddAsync(newAssignment);
-            await unitOfWork.CompleteAsync();
-        }
-    }
-
     public async Task RemoveSupervisor()
     {
-        var now = DateTimeHelper.VNDateTime;
         var account = accountService.GetCurrentAccount();
         var shop = account.ManagingShop;
-        if (account.Role != Role.ShopManager)
-        {
-            var employee =
-                (
-                    await unitOfWork.Employees.GetAsync(x => x.AccountId == account.Id, includeProperties: ["Shop"])
-                ).Values.FirstOrDefault()
-                ?? throw new NotFoundException($"Cannot find employee associated with account id {account.Id}");
-            shop = employee.Shop!;
-        }
-        var latestAssignment =
-            await GetLatestAssignmentByDate(shop.Id, now, includeAll: false)
-            ?? throw new ForbiddenException("Shop does not have any assignment");
-        if (account.Role != Role.ShopManager)
+
+        if (account.Role != Role.ShopManager || shop == null)
             throw new ForbiddenException("Account is not shop manager");
 
-        if (ShopService.IsShopOpeningAtTime(shop, TimeOnly.FromDateTime(now)))
+        var now = DateTimeHelper.VNDateTime;
+        var isShopOpening = ShopService.IsShopOpeningAtTime(shop, TimeOnly.FromDateTime(now));
+        var assignments = (
+            await GetSupervisorAssignmentByDate(
+                isShopOpening ? ShopService.GetLastOpenTime(shop) : ShopService.GetNextOpenTime(shop)
+            )
+        )
+            .OrderByDescending(x => x.StartTime)
+            .ToList();
+        var latestAssignment =
+            assignments.Count > 0 ? assignments[0] : throw new ForbiddenException("Shop does not have any assignment");
+        var prevAssignment = assignments.Count > 1 ? assignments[1] : null;
+
+        if (isShopOpening)
         {
             if (now - latestAssignment.StartTime < TimeSpan.FromMinutes(5))
             {
-                latestAssignment.SupervisorId = null;
-                unitOfWork.SupervisorAssignments.Update(latestAssignment);
-
-                // assign new in charge account to all incidents
-                var incidents = (
-                    await unitOfWork.Incidents.GetAsync(
-                        i => latestAssignment.StartTime <= i.StartTime && i.StartTime <= now,
-                        takeAll: true
-                    )
-                ).Values;
-                foreach (var incident in incidents)
+                latestAssignment.SupervisorId = shop.ShopManagerId;
+                if (prevAssignment != null && prevAssignment.SupervisorId == latestAssignment.SupervisorId)
                 {
-                    incident.InChargeAccountId = shop.ShopManagerId;
-                    unitOfWork.Incidents.Update(incident);
+                    // merge latest assignment with previous assignment if both of them have the same supervisor
+                    prevAssignment.EndTime = latestAssignment.EndTime;
+                    prevAssignment.Supervisor = null;
+                    unitOfWork.Incidents.UpdateIncidentAssignment(latestAssignment.Id, prevAssignment.Id);
+                    unitOfWork.SupervisorAssignments.Update(prevAssignment);
+                    unitOfWork.SupervisorAssignments.Delete(latestAssignment);
                 }
+                else
+                    unitOfWork.SupervisorAssignments.Update(latestAssignment);
             }
             else
             {
@@ -186,7 +127,8 @@ public class SupervisorAssignmentService(IAccountService accountService, IUnitOf
                 {
                     ShopId = shop.Id,
                     StartTime = latestAssignment.EndTime.Value,
-                    EndTime = ShopService.GetNextCloseTime(shop)
+                    EndTime = ShopService.GetNextCloseTime(shop),
+                    SupervisorId = shop.ShopManagerId,
                 };
                 await unitOfWork.SupervisorAssignments.AddAsync(newAssignment);
             }
@@ -196,14 +138,25 @@ public class SupervisorAssignmentService(IAccountService accountService, IUnitOf
             var nextOpenTime = ShopService.GetNextOpenTime(shop);
             if (nextOpenTime <= latestAssignment.StartTime)
             {
-                latestAssignment.SupervisorId = null;
-                unitOfWork.SupervisorAssignments.Update(latestAssignment);
+                latestAssignment.SupervisorId = shop.ShopManagerId;
+                if (prevAssignment != null && prevAssignment.SupervisorId == latestAssignment.SupervisorId)
+                {
+                    prevAssignment.EndTime = latestAssignment.EndTime;
+                    // TODO: update incident assignment id
+                    unitOfWork.SupervisorAssignments.Update(prevAssignment);
+                    unitOfWork.SupervisorAssignments.Delete(latestAssignment);
+                }
+                else
+                {
+                    unitOfWork.SupervisorAssignments.Update(latestAssignment);
+                }
             }
             else
             {
                 var newAssignment = new SupervisorAssignment
                 {
                     ShopId = shop.Id,
+                    SupervisorId = shop.ShopManagerId,
                     StartTime = ShopService.GetNextOpenTime(shop),
                     EndTime = ShopService.GetNextCloseTime(shop)
                 };
