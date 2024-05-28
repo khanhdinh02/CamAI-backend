@@ -212,4 +212,19 @@ public class AccountService(IUnitOfWork unitOfWork, IJwtService jwtService, IBas
         newAccount.AccountStatus = AccountStatus.New;
         return newAccount;
     }
+
+    public async Task<Account> ActivateAccount(Guid id)
+    {
+        var currentAccount = GetCurrentAccount();
+        var account = await GetAccountById(id);
+
+        if (account.AccountStatus == AccountStatus.Inactive)
+        {
+            account.AccountStatus = AccountStatus.Active;
+            unitOfWork.Accounts.Update(account);
+            await unitOfWork.CompleteAsync();
+        }
+
+        return account;
+    }
 }
