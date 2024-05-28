@@ -13,7 +13,8 @@ public class IncidentByIdRepoSpec : EntityByIdSpec<Incident, Guid>
         if (includeAll)
         {
             AddIncludes("Evidences.Image");
-            AddIncludes(x => x.Employee, x => x.Assignment);
+            AddIncludes("Assignment.Supervisor");
+            AddIncludes(x => x.Employee);
         }
     }
 }
