@@ -1,4 +1,3 @@
-using System.Text;
 using Core.Application.Events;
 using Core.Application.Events.Args;
 using Core.Domain.DTO;
@@ -80,11 +79,16 @@ public class TestsController(
     public ActionResult TestAddCache()
     {
         var keyChange = "change";
-        cacheService.Set("test", "test", TimeSpan.FromSeconds(1), (key, value) =>
-        {
-            logger.LogInformation($"{key} and {value}");
-            cacheService.Set(keyChange, $"{key} changed at {DateTimeHelper.VNDateTime}", TimeSpan.FromDays(1));
-        });
+        cacheService.Set(
+            "test",
+            "test",
+            TimeSpan.FromSeconds(1),
+            (key, value) =>
+            {
+                logger.LogInformation($"{key} and {value}");
+                cacheService.Set(keyChange, $"{key} changed at {DateTimeHelper.VNDateTime}", TimeSpan.FromDays(1));
+            }
+        );
         return Ok();
     }
 
@@ -100,14 +104,47 @@ public class TestsController(
         var result = (await unitOfWork.Accounts.GetAsync(expression: a => a.Role == sentTo, takeAll: true)).Values;
         foreach (var value in result)
         {
-            incidentSubject.Notify(new CreatedOrUpdatedIncidentArgs(new()
-            {
-                CreatedDate = DateTimeHelper.VNDateTime,
-                IncidentType = IncidentType.Uniform,
-                Status = IncidentStatus.New,
-            }, IncidentEventType.NewIncident, value.Id));
+            incidentSubject.Notify(
+                new CreatedOrUpdatedIncidentArgs(
+                    new()
+                    {
+                        CreatedDate = DateTimeHelper.VNDateTime,
+                        IncidentType = IncidentType.Uniform,
+                        Status = IncidentStatus.New,
+                    },
+                    IncidentEventType.NewIncident,
+                    value.Id
+                )
+            );
         }
 
+        return Ok();
+    }
+
+    [HttpGet("clean-image")]
+    public async Task<IActionResult> CleanImages()
+    {
+        var recordsCount = 0;
+        foreach (
+            var evidence in (
+                await unitOfWork.Evidences.GetAsync(takeAll: true, includeProperties: [nameof(Evidence.Image)])
+            ).Values.Where(e => e.Image != null)
+        )
+        {
+            if (!System.IO.File.Exists(evidence.Image!.PhysicalPath))
+            {
+                recordsCount++;
+                logger.LogWarning(
+                    "Remove empty image {ImageId} and evidence {EvidenceId}",
+                    evidence.Image.Id,
+                    evidence.Id
+                );
+                unitOfWork.GetRepository<Image>().Delete(evidence.Image);
+                unitOfWork.Evidences.Delete(evidence);
+            }
+        }
+        await unitOfWork.CompleteAsync();
+        logger.LogWarning("{NumberOfRecords} have been deteled", recordsCount);
         return Ok();
     }
 }
