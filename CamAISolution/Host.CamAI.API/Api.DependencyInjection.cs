@@ -10,6 +10,7 @@ using Core.Domain.Services;
 using Host.CamAI.API.BackgroundServices;
 using Host.CamAI.API.Events;
 using Host.CamAI.API.Sockets;
+using Infrastructure.Blob;
 using Infrastructure.Files;
 using Microsoft.OpenApi.Models;
 
@@ -70,7 +71,7 @@ public static class ApiDependencyInjection
             ?? throw new ServiceUnavailableException("Cannot get image configuration");
         services.AddSingleton(imgConfig);
         services.AddSingleton(configuration.GetSection("HealthCheckConfiguration").Get<HealthCheckConfiguration>()!);
-        services.AddScoped<IBlobService, BlobService>();
+        services.AddBlobService();
         return services;
     }
 

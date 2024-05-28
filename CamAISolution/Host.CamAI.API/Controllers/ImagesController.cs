@@ -20,7 +20,10 @@ public class ImagesController(IBlobService blobService, ILogger<ImagesController
         try
         {
             var img = await blobService.GetImageById(id);
-            return File(ImageHelper.Resize(img.PhysicalPath, width, height, scaleFactor), img.ContentType);
+            return File(
+                Infrastructure.Blob.ImageHelper.Resize(img.PhysicalPath, width, height, scaleFactor),
+                img.ContentType
+            );
         }
         catch (Exception ex)
         {
