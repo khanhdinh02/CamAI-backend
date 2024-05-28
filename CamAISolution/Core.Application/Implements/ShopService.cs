@@ -77,6 +77,10 @@ public class ShopService(
                 throw new BadRequestException("Cannot delete shop that currently has installed edge boxes");
             shop.ShopStatus = ShopStatus.Inactive;
         }
+        else if (await unitOfWork.GetRepository<SupervisorAssignment>().IsExisted(s => s.ShopId == id))
+        {
+            shop.ShopStatus = ShopStatus.Inactive;
+        }
         else
         {
             unitOfWork.Shops.Delete(shop);
