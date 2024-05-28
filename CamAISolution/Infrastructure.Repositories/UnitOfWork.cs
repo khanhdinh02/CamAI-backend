@@ -32,7 +32,7 @@ public class UnitOfWork(CamAIContext context, IServiceProvider serviceProvider) 
     public IRepository<EdgeBoxModel> EdgeBoxModels => serviceProvider.GetRequiredService<IRepository<EdgeBoxModel>>();
     public ICustomIncidentRepository Incidents => serviceProvider.GetRequiredService<ICustomIncidentRepository>();
     public IRepository<Evidence> Evidences => serviceProvider.GetRequiredService<IRepository<Evidence>>();
-    public IRepository<Camera> Cameras => serviceProvider.GetRequiredService<IRepository<Camera>>();
+    public ICustomCameraRepository Cameras => serviceProvider.GetRequiredService<ICustomCameraRepository>();
     public IRepository<SupervisorAssignment> SupervisorAssignments =>
         serviceProvider.GetRequiredService<IRepository<SupervisorAssignment>>();
 

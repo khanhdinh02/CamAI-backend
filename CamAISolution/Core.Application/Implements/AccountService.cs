@@ -133,7 +133,11 @@ public class AccountService(IUnitOfWork unitOfWork, IJwtService jwtService, IBas
                 throw new ForbiddenException(user, account);
         }
 
-        if (account is { Role: Role.ShopManager, AccountStatus: AccountStatus.New })
+        var isHaveAssignemt = await unitOfWork
+            .GetRepository<SupervisorAssignment>()
+            .IsExisted(s => s.SupervisorId == id);
+
+        if (account is { Role: Role.ShopManager, AccountStatus: AccountStatus.New } && !isHaveAssignemt)
             unitOfWork.Accounts.Delete(account);
         else
         {
@@ -211,5 +215,20 @@ public class AccountService(IUnitOfWork unitOfWork, IJwtService jwtService, IBas
         newAccount.Role = Role.ShopManager;
         newAccount.AccountStatus = AccountStatus.New;
         return newAccount;
+    }
+
+    public async Task<Account> ActivateAccount(Guid id)
+    {
+        var currentAccount = GetCurrentAccount();
+        var account = await GetAccountById(id);
+
+        if (account.AccountStatus == AccountStatus.Inactive)
+        {
+            account.AccountStatus = AccountStatus.Active;
+            unitOfWork.Accounts.Update(account);
+            await unitOfWork.CompleteAsync();
+        }
+
+        return account;
     }
 }
