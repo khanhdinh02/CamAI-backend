@@ -29,6 +29,7 @@
         <ProjectReference Include="..\Infrastructure.Logging\Infrastructure.Logging.csproj" />
         <ProjectReference Include="..\Infrastructure.Streaming\Infrastructure.Streaming.csproj" />
         <ProjectReference Include="..\Infrastructure.Files\Infrastructure.Files.csproj" />
+        <ProjectReference Include="..\Infrastructure.Blob\Infrastructure.Blob.csproj" />
     </ItemGroup>
 
 </Project>

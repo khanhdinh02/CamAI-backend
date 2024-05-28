@@ -1,7 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using Core.Domain.DTO;
 using Host.CamAI.API.Attributes;
-using Host.CamAI.API.Utils;
 
 namespace Host.CamAI.API.Models;
 
@@ -15,7 +14,7 @@ public class ControllerCreateImageDto
         var createImageDto = new CreateImageDto { ContentType = File.ContentType, Filename = File.FileName };
         using var item = new MemoryStream();
         await File.CopyToAsync(item);
-        createImageDto.ImageBytes = ImageHelper.TryCompressImage(item.ToArray());
+        createImageDto.ImageBytes = item.ToArray();
         return createImageDto;
     }
 }

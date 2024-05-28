@@ -1,3 +1,5 @@
+namespace Infrastructure.Blob;
+
 using Core.Application.Implements;
 using Core.Domain.Services;
 using Microsoft.Extensions.DependencyInjection;

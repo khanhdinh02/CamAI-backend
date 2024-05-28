@@ -3,7 +3,7 @@ using SkiaSharp;
 
 namespace Infrastructure.Blob;
 
-internal static class ImageHelper
+public static class ImageHelper
 {
     private static readonly Dictionary<string, SKEncodedImageFormat> _skiaSharpImageFormatMapping =
         new(StringComparer.InvariantCultureIgnoreCase)
