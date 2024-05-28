@@ -14,4 +14,5 @@ public interface IAccountService
     Account GetCurrentAccount();
     Task<Account> UpdateProfile(UpdateProfileDto dto);
     Task<Account> CreateSupervisor(CreateSupervisorDto dto);
+    Task<Account> ActivateAccount(Guid id);
 }
