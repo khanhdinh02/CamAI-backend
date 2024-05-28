@@ -133,7 +133,11 @@ public class AccountService(IUnitOfWork unitOfWork, IJwtService jwtService, IBas
                 throw new ForbiddenException(user, account);
         }
 
-        if (account is { Role: Role.ShopManager, AccountStatus: AccountStatus.New })
+        var isHaveAssignemt = await unitOfWork
+            .GetRepository<SupervisorAssignment>()
+            .IsExisted(s => s.SupervisorId == id);
+
+        if (account is { Role: Role.ShopManager, AccountStatus: AccountStatus.New } && !isHaveAssignemt)
             unitOfWork.Accounts.Delete(account);
         else
         {
