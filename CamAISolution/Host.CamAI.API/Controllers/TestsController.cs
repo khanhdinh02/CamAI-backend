@@ -124,6 +124,11 @@ public class TestsController(
     [HttpGet("clean-image")]
     public async Task<IActionResult> CleanImages()
     {
+        if (HttpContext.Connection.RemoteIpAddress.Equals(HttpContext.Connection.LocalIpAddress))
+        {
+            logger.LogInformation("Local address, Refuse delete");
+            return Ok("Local address, Refuse delete");
+        }
         var recordsCount = 0;
         foreach (
             var evidence in (
@@ -144,7 +149,19 @@ public class TestsController(
             }
         }
         await unitOfWork.CompleteAsync();
-        logger.LogWarning("{NumberOfRecords} have been deteled", recordsCount);
+        logger.LogWarning("{NumberOfRecords} images and evidences have been deteled", recordsCount);
+        return Ok();
+    }
+
+    [HttpGet("clean-incident")]
+    public async Task<IActionResult> ClearIncients()
+    {
+        var incidents = await unitOfWork.Incidents.GetAsync(expression: i => i.Evidences.Any(), takeAll: true);
+        foreach (var incident in incidents.Values)
+        {
+            unitOfWork.Incidents.Delete(incident);
+        }
+        logger.LogInformation("{NumberOfRecords} incidents have been deleted", incidents.Values.Count);
         return Ok();
     }
 }
