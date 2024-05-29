@@ -131,7 +131,7 @@ public class SupervisorAssignmentsController(
             {
                 FromTime = startTime,
                 ToTime = endTime,
-                Size = 100
+                Size = 999
             }
         );
         return incidents.Values;
