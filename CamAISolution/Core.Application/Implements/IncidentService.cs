@@ -168,7 +168,10 @@ public class IncidentService(
         }
 
         if (incidentDto.EndTime != null)
+        {
             incident.EndTime = incidentDto.EndTime;
+            unitOfWork.Incidents.Update(incident);
+        }
 
         HashSet<Evidence> newEvidences = [];
         foreach (var evidenceDto in incidentDto.Evidences)
