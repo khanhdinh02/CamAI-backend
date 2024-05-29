@@ -23,6 +23,11 @@ public interface IIncidentService
     );
 
     Task AcceptOrRejectAllIncidents(List<Guid> incidentIds, Guid employeeId, bool isAccept);
-    Task<IncidentPercentDto> GetIncidentPercent(Guid? shopId, DateOnly startDate, DateOnly endDate);
+    Task<IncidentPercentDto> GetIncidentPercent(
+        Guid? shopId,
+        DateOnly startDate,
+        DateOnly endDate,
+        ICollection<IncidentType> types
+    );
     Task<IList<Incident>> GetIncidentsByAssignment(Guid assignmentId);
 }

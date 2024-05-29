@@ -317,7 +317,12 @@ public class IncidentService(
         return incidentCountDto;
     }
 
-    public async Task<IncidentPercentDto> GetIncidentPercent(Guid? shopId, DateOnly startDate, DateOnly endDate)
+    public async Task<IncidentPercentDto> GetIncidentPercent(
+        Guid? shopId,
+        DateOnly startDate,
+        DateOnly endDate,
+        ICollection<IncidentType> types
+    )
     {
         // ------ VALIDATION ------
 
@@ -348,7 +353,7 @@ public class IncidentService(
             await unitOfWork.Incidents.GetAsync(
                 i =>
                     i.ShopId == shopId
-                    && IncidentTypes.Contains(i.IncidentType)
+                    && types.Contains(i.IncidentType)
                     && i.StartTime >= startDate.ToDateTime(TimeOnly.MinValue)
                     && i.StartTime < endDate.AddDays(1).ToDateTime(TimeOnly.MinValue),
                 takeAll: true
