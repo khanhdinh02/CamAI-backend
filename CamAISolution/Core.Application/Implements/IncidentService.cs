@@ -484,7 +484,7 @@ public class IncidentService(
         var incidents = await unitOfWork.Incidents.GetAsync(
             criteria,
             takeAll: true,
-            includeProperties: [nameof(Incident.Assignment), "Evidences"]
+            includeProperties: [nameof(Incident.Assignment), "Evidences", nameof(Incident.Employee)]
         );
         return incidents.Values;
     }
