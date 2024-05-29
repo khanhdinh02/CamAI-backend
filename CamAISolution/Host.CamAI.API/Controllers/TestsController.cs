@@ -161,6 +161,7 @@ public class TestsController(
         {
             unitOfWork.Incidents.Delete(incident);
         }
+        await unitOfWork.CompleteAsync();
         logger.LogInformation("{NumberOfRecords} incidents have been deleted", incidents.Values.Count);
         return Ok();
     }
