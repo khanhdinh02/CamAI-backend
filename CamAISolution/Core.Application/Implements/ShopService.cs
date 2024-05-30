@@ -401,7 +401,10 @@ public class ShopService(
                 {
                     failedValidatedRecords.Add(
                         rowCount,
-                        new { Failed = "Cannot read data. maybe missing fields or wrong format. Please check again" }
+                        new Dictionary<string, object?>
+                        {
+                            { "Failed", "Cannot read data. Maybe missing fields or wrong format. Please check again." }
+                        }
                     );
                     continue;
                 }
@@ -413,7 +416,10 @@ public class ShopService(
 
                 var shop = (
                     await unitOfWork.Shops.GetAsync(
-                        expression: s => s.ExternalId == record.GetShop().ExternalId,
+                        expression: s =>
+                            !string.IsNullOrEmpty(record.GetShop().ExternalId)
+                            && s.ExternalId == record.GetShop().ExternalId
+                            && s.BrandId == brand.Id,
                         disableTracking: false
                     )
                 ).Values.FirstOrDefault();
@@ -434,7 +440,10 @@ public class ShopService(
                 {
                     failedValidatedRecords.Add(
                         rowCount,
-                        new { ConflictAccount = $"Account is currently active in another shop" }
+                        new Dictionary<string, object?>
+                        {
+                            { "Conflict account", $"Account is currently active in another shop" }
+                        }
                     );
                     continue;
                 }
