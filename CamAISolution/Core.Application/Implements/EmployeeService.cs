@@ -195,14 +195,21 @@ public class EmployeeService(
                                 && e.ShopId.HasValue
                                 && e.ShopId.Value == shop.Id
                             ) || (!string.IsNullOrEmpty(record.Email) && record.Email == e.Email),
+                        includeProperties: [nameof(Employee.Account)],
                         disableTracking: false
                     )
                 ).Values.FirstOrDefault();
-                if (employee != null && employee.ShopId != shop.Id)
+                var existAccount = (
+                    await unitOfWork.Accounts.GetAsync(expression: a => a.Email.Equals(record.Email))
+                ).Values.FirstOrDefault();
+                if (existAccount != null)
                 {
+                    var message = "Employee email is already exist in the system";
+                    if (employee != null && employee.ShopId != shop.Id)
+                        message = "Employee email currently working in another shop";
                     failedValidatedRecords.Add(
                         rowCount,
-                        new { ConflictAccount = $"Account is currently active in another shop" }
+                        new Dictionary<string, object?>() { { "Conflict account", message } }
                     );
                     continue;
                 }
