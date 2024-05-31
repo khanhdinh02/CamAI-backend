@@ -69,7 +69,7 @@ public class IncidentService(
 
     public async Task AssignIncidentToEmployee(Guid id, Guid employeeId)
     {
-        var incident = await GetIncidentById(id);
+        var incident = await GetIncidentById(id, true);
         var employee = await employeeService.GetEmployeeById(employeeId);
         if (incident.ShopId != employee.ShopId)
             throw new BadRequestException("Incident and employee are not in the same shop");
@@ -86,7 +86,7 @@ public class IncidentService(
 
     public async Task RejectIncident(Guid id)
     {
-        var incident = await GetIncidentById(id);
+        var incident = await GetIncidentById(id, true);
         if (incident.IncidentType == IncidentType.Interaction)
             throw new BadRequestException($"Cannot assign employee for interaction #{incident.Id}");
 
@@ -484,7 +484,7 @@ public class IncidentService(
         var incidents = await unitOfWork.Incidents.GetAsync(
             criteria,
             takeAll: true,
-            includeProperties: [nameof(Incident.Assignment), "Evidences", nameof(Incident.Employee)]
+            includeProperties: ["Assignment.Supervisor", "Evidences", nameof(Incident.Employee)]
         );
         return incidents.Values;
     }
